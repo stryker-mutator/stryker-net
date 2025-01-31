@@ -24,15 +24,15 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.UnitTest;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
-using Stryker.TestRunner.VsTest;
-using Stryker.TetsRunner.VsTest.Helpers;
+using Stryker.TestRunner.VsTest.Helpers;
 using Stryker.Utilities;
 using CoverageCollector = Stryker.DataCollector.CoverageCollector;
-using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using VsTestObjModel = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
-namespace Stryker.Core.UnitTest.TestRunners;
+namespace Stryker.TestRunner.VsTest.UnitTest;
 
 /// <summary>
 /// This class has a set of methods that can be used to mock VsTest behavior. 
@@ -43,12 +43,12 @@ public class VsTestMockingHelper : TestBase
     protected Mutant OtherMutant { get; }
     private readonly string _testAssemblyPath;
     public SourceProjectInfo SourceProjectInfo { get; }
-    private readonly TestProjectsInfo _testProjectsInfo;
+    private readonly ITestProjectsInfo _testProjectsInfo;
     private readonly MockFileSystem _fileSystem;
     private readonly Uri _NUnitUri;
     private readonly Uri _xUnitUri;
-    private readonly VsTest.TestProperty _coverageProperty;
-    private readonly VsTest.TestProperty _unexpectedCoverageProperty;
+    private readonly VsTestObjModel.TestProperty _coverageProperty;
+    private readonly VsTestObjModel.TestProperty _unexpectedCoverageProperty;
     protected readonly TimeSpan TestDefaultDuration = TimeSpan.FromSeconds(1);
     private readonly string _filesystemRoot;
 
@@ -90,14 +90,14 @@ public class VsTestMockingHelper : TestBase
                 { _testAssemblyPath!, new MockFileData("Bytecode") },
                 { Path.Combine(_filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"), new MockFileData("Bytecode") },
             });
-        _coverageProperty = VsTest.TestProperty.Register(CoverageCollector.PropertyName, CoverageCollector.PropertyName, typeof(string), typeof(VsTest.TestResult));
-        _unexpectedCoverageProperty = VsTest.TestProperty.Register(CoverageCollector.OutOfTestsPropertyName, CoverageCollector.OutOfTestsPropertyName, typeof(string), typeof(VsTest.TestResult));
+        _coverageProperty = VsTestObjModel.TestProperty.Register(CoverageCollector.PropertyName, CoverageCollector.PropertyName, typeof(string), typeof(VsTestObjModel.TestResult));
+        _unexpectedCoverageProperty = VsTestObjModel.TestProperty.Register(CoverageCollector.OutOfTestsPropertyName, CoverageCollector.OutOfTestsPropertyName, typeof(string), typeof(VsTestObjModel.TestResult));
         Mutant = new Mutant { Id = 0 };
         OtherMutant = new Mutant { Id = 1 };
         _testProjectsInfo = BuildTestProjectsInfo();
         SourceProjectInfo = BuildSourceProjectInfo();
 
-        TestCases = new List<VsTest.TestCase> { firstTest, secondTest };
+        TestCases = new List<VsTestObjModel.TestCase> { firstTest, secondTest };
     }
 
     internal SourceProjectInfo BuildSourceProjectInfo(IEnumerable<Mutant> mutants = null)
@@ -118,8 +118,8 @@ public class VsTestMockingHelper : TestBase
         };
     }
 
-    internal TestProjectsInfo BuildTestProjectsInfo() =>
-        new(_fileSystem)
+    internal ITestProjectsInfo BuildTestProjectsInfo() =>
+        new TestProjectsInfo(_fileSystem)
         {
             TestProjects = new List<TestProject> { new(_fileSystem, TestHelper.SetupProjectAnalyzerResult(
                 properties: new Dictionary<string, string>
@@ -130,21 +130,21 @@ public class VsTestMockingHelper : TestBase
                 targetFramework: "netcoreapp2.1").Object)}
         };
 
-    protected IReadOnlyList<VsTest.TestCase> TestCases { get; }
+    protected IReadOnlyList<VsTestObjModel.TestCase> TestCases { get; }
 
-    private static void DiscoverTests(ITestDiscoveryEventsHandler discoveryEventsHandler, IReadOnlyCollection<VsTest.TestCase> tests, bool aborted)
+    private static void DiscoverTests(ITestDiscoveryEventsHandler discoveryEventsHandler, IReadOnlyCollection<VsTestObjModel.TestCase> tests, bool aborted)
     {
         discoveryEventsHandler.HandleDiscoveredTests(tests);
         discoveryEventsHandler.HandleDiscoveryComplete(tests.Count, null, aborted);
     }
 
-    protected VsTest.TestCase BuildCase(string name, TestFrameworks framework = TestFrameworks.xUnit, string displayName = null)
+    protected VsTestObjModel.TestCase BuildCase(string name, TestFrameworks framework = TestFrameworks.xUnit, string displayName = null)
         => new(name, framework == TestFrameworks.xUnit ? _xUnitUri : _NUnitUri, _testAssemblyPath) { Id = new Guid(), DisplayName = displayName ?? name };
 
-    protected VsTest.TestCase FindOrBuildCase(string testResultId) => TestCases.FirstOrDefault(t => t.FullyQualifiedName == testResultId) ?? BuildCase(testResultId);
+    protected VsTestObjModel.TestCase FindOrBuildCase(string testResultId) => TestCases.FirstOrDefault(t => t.FullyQualifiedName == testResultId) ?? BuildCase(testResultId);
 
-    private static void MockTestRun(ITestRunEventsHandler testRunEvents, IReadOnlyList<VsTest.TestResult> testResults,
-        VsTest.TestCase timeOutTest = null)
+    private static void MockTestRun(ITestRunEventsHandler testRunEvents, IReadOnlyList<VsTestObjModel.TestResult> testResults,
+        VsTestObjModel.TestCase timeOutTest = null)
     {
         if (testResults.Count == 0)
         {
@@ -174,28 +174,28 @@ public class VsTestMockingHelper : TestBase
         testRunEvents.HandleTestRunComplete(
             new TestRunCompleteEventArgs(new TestRunStatistics(testResults.Count, null), false, false, null,
                 null, timer.Elapsed),
-            new TestRunChangedEventArgs(null, Array.Empty<VsTest.TestResult>(), new List<VsTest.TestCase>()),
+            new TestRunChangedEventArgs(null, Array.Empty<VsTestObjModel.TestResult>(), new List<VsTestObjModel.TestCase>()),
             null,
             null);
     }
 
-    protected void SetupMockTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, bool testResult, IReadOnlyList<VsTest.TestCase> testCases)
+    protected void SetupMockTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, bool testResult, IReadOnlyList<VsTestObjModel.TestCase> testCases)
     {
         var results = new List<(string, bool)>(testCases.Count);
         results.AddRange(testCases.Select(t => (t.FullyQualifiedName, testResult)));
         SetupMockTestRun(mockVsTest, results);
     }
 
-    protected void SetupMockTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IEnumerable<(string id, bool success)> testResults, IReadOnlyList<VsTest.TestCase> testCases = null)
+    protected void SetupMockTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IEnumerable<(string id, bool success)> testResults, IReadOnlyList<VsTestObjModel.TestCase> testCases = null)
     {
-        var results = new List<VsTest.TestResult>();
+        var results = new List<VsTestObjModel.TestResult>();
         testCases ??= TestCases.ToList();
         foreach (var (testResultId, success) in testResults)
         {
             var testCase = testCases.FirstOrDefault(t => t.FullyQualifiedName == testResultId) ?? BuildCase(testResultId);
-            results.Add(new VsTest.TestResult(testCase)
+            results.Add(new VsTestObjModel.TestResult(testCase)
             {
-                Outcome = success ? VsTest.TestOutcome.Passed : VsTest.TestOutcome.Failed,
+                Outcome = success ? VsTestObjModel.TestOutcome.Passed : VsTestObjModel.TestOutcome.Failed,
                 ComputerName = ".",
                 Duration = TestDefaultDuration
             });
@@ -203,7 +203,7 @@ public class VsTestMockingHelper : TestBase
         SetupMockTestRun(mockVsTest, results);
     }
 
-    protected void SetupMockTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyList<VsTest.TestResult> results) =>
+    protected void SetupMockTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyList<VsTestObjModel.TestResult> results) =>
         mockVsTest.Setup(x =>
             x.RunTestsWithCustomTestHost(
                 It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
@@ -237,8 +237,8 @@ public class VsTestMockingHelper : TestBase
                         new TestRunCompleteEventArgs(new TestRunStatistics(0, null), false, false,
                             new TransationLayerException("VsTest Crashed"),
                             null, timer.Elapsed),
-                        new TestRunChangedEventArgs(null, Array.Empty<VsTest.TestResult>(),
-                            new List<VsTest.TestCase>()),
+                        new TestRunChangedEventArgs(null, Array.Empty<VsTestObjModel.TestResult>(),
+                            new List<VsTestObjModel.TestCase>()),
                         null,
                         null);
                 }));
@@ -264,8 +264,8 @@ public class VsTestMockingHelper : TestBase
                             new TestRunCompleteEventArgs(new TestRunStatistics(0, null), false, false,
                             null,
                             null, TimeSpan.FromMilliseconds(10)),
-                        new TestRunChangedEventArgs(null, Array.Empty<VsTest.TestResult>(),
-                            new List<VsTest.TestCase>()),
+                        new TestRunChangedEventArgs(null, Array.Empty<VsTestObjModel.TestResult>(),
+                            new List<VsTestObjModel.TestCase>()),
                         null,
                         null);
                     else
@@ -274,8 +274,8 @@ public class VsTestMockingHelper : TestBase
                             new TestRunCompleteEventArgs(new TestRunStatistics(0, null), false, false,
                             new TransationLayerException("fake", null),
                             null, TimeSpan.FromMilliseconds(10)),
-                        new TestRunChangedEventArgs(null, Array.Empty<VsTest.TestResult>(),
-                            new List<VsTest.TestCase>()),
+                        new TestRunChangedEventArgs(null, Array.Empty<VsTestObjModel.TestResult>(),
+                            new List<VsTestObjModel.TestCase>()),
                         null,
                         null);
                     }
@@ -300,8 +300,8 @@ public class VsTestMockingHelper : TestBase
                          new TestRunCompleteEventArgs(new TestRunStatistics(0, null), false, false,
                              null,
                              null, TimeSpan.FromMilliseconds(10)),
-                         new TestRunChangedEventArgs(null, Array.Empty<VsTest.TestResult>(),
-                             new List<VsTest.TestCase>()),
+                         new TestRunChangedEventArgs(null, Array.Empty<VsTestObjModel.TestResult>(),
+                             new List<VsTestObjModel.TestCase>()),
                          null,
                          null);
 
@@ -311,7 +311,7 @@ public class VsTestMockingHelper : TestBase
 
     protected void SetupMockCoverageRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults) => SetupMockCoverageRun(mockVsTest, GenerateCoverageTestResults(coverageResults));
 
-    protected void SetupMockCoverageRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyList<VsTest.TestResult> results) =>
+    protected void SetupMockCoverageRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyList<VsTestObjModel.TestResult> results) =>
         mockVsTest.Setup(x =>
             x.RunTestsWithCustomTestHost(
                 It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
@@ -322,15 +322,15 @@ public class VsTestMockingHelper : TestBase
             (IEnumerable<string> _, string _, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
                 ITestHostLauncher _) => MockTestRun(testRunEvents, results));
 
-    private List<VsTest.TestResult> GenerateCoverageTestResults(IReadOnlyDictionary<string, string> coverageResults)
+    private List<VsTestObjModel.TestResult> GenerateCoverageTestResults(IReadOnlyDictionary<string, string> coverageResults)
     {
-        var results = new List<VsTest.TestResult>(coverageResults.Count);
+        var results = new List<VsTestObjModel.TestResult>(coverageResults.Count);
         foreach (var (key, value) in coverageResults)
         {
-            var result = new VsTest.TestResult(FindOrBuildCase(key))
+            var result = new VsTestObjModel.TestResult(FindOrBuildCase(key))
             {
                 DisplayName = key,
-                Outcome = VsTest.TestOutcome.Passed,
+                Outcome = VsTestObjModel.TestOutcome.Passed,
                 ComputerName = "."
             };
             if (value != null)
@@ -352,16 +352,16 @@ public class VsTestMockingHelper : TestBase
     protected void SetupMockCoveragePerTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults) =>
         mockVsTest.Setup(x =>
             x.RunTestsWithCustomTestHost(
-                It.Is<IEnumerable<VsTest.TestCase>>(t => t.Any()),
+                It.Is<IEnumerable<VsTestObjModel.TestCase>>(t => t.Any()),
                 It.Is<string>(settings => settings.Contains("<Coverage")),
                 It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
                 It.IsAny<ITestRunEventsHandler>(),
                 It.IsAny<ITestHostLauncher>())).Callback(
-            (IEnumerable<VsTest.TestCase> testCases, string _, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
+            (IEnumerable<VsTestObjModel.TestCase> testCases, string _, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
                 ITestHostLauncher _) =>
             {
                 // generate test results
-                var results = new List<VsTest.TestResult>(coverageResults.Count);
+                var results = new List<VsTestObjModel.TestResult>(coverageResults.Count);
                 foreach (var (key, value) in coverageResults)
                 {
                     var coveredList = value.Split('|');
@@ -375,12 +375,12 @@ public class VsTestMockingHelper : TestBase
                 MockTestRun(testRunEvents, results);
             });
 
-    protected VsTest.TestResult BuildCoverageTestResult(string key, string[] coveredList)
+    protected VsTestObjModel.TestResult BuildCoverageTestResult(string key, string[] coveredList)
     {
-        var result = new VsTest.TestResult(FindOrBuildCase(key))
+        var result = new VsTestObjModel.TestResult(FindOrBuildCase(key))
         {
             DisplayName = key,
-            Outcome = VsTest.TestOutcome.Passed,
+            Outcome = VsTestObjModel.TestOutcome.Passed,
             ComputerName = "."
         };
         result.SetPropertyValue(_coverageProperty, coveredList[0]);
@@ -395,12 +395,12 @@ public class VsTestMockingHelper : TestBase
     protected static void SetupMockPartialTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> results) =>
         mockVsTest.Setup(x =>
             x.RunTestsWithCustomTestHost(
-                It.IsAny<IEnumerable<VsTest.TestCase>>(),
+                It.IsAny<IEnumerable<VsTestObjModel.TestCase>>(),
                 It.Is<string>(s => !s.Contains("<Coverage")),
                 It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
                 It.IsAny<ITestRunEventsHandler>(),
                 It.IsAny<ITestHostLauncher>())).Callback(
-            (IEnumerable<VsTest.TestCase> sources, string settings, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
+            (IEnumerable<VsTestObjModel.TestCase> sources, string settings, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
                 ITestHostLauncher _) =>
             {
                 var collector = new CoverageCollector();
@@ -425,7 +425,7 @@ public class VsTestMockingHelper : TestBase
                     throw new ArgumentException($"Invalid number of tests for mutant run {mutants}: found {tests.Count}, expected {data.Count}");
                 }
 
-                var runResults = new List<VsTest.TestResult>(data.Count);
+                var runResults = new List<VsTestObjModel.TestResult>(data.Count);
                 foreach (var strings in data)
                 {
                     var matchingTest = tests.FirstOrDefault(t => t.FullyQualifiedName == strings[0]);
@@ -434,8 +434,8 @@ public class VsTestMockingHelper : TestBase
                         throw new ArgumentException($"Test {strings[0]} not run for mutant {mutants}.");
                     }
 
-                    var result = new VsTest.TestResult(matchingTest)
-                    { Outcome = strings[1] == "F" ? VsTest.TestOutcome.Failed : VsTest.TestOutcome.Passed, ComputerName = "." };
+                    var result = new VsTestObjModel.TestResult(matchingTest)
+                    { Outcome = strings[1] == "F" ? VsTestObjModel.TestOutcome.Failed : VsTestObjModel.TestOutcome.Passed, ComputerName = "." };
                     runResults.Add(result);
                 }
                 // setup a normal test run
@@ -446,12 +446,12 @@ public class VsTestMockingHelper : TestBase
     protected static void SetupMockTimeOutTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> results, string timeoutTest) =>
         mockVsTest.Setup(x =>
             x.RunTestsWithCustomTestHost(
-                It.IsAny<IEnumerable<VsTest.TestCase>>(),
+                It.IsAny<IEnumerable<VsTestObjModel.TestCase>>(),
                 It.IsAny<string>(),
                 It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
                 It.IsAny<ITestRunEventsHandler>(),
                 It.IsAny<ITestHostLauncher>())).Callback(
-            (IEnumerable<VsTest.TestCase> sources, string settings, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
+            (IEnumerable<VsTestObjModel.TestCase> sources, string settings, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
                 ITestHostLauncher _) =>
             {
                 var collector = new CoverageCollector();
@@ -460,7 +460,7 @@ public class VsTestMockingHelper : TestBase
                     Configuration = settings
                 };
                 var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
-                VsTest.TestCase timeOutTestCase = null;
+                VsTestObjModel.TestCase timeOutTestCase = null;
                 collector.Initialize(mock.Object);
                 collector.TestSessionStart(start);
 
@@ -477,7 +477,7 @@ public class VsTestMockingHelper : TestBase
                     throw new ArgumentException($"Invalid number of tests for mutant run {mutants}: found {tests.Count}, expected {data.Count}");
                 }
 
-                var runResults = new List<VsTest.TestResult>(data.Count);
+                var runResults = new List<VsTestObjModel.TestResult>(data.Count);
                 foreach (var strings in data)
                 {
                     var matchingTest = tests.FirstOrDefault(t => t.FullyQualifiedName == strings[0]);
@@ -489,8 +489,8 @@ public class VsTestMockingHelper : TestBase
                     {
                         timeOutTestCase = matchingTest;
                     }
-                    var result = new VsTest.TestResult(matchingTest)
-                    { Outcome = strings[1] == "F" ? VsTest.TestOutcome.Failed : VsTest.TestOutcome.Passed, ComputerName = "." };
+                    var result = new VsTestObjModel.TestResult(matchingTest)
+                    { Outcome = strings[1] == "F" ? VsTestObjModel.TestOutcome.Failed : VsTestObjModel.TestOutcome.Passed, ComputerName = "." };
                     runResults.Add(result);
                 }
                 // setup a normal test run
@@ -500,7 +500,7 @@ public class VsTestMockingHelper : TestBase
             });
 
     protected Mock<IVsTestConsoleWrapper> BuildVsTestRunnerPool(IStrykerOptions options,
-        out VsTestRunnerPool runner, IReadOnlyCollection<VsTest.TestCase> testCases = null, ITestProjectsInfo testProjectsInfo = null)
+        out VsTestRunnerPool runner, IReadOnlyCollection<VsTestObjModel.TestCase> testCases = null, ITestProjectsInfo testProjectsInfo = null)
     {
         testCases ??= TestCases.ToList();
         var mockedVsTestConsole = new Mock<IVsTestConsoleWrapper>(MockBehavior.Strict);
@@ -532,7 +532,7 @@ public class VsTestMockingHelper : TestBase
         return mockedVsTestConsole;
     }
 
-    protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, IStrykerOptions options, IReadOnlyList<VsTest.TestCase> tests = null, SourceProjectInfo sourceProject = null)
+    protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, IStrykerOptions options, IReadOnlyList<VsTestObjModel.TestCase> tests = null, SourceProjectInfo sourceProject = null)
     {
         var testRunResult = new TestRunResult(new List<VsTestDescription>(), new TestIdentifierList((tests ?? TestCases).Select(t => t.Id.ToString())),
             TestIdentifierList.NoTest(),
@@ -555,9 +555,9 @@ public class VsTestMockingHelper : TestBase
     {
         public MockStrykerTestHostLauncher(bool isDebug) => IsDebug = isDebug;
 
-        public int LaunchTestHost(VsTest.TestProcessStartInfo defaultTestHostStartInfo) => throw new NotImplementedException();
+        public int LaunchTestHost(VsTestObjModel.TestProcessStartInfo defaultTestHostStartInfo) => throw new NotImplementedException();
 
-        public int LaunchTestHost(VsTest.TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public int LaunchTestHost(VsTestObjModel.TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         public bool IsDebug { get; }
 

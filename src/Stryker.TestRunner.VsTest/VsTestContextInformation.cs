@@ -12,7 +12,7 @@ using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.DataCollector;
-using Stryker.TetsRunner.VsTest.Helpers;
+using Stryker.TestRunner.VsTest.Helpers;
 using Stryker.Utilities.Logging;
 
 namespace Stryker.TestRunner.VsTest;

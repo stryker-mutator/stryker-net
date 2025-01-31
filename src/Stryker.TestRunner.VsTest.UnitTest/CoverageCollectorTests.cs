@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Moq;
 using Shouldly;
-using Stryker.DataCollector;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Diagnostics;
 using Stryker.Core.UnitTest;
+using Stryker.DataCollector;
 
-namespace Stryker.Core.UnitTest.TestRunners;
+namespace Stryker.TestRunner.VsTest.UnitTest;
 
 [TestClass]
 public class CoverageCollectorTests : TestBase
@@ -22,7 +21,7 @@ public class CoverageCollectorTests : TestBase
 
         var start = new TestSessionStartArgs
         {
-            Configuration = CoverageCollector.GetVsTestSettings(true, null, "Stryker.Core.UnitTest.TestRunners")
+            Configuration = CoverageCollector.GetVsTestSettings(true, null, GetType().Namespace)
         };
         var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
         collector.Initialize(mock.Object);
@@ -40,7 +39,7 @@ public class CoverageCollectorTests : TestBase
 
         var start = new TestSessionStartArgs
         {
-            Configuration = CoverageCollector.GetVsTestSettings(false, null, "Stryker.Core.UnitTest.TestRunners")
+            Configuration = CoverageCollector.GetVsTestSettings(false, null, GetType().Namespace)
         };
         var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
         collector.Initialize(mock.Object);
@@ -108,7 +107,7 @@ public class CoverageCollectorTests : TestBase
 
         var start = new TestSessionStartArgs
         {
-            Configuration = CoverageCollector.GetVsTestSettings(true, null, "Stryker.Core.UnitTest.TestRunners")
+            Configuration = CoverageCollector.GetVsTestSettings(true, null, GetType().Namespace)
         };
         var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
 
@@ -134,7 +133,7 @@ public class CoverageCollectorTests : TestBase
 
         var start = new TestSessionStartArgs
         {
-            Configuration = CoverageCollector.GetVsTestSettings(true, null, "Stryker.Core.UnitTest.TestRunners")
+            Configuration = CoverageCollector.GetVsTestSettings(true, null, GetType().Namespace)
         };
         var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
 
@@ -157,7 +156,7 @@ public class CoverageCollectorTests : TestBase
 
         var start = new TestSessionStartArgs
         {
-            Configuration = CoverageCollector.GetVsTestSettings(true, null, "Stryker.Core.UnitTest.TestRunners")
+            Configuration = CoverageCollector.GetVsTestSettings(true, null, GetType().Namespace)
         };
         var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
 

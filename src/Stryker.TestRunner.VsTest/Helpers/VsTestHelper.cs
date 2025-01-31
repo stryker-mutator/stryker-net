@@ -12,7 +12,7 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Stryker.Utilities;
 using Stryker.Utilities.Logging;
 
-namespace Stryker.TetsRunner.VsTest.Helpers;
+namespace Stryker.TestRunner.VsTest.Helpers;
 
 public interface IVsTestHelper
 {

@@ -10,7 +10,7 @@ using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.ProjectComponents.TestProjects;
 
-internal class TestProjectsInfo : ITestProjectsInfo
+public class TestProjectsInfo : ITestProjectsInfo
 {
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<TestProjectsInfo> _logger;

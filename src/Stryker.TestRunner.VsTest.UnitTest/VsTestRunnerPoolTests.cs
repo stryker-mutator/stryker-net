@@ -2,22 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.TestRunner.Tests;
-using Stryker.TestRunner.VsTest;
-using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Stryker.Utilities.Buildalyzer;
-using Stryker.Abstractions.Testing;
+using VsTestObjModel = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
-namespace Stryker.Core.UnitTest.TestRunners;
+namespace Stryker.TestRunner.VsTest.UnitTest;
 
 /// <summary>
 /// This class hosts the VsTestRunner related tests. The design of VsTest implies the creation of many mocking objects, so the tests may be hard to read.
@@ -47,9 +44,9 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     public void ShouldCaptureErrorMessages()
     {
         var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
-        var testResult = new VsTest.TestResult(TestCases[0])
+        var testResult = new VsTestObjModel.TestResult(TestCases[0])
         {
-            Outcome = VsTest.TestOutcome.Passed,
+            Outcome = VsTestObjModel.TestOutcome.Passed,
             ErrorMessage = "Test"
         };
         SetupMockTestRun(mockVsTest, new[] { testResult });
@@ -63,9 +60,9 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
         var now = DateTimeOffset.Now;
         var duration = TimeSpan.FromMilliseconds(2);
-        var testResult = new VsTest.TestResult(TestCases[0])
+        var testResult = new VsTestObjModel.TestResult(TestCases[0])
         {
-            Outcome = VsTest.TestOutcome.Passed,
+            Outcome = VsTestObjModel.TestOutcome.Passed,
             // ensure the test exhibit a long run time: Stryker should only use duration.
             StartTime = now,
             EndTime = DateTimeOffset.Now + TimeSpan.FromSeconds(1),
@@ -82,17 +79,17 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
         var now = DateTimeOffset.Now;
         var duration = TimeSpan.FromMilliseconds(2);
-        var testResult = new VsTest.TestResult(TestCases[0])
+        var testResult = new VsTestObjModel.TestResult(TestCases[0])
         {
-            Outcome = VsTest.TestOutcome.Passed,
+            Outcome = VsTestObjModel.TestOutcome.Passed,
             // ensure the test exhibit a long run time: Stryker should only use duration.
             StartTime = now,
             EndTime = DateTimeOffset.Now + TimeSpan.FromSeconds(1),
             Duration = duration
         };
-        var otherTestResult = new VsTest.TestResult(TestCases[0])
+        var otherTestResult = new VsTestObjModel.TestResult(TestCases[0])
         {
-            Outcome = VsTest.TestOutcome.Passed,
+            Outcome = VsTestObjModel.TestOutcome.Passed,
             StartTime = testResult.StartTime,
             EndTime = testResult.EndTime,
             Duration = duration
@@ -416,7 +413,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     public void HandleMultipleTestResultsForXUnit()
     {
         var options = new StrykerOptions();
-        var tests = new List<VsTest.TestCase>
+        var tests = new List<VsTestObjModel.TestCase>
         {
             BuildCase("X0"),
             BuildCase("X1")
@@ -639,10 +636,10 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
 
         var testResult = BuildCoverageTestResult("T0", new[] { "0;", "" });
-        var other = new VsTest.TestResult(FindOrBuildCase("T0"))
+        var other = new VsTestObjModel.TestResult(FindOrBuildCase("T0"))
         {
             DisplayName = "T0",
-            Outcome = VsTest.TestOutcome.Passed,
+            Outcome = VsTestObjModel.TestOutcome.Passed,
             ComputerName = "."
         };
         SetupMockCoverageRun(mockVsTest, new[] { testResult, other });
@@ -669,7 +666,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
 
         var testResult = BuildCoverageTestResult("T0", new[] { "0;", "" });
         var buildCase = BuildCase("unexpected", TestFrameworks.NUnit);
-        SetupMockCoverageRun(mockVsTest, new[] { new VsTest.TestResult(buildCase) { Outcome = VsTest.TestOutcome.Passed }, testResult });
+        SetupMockCoverageRun(mockVsTest, new[] { new VsTestObjModel.TestResult(buildCase) { Outcome = VsTestObjModel.TestOutcome.Passed }, testResult });
 
         var analyzer = new CoverageAnalyser(options);
         analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
@@ -690,7 +687,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
 
         var testResult = BuildCoverageTestResult("T0", new[] { "0;", "" });
-        testResult.Outcome = VsTest.TestOutcome.Skipped;
+        testResult.Outcome = VsTestObjModel.TestOutcome.Skipped;
         var other = BuildCoverageTestResult("T1", new[] { "0;", "" });
         SetupMockCoverageRun(mockVsTest, new[] { testResult, other });
 

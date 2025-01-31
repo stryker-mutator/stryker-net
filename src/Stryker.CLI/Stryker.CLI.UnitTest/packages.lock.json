@@ -289,6 +289,11 @@
           "Microsoft.Testing.Platform": "1.5.3"
         }
       },
+      "Microsoft.Testing.Platform": {
+        "type": "Transitive",
+        "resolved": "1.5.3",
+        "contentHash": "WqJydnJ99dEKtquR9HwINz104ehWJKTXbQQrydGatlLRw14bmsx0pa8+E6KUXMYXZAimN0swWlDmcJGjjW4TIg=="
+      },
       "Microsoft.Testing.Platform.MSBuild": {
         "type": "Transitive",
         "resolved": "1.5.3",
@@ -931,8 +936,6 @@
           "Microsoft.TestPlatform.ObjectModel": "[17.12.0, )",
           "Microsoft.TestPlatform.Portable": "[17.12.0, )",
           "Microsoft.TestPlatform.TranslationLayer": "[17.12.0, )",
-          "Microsoft.Testing.Extensions.TrxReport": "[1.5.0, )",
-          "Microsoft.Testing.Platform": "[1.5.0, )",
           "Stryker.Abstractions": "[1.0.0, )",
           "Stryker.DataCollector": "[1.0.0, )",
           "Stryker.TestRunner": "[1.0.0, )",
@@ -1059,22 +1062,6 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.1",
           "System.Diagnostics.DiagnosticSource": "9.0.1"
         }
-      },
-      "Microsoft.Testing.Extensions.TrxReport": {
-        "type": "CentralTransitive",
-        "requested": "[1.5.0, )",
-        "resolved": "1.5.0",
-        "contentHash": "+AW10NEScLAiErRKzek5U1Kv0B337EktcLt6ruzJXFTbtdQgK+3j0jxWbnfSs1N+R1eX2AsNF9/en7hWW8DDfg==",
-        "dependencies": {
-          "Microsoft.Testing.Extensions.TrxReport.Abstractions": "1.5.0",
-          "Microsoft.Testing.Platform": "1.5.0"
-        }
-      },
-      "Microsoft.Testing.Platform": {
-        "type": "CentralTransitive",
-        "requested": "[1.5.0, )",
-        "resolved": "1.5.3",
-        "contentHash": "WqJydnJ99dEKtquR9HwINz104ehWJKTXbQQrydGatlLRw14bmsx0pa8+E6KUXMYXZAimN0swWlDmcJGjjW4TIg=="
       },
       "Microsoft.TestPlatform": {
         "type": "CentralTransitive",
