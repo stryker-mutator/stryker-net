@@ -1,3 +1,13 @@
+## [4.5.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.5.0...stryker@4.5.1) (2025-02-04)
+
+
+### Bug Fixes
+
+* Handle VsTest errors on AbortSession ([#3177](https://github.com/stryker-mutator/stryker-net/issues/3177)) ([8ee5697](https://github.com/stryker-mutator/stryker-net/commit/8ee5697ab1083f43d2ce431bcf82bac4c09905a9))
+* Load dependencies for Roslyn generators and analyzer ([#3178](https://github.com/stryker-mutator/stryker-net/issues/3178)) ([52752dc](https://github.com/stryker-mutator/stryker-net/commit/52752dccb1d5efbc247e4aeaf1d9a71b2d89270b))
+
+
+
 # [4.5.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.4.1...stryker@4.5.0) (2025-01-03)
 
 
