@@ -4,13 +4,13 @@ using System.IO.Abstractions;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Utilities.Buildalyzer;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.ProjectComponents.TestProjects;
 
-internal class TestProjectsInfo : ITestProjectsInfo
+public class TestProjectsInfo : ITestProjectsInfo
 {
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<TestProjectsInfo> _logger;

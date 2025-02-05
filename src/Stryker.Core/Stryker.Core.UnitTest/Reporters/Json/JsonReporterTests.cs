@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
@@ -183,7 +184,7 @@ namespace ExtraProject.XUnit
             }
         };
         var node = CSharpSyntaxTree.ParseText(_testFileContents).GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
-        testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Guid.Empty, "myUnitTestName", node);
+        testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Guid.Empty.ToString(), "myUnitTestName", node);
 
         var reporter = new JsonReporter(options, mockFileSystem);
 
@@ -235,10 +236,10 @@ namespace ExtraProject.XUnit
             }
         };
         var node = CSharpSyntaxTree.ParseText(_testFileContents).GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
-        testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Guid.Empty, "myUnitTestName", node);
-        testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Guid.NewGuid(), "myOtherTestName", node);
-        testProjectsInfo.TestProjects.ElementAt(1).TestFiles.First().AddTest(Guid.Empty, "myUnitTestName", node);
-        testProjectsInfo.TestProjects.ElementAt(1).TestFiles.First().AddTest(Guid.NewGuid(), "myLastTestName", node);
+        testProjectsInfo.TestProjects.First().TestFiles.First().AddTest("id", "myUnitTestName", node);
+        testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Guid.NewGuid().ToString(), "myOtherTestName", node);
+        testProjectsInfo.TestProjects.ElementAt(1).TestFiles.First().AddTest("id", "myUnitTestName", node);
+        testProjectsInfo.TestProjects.ElementAt(1).TestFiles.First().AddTest(Guid.NewGuid().ToString(), "myLastTestName", node);
 
         var reporter = new JsonReporter(options, mockFileSystem);
 

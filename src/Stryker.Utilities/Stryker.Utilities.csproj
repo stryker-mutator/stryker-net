@@ -6,8 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Buildalyzer" />
+    <PackageReference Include="Mono.Cecil" />
+    <PackageReference Include="ResXResourceReader.NetStandard" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Stryker.Abstractions\Stryker.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

@@ -7,11 +7,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents.Csharp;
+using Stryker.TestRunner.Tests;
+using Stryker.TestRunner.VsTest;
 
 namespace Stryker.Core.UnitTest.MutantFilters;
 
@@ -107,7 +109,7 @@ public class SinceMutantFilterTests : TestBase
         var myTestPath = Path.Combine(testProjectPath, "myTest.cs");
         ;
         var tests = new TestSet();
-        var test = new TestDescription(Guid.NewGuid(), "name", myTestPath);
+        var test = new TestDescription("id", "name", myTestPath);
         tests.RegisterTests(new[] { test });
         diffProvider.SetupGet(x => x.Tests).Returns(tests);
         diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
@@ -127,7 +129,7 @@ public class SinceMutantFilterTests : TestBase
         var file = new CsharpFileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };
         var mutant = new Mutant
         {
-            CoveringTests = new TestGuidsList(new[] { test })
+            CoveringTests = new TestIdentifierList(new[] { test })
         };
 
 
@@ -249,13 +251,13 @@ public class SinceMutantFilterTests : TestBase
         });
 
         var tests = new TestSet();
-        var test1 = new TestDescription(Guid.NewGuid(), "name1", "C:/testfile1.cs");
-        var test2 = new TestDescription(Guid.NewGuid(), "name2", "C:/testfile2.cs");
+        var test1 = new TestDescription("id1", "name1", "C:/testfile1.cs");
+        var test2 = new TestDescription("id2", "name2", "C:/testfile2.cs");
         tests.RegisterTests(new[] { test1, test2 });
         diffProvider.SetupGet(x => x.Tests).Returns(tests);
         var target = new SinceMutantFilter(diffProvider.Object);
-        var testFile1 = new TestGuidsList(new[] { test1 });
-        var testFile2 = new TestGuidsList(new[] { test2 });
+        var testFile1 = new TestIdentifierList(new[] { test1 });
+        var testFile2 = new TestIdentifierList(new[] { test2 });
 
         var expectedToStay1 = new Mutant { CoveringTests = testFile1 };
         var expectedToStay2 = new Mutant { CoveringTests = testFile1 };
@@ -297,7 +299,7 @@ public class SinceMutantFilterTests : TestBase
 
         var mutants = new List<Mutant>
         {
-            new Mutant{CoveringTests = TestGuidsList.NoTest()}
+            new Mutant{CoveringTests = TestIdentifierList.NoTest()}
         };
 
         // Act

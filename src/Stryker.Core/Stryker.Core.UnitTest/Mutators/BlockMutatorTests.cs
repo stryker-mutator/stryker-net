@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
 
 namespace Stryker.Core.Mutators.Mutators;
 

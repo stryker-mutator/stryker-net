@@ -15,7 +15,7 @@ using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Utilities.Buildalyzer;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;

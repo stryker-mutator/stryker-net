@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Abstractions.Baseline;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Utilities;

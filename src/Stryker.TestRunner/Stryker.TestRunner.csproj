@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Stryker.Abstractions\Stryker.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -2,6 +2,7 @@ using System;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects;
@@ -13,7 +14,7 @@ public class TestFileTests
     public void MergeTestFiles()
     {
         // Arrange
-        var testCase1Id = Guid.NewGuid();
+        var testCase1Id = Guid.NewGuid().ToString();
         var node = SyntaxFactory.Block();
         var fileA = new TestFile
         {

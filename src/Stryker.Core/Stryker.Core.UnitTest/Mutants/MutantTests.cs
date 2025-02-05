@@ -1,8 +1,9 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
 using Stryker.Core.Mutants;
+using Stryker.TestRunner.Tests;
 
 namespace Stryker.Core.UnitTest.Mutants;
 
@@ -45,58 +46,58 @@ public class MutantTests : TestBase
     [TestMethod]
     public void ShouldSetKilledStateWhenAssesingTestFailed()
     {
-        var failingTest = Guid.NewGuid();
-        var succeedingTest = Guid.NewGuid();
+        var failingTest = Guid.NewGuid().ToString();
+        var succeedingTest = Guid.NewGuid().ToString();
         var mutant = new Mutant
         {
-            AssessingTests = new TestGuidsList(new[] { failingTest })
+            AssessingTests = new TestIdentifierList(new[] { failingTest })
         };
 
-        mutant.AnalyzeTestRun(new TestGuidsList(new[] { failingTest }),
-            new TestGuidsList(new[] { succeedingTest }),
-            TestGuidsList.NoTest(),
+        mutant.AnalyzeTestRun(new TestIdentifierList(new[] { failingTest }),
+            new TestIdentifierList(new[] { succeedingTest }),
+            TestIdentifierList.NoTest(),
             false);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Killed);
-        var killingTest = mutant.KillingTests.GetGuids().ShouldHaveSingleItem();
+        var killingTest = mutant.KillingTests.GetIdentifiers().ShouldHaveSingleItem();
         killingTest.ShouldBe(failingTest);
     }
 
     [TestMethod]
     public void ShouldSetSurvivedWhenNonAssesingTestFailed()
     {
-        var failingTest = Guid.NewGuid();
-        var succeedingTest = Guid.NewGuid();
+        var failingTest = Guid.NewGuid().ToString();
+        var succeedingTest = Guid.NewGuid().ToString();
         var mutant = new Mutant
         {
-            AssessingTests = new TestGuidsList(new[] { succeedingTest })
+            AssessingTests = new TestIdentifierList(new[] { succeedingTest })
         };
 
-        mutant.AnalyzeTestRun(new TestGuidsList(new[] { failingTest }),
-            new TestGuidsList(new[] { succeedingTest }),
-            TestGuidsList.NoTest(),
+        mutant.AnalyzeTestRun(new TestIdentifierList(new[] { failingTest }),
+            new TestIdentifierList(new[] { succeedingTest }),
+            TestIdentifierList.NoTest(),
             false);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
-        mutant.KillingTests.GetGuids().ShouldBeEmpty();
+        mutant.KillingTests.GetIdentifiers().ShouldBeEmpty();
     }
 
     [TestMethod]
     public void ShouldSetSurvivedWhenNoTestSucceeds()
     {
-        var succeedingTest = Guid.NewGuid();
+        var succeedingTest = Guid.NewGuid().ToString();
         var mutant = new Mutant
         {
-            AssessingTests = new TestGuidsList(new[] { succeedingTest })
+            AssessingTests = new TestIdentifierList(new[] { succeedingTest })
         };
 
-        mutant.AnalyzeTestRun(TestGuidsList.NoTest(),
-            new TestGuidsList(new[] { succeedingTest }),
-            TestGuidsList.NoTest(),
+        mutant.AnalyzeTestRun(TestIdentifierList.NoTest(),
+            new TestIdentifierList(new[] { succeedingTest }),
+            TestIdentifierList.NoTest(),
             false);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
-        mutant.KillingTests.GetGuids().ShouldBeEmpty();
+        mutant.KillingTests.GetIdentifiers().ShouldBeEmpty();
     }
 
     [TestMethod]
@@ -104,12 +105,12 @@ public class MutantTests : TestBase
     {
         var mutant = new Mutant
         {
-            AssessingTests = TestGuidsList.EveryTest()
+            AssessingTests = TestIdentifierList.EveryTest()
         };
 
-        mutant.AnalyzeTestRun(TestGuidsList.NoTest(),
-            TestGuidsList.EveryTest(),
-            TestGuidsList.EveryTest(),
+        mutant.AnalyzeTestRun(TestIdentifierList.NoTest(),
+            TestIdentifierList.EveryTest(),
+            TestIdentifierList.EveryTest(),
             false);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
@@ -120,12 +121,12 @@ public class MutantTests : TestBase
     {
         var mutant = new Mutant
         {
-            AssessingTests = TestGuidsList.EveryTest()
+            AssessingTests = TestIdentifierList.EveryTest()
         };
 
-        mutant.AnalyzeTestRun(TestGuidsList.NoTest(),
-            TestGuidsList.NoTest(),
-            TestGuidsList.NoTest(),
+        mutant.AnalyzeTestRun(TestIdentifierList.NoTest(),
+            TestIdentifierList.NoTest(),
+            TestIdentifierList.NoTest(),
             true);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);

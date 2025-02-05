@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.SourceProjects;
 

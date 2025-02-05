@@ -3,7 +3,7 @@ using System.IO.Abstractions.TestingHelpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.Mutants;

@@ -1,7 +1,6 @@
 using System;
 using Spectre.Console;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Mutants;
 
 namespace Stryker.Core.Reporters.Progress;
 

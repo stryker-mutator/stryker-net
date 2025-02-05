@@ -7,10 +7,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutators;
 using Stryker.Core.Mutants;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Compiling;
 
