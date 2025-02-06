@@ -248,17 +248,13 @@ public class InputFileResolver : IInputFileResolver
         var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
         _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
 
-        IAnalyzerResults buildResult;
         string bestFramework = null;
         if (targetFramework is not null)
         {
             bestFramework = DetermineBestTargetFramework(project, targetFramework);
-            buildResult = project.Build(bestFramework);
         }
-        else
-        {
-            buildResult = project.Build();
-        }
+
+        var buildResult = project.Build(bestFramework!);
 
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
             TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
@@ -285,18 +281,7 @@ public class InputFileResolver : IInputFileResolver
                 Restore = true
             };
             // retry the analysis
-            if (targetFramework is not null)
-            {
-                if (bestFramework is null)
-                {
-                    bestFramework = DetermineBestTargetFramework(project, targetFramework);
-                }
-                buildResult = project.Build(bestFramework, buildOptions);
-            }
-            else
-            {
-                buildResult = project.Build(buildOptions);
-            }
+            buildResult = project.Build(bestFramework, buildOptions);
 
             // check the new status
             buildResultOverallSuccess = Array.TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
@@ -342,12 +327,13 @@ public class InputFileResolver : IInputFileResolver
 
         if (nearest is null)
         {
-            throw new InputException($"Could not find any compatible target frameworks for project '{project.ProjectFile.Path}' that are compatible with '{targetFramework}'.");
+            _logger.LogWarning("Could not find any compatible target frameworks for project '{ProjectFilePath}' that are compatible with '{TargetFramework}'.", project.ProjectFile.Path, targetFramework);
+            return null;
         }
 
         var bestFramework = nearest.GetShortFolderName();
 
-        _logger.LogWarning($"Target framework '{targetFramework}' not found in project '{project.ProjectFile.Path}'. Using '{bestFramework}' instead.");
+        _logger.LogInformation("Target framework '{TargetFramework}' not found in project '{ProjectFilePath}'. Using '{BestFramework}' instead.", targetFramework, project.ProjectFile.Path, bestFramework);
 
         return bestFramework;
     }
