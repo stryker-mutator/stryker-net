@@ -246,7 +246,7 @@ public class InputFileResolver : IInputFileResolver
         }
         var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
         _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
-        var buildResult = project.Build();
+        var buildResult = project.Build(options.TargetFramework);
 
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
             TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
@@ -338,7 +338,7 @@ public class InputFileResolver : IInputFileResolver
             {
                 if (importantProperties.Contains(property.Key))
                 {
-                    continue; // already logged 
+                    continue; // already logged
                 }
 
                 log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
