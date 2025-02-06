@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Buildalyzer;
 using Buildalyzer.Environment;
 using Microsoft.Extensions.Logging;
+using NuGet.Frameworks;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
@@ -183,7 +184,7 @@ public class InputFileResolver : IInputFileResolver
         ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> mutableProjectsAnalyzerResults)
     {
         var project = manager.GetProject(entry.projectFile);
-        IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(project, options);
+        IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(project, options, entry.framework);
         if (!buildResult.Any())
         {
             // analysis failed
@@ -237,7 +238,7 @@ public class InputFileResolver : IInputFileResolver
         return referencesToAdd;
     }
 
-    private IAnalyzerResults AnalyzeSingleProject(IProjectAnalyzer project, IStrykerOptions options)
+    private IAnalyzerResults AnalyzeSingleProject(IProjectAnalyzer project, IStrykerOptions options, string targetFramework = null)
     {
         if (options.DevMode)
         {
@@ -246,7 +247,18 @@ public class InputFileResolver : IInputFileResolver
         }
         var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
         _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
-        var buildResult = project.Build(options.TargetFramework);
+
+        IAnalyzerResults buildResult;
+        string bestFramework = null;
+        if (targetFramework is not null)
+        {
+            bestFramework = DetermineBestTargetFramework(project, targetFramework);
+            buildResult = project.Build(bestFramework);
+        }
+        else
+        {
+            buildResult = project.Build();
+        }
 
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
             TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
@@ -273,7 +285,18 @@ public class InputFileResolver : IInputFileResolver
                 Restore = true
             };
             // retry the analysis
-            buildResult = project.Build(buildOptions);
+            if (targetFramework is not null)
+            {
+                if (bestFramework is null)
+                {
+                    bestFramework = DetermineBestTargetFramework(project, targetFramework);
+                }
+                buildResult = project.Build(bestFramework, buildOptions);
+            }
+            else
+            {
+                buildResult = project.Build(buildOptions);
+            }
 
             // check the new status
             buildResultOverallSuccess = Array.TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
@@ -300,6 +323,33 @@ public class InputFileResolver : IInputFileResolver
 
         // if there is no valid result, drop it altogether
         return buildResult.All(br => !IsValid(br)) ? new AnalyzerResults() : buildResult;
+    }
+
+    private string DetermineBestTargetFramework(IProjectAnalyzer project, string targetFramework)
+    {
+        var targetFrameworks = project.ProjectFile.TargetFrameworks;
+
+        if (targetFrameworks.Contains(targetFramework))
+        {
+            return targetFramework;
+        }
+
+        var reducer = new FrameworkReducer();
+        var framework = NuGetFramework.Parse(targetFramework);
+        var availableFrameworks = targetFrameworks.Select(NuGetFramework.Parse).ToList();
+
+        var nearest = reducer.GetNearest(framework, availableFrameworks);
+
+        if (nearest is null)
+        {
+            throw new InputException($"Could not find any compatible target frameworks for project '{project.ProjectFile.Path}' that are compatible with '{targetFramework}'.");
+        }
+
+        var bestFramework = nearest.GetShortFolderName();
+
+        _logger.LogWarning($"Target framework '{targetFramework}' not found in project '{project.ProjectFile.Path}'. Using '{bestFramework}' instead.");
+
+        return bestFramework;
     }
 
     private void LogAnalyzerResult(IAnalyzerResults analyzerResults, IStrykerOptions options)
