@@ -400,7 +400,7 @@ public class InputFileResolver : IInputFileResolver
     // checks if an analyzer result is valid
     private static bool IsValid(IAnalyzerResult br) => br.Succeeded || (br.SourceFiles.Length > 0 && br.References.Length > 0);
 
-    private static Dictionary<IAnalyzerResult, List<IAnalyzerResult>> FindMutableAnalyzerResults(ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> mutableProjectsAnalyzerResults)
+    private Dictionary<IAnalyzerResult, List<IAnalyzerResult>> FindMutableAnalyzerResults(ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> mutableProjectsAnalyzerResults)
     {
         var mutableToTestMap = new Dictionary<IAnalyzerResult, List<IAnalyzerResult>>();
         var analyzerTestProjects = mutableProjectsAnalyzerResults.Where(p => p.isTest).SelectMany(p => p.result).Where(p => p.BuildsAnAssembly());
@@ -408,25 +408,55 @@ public class InputFileResolver : IInputFileResolver
         // for each test project
         foreach (var testProject in analyzerTestProjects)
         {
-            // we identify which project are referenced by it
-            foreach (var mutableProject in mutableProjects)
+            if (!ScanAssemblyReferences(mutableToTestMap, mutableProjects, testProject))
             {
-                if (Array.TrueForAll(testProject.References, r =>
-                    !r.Equals(mutableProject.GetAssemblyPath(), StringComparison.OrdinalIgnoreCase) &&
-                    !r.Equals(mutableProject.GetReferenceAssemblyPath(), StringComparison.OrdinalIgnoreCase)))
-                {
-                    continue;
-                }
-                if (!mutableToTestMap.TryGetValue(mutableProject, out var dependencies))
-                {
-                    dependencies = [];
-                    mutableToTestMap[mutableProject] = dependencies;
-                }
-                dependencies.Add(testProject);
+                _logger.LogInformation("Could not find an assembly reference to a mutable assembly for project {0}. Will look into project references.", testProject.ProjectFilePath);
+                // we try to find a project reference
+                ScanProjectReferences(mutableToTestMap, mutableProjects, testProject);
             }
         }
 
         return mutableToTestMap;
+    }
+
+    private static void ScanProjectReferences(Dictionary<IAnalyzerResult, List<IAnalyzerResult>> mutableToTestMap, IAnalyzerResult[] mutableProjects, IAnalyzerResult testProject)
+    {
+        var mutableProject = mutableProjects.FirstOrDefault(p => testProject.ProjectReferences.Contains(p.ProjectFilePath));
+        if (mutableProject == null)
+        {
+            return;
+        }
+        if (!mutableToTestMap.TryGetValue(mutableProject, out var dependencies))
+        {
+            mutableToTestMap[mutableProject] = dependencies = [];
+        }
+
+        dependencies.Add(testProject);
+    }
+
+    private static bool ScanAssemblyReferences(Dictionary<IAnalyzerResult, List<IAnalyzerResult>> mutableToTestMap, IAnalyzerResult[] mutableProjects, IAnalyzerResult testProject)
+    {
+        var foundOneProject = false;
+        // we identify which project are referenced by it
+        foreach (var mutableProject in mutableProjects)
+        {
+            var assemblyPath = mutableProject.GetAssemblyPath();
+            var refAssemblyPath = mutableProject.GetReferenceAssemblyPath();
+
+            if (Array.TrueForAll(testProject.References, r => !r.Equals(assemblyPath, StringComparison.OrdinalIgnoreCase) &&
+                                    !r.Equals(refAssemblyPath, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+            if (!mutableToTestMap.TryGetValue(mutableProject, out var dependencies))
+            {
+                mutableToTestMap[mutableProject] = dependencies = [];
+            }
+            dependencies.Add(testProject);
+            foundOneProject = true;
+        }
+
+        return foundOneProject;
     }
 
     /// <summary>

@@ -9,7 +9,6 @@ using Buildalyzer.Environment;
 using Moq;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Testing;
-using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 
@@ -79,12 +78,12 @@ public class BuildAnalyzerTestsBase : TestBase
     /// <param name="success"></param>
     /// <returns>a mock project analyzer</returns>
     /// <remarks>the test project references the production code project and contains no source file</remarks>
-    protected Mock<IProjectAnalyzer> TestProjectAnalyzerMock(string testCsprojPathName, string csProj, IEnumerable<string> frameworks = null, bool success = true)
+    protected Mock<IProjectAnalyzer> TestProjectAnalyzerMock(string testCsprojPathName, string csProj, IEnumerable<string> frameworks = null, bool success = true, bool dontGenerateProjectReference= false)
     {
         frameworks??=[DefaultFramework];
         var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
         var projectReferences =  string.IsNullOrEmpty(csProj) ? [] : GetProjectResult(csProj, frameworks.First()).ProjectReferences.Append(csProj).ToList();
-        return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, projectReferences, frameworks, () => success);
+        return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, projectReferences, frameworks, () => success, [], dontGenerateProjectReference);
     }
 
     private IAnalyzerResult GetProjectResult(string projectFile, string expectedFramework, bool returnDefaultIfNotFound = true)
@@ -199,7 +198,8 @@ public class BuildAnalyzerTestsBase : TestBase
         IEnumerable<string> projectReferences= null,
         IEnumerable<string> frameworks = null,
         Func<bool> success = null,
-        IEnumerable<string> rawReferences = null)
+        IEnumerable<string> rawReferences = null,
+        bool dontResolveProjectReference = false)
     {
         var projectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
         success ??= () => true;
@@ -226,9 +226,17 @@ public class BuildAnalyzerTestsBase : TestBase
             FileSystem.AddFile(FileSystem.Path.Combine(projectUnderTestBin, projectBin), new MockFileData(""));
             var projectAnalyzerResultMock = new Mock<IAnalyzerResult>(MockBehavior.Strict);
             projectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(projectReferences);
-            projectAnalyzerResultMock.Setup(x => x.References).Returns(projectReferences.
-                Where ( p => p !=null && _projectCache.ContainsKey(p)).
-                Select( iar => GetProjectResult(iar, framework).GetAssemblyPath()).Union(rawReferences).ToArray());
+            if (dontResolveProjectReference)
+            {
+                projectAnalyzerResultMock.Setup(x => x.References).Returns([]);
+            }
+            else
+            {
+                projectAnalyzerResultMock.Setup(x => x.References).Returns(projectReferences.
+                    Where ( p => p !=null && _projectCache.ContainsKey(p)).
+                    Select( iar => GetProjectResult(iar, framework).GetAssemblyPath()).Union(rawReferences).ToArray());
+            }
+
             projectAnalyzerResultMock.Setup(x => x.SourceFiles).Returns(sourceFiles);
             projectAnalyzerResultMock.Setup(x => x.PreprocessorSymbols).Returns(["NET"]);
             specificProperties.Add("TargetRefPath", projectBin);
