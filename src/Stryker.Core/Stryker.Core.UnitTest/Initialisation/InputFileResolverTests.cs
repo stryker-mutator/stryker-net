@@ -908,7 +908,7 @@ Please specify a test project name filter that results in one project.
         var testProjectPath = Path.Combine(_sourcePath, "TestProjectFolder", "TestProject.csproj");
         var sourceProjectPath = Path.Combine(_sourcePath, "ExampleProject", "ExampleProject.csproj");
         var sourceProjectNameFilter = "ExampleProject.csproj";
-        
+
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
             { sourceProjectPath, new MockFileData(_defaultTestProjectFileContents)},
