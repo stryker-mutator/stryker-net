@@ -74,19 +74,19 @@ stages:
       displayName: 'Run unit tests CLI'
       inputs:
         command: test
-        projects: 'src\Stryker.CLI\Stryker.CLI.UnitTest.csproj'
+        projects: 'src\Stryker.CLI\Stryker.CLI.UnitTest\Stryker.CLI.UnitTest.csproj'
         arguments: '--collect "Code Coverage"'
     - task: DotNetCoreCLI@2
       displayName: 'Run unit tests Core'
       inputs:
         command: test
-        projects: 'src\Stryker.Core\Stryker.Core.UnitTest.csproj'
+        projects: 'src\Stryker.Core\Stryker.Core.UnitTest\Stryker.Core.UnitTest.csproj'
         arguments: '--collect "Code Coverage"'
     - task: DotNetCoreCLI@2
       displayName: 'Run unit tests Regex'
       inputs:
         command: test
-        projects: 'src\Stryker.RegexMutators\Stryker.RegexMutators.UnitTest\Stryker.RegexMutators.UnitTest'
+        projects: 'src\Stryker.RegexMutators\Stryker.RegexMutators.UnitTest\Stryker.RegexMutators.UnitTest.csproj'
         arguments: '--collect "Code Coverage"'
     - task: DotNetCoreCLI@2
       displayName: 'Run unit tests VsTest'
