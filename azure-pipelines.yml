@@ -49,11 +49,11 @@ stages:
     dependsOn: []
     steps:
     - task: UseDotNet@2
-      displayName: 'Use dotnet'
+      displayName: 'Install dotnet 8'
       inputs:
         version: 8.x
     - task: UseDotNet@2
-      displayName: 'Use dotnet'
+      displayName: 'Install dotnet 9'
       inputs:
         version: 9.x
     - task: DotNetCoreCLI@2
@@ -72,7 +72,9 @@ stages:
         projectKey: 'stryker-net'
         projectName: 'Stryker .NET'
         projectVersion: '$(PackageVersion)'
-        extraProperties: 'sonar.verbose=true'
+        extraProperties: |
+          sonar.verbose=true
+          sonar.cs.vscoveragexml.reportsPaths=coverage.xml
     - task: DotNetCoreCLI@2
       displayName: 'Build Stryker'
       inputs:
