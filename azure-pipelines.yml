@@ -68,8 +68,8 @@ stages:
         extraProperties: 'sonar.verbose=true'
     - task: DotNetCoreCLI@2
       inputs:
-      command: 'build'
-      projects: 'src/Stryker.sln'
+        command: 'build'
+        projects: 'src/Stryker.sln'
     - task: DotNetCoreCLI@2
       displayName: 'Run unit tests CLI'
       inputs:
