@@ -67,11 +67,33 @@ stages:
         projectVersion: '$(PackageVersion)'
         extraProperties: 'sonar.verbose=true'
     - task: DotNetCoreCLI@2
-      displayName: 'Run unit tests'
+      inputs:
+      command: 'build'
+      projects: 'src/Stryker.sln'
+    - task: DotNetCoreCLI@2
+      displayName: 'Run unit tests CLI'
       inputs:
         command: test
-        projects: 'src/**/*.UnitTest.csproj'
-        arguments: '--collect "Code coverage"'
+        projects: 'src\Stryker.CLI\Stryker.CLI.UnitTest.csproj'
+        arguments: '--collect "Code Coverage"'
+    - task: DotNetCoreCLI@2
+      displayName: 'Run unit tests Core'
+      inputs:
+        command: test
+        projects: 'src\Stryker.Core\Stryker.Core.UnitTest.csproj'
+        arguments: '--collect "Code Coverage"'
+    - task: DotNetCoreCLI@2
+      displayName: 'Run unit tests Regex'
+      inputs:
+        command: test
+        projects: 'src\Stryker.RegexMutators\Stryker.RegexMutators.UnitTest\Stryker.RegexMutators.UnitTest'
+        arguments: '--collect "Code Coverage"'
+    - task: DotNetCoreCLI@2
+      displayName: 'Run unit tests VsTest'
+      inputs:
+        command: test
+        projects: 'src\Stryker.TestRunner.VsTest.UnitTest\Stryker.TestRunner.VsTest.UnitTest.csproj'
+        arguments: '--collect "Code Coverage"'
     - task: SonarCloudAnalyze@3
     - task: SonarCloudPublish@3
       inputs:
