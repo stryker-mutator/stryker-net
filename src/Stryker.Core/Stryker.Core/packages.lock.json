@@ -147,12 +147,6 @@
         "resolved": "6.13.1",
         "contentHash": "KvfijSQRsKFhuAuoZxs/zp3QlD92ZLhXTMzLfYAgu6Ir6gLtfpRgC16u3/rvfzbTvbVYgI90A0EAb3e99hnyEg=="
       },
-      "ResXResourceReader.NetStandard": {
-        "type": "Direct",
-        "requested": "[1.3.0, )",
-        "resolved": "1.3.0",
-        "contentHash": "voW0VHwFGIvbJ4Pp/wfHKFGn9kxZD97H/mnD6LziBJCi4FJZtetYQpQQnpYp0IkL2+PQ6VOzkMvhK1+s7+NJnA=="
-      },
       "Serilog": {
         "type": "Direct",
         "requested": "[4.2.0, )",
@@ -840,7 +834,6 @@
           "Microsoft.CodeAnalysis.Common": "[4.12.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[17.13.0, )",
           "Serilog": "[4.2.0, )",
-          "Stryker.Utilities": "[4.5.1, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[21.3.1, )"
         }
       },
@@ -851,8 +844,8 @@
           "Microsoft.CodeAnalysis.CSharp": "[4.12.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.12.0, )",
           "Serilog": "[4.2.0, )",
-          "Stryker.Abstractions": "[4.5.1, )",
-          "Stryker.Utilities": "[4.5.1, )"
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )"
         }
       },
       "stryker.datacollector": {
@@ -868,11 +861,36 @@
           "Stryker.Regex.Parser": "[1.0.0, )"
         }
       },
+      "stryker.testrunner": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.TestPlatform.ObjectModel": "[17.13.0, )",
+          "Stryker.Abstractions": "[1.0.0, )"
+        }
+      },
+      "stryker.testrunner.vstest": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "[9.0.2, )",
+          "Microsoft.TestPlatform": "[17.13.0, )",
+          "Microsoft.TestPlatform.ObjectModel": "[17.13.0, )",
+          "Microsoft.TestPlatform.Portable": "[17.13.0, )",
+          "Microsoft.TestPlatform.TranslationLayer": "[17.13.0, )",
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.TestRunner": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )"
+        }
+      },
       "stryker.utilities": {
         "type": "Project",
         "dependencies": {
+          "Buildalyzer": "[7.1.0, )",
           "Microsoft.CodeAnalysis.CSharp": "[4.12.0, )",
-          "Microsoft.Extensions.Logging.Abstractions": "[9.0.2, )"
+          "Microsoft.Extensions.Logging.Abstractions": "[9.0.2, )",
+          "Mono.Cecil": "[0.11.6, )",
+          "ResXResourceReader.NetStandard": "[1.3.0, )",
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "Microsoft.CodeAnalysis.VisualBasic": {
@@ -893,6 +911,12 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.2",
           "System.Diagnostics.DiagnosticSource": "9.0.2"
         }
+      },
+      "ResXResourceReader.NetStandard": {
+        "type": "CentralTransitive",
+        "requested": "[1.3.0, )",
+        "resolved": "1.3.0",
+        "contentHash": "voW0VHwFGIvbJ4Pp/wfHKFGn9kxZD97H/mnD6LziBJCi4FJZtetYQpQQnpYp0IkL2+PQ6VOzkMvhK1+s7+NJnA=="
       }
     }
   }

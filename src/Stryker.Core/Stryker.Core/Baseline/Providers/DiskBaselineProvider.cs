@@ -3,11 +3,11 @@ using System.IO.Abstractions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Baseline;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.Reporters.Json;
 using Stryker.Utilities;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Baseline.Providers;
 

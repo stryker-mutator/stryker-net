@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Html.RealTime;
 using Stryker.Core.Reporters.Html.RealTime.Events;

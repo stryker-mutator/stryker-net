@@ -6,7 +6,6 @@ using System.Linq;
 using Grynwald.MarkdownGenerator;
 using Spectre.Console;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;

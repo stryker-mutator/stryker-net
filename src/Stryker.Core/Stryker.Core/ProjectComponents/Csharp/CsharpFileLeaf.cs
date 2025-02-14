@@ -1,5 +1,5 @@
 using Microsoft.CodeAnalysis;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
 using System.Collections.Generic;
 

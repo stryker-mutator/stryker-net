@@ -14,9 +14,4 @@
     <PackageReference Include="Serilog" />
     <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Stryker.Utilities\Stryker.Utilities.csproj" />
-  </ItemGroup>
-
 </Project>

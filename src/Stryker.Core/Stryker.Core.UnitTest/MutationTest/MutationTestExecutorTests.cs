@@ -5,13 +5,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Initialisation;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
+using Stryker.TestRunner.Results;
+using Stryker.TestRunner.Tests;
+using Stryker.TestRunner.VsTest;
 
 namespace Stryker.Core.UnitTest.MutationTest;
 
@@ -37,7 +37,7 @@ public class MutationTestExecutorTests : TestBase
     public void MutationTestExecutor_FailedTestShouldBeKilled()
     {
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-        var mutant = new Mutant { Id = 1, CoveringTests = TestGuidsList.EveryTest() };
+        var mutant = new Mutant { Id = 1, CoveringTests = TestIdentifierList.EveryTest() };
         testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), null, It.IsAny<IReadOnlyList<IMutant>>(), null)).Returns(new TestRunResult(false));
 
         var target = new MutationTestExecutor(testRunnerMock.Object);
@@ -52,9 +52,9 @@ public class MutationTestExecutorTests : TestBase
     public void MutationTestExecutor_TimeoutShouldBePassedToProcessTimeout()
     {
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-        var mutant = new Mutant { Id = 1, CoveringTests = TestGuidsList.EveryTest() };
+        var mutant = new Mutant { Id = 1, CoveringTests = TestIdentifierList.EveryTest() };
         testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<IMutant>>(), null)).
-            Returns(TestRunResult.TimedOut(new List<VsTestDescription>(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.EveryTest(), "", Enumerable.Empty<string>(), TimeSpan.Zero));
+            Returns(TestRunResult.TimedOut(new List<VsTestDescription>(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), TestIdentifierList.EveryTest(), "", Enumerable.Empty<string>(), TimeSpan.Zero));
 
         var target = new MutationTestExecutor(testRunnerMock.Object);
 
@@ -69,10 +69,10 @@ public class MutationTestExecutorTests : TestBase
     public void MutationTestExecutor_ShouldSwitchToSingleModeOnDubiousTimeouts()
     {
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-        var mutant1 = new Mutant { Id = 1, CoveringTests = TestGuidsList.EveryTest() };
-        var mutant2 = new Mutant { Id = 2, CoveringTests = TestGuidsList.EveryTest() };
+        var mutant1 = new Mutant { Id = 1, CoveringTests = TestIdentifierList.EveryTest() };
+        var mutant2 = new Mutant { Id = 2, CoveringTests = TestIdentifierList.EveryTest() };
         testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<IMutant>>(), null)).
-            Returns(TestRunResult.TimedOut(new List<VsTestDescription>(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "", Enumerable.Empty<string>(), TimeSpan.Zero));
+            Returns(TestRunResult.TimedOut(new List<VsTestDescription>(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), "", Enumerable.Empty<string>(), TimeSpan.Zero));
 
         var target = new MutationTestExecutor(testRunnerMock.Object);
 

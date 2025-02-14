@@ -1,16 +1,15 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
-using Stryker.Core.Helpers;
-using Stryker.RegexMutators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Logging;
+using Stryker.Abstractions;
+using Stryker.Core.Helpers;
+using Stryker.RegexMutators;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Mutators;
 

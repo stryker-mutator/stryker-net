@@ -13,15 +13,13 @@ using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.Compiling;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.UnitTest.Compiling;
 

@@ -5,9 +5,9 @@ using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
 using Stryker.Core.Mutants;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 

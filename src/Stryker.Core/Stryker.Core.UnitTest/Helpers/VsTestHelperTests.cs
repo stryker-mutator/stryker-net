@@ -1,9 +1,8 @@
-using System;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Core.Helpers;
+using Stryker.TestRunner.VsTest.Helpers;
 
 namespace Stryker.Core.UnitTest.Helpers;
 

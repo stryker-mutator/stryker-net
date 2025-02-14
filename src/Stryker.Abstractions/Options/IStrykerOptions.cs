@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Abstractions.Baseline;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.ProjectComponents;
 
 namespace Stryker.Abstractions.Options;

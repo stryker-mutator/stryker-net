@@ -5,7 +5,7 @@ namespace Stryker.Abstractions.ProjectComponents;
 
 public interface ITestCase
 {
-    Guid Id { get; init; }
+    string Id { get; init; }
     string Name { get; init; }
     SyntaxNode Node { get; init; }
 

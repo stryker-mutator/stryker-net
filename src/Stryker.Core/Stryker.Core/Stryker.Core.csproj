@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  
   <PropertyGroup>
     <DebugType>Full</DebugType>
     <AssemblyName>Stryker.Core</AssemblyName>
@@ -32,7 +31,6 @@
     <EmbeddedResource Include="InjectedHelpers\Coverage\MutantContext.cs" />
     <EmbeddedResource Include="Reporters\Html\Files\dist\mutation-test-elements.js" />
     <EmbeddedResource Include="Reporters\Html\Files\mutation-report.html" />
-    <EmbeddedResource Include="$(PkgMicrosoft_TestPlatform_Portable)\*.nupkg" LogicalName="Microsoft.TestPlatform.Portable.nupkg" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,7 +49,6 @@
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" />
     <PackageReference Include="Mono.Cecil" />
     <PackageReference Include="NuGet.Frameworks" />
-    <PackageReference Include="ResXResourceReader.NetStandard" />
     <PackageReference Include="Serilog" />
     <PackageReference Include="Serilog.Extensions.Logging" />
     <PackageReference Include="Serilog.Extensions.Logging.File" />
@@ -98,5 +95,7 @@
     <ProjectReference Include="..\..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
     <ProjectReference Include="..\..\Stryker.Options\Stryker.Configuration.csproj" />
     <ProjectReference Include="..\..\Stryker.RegexMutators\Stryker.RegexMutators\Stryker.RegexMutators.csproj" />
+    <ProjectReference Include="..\..\Stryker.TestRunner.VsTest\Stryker.TestRunner.VsTest.csproj" />
+    <ProjectReference Include="..\..\Stryker.Utilities\Stryker.Utilities.csproj" />
   </ItemGroup>
 </Project>

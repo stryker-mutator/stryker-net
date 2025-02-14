@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Shouldly;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Abstractions;
