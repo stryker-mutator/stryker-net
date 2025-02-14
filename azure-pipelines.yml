@@ -69,7 +69,7 @@ stages:
       displayName: 'Run unit tests'
       inputs:
         command: test
-        projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj'
+        projects: 'src/**/*.UnitTest.csproj'
         arguments: '--collect "Code coverage"'
     - task: SonarCloudAnalyze@3
     - task: SonarCloudPublish@3
