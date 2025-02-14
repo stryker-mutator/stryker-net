@@ -7,7 +7,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <VersionPrefix>4.5.0</VersionPrefix>
+    <VersionPrefix>4.5.1</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <PackageId>stryker</PackageId>
     <Product>Mutation Testing</Product>
