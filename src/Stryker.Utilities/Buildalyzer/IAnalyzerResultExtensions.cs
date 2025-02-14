@@ -75,8 +75,8 @@ public static class IAnalyzerResultExtensions
             catch (Exception e)
             {
                 logger?.LogWarning(e,
-                    $"Analyzer/Generator assembly {analyzer} could not be loaded. {Environment.NewLine}" +
-                    "Generated source code may be missing.");
+                    @"Analyzer/Generator assembly {analyzer} could not be loaded.
+Generated source code may be missing.", analyzer);
             }
         }
 

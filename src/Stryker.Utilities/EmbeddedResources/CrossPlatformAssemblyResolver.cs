@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Mono.Cecil;
 
@@ -155,12 +156,10 @@ public class CrossPlatformAssemblyResolver : IAssemblyResolver
             return result;
         }
 
-        foreach (var path in paths.Split(Path.PathSeparator))
+        foreach (var path in paths.Split(Path.PathSeparator)
+            .Where(path => string.Equals(Path.GetExtension(path), ".dll", StringComparison.OrdinalIgnoreCase)))
         {
-            if (string.Equals(Path.GetExtension(path), ".dll", StringComparison.OrdinalIgnoreCase))
-            {
-                result[Path.GetFileNameWithoutExtension(path)] = path;
-            }
+            result[Path.GetFileNameWithoutExtension(path)] = path;
         }
 
         return result;
