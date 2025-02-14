@@ -146,6 +146,8 @@ public static class IAnalyzerResultExtensions
 
     internal static NuGetFramework GetNuGetFramework(this IAnalyzerResult analyzerResult)
     {
+        if (string.IsNullOrEmpty(analyzerResult.TargetFramework))
+            return null;
         var framework = NuGetFramework.Parse(analyzerResult.TargetFramework);
         if (framework != NuGetFramework.UnsupportedFramework)
         {
@@ -160,7 +162,7 @@ public static class IAnalyzerResultExtensions
         throw new InputException(message);
     }
 
-    internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult) => analyzerResult.GetNuGetFramework().IsDesktop();
+    internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult) => analyzerResult.GetNuGetFramework()?.IsDesktop() == true;
 
     public static Language GetLanguage(this IAnalyzerResult analyzerResult) =>
         analyzerResult.GetPropertyOrDefault("Language") switch
