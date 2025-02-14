@@ -74,13 +74,13 @@ stages:
         projectVersion: '$(PackageVersion)'
         extraProperties: |
           sonar.verbose=true
-          sonar.cs.vscoveragexml.reportsPaths=coverage.xml
+          sonar.cs.vscoveragexml.reportsPaths=$(Agent.BuildDirectory)\TestResults\coverage.xml
     - task: DotNetCoreCLI@2
       displayName: 'Build Stryker'
       inputs:
         command: 'build'
         projects: 'src/Stryker.sln'
-    - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage collect "dotnet test" -f xml -o "coverage.xml"'
+    - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage collect "dotnet test" -f xml -o "$(Agent.BuildDirectory)\TestResults\coverage.xml"'
       displayName: 'Run unit tests'
       workingDirectory: 'src'
     - task: SonarCloudAnalyze@3
