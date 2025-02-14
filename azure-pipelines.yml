@@ -56,6 +56,13 @@ stages:
       displayName: 'Use dotnet'
       inputs:
         version: 9.x
+    - task: DotNetCoreCLI@2
+      displayName: 'Install dotnet-coverage'
+      inputs:
+        command: custom
+        custom: tool
+        arguments: install dotnet-coverage --tool-path $(Agent.BuildDirectory)/tools
+        includeNuGetOrg: true
     - template: pipeline-templates/populate-cache-steps.yml
     - task: SonarCloudPrepare@3
       inputs:
@@ -67,33 +74,13 @@ stages:
         projectVersion: '$(PackageVersion)'
         extraProperties: 'sonar.verbose=true'
     - task: DotNetCoreCLI@2
+      displayName: 'Build Stryker'
       inputs:
         command: 'build'
         projects: 'src/Stryker.sln'
-    - task: DotNetCoreCLI@2
-      displayName: 'Run unit tests CLI'
-      inputs:
-        command: test
-        projects: 'src\Stryker.CLI\Stryker.CLI.UnitTest\Stryker.CLI.UnitTest.csproj'
-        arguments: '--collect "Code Coverage"'
-    - task: DotNetCoreCLI@2
-      displayName: 'Run unit tests Core'
-      inputs:
-        command: test
-        projects: 'src\Stryker.Core\Stryker.Core.UnitTest\Stryker.Core.UnitTest.csproj'
-        arguments: '--collect "Code Coverage"'
-    - task: DotNetCoreCLI@2
-      displayName: 'Run unit tests Regex'
-      inputs:
-        command: test
-        projects: 'src\Stryker.RegexMutators\Stryker.RegexMutators.UnitTest\Stryker.RegexMutators.UnitTest.csproj'
-        arguments: '--collect "Code Coverage"'
-    - task: DotNetCoreCLI@2
-      displayName: 'Run unit tests VsTest'
-      inputs:
-        command: test
-        projects: 'src\Stryker.TestRunner.VsTest.UnitTest\Stryker.TestRunner.VsTest.UnitTest.csproj'
-        arguments: '--collect "Code Coverage"'
+    - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage collect "dotnet test" -f xml -o "coverage.xml"'
+      displayName: 'Run unit tests'
+      workingDirectory: 'src'
     - task: SonarCloudAnalyze@3
     - task: SonarCloudPublish@3
       inputs:
