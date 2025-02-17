@@ -55,7 +55,9 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
             { LinqExpression.Order, LinqExpression.OrderDescending },
             { LinqExpression.OrderDescending, LinqExpression.Order },
             { LinqExpression.UnionBy, LinqExpression.IntersectBy },
-            { LinqExpression.IntersectBy, LinqExpression.UnionBy }
+            { LinqExpression.IntersectBy, LinqExpression.UnionBy },
+            { LinqExpression.Append, LinqExpression.Prepend },
+            { LinqExpression.Prepend, LinqExpression.Append }
         };
         RequireArguments = new HashSet<LinqExpression>
         {
@@ -73,7 +75,9 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
             LinqExpression.MaxBy,
             LinqExpression.MinBy,
             LinqExpression.IntersectBy,
-            LinqExpression.UnionBy
+            LinqExpression.UnionBy,
+            LinqExpression.Append,
+            LinqExpression.Prepend
         };
     }
     /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
