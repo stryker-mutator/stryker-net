@@ -135,7 +135,7 @@ stages:
     - script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporter dashboard --reporter dots --reporter html --version master --dashboard-api-key $(Stryker.Dashboard.Api.Key)
       displayName: Run Stryker on Stryker.Core
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
-    - task: PublishMutationReport@1
+    - task: PublishMutationReport@2
       inputs:
         reportPattern: 'src/Stryker.Core/Stryker.Core.UnitTest/**/mutation-report.html'
 
