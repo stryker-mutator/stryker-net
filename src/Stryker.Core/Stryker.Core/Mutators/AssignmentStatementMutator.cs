@@ -19,9 +19,10 @@ public class AssignmentExpressionMutator : MutatorBase<AssignmentExpressionSynta
         { SyntaxKind.AndAssignmentExpression, new [] { SyntaxKind.OrAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression } },
         { SyntaxKind.OrAssignmentExpression, new [] { SyntaxKind.AndAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression} },
         { SyntaxKind.ExclusiveOrAssignmentExpression, new [] { SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression } },
-        { SyntaxKind.LeftShiftAssignmentExpression, new [] { SyntaxKind.RightShiftAssignmentExpression } },
-        { SyntaxKind.RightShiftAssignmentExpression, new [] { SyntaxKind.LeftShiftAssignmentExpression } },
+        { SyntaxKind.LeftShiftAssignmentExpression, new [] { SyntaxKind.RightShiftAssignmentExpression, SyntaxKind.UnsignedRightShiftAssignmentExpression } },
+        { SyntaxKind.RightShiftAssignmentExpression, new [] { SyntaxKind.LeftShiftAssignmentExpression, SyntaxKind.UnsignedRightShiftAssignmentExpression } },
         { SyntaxKind.CoalesceAssignmentExpression, new [] { SyntaxKind.SimpleAssignmentExpression } },
+        { SyntaxKind.UnsignedRightShiftAssignmentExpression, new [] { SyntaxKind.LeftShiftAssignmentExpression, SyntaxKind.RightShiftAssignmentExpression } },
     };
 
     public override MutationLevel MutationLevel => MutationLevel.Standard;

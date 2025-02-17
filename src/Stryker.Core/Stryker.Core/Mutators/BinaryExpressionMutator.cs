@@ -36,10 +36,11 @@ public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
         { SyntaxKind.NotEqualsExpression, new MutationData(Mutator.Equality, SyntaxKind.EqualsExpression) },
         { SyntaxKind.LogicalAndExpression, new MutationData(Mutator.Logical, SyntaxKind.LogicalOrExpression) },
         { SyntaxKind.LogicalOrExpression, new MutationData(Mutator.Logical, SyntaxKind.LogicalAndExpression) },
-        { SyntaxKind.LeftShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.RightShiftExpression) },
-        { SyntaxKind.RightShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.LeftShiftExpression) },
+        { SyntaxKind.LeftShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.RightShiftExpression, SyntaxKind.UnsignedRightShiftExpression) },
+        { SyntaxKind.RightShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.LeftShiftExpression, SyntaxKind.UnsignedRightShiftExpression) },
         { SyntaxKind.BitwiseOrExpression, new MutationData(Mutator.Bitwise, SyntaxKind.BitwiseAndExpression) },
         { SyntaxKind.BitwiseAndExpression, new MutationData(Mutator.Bitwise, SyntaxKind.BitwiseOrExpression) },
+        { SyntaxKind.UnsignedRightShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.LeftShiftExpression, SyntaxKind.RightShiftExpression) },
     };
 
     public override MutationLevel MutationLevel => MutationLevel.Basic;
