@@ -46,15 +46,15 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
     /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
     public override IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node, SemanticModel semanticModel) => node.Expression switch
     {
-        MemberAccessExpressionSyntax memberAccess => ApplyMutationsToMemberCall(node, memberAccess),
+        MemberAccessExpressionSyntax memberAccess => ApplyMutationsToMemberCall(node, memberAccess, semanticModel),
         IdentifierNameSyntax methodName => ApplyMutationsToDirectCall(node, methodName),
         _ => []
     };
 
-    private static IEnumerable<Mutation> ApplyMutationsToMemberCall(InvocationExpressionSyntax node, MemberAccessExpressionSyntax memberAccessExpressionSyntax)
+    private static IEnumerable<Mutation> ApplyMutationsToMemberCall(InvocationExpressionSyntax node, MemberAccessExpressionSyntax memberAccessExpressionSyntax, SemanticModel semanticModel)
     {
-        if (memberAccessExpressionSyntax.Expression is not IdentifierNameSyntax memberName ||
-            !memberName.Identifier.ValueText.StartsWith("Math"))
+        var symbol = semanticModel.GetSymbolInfo(memberAccessExpressionSyntax.Expression).Symbol;
+        if (symbol?.ContainingType?.ToString() != "System.Math")
         {
             yield break;
         }
