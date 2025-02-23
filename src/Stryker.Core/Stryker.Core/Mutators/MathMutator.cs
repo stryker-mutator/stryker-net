@@ -47,7 +47,7 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
     public override IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node, SemanticModel semanticModel) => node.Expression switch
     {
         MemberAccessExpressionSyntax memberAccess => ApplyMutationsToMemberCall(node, memberAccess, semanticModel),
-        IdentifierNameSyntax methodName => ApplyMutationsToDirectCall(node, methodName),
+        IdentifierNameSyntax methodName => ApplyMutationsToDirectCall(node, methodName, semanticModel),
         _ => []
     };
 
@@ -65,8 +65,14 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
         }
     }
 
-    private static IEnumerable<Mutation> ApplyMutationsToDirectCall(InvocationExpressionSyntax node, IdentifierNameSyntax methodName)
+    private static IEnumerable<Mutation> ApplyMutationsToDirectCall(InvocationExpressionSyntax node, IdentifierNameSyntax methodName, SemanticModel semanticModel)
     {
+        var symbol = semanticModel.GetSymbolInfo(methodName).Symbol;
+        if (symbol?.ContainingType?.ToString() != "System.Math")
+        {
+            yield break;
+        }
+
         foreach (var mutation in ApplyMutationsToMethod(node, methodName))
         {
             yield return mutation;
