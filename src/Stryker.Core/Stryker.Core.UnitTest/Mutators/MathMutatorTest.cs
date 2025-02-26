@@ -159,7 +159,7 @@ namespace TestApplication
     }
 
     /// <summary>
-    /// Test Method to check, if different expressions aren't mutated (in case of non-Math classes)
+    ///     Test Method to check, if different expressions aren't mutated (in case of non-Math classes)
     /// </summary>
     [TestMethod]
     [DataRow("MyClass")]
@@ -240,6 +240,36 @@ namespace TestApplication
         }
     }
 
+    /// <summary>
+    ///     Explicit test: verifies that using static import, Floor(5.0) is mutated to Ceiling(5.0).
+    /// </summary>
+    [TestMethod]
+    public void ShouldMutateStaticFloorToCeiling()
+    {
+        var target = new MathMutator();
+        var expression = GenerateStaticCallExpression("Floor");
+        var result = target.ApplyMutations(expression, null).ToList();
+
+        result.Count.ShouldBe(1);
+        var mutatedMethodName = ((IdentifierNameSyntax)((InvocationExpressionSyntax)result[0].ReplacementNode).Expression).Identifier.ValueText;
+        Enum.Parse<MathExpression>(mutatedMethodName).ShouldBe(MathExpression.Ceiling);
+    }
+
+    /// <summary>
+    ///     Explicit test: verifies that using static import, Exp(5.0) is mutated to Log(5.0).
+    /// </summary>
+    [TestMethod]
+    public void ShouldMutateStaticExpToLog()
+    {
+        var target = new MathMutator();
+        var expression = GenerateStaticCallExpression("Exp");
+        var result = target.ApplyMutations(expression, null).ToList();
+
+        result.Count.ShouldBe(1);
+        var mutatedMethodName = ((IdentifierNameSyntax)((InvocationExpressionSyntax)result[0].ReplacementNode).Expression).Identifier.ValueText;
+        Enum.Parse<MathExpression>(mutatedMethodName).ShouldBe(MathExpression.Log);
+    }
+
     private static IEnumerable<object[]> TrigonometricHyperbolicTestData
     {
         get
@@ -276,4 +306,6 @@ namespace TestApplication
             }
         }
     }
+
+
 }
