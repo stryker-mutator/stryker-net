@@ -246,9 +246,29 @@ namespace TestApplication
     [TestMethod]
     public void ShouldMutateStaticFloorToCeiling()
     {
+        var sourceCode = @"
+using System;
+using static System.Math;
+namespace TestApplication
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Floor(5.0);
+        }
+    }
+}";
+        var tree = CSharpSyntaxTree.ParseText(sourceCode);
+        var compilation = CSharpCompilation.Create("TestCompilation")
+            .AddReferences(
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Math).Assembly.Location))
+            .AddSyntaxTrees(tree);
+        var semanticModel = compilation.GetSemanticModel(tree);
+        var expression = tree.GetRoot().DescendantNodes().OfType<InvocationExpressionSyntax>().Single();
         var target = new MathMutator();
-        var expression = GenerateStaticCallExpression("Floor");
-        var result = target.ApplyMutations(expression, null).ToList();
+        var result = target.ApplyMutations(expression, semanticModel).ToList();
 
         result.Count.ShouldBe(1);
         var mutatedMethodName = ((IdentifierNameSyntax)((InvocationExpressionSyntax)result[0].ReplacementNode).Expression).Identifier.ValueText;
@@ -261,9 +281,29 @@ namespace TestApplication
     [TestMethod]
     public void ShouldMutateStaticExpToLog()
     {
+        var sourceCode = @"
+using System;
+using static System.Math;
+namespace TestApplication
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Exp(5.0);
+        }
+    }
+}";
+        var tree = CSharpSyntaxTree.ParseText(sourceCode);
+        var compilation = CSharpCompilation.Create("TestCompilation")
+            .AddReferences(
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Math).Assembly.Location))
+            .AddSyntaxTrees(tree);
+        var semanticModel = compilation.GetSemanticModel(tree);
+        var expression = tree.GetRoot().DescendantNodes().OfType<InvocationExpressionSyntax>().Single();
         var target = new MathMutator();
-        var expression = GenerateStaticCallExpression("Exp");
-        var result = target.ApplyMutations(expression, null).ToList();
+        var result = target.ApplyMutations(expression, semanticModel).ToList();
 
         result.Count.ShouldBe(1);
         var mutatedMethodName = ((IdentifierNameSyntax)((InvocationExpressionSyntax)result[0].ReplacementNode).Expression).Identifier.ValueText;
