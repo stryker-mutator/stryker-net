@@ -16,16 +16,6 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
     /// <summary> Dictionary which maps original Math expressions to the target mutation </summary>
     private static Dictionary<MathExpression, IEnumerable<MathExpression>> KindsToMutate { get; }
 
-    // Known Math method names used for preliminary filtering to improve performance.
-    private static readonly HashSet<string> KnownMathMethodNames = new HashSet<string>(StringComparer.Ordinal)
-    {
-        "Acos", "Acosh", "Asin", "Asinh", "Atan", "Atanh",
-        "BitDecrement", "BitIncrement", "Ceiling", "Cos", "Cosh",
-        "Exp", "Floor", "Log", "MaxMagnitude", "MinMagnitude",
-        "Pow", "ReciprocalEstimate", "ReciprocalSqrtEstimate",
-        "Sin", "Sinh", "Sqrt", "Tan", "Tanh"
-    };
-
     static MathMutator() => KindsToMutate = new()
     {
         [MathExpression.Acos] = [MathExpression.Acosh, MathExpression.Asin, MathExpression.Atan],
@@ -64,7 +54,7 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
     private static IEnumerable<Mutation> ApplyMutationsToMemberCall(InvocationExpressionSyntax node, MemberAccessExpressionSyntax memberAccessExpressionSyntax, SemanticModel semanticModel)
     {
         var methodNameText = memberAccessExpressionSyntax.Name.Identifier.Text;
-        if (!KnownMathMethodNames.Contains(methodNameText))
+        if (!Enum.TryParse(methodNameText, out MathExpression _))
         {
             yield break;
         }
@@ -84,7 +74,7 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
     private static IEnumerable<Mutation> ApplyMutationsToDirectCall(InvocationExpressionSyntax node, IdentifierNameSyntax methodName, SemanticModel semanticModel)
     {
         var methodNameText = methodName.Identifier.Text;
-        if (!KnownMathMethodNames.Contains(methodNameText))
+        if (!Enum.TryParse(methodNameText, out MathExpression _))
         {
             yield break;
         }
