@@ -32,7 +32,7 @@
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.13.0" />
     <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.13.0" />
     <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.13.0" />
-    <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="21.3.1" />
+    <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.0.12" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.2" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.2" />
   </ItemGroup>
