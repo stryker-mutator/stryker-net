@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Mutators;
 using Stryker.Core.Mutators;
 
 namespace Stryker.Core.UnitTest.Mutators;
@@ -17,7 +16,7 @@ public class LinqMutatorTest : TestBase
     /// </summary>
     /// <param name="expression"></param>
     /// <returns></returns>
-    private ExpressionSyntax GenerateExpressions(string expression)
+    private static MemberAccessExpressionSyntax GenerateExpressions(string expression)
     {
         var tree = CSharpSyntaxTree.ParseText($@"
 using System;
@@ -92,6 +91,8 @@ namespace TestApplication
     [DataRow(LinqExpression.OrderDescending, LinqExpression.Order)]
     [DataRow(LinqExpression.UnionBy, LinqExpression.IntersectBy)]
     [DataRow(LinqExpression.IntersectBy, LinqExpression.UnionBy)]
+    [DataRow(LinqExpression.Append, LinqExpression.Prepend)]
+    [DataRow(LinqExpression.Prepend, LinqExpression.Append)]
     public void ShouldMutate(LinqExpression original, LinqExpression expected)
     {
         var target = new LinqMutator();

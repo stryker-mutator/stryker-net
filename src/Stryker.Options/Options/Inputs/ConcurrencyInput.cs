@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Logging;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Abstractions.Options.Inputs;
 

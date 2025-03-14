@@ -7,8 +7,7 @@ using Buildalyzer;
 using Buildalyzer.Construction;
 using Buildalyzer.Environment;
 using Moq;
-using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.Testing;
+using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 

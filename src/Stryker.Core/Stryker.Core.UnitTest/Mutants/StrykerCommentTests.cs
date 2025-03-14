@@ -1,9 +1,10 @@
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
 
 namespace Stryker.Core.UnitTest.Mutants;
+
 internal class StrykerCommentTests : MutantOrchestratorTestsBase
 {
     [TestMethod]

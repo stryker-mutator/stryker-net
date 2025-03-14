@@ -6,16 +6,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
-using Stryker.Abstractions;
 using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Reporting;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.SourceProjects;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
+using Stryker.TestRunner.VsTest;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Initialisation;
 

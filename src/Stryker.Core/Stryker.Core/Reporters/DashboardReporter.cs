@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
@@ -11,6 +10,7 @@ using Stryker.Core.Clients;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
 using Stryker.Core.Reporters.WebBrowserOpener;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Reporters;
 

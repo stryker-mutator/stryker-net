@@ -9,12 +9,12 @@ using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
-using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Stryker.TestRunner.Results;
+using Stryker.TestRunner.Tests;
+using Stryker.TestRunner.VsTest;
+using TestCase = Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 
@@ -38,6 +38,12 @@ namespace ExtraProject.XUnit
         {
             // example test
         }
+
+        [TestMethod]
+        public void Test2()
+        {
+            // example test
+        }
     }
 }
 ";
@@ -53,7 +59,7 @@ namespace ExtraProject.XUnit
                 TestProjects = new List<TestProject>
                 {
                     new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
-                        sourceFiles: new string[] { _testFilePath }).Object)
+                        sourceFiles: new [] { _testFilePath }).Object)
                 }
             }
         };
@@ -65,25 +71,26 @@ namespace ExtraProject.XUnit
         // arrange
         var options = new StrykerOptions();
         var target = new ProjectMutator(_mutationTestProcessMock.Object);
-        var testCase1 = new VsTest.TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
+        var testCase1 = new VsTestCase(new TestCase("mytestname1", new Uri(_testFilePath), _testFileContents)
         {
+            Id = Guid.NewGuid(),
             CodeFilePath = _testFilePath,
             LineNumber = 7,
-
-        };
+        });
         var failedTest = testCase1.Id;
-        var testCase2 = new VsTest.TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
+        var testCase2 = new VsTestCase(new TestCase("mytestname2", new Uri(_testFilePath), _testFileContents)
         {
+            Id = Guid.NewGuid(),
             CodeFilePath = _testFilePath,
-            LineNumber = 7,
-        };
+            LineNumber = 13,
+        });
         var successfulTest = testCase2.Id;
         var tests = new List<VsTestDescription> { new VsTestDescription(testCase1), new VsTestDescription(testCase2) };
         var initialTestRunResult = new TestRunResult(
             vsTestDescriptions: tests,
-            executedTests: new TestGuidsList(failedTest, successfulTest),
-            failedTests: new TestGuidsList(failedTest),
-            timedOutTest: TestGuidsList.NoTest(),
+            executedTests: new TestIdentifierList(failedTest, successfulTest),
+            failedTests: new TestIdentifierList(failedTest),
+            timedOutTest: TestIdentifierList.NoTest(),
             message: "testrun succesful",
             Enumerable.Empty<string>(),
             timeSpan: TimeSpan.FromSeconds(2));
@@ -97,6 +104,6 @@ namespace ExtraProject.XUnit
         // assert
         result.ShouldNotBeNull();
         var testFile = _mutationTestInput.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
-        testFile.Tests.Count().ShouldBe(1);
+        testFile.Tests.Count.ShouldBe(2);
     }
 }

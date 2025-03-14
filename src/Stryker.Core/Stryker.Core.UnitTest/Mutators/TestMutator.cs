@@ -1,4 +1,4 @@
-using Stryker.Utilities.Attributes;
+using Stryker.Abstractions;
 
 namespace Stryker.Core.UnitTest.Mutators;
 

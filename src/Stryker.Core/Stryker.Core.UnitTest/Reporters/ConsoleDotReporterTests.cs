@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Spectre.Console.Testing;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters;
 

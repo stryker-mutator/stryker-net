@@ -2,8 +2,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
 using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators;
@@ -37,10 +36,11 @@ public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
         { SyntaxKind.NotEqualsExpression, new MutationData(Mutator.Equality, SyntaxKind.EqualsExpression) },
         { SyntaxKind.LogicalAndExpression, new MutationData(Mutator.Logical, SyntaxKind.LogicalOrExpression) },
         { SyntaxKind.LogicalOrExpression, new MutationData(Mutator.Logical, SyntaxKind.LogicalAndExpression) },
-        { SyntaxKind.LeftShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.RightShiftExpression) },
-        { SyntaxKind.RightShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.LeftShiftExpression) },
+        { SyntaxKind.LeftShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.RightShiftExpression, SyntaxKind.UnsignedRightShiftExpression) },
+        { SyntaxKind.RightShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.LeftShiftExpression, SyntaxKind.UnsignedRightShiftExpression) },
         { SyntaxKind.BitwiseOrExpression, new MutationData(Mutator.Bitwise, SyntaxKind.BitwiseAndExpression) },
         { SyntaxKind.BitwiseAndExpression, new MutationData(Mutator.Bitwise, SyntaxKind.BitwiseOrExpression) },
+        { SyntaxKind.UnsignedRightShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.LeftShiftExpression, SyntaxKind.RightShiftExpression) },
     };
 
     public override MutationLevel MutationLevel => MutationLevel.Basic;

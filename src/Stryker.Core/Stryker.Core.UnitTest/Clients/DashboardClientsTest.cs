@@ -10,7 +10,6 @@ using Moq;
 using Moq.Protected;
 using Shouldly;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.Clients;

@@ -6,12 +6,13 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Stryker.Utilities;
-using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Utilities;
+using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects;
 
@@ -64,9 +65,9 @@ public class TestProjectsInfoTests : TestBase
 
         var testProjectA = new TestProject(fileSystem, testProjectAnalyzerResultAMock.Object);
         var testProjectB = new TestProject(fileSystem, testProjectAnalyzerResultBMock.Object);
-        testProjectA.TestFiles.First().AddTest(Guid.NewGuid(), "test1", SyntaxFactory.Block());
-        testProjectA.TestFiles.First().AddTest(Guid.NewGuid(), "test2", SyntaxFactory.Block());
-        testProjectB.TestFiles.First().AddTest(Guid.NewGuid(), "test3", SyntaxFactory.Block());
+        testProjectA.TestFiles.First().AddTest(Guid.NewGuid().ToString(), "test1", SyntaxFactory.Block());
+        testProjectA.TestFiles.First().AddTest(Guid.NewGuid().ToString(), "test2", SyntaxFactory.Block());
+        testProjectB.TestFiles.First().AddTest(Guid.NewGuid().ToString(), "test3", SyntaxFactory.Block());
 
         var testProjectsInfoA = new TestProjectsInfo(fileSystem)
         {
@@ -111,8 +112,8 @@ public class TestProjectsInfoTests : TestBase
 
         var testProjectA = new TestProject(fileSystem, testProjectAnalyzerResultAMock.Object);
         var testProjectB = new TestProject(fileSystem, testProjectAnalyzerResultBMock.Object);
-        testProjectA.TestFiles.First().AddTest(Guid.NewGuid(), "test1", SyntaxFactory.Block());
-        testProjectA.TestFiles.First().AddTest(Guid.NewGuid(), "test2", SyntaxFactory.Block());
+        testProjectA.TestFiles.First().AddTest(Guid.NewGuid().ToString(), "test1", SyntaxFactory.Block());
+        testProjectA.TestFiles.First().AddTest(Guid.NewGuid().ToString(), "test2", SyntaxFactory.Block());
 
         var testProjectsInfoA = new TestProjectsInfo(fileSystem)
         {

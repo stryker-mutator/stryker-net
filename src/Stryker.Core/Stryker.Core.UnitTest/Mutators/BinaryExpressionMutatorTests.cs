@@ -1,11 +1,11 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
-using Stryker.Abstractions.Mutators;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Core.UnitTest;
 using Stryker.Core.Mutators;
+using Stryker.Abstractions;
 
 namespace Stryker.Core.UnitTest.Mutators;
 
@@ -35,8 +35,9 @@ public class BinaryExpressionMutatorTests : TestBase
     [DataRow(Mutator.Logical, SyntaxKind.LogicalOrExpression, SyntaxKind.LogicalAndExpression)]
     [DataRow(Mutator.Bitwise, SyntaxKind.BitwiseAndExpression, SyntaxKind.BitwiseOrExpression)]
     [DataRow(Mutator.Bitwise, SyntaxKind.BitwiseOrExpression, SyntaxKind.BitwiseAndExpression)]
-    [DataRow(Mutator.Bitwise, SyntaxKind.RightShiftExpression, SyntaxKind.LeftShiftExpression)]
-    [DataRow(Mutator.Bitwise, SyntaxKind.LeftShiftExpression, SyntaxKind.RightShiftExpression)]
+    [DataRow(Mutator.Bitwise, SyntaxKind.RightShiftExpression, SyntaxKind.LeftShiftExpression, SyntaxKind.UnsignedRightShiftExpression)]
+    [DataRow(Mutator.Bitwise, SyntaxKind.LeftShiftExpression, SyntaxKind.RightShiftExpression, SyntaxKind.UnsignedRightShiftExpression)]
+    [DataRow(Mutator.Bitwise, SyntaxKind.UnsignedRightShiftExpression, SyntaxKind.LeftShiftExpression, SyntaxKind.RightShiftExpression)]
     public void ShouldMutate(Mutator expectedKind, SyntaxKind input, params SyntaxKind[] expectedOutput)
     {
         var target = new BinaryExpressionMutator();

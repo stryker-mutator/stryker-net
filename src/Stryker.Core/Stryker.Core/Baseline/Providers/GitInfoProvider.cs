@@ -3,8 +3,8 @@ using System.Linq;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Baseline.Providers;
 

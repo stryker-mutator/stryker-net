@@ -1,7 +1,6 @@
-using Stryker.Abstractions.TestRunners;
-using Stryker.Abstractions;
+using Stryker.Abstractions.Testing;
 
-namespace Stryker.Abstractions.Mutants;
+namespace Stryker.Abstractions;
 
 public interface IMutant : IReadOnlyMutant
 {
@@ -9,14 +8,14 @@ public interface IMutant : IReadOnlyMutant
     new Mutation Mutation { get; set; }
     new MutantStatus ResultStatus { get; set; }
     new string ResultStatusReason { get; set; }
-    new ITestGuids CoveringTests { get; set; }
-    new ITestGuids KillingTests { get; set; }
-    new ITestGuids AssessingTests { get; set; }
+    new ITestIdentifiers CoveringTests { get; set; }
+    new ITestIdentifiers KillingTests { get; set; }
+    new ITestIdentifiers AssessingTests { get; set; }
     new bool CountForStats { get; }
     new bool IsStaticValue { get; set; }
 
     string DisplayName { get; }
     bool MustBeTestedInIsolation { get; set; }
 
-    void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests, bool sessionTimedOut);
+    void AnalyzeTestRun(ITestIdentifiers failedTests, ITestIdentifiers resultRanTests, ITestIdentifiers timedOutTests, bool sessionTimedOut);
 }

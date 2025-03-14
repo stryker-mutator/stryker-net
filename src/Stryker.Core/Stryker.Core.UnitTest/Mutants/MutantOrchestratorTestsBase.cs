@@ -1,13 +1,12 @@
-using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Abstractions.Mutators;
-using Stryker.Abstractions;
-using Stryker.Core.Mutants;
-using Stryker.Core.InjectedHelpers;
-using Stryker.Abstractions.Options;
-using Microsoft.CodeAnalysis;
-using System.Linq;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
+using Stryker.Core.InjectedHelpers;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.UnitTest.Mutants;
 
