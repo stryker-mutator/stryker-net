@@ -175,10 +175,10 @@ public class CSharp11
         var value = 0b_1111_0000_0000_0000_0000_0000_0000_0000;
         Console.WriteLine($"Before: {Convert.ToString(value, toBase: 2)}");
 
-        value >>= 4;
+        value >>>= 4;
         Console.WriteLine($"After: {Convert.ToString(value, toBase: 2)}");
 
-        var mutated = value >> 4;
+        var mutated = value >>> 4;
         Console.WriteLine($"Mutated: {Convert.ToString(mutated, toBase: 2)}");
     }
 }
