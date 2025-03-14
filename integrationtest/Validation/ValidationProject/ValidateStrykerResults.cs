@@ -102,7 +102,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
          
-        CheckReportMutants(report, total: 638, ignored: 112, survived: 5, killed: 11, timeout: 2, nocoverage: 471);
+        CheckReportMutants(report, total: 649, ignored: 113, survived: 5, killed: 11, timeout: 2, nocoverage: 481);
         CheckReportTestCounts(report, total: 21);
     }
 
@@ -121,7 +121,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 638, ignored: 262, survived: 4, killed: 9, timeout: 2, nocoverage: 324);
+        CheckReportMutants(report, total: 649, ignored: 266, survived: 4, killed: 9, timeout: 2, nocoverage: 331);
         CheckReportTestCounts(report, total: 23);
     }
 
