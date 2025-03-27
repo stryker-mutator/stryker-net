@@ -59,10 +59,21 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
             yield break;
         }
 
-        var symbol = semanticModel.GetSymbolInfo(memberAccessExpressionSyntax.Expression).Symbol;
-        if (symbol?.ContainingType?.ToString() != "System.Math")
+        // Fall back to text-based check when semantic model is not available
+        if (semanticModel == null)
         {
-            yield break;
+            if (memberAccessExpressionSyntax.Expression.ToString() != "Math")
+            {
+                yield break;
+            }
+        }
+        else
+        {
+            var symbol = semanticModel.GetSymbolInfo(memberAccessExpressionSyntax.Expression).Symbol;
+            if (symbol?.ContainingType?.ToString() != "System.Math")
+            {
+                yield break;
+            }
         }
 
         foreach (var mutation in ApplyMutationsToMethod(node, memberAccessExpressionSyntax.Name))
@@ -70,7 +81,6 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
             yield return mutation;
         }
     }
-
     private static IEnumerable<Mutation> ApplyMutationsToDirectCall(InvocationExpressionSyntax node, IdentifierNameSyntax methodName, SemanticModel semanticModel)
     {
         var methodNameText = methodName.Identifier.Text;
@@ -79,10 +89,15 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
             yield break;
         }
 
-        var symbol = semanticModel.GetSymbolInfo(methodName).Symbol;
-        if (symbol?.ContainingType?.ToString() != "System.Math")
+        // Only check symbol when semantic model is available
+        // This maintains compatibility with existing tests
+        if (semanticModel != null)
         {
-            yield break;
+            var symbol = semanticModel.GetSymbolInfo(methodName).Symbol;
+            if (symbol?.ContainingType?.ToString() != "System.Math")
+            {
+                yield break;
+            }
         }
 
         foreach (var mutation in ApplyMutationsToMethod(node, methodName))
@@ -90,7 +105,6 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
             yield return mutation;
         }
     }
-
     private static IEnumerable<Mutation> ApplyMutationsToMethod(InvocationExpressionSyntax original, SimpleNameSyntax method)
     {
         if (Enum.TryParse(method.Identifier.ValueText, out MathExpression expression) &&

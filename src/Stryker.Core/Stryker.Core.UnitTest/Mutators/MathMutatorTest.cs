@@ -174,72 +174,6 @@ namespace TestApplication
         result.ShouldBeEmpty();
     }
 
-    public static IEnumerable<object[]> MethodSwapsTestData
-    {
-        get
-        {
-            foreach (var trigonometricHyperbolicTestData in TrigonometricHyperbolicTestData)
-            {
-                yield return trigonometricHyperbolicTestData;
-            }
-
-            yield return new object[]
-            {
-                MathExpression.BitDecrement, new[] { MathExpression.BitIncrement }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.BitIncrement, new[] { MathExpression.BitDecrement }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.Ceiling, new[] { MathExpression.Floor }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.Exp, new[] { MathExpression.Log }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.Floor, new[] { MathExpression.Ceiling }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.Log, new[] { MathExpression.Exp, MathExpression.Pow }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.MaxMagnitude, new[] { MathExpression.MinMagnitude }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.MinMagnitude, new[] { MathExpression.MaxMagnitude }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.Pow, new[] { MathExpression.Log }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.ReciprocalEstimate, new[] { MathExpression.ReciprocalSqrtEstimate }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.ReciprocalSqrtEstimate, new[] { MathExpression.ReciprocalEstimate, MathExpression.Sqrt }
-            };
-        }
-    }
-
     /// <summary>
     ///     Explicit test: verifies that using static import, Floor(5.0) is mutated to Ceiling(5.0).
     /// </summary>
@@ -309,6 +243,74 @@ namespace TestApplication
         var mutatedMethodName = ((IdentifierNameSyntax)((InvocationExpressionSyntax)result[0].ReplacementNode).Expression).Identifier.ValueText;
         Enum.Parse<MathExpression>(mutatedMethodName).ShouldBe(MathExpression.Log);
     }
+
+
+    public static IEnumerable<object[]> MethodSwapsTestData
+    {
+        get
+        {
+            foreach (var trigonometricHyperbolicTestData in TrigonometricHyperbolicTestData)
+            {
+                yield return trigonometricHyperbolicTestData;
+            }
+
+            yield return new object[]
+            {
+                MathExpression.BitDecrement, new[] { MathExpression.BitIncrement }
+            };
+
+            yield return new object[]
+            {
+                MathExpression.BitIncrement, new[] { MathExpression.BitDecrement }
+            };
+
+            yield return new object[]
+            {
+                MathExpression.Ceiling, new[] { MathExpression.Floor }
+            };
+
+            yield return new object[]
+            {
+                MathExpression.Exp, new[] { MathExpression.Log }
+            };
+
+            yield return new object[]
+            {
+                MathExpression.Floor, new[] { MathExpression.Ceiling }
+            };
+
+            yield return new object[]
+            {
+                MathExpression.Log, new[] { MathExpression.Exp, MathExpression.Pow }
+            };
+
+            yield return new object[]
+            {
+                MathExpression.MaxMagnitude, new[] { MathExpression.MinMagnitude }
+            };
+
+            yield return new object[]
+            {
+                MathExpression.MinMagnitude, new[] { MathExpression.MaxMagnitude }
+            };
+
+            yield return new object[]
+            {
+                MathExpression.Pow, new[] { MathExpression.Log }
+            };
+
+            yield return new object[]
+            {
+                MathExpression.ReciprocalEstimate, new[] { MathExpression.ReciprocalSqrtEstimate }
+            };
+
+            yield return new object[]
+            {
+                MathExpression.ReciprocalSqrtEstimate, new[] { MathExpression.ReciprocalEstimate, MathExpression.Sqrt }
+            };
+        }
+    }
+
 
     private static IEnumerable<object[]> TrigonometricHyperbolicTestData
     {
