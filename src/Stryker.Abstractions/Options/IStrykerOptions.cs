@@ -21,6 +21,7 @@ public interface IStrykerOptions
     IEnumerable<IExclusionPattern> DiffIgnoreChanges { get; init; }
     IEnumerable<LinqExpression> ExcludedLinqExpressions { get; init; }
     IEnumerable<Mutator> ExcludedMutations { get; init; }
+    bool ExcludeTestFilesInReport { get; init; }
     string FallbackVersion { get; init; }
     IEnumerable<Regex> IgnoredMethods { get; init; }
     bool IsSolutionContext { get; }
