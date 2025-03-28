@@ -148,7 +148,9 @@ Generated source code may be missing.", analyzer);
     public static NuGetFramework GetNuGetFramework(this IAnalyzerResult analyzerResult)
     {
         if (string.IsNullOrEmpty(analyzerResult.TargetFramework))
+        {
             return null;
+        }
         var framework = NuGetFramework.Parse(analyzerResult.TargetFramework);
         if (framework != NuGetFramework.UnsupportedFramework)
         {
