@@ -743,16 +743,6 @@
           "runtime.native.System": "4.3.0"
         }
       },
-      "System.Runtime.Loader": {
-        "type": "Transitive",
-        "resolved": "4.3.0",
-        "contentHash": "DHMaRn8D8YCK2GG2pw+UzNxn/OHVfaWx7OTLBD/hPegHZZgcZh3H6seWegrC4BYwsfuGrywIuT+MQs+rPqRLTQ==",
-        "dependencies": {
-          "System.IO": "4.3.0",
-          "System.Reflection": "4.3.0",
-          "System.Runtime": "4.3.0"
-        }
-      },
       "System.Security.Cryptography.Pkcs": {
         "type": "Transitive",
         "resolved": "8.0.0",
@@ -904,7 +894,7 @@
           "Microsoft.TestPlatform.ObjectModel": "[17.13.0, )",
           "Microsoft.TestPlatform.Portable": "[17.13.0, )",
           "Microsoft.TestPlatform.TranslationLayer": "[17.13.0, )",
-          "Microsoft.Web.LibraryManager.Build": "[2.1.175, )",
+          "Microsoft.Web.LibraryManager.Build": "[3.0.71, )",
           "Mono.Cecil": "[0.11.6, )",
           "NuGet.Frameworks": "[6.13.2, )",
           "Serilog": "[4.2.0, )",
@@ -1133,12 +1123,9 @@
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "CentralTransitive",
-        "requested": "[2.1.175, )",
-        "resolved": "2.1.175",
-        "contentHash": "OhJ8cfzvX/rxCuEezniBQCaCqKuQtU2tNr3m3Qryu+V30lZcUrjtsg39DGZWLw6EzbJA+TUdZPfuLeEDuz3cXA==",
-        "dependencies": {
-          "System.Runtime.Loader": "4.3.0"
-        }
+        "requested": "[3.0.71, )",
+        "resolved": "3.0.71",
+        "contentHash": "uO0RegM2P5ZZhQDJQ+YSiugXJgNnh4gmjMd3VofeoE9MSu60zYoR3meA9SAm6PVJW2t//SzICXQf4+JtfUTJQA=="
       },
       "Mono.Cecil": {
         "type": "CentralTransitive",
