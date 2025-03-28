@@ -4,12 +4,11 @@
     "net8.0": {
       "Azure.Storage.Files.Shares": {
         "type": "Direct",
-        "requested": "[12.21.0, )",
-        "resolved": "12.21.0",
-        "contentHash": "eaQDdDcAtje+IuDhl9Wjz8oRjIbWFJ9Ld7qs6ApKluQfTe7HP8edEo7DkkqwLHSNrZv+TDJW6N2bswxP3Ty1zg==",
+        "requested": "[12.22.0, )",
+        "resolved": "12.22.0",
+        "contentHash": "LhiP1IrmB4UA+SStvB4IHYmk0+4NMBGWnzyY1EnSGKOhMDS3QAvXhBDs30CDQhWqmbWwAU7ZVsgY2bM75RR6SA==",
         "dependencies": {
-          "Azure.Storage.Common": "12.22.0",
-          "System.Text.Json": "6.0.10"
+          "Azure.Storage.Common": "12.23.0"
         }
       },
       "Buildalyzer": {
@@ -128,12 +127,9 @@
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "Direct",
-        "requested": "[2.1.175, )",
-        "resolved": "2.1.175",
-        "contentHash": "OhJ8cfzvX/rxCuEezniBQCaCqKuQtU2tNr3m3Qryu+V30lZcUrjtsg39DGZWLw6EzbJA+TUdZPfuLeEDuz3cXA==",
-        "dependencies": {
-          "System.Runtime.Loader": "4.3.0"
-        }
+        "requested": "[3.0.71, )",
+        "resolved": "3.0.71",
+        "contentHash": "uO0RegM2P5ZZhQDJQ+YSiugXJgNnh4gmjMd3VofeoE9MSu60zYoR3meA9SAm6PVJW2t//SzICXQf4+JtfUTJQA=="
       },
       "Mono.Cecil": {
         "type": "Direct",
@@ -155,9 +151,9 @@
       },
       "Serilog.Extensions.Logging": {
         "type": "Direct",
-        "requested": "[9.0.0, )",
-        "resolved": "9.0.0",
-        "contentHash": "NwSSYqPJeKNzl5AuXVHpGbr6PkZJFlNa14CdIebVjK3k/76kYj/mz5kiTRNVSsSaxM8kAIa1kpy/qyT9E4npRQ==",
+        "requested": "[9.0.1, )",
+        "resolved": "9.0.1",
+        "contentHash": "IZo04/stVuOBhe0jzIe+6gVmiZ50i1cDljTnDyz6lqM7rbNhrHsPWg3IraJIvzZBihYPg5V9TVQYgRnm3xX8eA==",
         "dependencies": {
           "Microsoft.Extensions.Logging": "9.0.0",
           "Serilog": "4.2.0"
@@ -241,8 +237,8 @@
       },
       "Azure.Storage.Common": {
         "type": "Transitive",
-        "resolved": "12.22.0",
-        "contentHash": "0Vm30bRpQ0fcswB0xQMhKAOSXnRygnF2f/029uPaIDLaj1/yfX4jmU0fFjJe9ojGEj/vlAmsApCEOyL9if6zHg==",
+        "resolved": "12.23.0",
+        "contentHash": "X/pe1LS3lC6s6MSL7A6FzRfnB6P72rNBt5oSuyan6Q4Jxr+KiN9Ufwqo32YLHOVfPcB8ESZZ4rBDketn+J37Rw==",
         "dependencies": {
           "Azure.Core": "1.44.1",
           "System.IO.Hashing": "6.0.0"
@@ -686,16 +682,6 @@
           "System.Runtime.InteropServices": "4.3.0",
           "System.Threading": "4.3.0",
           "runtime.native.System": "4.3.0"
-        }
-      },
-      "System.Runtime.Loader": {
-        "type": "Transitive",
-        "resolved": "4.3.0",
-        "contentHash": "DHMaRn8D8YCK2GG2pw+UzNxn/OHVfaWx7OTLBD/hPegHZZgcZh3H6seWegrC4BYwsfuGrywIuT+MQs+rPqRLTQ==",
-        "dependencies": {
-          "System.IO": "4.3.0",
-          "System.Reflection": "4.3.0",
-          "System.Runtime": "4.3.0"
         }
       },
       "System.Security.Cryptography.Pkcs": {
