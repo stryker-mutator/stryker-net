@@ -46,17 +46,34 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
     /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
     public override IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node, SemanticModel semanticModel) => node.Expression switch
     {
-        MemberAccessExpressionSyntax memberAccess => ApplyMutationsToMemberCall(node, memberAccess),
-        IdentifierNameSyntax methodName => ApplyMutationsToDirectCall(node, methodName),
+        MemberAccessExpressionSyntax memberAccess => ApplyMutationsToMemberCall(node, memberAccess, semanticModel),
+        IdentifierNameSyntax methodName => ApplyMutationsToDirectCall(node, methodName, semanticModel),
         _ => []
     };
 
-    private static IEnumerable<Mutation> ApplyMutationsToMemberCall(InvocationExpressionSyntax node, MemberAccessExpressionSyntax memberAccessExpressionSyntax)
+    private static IEnumerable<Mutation> ApplyMutationsToMemberCall(InvocationExpressionSyntax node, MemberAccessExpressionSyntax memberAccessExpressionSyntax, SemanticModel semanticModel)
     {
-        if (memberAccessExpressionSyntax.Expression is not IdentifierNameSyntax memberName ||
-            !memberName.Identifier.ValueText.StartsWith("Math"))
+        var methodNameText = memberAccessExpressionSyntax.Name.Identifier.Text;
+        if (!Enum.TryParse(methodNameText, out MathExpression _))
         {
             yield break;
+        }
+
+        // Fall back to text-based check when semantic model is not available
+        if (semanticModel == null)
+        {
+            if (memberAccessExpressionSyntax.Expression.ToString() != "Math")
+            {
+                yield break;
+            }
+        }
+        else
+        {
+            var symbol = semanticModel.GetSymbolInfo(memberAccessExpressionSyntax.Expression).Symbol;
+            if (symbol?.ContainingType?.ToString() != "System.Math")
+            {
+                yield break;
+            }
         }
 
         foreach (var mutation in ApplyMutationsToMethod(node, memberAccessExpressionSyntax.Name))
@@ -64,15 +81,30 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
             yield return mutation;
         }
     }
-
-    private static IEnumerable<Mutation> ApplyMutationsToDirectCall(InvocationExpressionSyntax node, IdentifierNameSyntax methodName)
+    private static IEnumerable<Mutation> ApplyMutationsToDirectCall(InvocationExpressionSyntax node, IdentifierNameSyntax methodName, SemanticModel semanticModel)
     {
+        var methodNameText = methodName.Identifier.Text;
+        if (!Enum.TryParse(methodNameText, out MathExpression _))
+        {
+            yield break;
+        }
+
+        // Only check symbol when semantic model is available
+        // This maintains compatibility with existing tests
+        if (semanticModel != null)
+        {
+            var symbol = semanticModel.GetSymbolInfo(methodName).Symbol;
+            if (symbol?.ContainingType?.ToString() != "System.Math")
+            {
+                yield break;
+            }
+        }
+
         foreach (var mutation in ApplyMutationsToMethod(node, methodName))
         {
             yield return mutation;
         }
     }
-
     private static IEnumerable<Mutation> ApplyMutationsToMethod(InvocationExpressionSyntax original, SimpleNameSyntax method)
     {
         if (Enum.TryParse(method.Identifier.ValueText, out MathExpression expression) &&

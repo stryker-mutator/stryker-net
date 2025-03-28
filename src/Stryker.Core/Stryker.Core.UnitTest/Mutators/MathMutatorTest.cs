@@ -159,7 +159,7 @@ namespace TestApplication
     }
 
     /// <summary>
-    /// Test Method to check, if different expressions aren't mutated (in case of non-Math classes)
+    ///     Test Method to check, if different expressions aren't mutated (in case of non-Math classes)
     /// </summary>
     [TestMethod]
     [DataRow("MyClass")]
@@ -173,6 +173,77 @@ namespace TestApplication
 
         result.ShouldBeEmpty();
     }
+
+    /// <summary>
+    ///     Explicit test: verifies that using static import, Floor(5.0) is mutated to Ceiling(5.0).
+    /// </summary>
+    [TestMethod]
+    public void ShouldMutateStaticFloorToCeiling()
+    {
+        var sourceCode = @"
+using System;
+using static System.Math;
+namespace TestApplication
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Floor(5.0);
+        }
+    }
+}";
+        var tree = CSharpSyntaxTree.ParseText(sourceCode);
+        var compilation = CSharpCompilation.Create("TestCompilation")
+            .AddReferences(
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Math).Assembly.Location))
+            .AddSyntaxTrees(tree);
+        var semanticModel = compilation.GetSemanticModel(tree);
+        var expression = tree.GetRoot().DescendantNodes().OfType<InvocationExpressionSyntax>().Single();
+        var target = new MathMutator();
+        var result = target.ApplyMutations(expression, semanticModel).ToList();
+
+        result.Count.ShouldBe(1);
+        var mutatedMethodName = ((IdentifierNameSyntax)((InvocationExpressionSyntax)result[0].ReplacementNode).Expression).Identifier.ValueText;
+        Enum.Parse<MathExpression>(mutatedMethodName).ShouldBe(MathExpression.Ceiling);
+    }
+
+    /// <summary>
+    ///     Explicit test: verifies that using static import, Exp(5.0) is mutated to Log(5.0).
+    /// </summary>
+    [TestMethod]
+    public void ShouldMutateStaticExpToLog()
+    {
+        var sourceCode = @"
+using System;
+using static System.Math;
+namespace TestApplication
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Exp(5.0);
+        }
+    }
+}";
+        var tree = CSharpSyntaxTree.ParseText(sourceCode);
+        var compilation = CSharpCompilation.Create("TestCompilation")
+            .AddReferences(
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Math).Assembly.Location))
+            .AddSyntaxTrees(tree);
+        var semanticModel = compilation.GetSemanticModel(tree);
+        var expression = tree.GetRoot().DescendantNodes().OfType<InvocationExpressionSyntax>().Single();
+        var target = new MathMutator();
+        var result = target.ApplyMutations(expression, semanticModel).ToList();
+
+        result.Count.ShouldBe(1);
+        var mutatedMethodName = ((IdentifierNameSyntax)((InvocationExpressionSyntax)result[0].ReplacementNode).Expression).Identifier.ValueText;
+        Enum.Parse<MathExpression>(mutatedMethodName).ShouldBe(MathExpression.Log);
+    }
+
 
     public static IEnumerable<object[]> MethodSwapsTestData
     {
@@ -240,6 +311,7 @@ namespace TestApplication
         }
     }
 
+
     private static IEnumerable<object[]> TrigonometricHyperbolicTestData
     {
         get
@@ -276,4 +348,6 @@ namespace TestApplication
             }
         }
     }
+
+
 }
