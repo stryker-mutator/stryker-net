@@ -147,6 +147,10 @@ Generated source code may be missing.", analyzer);
 
     public static NuGetFramework GetNuGetFramework(this IAnalyzerResult analyzerResult)
     {
+        if (string.IsNullOrEmpty(analyzerResult.TargetFramework))
+        {
+            return null;
+        }
         var framework = NuGetFramework.Parse(analyzerResult.TargetFramework);
         if (framework != NuGetFramework.UnsupportedFramework)
         {
@@ -161,7 +165,7 @@ Generated source code may be missing.", analyzer);
         throw new InputException(message);
     }
 
-    public static bool TargetsFullFramework(this IAnalyzerResult analyzerResult) => analyzerResult.GetNuGetFramework().IsDesktop();
+    public static bool TargetsFullFramework(this IAnalyzerResult analyzerResult) => analyzerResult.GetNuGetFramework()?.IsDesktop() == true;
 
     public static Language GetLanguage(this IAnalyzerResult analyzerResult) =>
         analyzerResult.GetPropertyOrDefault("Language") switch

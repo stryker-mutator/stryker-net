@@ -38,5 +38,7 @@ public enum LinqExpression
     OrderDescending,
     SkipLast,
     TakeLast,
-    UnionBy
+    UnionBy,
+    Append,
+    Prepend
 }
