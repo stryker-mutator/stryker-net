@@ -90,11 +90,11 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[22.0.12, )",
-        "resolved": "22.0.12",
-        "contentHash": "XwZ29y6z/r+1ArLFPVlAsB0M89+/V189H5qi9A7GD3Z01YsZJ5aQTvj1KsAF8deTSE4GqBUwfwasA5FfYDEhyQ==",
+        "requested": "[22.0.13, )",
+        "resolved": "22.0.13",
+        "contentHash": "qNMTv49/NgES0RSOfyoh31EmhysKlbdNfQlaJP1YhWDyhPWy7Wfa6PYIlkdojTR1JJft6v0PeLong/jdjUC4xg==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions.Wrappers": "22.0.12",
+          "TestableIO.System.IO.Abstractions.Wrappers": "22.0.13",
           "Testably.Abstractions.FileSystem.Interface": "9.0.0"
         }
       },
