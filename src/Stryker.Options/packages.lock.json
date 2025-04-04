@@ -266,7 +266,7 @@
           "Microsoft.Extensions.Logging.Abstractions": "[9.0.3, )",
           "Mono.Cecil": "[0.11.6, )",
           "ResXResourceReader.NetStandard": "[1.3.0, )",
-          "Stryker.Abstractions": "[1.0.0, )"
+          "Stryker.Abstractions": "[4.5.1, )"
         }
       },
       "Buildalyzer": {
