@@ -213,9 +213,9 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "Direct",
-        "requested": "[22.0.12, )",
-        "resolved": "22.0.12",
-        "contentHash": "pu9OwvRInYnwNxgtEdlL3PMYwKgx2X81TAsgIwes3nnqTDjtWgb0uxcWUfxBGJd59/cvu3bi2IpfM0Au38+UKQ==",
+        "requested": "[22.0.13, )",
+        "resolved": "22.0.13",
+        "contentHash": "IdkOdnhmiK7wR3ObL/nUomw2tfEKtykUSefIhTOo6IhdBuywtbwj6F3zoXC/7KCD/7QxxP2jfax4s38daBQeMQ==",
         "dependencies": {
           "Testably.Abstractions.FileSystem.Interface": "9.0.0"
         }
@@ -820,7 +820,7 @@
           "Microsoft.CodeAnalysis.Common": "[4.12.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[17.13.0, )",
           "Serilog": "[4.2.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.12, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.13, )"
         }
       },
       "stryker.configuration": {
