@@ -1,3 +1,30 @@
+## [4.5.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.5.0...stryker@4.5.1) (2025-02-04)
+
+
+### Bug Fixes
+
+* Handle VsTest errors on AbortSession ([#3177](https://github.com/stryker-mutator/stryker-net/issues/3177)) ([8ee5697](https://github.com/stryker-mutator/stryker-net/commit/8ee5697ab1083f43d2ce431bcf82bac4c09905a9))
+* Load dependencies for Roslyn generators and analyzer ([#3178](https://github.com/stryker-mutator/stryker-net/issues/3178)) ([52752dc](https://github.com/stryker-mutator/stryker-net/commit/52752dccb1d5efbc247e4aeaf1d9a71b2d89270b))
+
+
+
+# [4.5.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.4.1...stryker@4.5.0) (2025-01-03)
+
+
+### Bug Fixes
+
+* make project discovery concurrent compatible ([#3109](https://github.com/stryker-mutator/stryker-net/issues/3109)) ([f7c0a71](https://github.com/stryker-mutator/stryker-net/commit/f7c0a71f786c674e6050f247b6225de438e5c065))
+
+
+### Features
+
+* Protect compiler directives during mutation ([#3116](https://github.com/stryker-mutator/stryker-net/issues/3116)) ([8a089ca](https://github.com/stryker-mutator/stryker-net/commit/8a089ca6b785e313dddf9cdbcb6e86a40fee8816))
+* Restore support for aliases via Buildalyzer ([#3132](https://github.com/stryker-mutator/stryker-net/issues/3132)) ([70e676d](https://github.com/stryker-mutator/stryker-net/commit/70e676df316e2b6a1995f98fcaa9cba3f60800be))
+* Support csharp 13 ([#3137](https://github.com/stryker-mutator/stryker-net/issues/3137)) ([e567ab3](https://github.com/stryker-mutator/stryker-net/commit/e567ab3f5255bc974624a999aa256f0cff1b90cd))
+* Use of environment variables for controlling the active mutation ([#3122](https://github.com/stryker-mutator/stryker-net/issues/3122)) ([035fce3](https://github.com/stryker-mutator/stryker-net/commit/035fce3f608d33be1868ac4605632c80e7a6e7f9))
+
+
+
 ## [4.4.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.4.0...stryker@4.4.1) (2024-11-11)
 
 

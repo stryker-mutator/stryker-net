@@ -40,7 +40,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Abstractions", "Str
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Configuration", "Stryker.Options\Stryker.Configuration.csproj", "{E80FD63A-510D-49E2-B1FE-B6CDD5BA106D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stryker.Utilities", "Stryker.Utilities\Stryker.Utilities.csproj", "{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Utilities", "Stryker.Utilities\Stryker.Utilities.csproj", "{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{EB4DEFF1-7BA1-43E4-86ED-B8E6808CCD44}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\renovate.json = ..\.github\renovate.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{E67C4536-0300-47F5-828D-3D4F4451F1BD}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\workflows\integration-test.yaml = ..\.github\workflows\integration-test.yaml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stryker.TestRunner", "Stryker.TestRunner\Stryker.TestRunner.csproj", "{A19D156E-844E-4C8F-8D82-6051CBFBF910}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stryker.TestRunner.VsTest", "Stryker.TestRunner.VsTest\Stryker.TestRunner.VsTest.csproj", "{978D9AD1-A9B7-483E-A204-EF13A55A92E4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stryker.TestRunner.VsTest.UnitTest", "Stryker.TestRunner.VsTest.UnitTest\Stryker.TestRunner.VsTest.UnitTest.csproj", "{CD0D00F0-E9B5-4F73-9A46-DA7CDB78BE61}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -88,12 +104,26 @@ Global
 		{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A19D156E-844E-4C8F-8D82-6051CBFBF910}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A19D156E-844E-4C8F-8D82-6051CBFBF910}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A19D156E-844E-4C8F-8D82-6051CBFBF910}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A19D156E-844E-4C8F-8D82-6051CBFBF910}.Release|Any CPU.Build.0 = Release|Any CPU
+		{978D9AD1-A9B7-483E-A204-EF13A55A92E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{978D9AD1-A9B7-483E-A204-EF13A55A92E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{978D9AD1-A9B7-483E-A204-EF13A55A92E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{978D9AD1-A9B7-483E-A204-EF13A55A92E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD0D00F0-E9B5-4F73-9A46-DA7CDB78BE61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD0D00F0-E9B5-4F73-9A46-DA7CDB78BE61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD0D00F0-E9B5-4F73-9A46-DA7CDB78BE61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD0D00F0-E9B5-4F73-9A46-DA7CDB78BE61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A9BCC324-3DF8-493A-9792-A15C9797AD11} = {68DC3E8E-7CC2-4953-BAFC-08EFBF9F3307}
+		{EB4DEFF1-7BA1-43E4-86ED-B8E6808CCD44} = {68DC3E8E-7CC2-4953-BAFC-08EFBF9F3307}
+		{E67C4536-0300-47F5-828D-3D4F4451F1BD} = {EB4DEFF1-7BA1-43E4-86ED-B8E6808CCD44}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {41C3DC7A-5A90-418D-AC69-6B5A34E6A7AC}

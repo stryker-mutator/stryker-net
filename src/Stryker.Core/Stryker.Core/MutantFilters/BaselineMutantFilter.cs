@@ -4,15 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Baseline;
-using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Baseline.Utils;
 using Stryker.Utilities;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.MutantFilters;
 

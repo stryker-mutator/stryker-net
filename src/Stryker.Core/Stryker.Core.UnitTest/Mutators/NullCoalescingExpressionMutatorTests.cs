@@ -1,10 +1,11 @@
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
 using Stryker.Core.Mutators;
 
 namespace Stryker.Core.UnitTest.Mutators;
@@ -25,7 +26,7 @@ public class NullCoalescingExpressionMutatorTests : TestBase
         // Arrange
         var target = new NullCoalescingExpressionMutator();
         var originalExpressionString = "a ?? b";
-        var expectedExpressionStrings = new[] { "a", "b", "b ?? a" };
+        var expectedExpressionStrings = new[] { "a", "b", "b?? a" };
         var originalExpression = SyntaxFactory.ParseExpression(originalExpressionString);
 
         // Act
@@ -61,6 +62,7 @@ public class NullCoalescingExpressionMutatorTests : TestBase
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(
             """
+            using System;
             public TimeSpan? GetLocalDateTime(DateTimeOffset startTime, DateTimeOffset? endTime)
             {
                 return (endTime ?? startTime).LocalDateTime;

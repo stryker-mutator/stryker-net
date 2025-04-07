@@ -19,10 +19,12 @@ internal class IfInstrumentationEngine : BaseEngine<IfStatementSyntax>
     /// <param name="mutatedNode">Mutated code</param>
     /// <returns>A statement containing the expected construct.</returns>
     /// <remarks>This method works with statement and block.</remarks>
-    public IfStatementSyntax InjectIf(ExpressionSyntax condition, StatementSyntax originalNode, StatementSyntax mutatedNode) =>
-        SyntaxFactory.IfStatement(condition,
+    public IfStatementSyntax InjectIf(ExpressionSyntax condition, StatementSyntax originalNode, StatementSyntax mutatedNode)
+        =>  SyntaxFactory.IfStatement(condition,
             mutatedNode.AsBlock(),
-            SyntaxFactory.ElseClause(originalNode.AsBlock())).WithAdditionalAnnotations(Marker);
+            SyntaxFactory.ElseClause(AsBlock(originalNode.WithoutTrivia()))).
+            WithTriviaFrom(originalNode).
+            WithAdditionalAnnotations(Marker);
 
     /// <summary>
     /// Returns the original code.
@@ -34,7 +36,7 @@ internal class IfInstrumentationEngine : BaseEngine<IfStatementSyntax>
     {
         if (ifNode.Else?.Statement is BlockSyntax block)
         {
-            return block.Statements.Count == 1 ? block.Statements[0] : block;
+            return (block.Statements.Count == 1 ? block.Statements[0] : block).WithTriviaFrom(ifNode);
         }
         throw new InvalidOperationException($"Expected a block containing an 'else' statement, found:\n{ifNode.ToFullString()}.");
     }

@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
+using Stryker.Core.Helpers;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Stryker.Core.Mutators;
@@ -24,11 +24,10 @@ public sealed class CollectionExpressionMutator : MutatorBase<CollectionExpressi
             yield return new Mutation
             {
                 OriginalNode = node,
-                ReplacementNode =
-                    type is not null
-                        ? CastExpression(ParseTypeName(type.ToMinimalDisplayString(semanticModel, node.SpanStart)),
-                                         node.WithElements([]))
-                        : node.WithElements([]),
+                ReplacementNode = type is not null
+                                    ? CastExpression(ParseTypeName(type.ToMinimalDisplayString(semanticModel, node.SpanStart)),
+                                         node.WithCleanTrivia().WithElements([]))
+                                    : node.WithCleanTrivia().WithElements([]),
                 DisplayName = "Collection expression mutation",
                 Type        = Mutator.CollectionExpression
             };

@@ -1,9 +1,9 @@
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
-using System.Collections.Generic;
+using Stryker.Abstractions;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators;
 
@@ -18,7 +18,7 @@ public class InterpolatedStringMutator : MutatorBase<InterpolatedStringExpressio
             yield return new Mutation
             {
                 OriginalNode = node,
-                ReplacementNode = CreateEmptyInterpolatedString(),
+                ReplacementNode = CreateEmptyInterpolatedString().WithCleanTriviaFrom(node),
                 DisplayName = @"String mutation",
                 Type = Mutator.String
             };

@@ -1,9 +1,9 @@
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
-using System.Collections.Generic;
+using Stryker.Abstractions;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators;
 
@@ -31,7 +31,7 @@ public class PostfixUnaryMutator : MutatorBase<PostfixUnaryExpressionSyntax>
         yield return new Mutation
         {
             OriginalNode = node,
-            ReplacementNode = SyntaxFactory.PostfixUnaryExpression(newKind, node.Operand),
+            ReplacementNode = SyntaxFactory.PostfixUnaryExpression(newKind, node.Operand.WithCleanTrivia()),
             DisplayName = $"{unaryKind} to {newKind} mutation",
             Type = Mutator.Update
         };

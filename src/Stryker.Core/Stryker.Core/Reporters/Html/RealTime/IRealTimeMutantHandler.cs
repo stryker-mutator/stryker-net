@@ -1,5 +1,4 @@
-﻿using Stryker.Abstractions;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
 
 namespace Stryker.Core.Reporters.Html.RealTime;
 

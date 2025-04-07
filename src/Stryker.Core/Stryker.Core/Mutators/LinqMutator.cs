@@ -2,8 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
+using Stryker.Core.Helpers;
 using System;
 using System.Collections.Generic;
 
@@ -56,7 +55,9 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
             { LinqExpression.Order, LinqExpression.OrderDescending },
             { LinqExpression.OrderDescending, LinqExpression.Order },
             { LinqExpression.UnionBy, LinqExpression.IntersectBy },
-            { LinqExpression.IntersectBy, LinqExpression.UnionBy }
+            { LinqExpression.IntersectBy, LinqExpression.UnionBy },
+            { LinqExpression.Append, LinqExpression.Prepend },
+            { LinqExpression.Prepend, LinqExpression.Append }
         };
         RequireArguments = new HashSet<LinqExpression>
         {
@@ -74,7 +75,9 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
             LinqExpression.MaxBy,
             LinqExpression.MinBy,
             LinqExpression.IntersectBy,
-            LinqExpression.UnionBy
+            LinqExpression.UnionBy,
+            LinqExpression.Append,
+            LinqExpression.Prepend
         };
     }
     /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
@@ -112,7 +115,7 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
                     $"Linq method mutation ({memberName}() to {SyntaxFactory.IdentifierName(replacementExpression.ToString())}())",
                 OriginalNode = node,
                 ReplacementNode = node.ReplaceNode(toReplace,
-                    SyntaxFactory.IdentifierName(replacementExpression.ToString())),
+                    SyntaxFactory.IdentifierName(replacementExpression.ToString())).WithCleanTrivia(),
                 Type = Mutator.Linq
             };
         }

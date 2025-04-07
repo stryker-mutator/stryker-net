@@ -3,13 +3,12 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
 using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators;
 
-class BlockMutator : MutatorBase<BlockSyntax>
+public class BlockMutator : MutatorBase<BlockSyntax>
 {
     private const string MutationName = "Block removal mutation";
 
@@ -27,7 +26,7 @@ class BlockMutator : MutatorBase<BlockSyntax>
         yield return new Mutation
         {
             OriginalNode = node,
-            ReplacementNode = SyntaxFactory.Block(),
+            ReplacementNode = SyntaxFactory.Block().WithCleanTriviaFrom(node),
             DisplayName = MutationName,
             Type = Mutator.Block
         };

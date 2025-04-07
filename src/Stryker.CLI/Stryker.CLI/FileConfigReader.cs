@@ -92,7 +92,7 @@ public static class FileConfigReader
             }
             else
             {
-                throw new InputException($"Unkown file type for config file at \"{configFilePath}\"");
+                throw new InputException($"Unknown file type for config file at \"{configFilePath}\"");
             }
 
             if (root == null)

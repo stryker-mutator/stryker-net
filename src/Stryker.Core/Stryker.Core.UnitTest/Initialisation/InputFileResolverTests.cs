@@ -15,7 +15,7 @@ using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Utilities.Buildalyzer;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -105,7 +105,6 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
     }
 
     [TestMethod]
-    [DataRow("")]
     [DataRow("nxt")]
     [DataRow("mono4.6")]
     [DataRow("netcoreapp1.2.3.4.5")]
@@ -1272,6 +1271,33 @@ Please specify a test project name filter that results in one project.
         var result = () => target.ResolveSourceProjectInfos(options);
         result.ShouldThrow<InputException>().Message.ShouldContain("No project references found.");
 
+    }
+
+    [TestMethod]
+    public void ShouldFallbackToProjectReferenceIfDependencyNotFound()
+    {
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+            { Path.Combine(_sourcePath, "source.cs"), new MockFileData(_sourceFile)},
+            { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath,  fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, _sourceProjectPath, ["netcoreapp2.1"], dontGenerateProjectReference: true);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+
+        var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
+
+        var result = target.ResolveSourceProjectInfos(_options).First();
+
+        result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectPath);
     }
 
     [TestMethod]

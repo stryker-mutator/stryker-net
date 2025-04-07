@@ -2,8 +2,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
 using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators;
@@ -22,7 +21,7 @@ public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
         }
     }
 
-    private static readonly Dictionary<SyntaxKind, MutationData> _kindsToMutate = new Dictionary<SyntaxKind, MutationData>()
+    private static readonly Dictionary<SyntaxKind, MutationData> _kindsToMutate = new()
     {
         { SyntaxKind.SubtractExpression, new MutationData(Mutator.Arithmetic, SyntaxKind.AddExpression) },
         { SyntaxKind.AddExpression, new MutationData(Mutator.Arithmetic, SyntaxKind.SubtractExpression) },
@@ -37,10 +36,11 @@ public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
         { SyntaxKind.NotEqualsExpression, new MutationData(Mutator.Equality, SyntaxKind.EqualsExpression) },
         { SyntaxKind.LogicalAndExpression, new MutationData(Mutator.Logical, SyntaxKind.LogicalOrExpression) },
         { SyntaxKind.LogicalOrExpression, new MutationData(Mutator.Logical, SyntaxKind.LogicalAndExpression) },
-        { SyntaxKind.LeftShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.RightShiftExpression) },
-        { SyntaxKind.RightShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.LeftShiftExpression) },
+        { SyntaxKind.LeftShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.RightShiftExpression, SyntaxKind.UnsignedRightShiftExpression) },
+        { SyntaxKind.RightShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.LeftShiftExpression, SyntaxKind.UnsignedRightShiftExpression) },
         { SyntaxKind.BitwiseOrExpression, new MutationData(Mutator.Bitwise, SyntaxKind.BitwiseAndExpression) },
         { SyntaxKind.BitwiseAndExpression, new MutationData(Mutator.Bitwise, SyntaxKind.BitwiseOrExpression) },
+        { SyntaxKind.UnsignedRightShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.LeftShiftExpression, SyntaxKind.RightShiftExpression) },
     };
 
     public override MutationLevel MutationLevel => MutationLevel.Basic;
@@ -57,9 +57,9 @@ public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
         {
             foreach (var mutationKind in mutationData.KindsToMutate)
             {
-                var replacementNode = SyntaxFactory.BinaryExpression(mutationKind, node.Left, node.Right);
+                var replacementNode = SyntaxFactory.BinaryExpression(mutationKind, node.Left.WithCleanTrivia(), node.Right.WithCleanTrivia());
                 // make sure the trivia stays in place for displaying
-                replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
+                replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithCleanTriviaFrom(node.OperatorToken));
                 yield return new Mutation()
                 {
                     OriginalNode = node,
@@ -79,8 +79,8 @@ public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
 
     private static Mutation GetLogicalMutation(BinaryExpressionSyntax node)
     {
-        var replacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.EqualsExpression, node.Left, node.Right);
-        replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
+        var replacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.EqualsExpression, node.Left.WithCleanTrivia(), node.Right.WithCleanTrivia());
+        replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithCleanTriviaFrom(node.OperatorToken));
 
         return new Mutation
         {

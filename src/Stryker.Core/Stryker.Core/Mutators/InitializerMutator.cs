@@ -1,8 +1,8 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
+using Stryker.Core.Helpers;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators;
@@ -23,7 +23,7 @@ public class InitializerMutator : MutatorBase<InitializerExpressionSyntax>
             yield return new Mutation()
             {
                 OriginalNode = node,
-                ReplacementNode = SyntaxFactory.InitializerExpression(SyntaxKind.ArrayInitializerExpression),
+                ReplacementNode = SyntaxFactory.InitializerExpression(SyntaxKind.ArrayInitializerExpression).WithCleanTriviaFrom(node),
                 DisplayName = "Array initializer mutation",
                 Type = Mutator.Initializer
             };

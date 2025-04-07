@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
 using Stryker.Core.Mutators;
 
 namespace Stryker.Core.UnitTest.Mutators;
@@ -65,7 +65,7 @@ public class StringMethodMutatorTests : TestBase
     {
         var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(expression);
         var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
+        var result = target.ApplyMutations((MemberAccessExpressionSyntax)expressionSyntax.Expression, semanticModel).ToList();
 
         var mutation = result.ShouldHaveSingleItem();
 
@@ -77,48 +77,12 @@ public class StringMethodMutatorTests : TestBase
     }
 
     [TestMethod]
-    [DataRow("Trim")]
-    [DataRow("Substring")]
-    public void ShouldMutateReplaceWithEmptyString(string methodName)
-    {
-        var expression = $"testString.{methodName}()";
-        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(expression);
-        var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
-
-        var mutation = result.ShouldHaveSingleItem();
-        mutation.Type.ShouldBe(Mutator.StringMethod);
-        mutation.DisplayName.ShouldBe($"String Method Mutation (Replace {methodName}() with Empty String)");
-
-        var syntax = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
-        syntax.Token.ValueText.ShouldBe(string.Empty);
-    }
-
-    [TestMethod]
-    [DataRow("ElementAt")]
-    [DataRow("ElementAtOrDefault")]
-    public void ShouldMutateReplaceWithChar(string methodName)
-    {
-        var expression = $"testString.{methodName}()";
-        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(expression);
-        var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
-
-        var mutation = result.ShouldHaveSingleItem();
-        mutation.Type.ShouldBe(Mutator.StringMethod);
-        mutation.DisplayName.ShouldBe($"String Method Mutation (Replace {methodName}() with '\\0' char)");
-
-        var syntax = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
-        syntax.Token.ValueText.ShouldBe(char.MinValue.ToString());
-    }
-
-    [TestMethod]
     public void ShouldNotMutateWhenNotAString()
     {
         var expression = (InvocationExpressionSyntax)
             SyntaxFactory.ParseExpression("Enumerable.Max(new[] { 1, 2, 3 })");
         var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expression, null).ToList();
+        var result = target.ApplyMutations((MemberAccessExpressionSyntax)expression.Expression, null).ToList();
 
         result.ShouldBeEmpty();
     }

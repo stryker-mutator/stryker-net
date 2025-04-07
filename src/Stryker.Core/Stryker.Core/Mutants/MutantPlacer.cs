@@ -19,8 +19,8 @@ public class MutantPlacer
     private const string MutationTypeMarker = "MutationType";
     public static readonly string Injector = "Injector";
 
-    private static readonly Dictionary<string, (IInstrumentCode engine, SyntaxAnnotation annotation)> instrumentEngines = new();
-    private static readonly HashSet<string> requireRecursiveRemoval = new();
+    private static readonly Dictionary<string, (IInstrumentCode engine, SyntaxAnnotation annotation)> instrumentEngines = [];
+    private static readonly HashSet<string> requireRecursiveRemoval = [];
 
     private static readonly StaticInstrumentationEngine StaticEngine = new();
     private static readonly StaticInitializerMarkerEngine StaticInitializerEngine = new();
@@ -33,7 +33,7 @@ public class MutantPlacer
     private ExpressionSyntax _binaryExpression;
     private SyntaxNode _placeHolderNode;
 
-    public static IEnumerable<string> MutationMarkers => new[] { MutationIdMarker, MutationTypeMarker, Injector };
+    public static IEnumerable<string> MutationMarkers => [MutationIdMarker, MutationTypeMarker, Injector];
 
     public MutantPlacer(CodeInjection injection) => _injection = injection;
 

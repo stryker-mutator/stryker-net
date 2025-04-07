@@ -7,9 +7,7 @@ using Buildalyzer;
 using Buildalyzer.Construction;
 using Buildalyzer.Environment;
 using Moq;
-using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.Testing;
-using Stryker.Core.UnitTest;
+using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 
@@ -18,7 +16,7 @@ public class BuildAnalyzerTestsBase : TestBase
     protected internal const string DefaultFramework = "net6.0";
     protected readonly MockFileSystem FileSystem = new();
     protected string ProjectPath;
-    private readonly Dictionary<string, Dictionary<string, IAnalyzerResult>> _projectCache = new();
+    private readonly Dictionary<string, Dictionary<string, IAnalyzerResult>> _projectCache = [];
     protected readonly Mock<IBuildalyzerProvider> BuildalyzerProviderMock = new(MockBehavior.Strict);
 
     public BuildAnalyzerTestsBase()
@@ -41,7 +39,7 @@ public class BuildAnalyzerTestsBase : TestBase
         IEnumerable<string> projectReferences = null, string framework = DefaultFramework, Func<bool> success = null)
     {
         var properties = GetSourceProjectDefaultProperties();
-        projectReferences ??= new List<string>();
+        projectReferences ??= [];
 
         return BuildProjectAnalyzerMock(csprojPathName, sourceFiles, properties, projectReferences, [framework], success);
     }
@@ -58,7 +56,7 @@ public class BuildAnalyzerTestsBase : TestBase
         IEnumerable<string> projectReferences , IEnumerable<string> frameworks, Func<bool> success = null)
     {
         var properties = GetSourceProjectDefaultProperties();
-        projectReferences??= new List<string>();
+        projectReferences??= [];
 
         return BuildProjectAnalyzerMock(csprojPathName, sourceFiles, properties, projectReferences, frameworks, success);
     }
@@ -79,12 +77,12 @@ public class BuildAnalyzerTestsBase : TestBase
     /// <param name="success"></param>
     /// <returns>a mock project analyzer</returns>
     /// <remarks>the test project references the production code project and contains no source file</remarks>
-    protected Mock<IProjectAnalyzer> TestProjectAnalyzerMock(string testCsprojPathName, string csProj, IEnumerable<string> frameworks = null, bool success = true)
+    protected Mock<IProjectAnalyzer> TestProjectAnalyzerMock(string testCsprojPathName, string csProj, IEnumerable<string> frameworks = null, bool success = true, bool dontGenerateProjectReference= false)
     {
-        frameworks??=new []{DefaultFramework};
+        frameworks??=[DefaultFramework];
         var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
         var projectReferences =  string.IsNullOrEmpty(csProj) ? [] : GetProjectResult(csProj, frameworks.First()).ProjectReferences.Append(csProj).ToList();
-        return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, projectReferences, frameworks, () => success);
+        return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, projectReferences, frameworks, () => success, [], dontGenerateProjectReference);
     }
 
     private IAnalyzerResult GetProjectResult(string projectFile, string expectedFramework, bool returnDefaultIfNotFound = true)
@@ -110,7 +108,7 @@ public class BuildAnalyzerTestsBase : TestBase
     /// <returns>a tuple with the framework kind first and the version next</returns>
     protected static (FrameworkKind kind, decimal version) ParseFramework(string framework)
     {
-        FrameworkKind kind;
+
         decimal version;
 
         if (framework.StartsWith("netcoreapp"))
@@ -153,7 +151,7 @@ public class BuildAnalyzerTestsBase : TestBase
     /// <returns><paramref name="framework"/> if the framework is among the target, the best match if available, null otherwise.</returns>
     protected static string PickCompatibleFramework(string framework, IEnumerable<string> frameworks)
     {
-        var parsed = ParseFramework(framework);
+        var (kind, version) = ParseFramework(framework);
 
         string bestCandidate = null;
         var bestVersion = 1.0m;
@@ -164,12 +162,12 @@ public class BuildAnalyzerTestsBase : TestBase
                 return framework;
             }
             var parsedCandidate = ParseFramework(candidate);
-            if (parsedCandidate.kind != parsed.kind)
+            if (parsedCandidate.kind != kind)
             {
                 continue;
             }
 
-            if (parsedCandidate.version > parsed.version || parsedCandidate.version <= bestVersion)
+            if (parsedCandidate.version > version || parsedCandidate.version <= bestVersion)
             {
                 continue;
             }
@@ -199,7 +197,8 @@ public class BuildAnalyzerTestsBase : TestBase
         IEnumerable<string> projectReferences= null,
         IEnumerable<string> frameworks = null,
         Func<bool> success = null,
-        IEnumerable<string> rawReferences = null)
+        IEnumerable<string> rawReferences = null,
+        bool dontResolveProjectReference = false)
     {
         var projectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
         success ??= () => true;
@@ -226,9 +225,17 @@ public class BuildAnalyzerTestsBase : TestBase
             FileSystem.AddFile(FileSystem.Path.Combine(projectUnderTestBin, projectBin), new MockFileData(""));
             var projectAnalyzerResultMock = new Mock<IAnalyzerResult>(MockBehavior.Strict);
             projectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(projectReferences);
-            projectAnalyzerResultMock.Setup(x => x.References).Returns(projectReferences.
-                Where ( p => p !=null && _projectCache.ContainsKey(p)).
-                Select( iar => GetProjectResult(iar, framework).GetAssemblyPath()).Union(rawReferences).ToArray());
+            if (dontResolveProjectReference)
+            {
+                projectAnalyzerResultMock.Setup(x => x.References).Returns([]);
+            }
+            else
+            {
+                projectAnalyzerResultMock.Setup(x => x.References).Returns(projectReferences.
+                    Where ( p => p !=null && _projectCache.ContainsKey(p)).
+                    Select( iar => GetProjectResult(iar, framework).GetAssemblyPath()).Union(rawReferences).ToArray());
+            }
+
             projectAnalyzerResultMock.Setup(x => x.SourceFiles).Returns(sourceFiles);
             projectAnalyzerResultMock.Setup(x => x.PreprocessorSymbols).Returns(["NET"]);
             specificProperties.Add("TargetRefPath", projectBin);
@@ -264,7 +271,7 @@ public class BuildAnalyzerTestsBase : TestBase
         return projectAnalyzerMock;
     }
 
-    private IAnalyzerResults BuildAnalyzerResultsMock(IDictionary<string, IAnalyzerResult> projectAnalyzerResults)
+    private static IAnalyzerResults BuildAnalyzerResultsMock(IDictionary<string, IAnalyzerResult> projectAnalyzerResults)
     {
         var analyzerResults = projectAnalyzerResults.Values.ToList();
         var sourceProjectAnalyzerResultsMock = new Mock<IAnalyzerResults>(MockBehavior.Strict);

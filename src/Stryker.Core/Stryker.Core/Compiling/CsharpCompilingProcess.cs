@@ -11,13 +11,13 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions;
-using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.MutationTest;
-using Stryker.Core.Initialisation;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
+using Stryker.Core.MutationTest;
+using Stryker.Utilities.Buildalyzer;
+using Stryker.Utilities.EmbeddedResources;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Compiling;
 
@@ -112,7 +112,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
         return semanticModels;
     }
 
-    private static readonly string[] IgnoredErrors = ["RZ3600"];
+    private static readonly string[] IgnoredErrors = ["RZ3600", "CS8784"];
 
     // Can't test or mock code generators, so we exclude them from coverage
     [ExcludeFromCodeCoverage]
@@ -123,7 +123,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
             .Create(generators, parseOptions: analyzerResult.GetParseOptions(_options), optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult))
             .RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
 
-        var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
+        var errors = diagnostics.Where(diagnostic => IgnoredErrors.Contains(diagnostic.Id) || (diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None)).ToList();
         if (errors.Count == 0)
         {
             return outputCompilation as CSharpCompilation;

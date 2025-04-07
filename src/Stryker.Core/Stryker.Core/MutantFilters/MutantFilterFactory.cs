@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Abstractions;
 using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.Options;
 using Stryker.Core.Baseline.Providers;

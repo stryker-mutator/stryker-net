@@ -2,8 +2,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
 using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators;
@@ -20,9 +19,10 @@ public class AssignmentExpressionMutator : MutatorBase<AssignmentExpressionSynta
         { SyntaxKind.AndAssignmentExpression, new [] { SyntaxKind.OrAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression } },
         { SyntaxKind.OrAssignmentExpression, new [] { SyntaxKind.AndAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression} },
         { SyntaxKind.ExclusiveOrAssignmentExpression, new [] { SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression } },
-        { SyntaxKind.LeftShiftAssignmentExpression, new [] { SyntaxKind.RightShiftAssignmentExpression } },
-        { SyntaxKind.RightShiftAssignmentExpression, new [] { SyntaxKind.LeftShiftAssignmentExpression } },
+        { SyntaxKind.LeftShiftAssignmentExpression, new [] { SyntaxKind.RightShiftAssignmentExpression, SyntaxKind.UnsignedRightShiftAssignmentExpression } },
+        { SyntaxKind.RightShiftAssignmentExpression, new [] { SyntaxKind.LeftShiftAssignmentExpression, SyntaxKind.UnsignedRightShiftAssignmentExpression } },
         { SyntaxKind.CoalesceAssignmentExpression, new [] { SyntaxKind.SimpleAssignmentExpression } },
+        { SyntaxKind.UnsignedRightShiftAssignmentExpression, new [] { SyntaxKind.LeftShiftAssignmentExpression, SyntaxKind.RightShiftAssignmentExpression } },
     };
 
     public override MutationLevel MutationLevel => MutationLevel.Standard;
@@ -45,8 +45,9 @@ public class AssignmentExpressionMutator : MutatorBase<AssignmentExpressionSynta
 
         foreach (var targetAssignmentKind in targetAssignmentKinds)
         {
-            var replacementNode = SyntaxFactory.AssignmentExpression(targetAssignmentKind, node.Left, node.Right);
-            replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
+            var replacementNode =
+                SyntaxFactory.AssignmentExpression(targetAssignmentKind, node.Left.WithCleanTrivia(), node.Right.WithCleanTrivia());
+            replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithCleanTriviaFrom(node.OperatorToken));
             yield return new Mutation
             {
                 OriginalNode = node,

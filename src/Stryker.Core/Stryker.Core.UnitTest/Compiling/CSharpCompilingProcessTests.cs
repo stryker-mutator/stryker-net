@@ -13,15 +13,13 @@ using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.Compiling;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.UnitTest.Compiling;
 
@@ -75,8 +73,8 @@ public class Calculator
     public void CompilingProcessTests_ShouldSupportPackageReferenceAliases()
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(@"
-extern alias TestAlias;
-using TestAlias::System;
+extern alias TheAlias;
+using TheAlias::System;
 
 namespace ExampleProject
 {
@@ -88,6 +86,10 @@ public class Calculator
     }
 }
 }");
+        var alias = new Dictionary<string, ImmutableArray<string>>();
+        var immutableArray = ImmutableArray.Create("TheAlias");
+        alias[typeof(object).Assembly.Location]=immutableArray;
+
         var input = new MutationTestInput()
         {
             SourceProjectInfo = new SourceProjectInfo
@@ -101,21 +103,8 @@ public class Calculator
                         { "TargetFileName", "TargetFileName.dll" },
                     },
                     // add a reference to system so the example code can compile
-                    references: new[] { typeof(object).Assembly.Location },
-                    packageReferences: new ReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>(
-                         new Dictionary<string, IReadOnlyDictionary<string, string>>
-                         {
-                             {
-                                 typeof(object).Assembly.GetName().Name,
-                                 new ReadOnlyDictionary<string, string>(
-                                     new Dictionary<string, string>
-                                     {
-                                         { "Aliases", "TestAlias" }
-                                     }
-                                 )
-                             }
-                         }
-                    )
+                    references: [typeof(object).Assembly.Location],
+                    aliases: alias.ToImmutableDictionary()
                 ).Object
             }
         };

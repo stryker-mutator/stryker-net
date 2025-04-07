@@ -1,5 +1,4 @@
 using System.IO.Abstractions;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Options.Inputs;
 using Stryker.Configuration;
 

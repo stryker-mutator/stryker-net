@@ -32,14 +32,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="coverlet.collector">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="coverlet.msbuild">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="LaunchDarkly.EventSource" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -56,11 +48,10 @@
       <Aliases>StrykerRegexParser</Aliases>
     </PackageReference>
   </ItemGroup>
-  
+
   <ItemGroup>
+    <ProjectReference Include="..\..\Stryker.Abstractions\Stryker.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Stryker.Utilities\Stryker.Utilities.csproj" />
     <ProjectReference Include="..\Stryker.Core\Stryker.Core.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

@@ -3,8 +3,8 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators;
 
@@ -28,8 +28,8 @@ public class ConditionalExpressionMutator : MutatorBase<ConditionalExpressionSyn
             ReplacementNode = SyntaxFactory.ParenthesizedExpression(
                 SyntaxFactory.ConditionalExpression(
                     SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression),
-                    node.WhenTrue,
-                    node.WhenFalse
+                    node.WhenTrue.WithCleanTrivia(),
+                    node.WhenFalse.WithCleanTrivia()
                 )
             )
         };
@@ -42,8 +42,8 @@ public class ConditionalExpressionMutator : MutatorBase<ConditionalExpressionSyn
             ReplacementNode = SyntaxFactory.ParenthesizedExpression(
                 SyntaxFactory.ConditionalExpression(
                     SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression),
-                    node.WhenTrue,
-                    node.WhenFalse
+                    node.WhenTrue.WithCleanTrivia(),
+                    node.WhenFalse.WithCleanTrivia()
                 )
             )
         };

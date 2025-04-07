@@ -1,17 +1,17 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
-using System;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Core.Compiling;
 using Stryker.Core.InjectedHelpers;
@@ -19,7 +19,6 @@ using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
 using Stryker.Core.ProjectComponents.SourceProjects;
-using System.Text;
 
 namespace Stryker.Core.UnitTest.Mutators;
 

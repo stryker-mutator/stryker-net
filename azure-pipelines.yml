@@ -23,8 +23,8 @@ pr:
     - '.github/*'
 
 variables:
-  PackageVersion: '4.4.1'
-  VersionBuildNumber: $[counter('4.4.1', 1)]
+  PackageVersion: '4.5.1'
+  VersionBuildNumber: $[counter('4.5.1', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   ForkIntegrationNugetFeedUri: https://f.feedz.io/stryker/stryker-net/nuget/index.json
@@ -49,9 +49,20 @@ stages:
     dependsOn: []
     steps:
     - task: UseDotNet@2
-      displayName: 'Use dotnet'
+      displayName: 'Install dotnet 8'
       inputs:
         version: 8.x
+    - task: UseDotNet@2
+      displayName: 'Install dotnet 9'
+      inputs:
+        version: 9.x
+    - task: DotNetCoreCLI@2
+      displayName: 'Install dotnet-coverage'
+      inputs:
+        command: custom
+        custom: tool
+        arguments: install dotnet-coverage --tool-path $(Agent.BuildDirectory)/tools
+        includeNuGetOrg: true
     - template: pipeline-templates/populate-cache-steps.yml
     - task: SonarCloudPrepare@3
       inputs:
@@ -61,12 +72,17 @@ stages:
         projectKey: 'stryker-net'
         projectName: 'Stryker .NET'
         projectVersion: '$(PackageVersion)'
+        extraProperties: |
+          sonar.verbose=true
+          sonar.cs.vscoveragexml.reportsPaths=$(Agent.BuildDirectory)\TestResults\coverage.xml
     - task: DotNetCoreCLI@2
-      displayName: 'Run unit tests'
+      displayName: 'Build Stryker'
       inputs:
-        command: test
-        projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj'
-        arguments: '--collect "Code coverage"'
+        command: 'build'
+        projects: 'src/Stryker.sln'
+    - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage collect "dotnet test" -f xml -o "$(Agent.BuildDirectory)\TestResults\coverage.xml"'
+      displayName: 'Run unit tests'
+      workingDirectory: 'src'
     - task: SonarCloudAnalyze@3
     - task: SonarCloudPublish@3
       inputs:
@@ -81,6 +97,10 @@ stages:
       displayName: 'Use dotnet'
       inputs:
         version: 8.x
+    - task: UseDotNet@2
+      displayName: 'Use dotnet'
+      inputs:
+        version: 9.x
     - task: DotNetCoreCLI@2
       displayName: 'Install dotnet-stryker'
       inputs:
@@ -101,6 +121,10 @@ stages:
       displayName: 'Use dotnet'
       inputs:
         version: 8.x
+    - task: UseDotNet@2
+      displayName: 'Use dotnet'
+      inputs:
+        version: 9.x
     - task: DotNetCoreCLI@2
       displayName: 'Install dotnet-stryker'
       inputs:
@@ -111,7 +135,7 @@ stages:
     - script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporter dashboard --reporter dots --reporter html --version master --dashboard-api-key $(Stryker.Dashboard.Api.Key)
       displayName: Run Stryker on Stryker.Core
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
-    - task: PublishMutationReport@1
+    - task: PublishMutationReport@2
       inputs:
         reportPattern: 'src/Stryker.Core/Stryker.Core.UnitTest/**/mutation-report.html'
 
@@ -133,6 +157,10 @@ stages:
             displayName: 'Use dotnet'
             inputs:
               version: 8.x
+          - task: UseDotNet@2
+            displayName: 'Use dotnet'
+            inputs:
+              version: 9.x
           - task: DotNetCoreCLI@2
             displayName: 'Pack integrationtest packages'
             inputs:
@@ -269,6 +297,10 @@ stages:
       displayName: 'Use dotnet'
       inputs:
         version: 8.x
+    - task: UseDotNet@2
+      displayName: 'Use dotnet'
+      inputs:
+        version: 9.x
     - task: DotNetCoreCLI@2
       displayName: 'Pack Stryker.CLI'
       inputs:

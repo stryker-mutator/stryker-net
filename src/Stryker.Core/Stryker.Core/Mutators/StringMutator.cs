@@ -1,11 +1,11 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Abstractions;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators;
 
@@ -18,7 +18,7 @@ public class StringMutator : MutatorBase<LiteralExpressionSyntax>
         // Get objectCreationSyntax to check if it contains a regex type.
         var root = node.Parent?.Parent?.Parent;
 
-        if (!IsSpecialType(root) && IsStringLiteral(node))
+        if (!IsSpecialType(root) && node.IsAStringExpression())
         {
             var currentValue = (string)node.Token.Value;
             var replacementValue = currentValue == "" ? "Stryker was here!" : "";
@@ -30,12 +30,6 @@ public class StringMutator : MutatorBase<LiteralExpressionSyntax>
                 Type = Mutator.String
             };
         }
-    }
-
-    private static bool IsStringLiteral(LiteralExpressionSyntax node)
-    {
-        var kind = node.Kind();
-        return kind == SyntaxKind.StringLiteralExpression;
     }
 
     private static bool IsSpecialType(SyntaxNode root) => root switch
