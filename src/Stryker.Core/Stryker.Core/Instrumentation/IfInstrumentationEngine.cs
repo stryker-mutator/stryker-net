@@ -22,7 +22,7 @@ internal class IfInstrumentationEngine : BaseEngine<IfStatementSyntax>
     public IfStatementSyntax InjectIf(ExpressionSyntax condition, StatementSyntax originalNode, StatementSyntax mutatedNode)
         =>  SyntaxFactory.IfStatement(condition,
             mutatedNode.AsBlock(),
-            SyntaxFactory.ElseClause(AsBlock(originalNode.WithoutTrivia()))).
+            SyntaxFactory.ElseClause(originalNode.WithoutTrivia().AsBlock())).
             WithTriviaFrom(originalNode).
             WithAdditionalAnnotations(Marker);
 
