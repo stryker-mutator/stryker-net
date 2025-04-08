@@ -53,12 +53,12 @@
       },
       "Spectre.Console.Testing": {
         "type": "Direct",
-        "requested": "[0.49.1, )",
-        "resolved": "0.49.1",
-        "contentHash": "i31qLh8VAxCVbTYnUT20d5KcizWz3ka81x4Ay4mrO2dgJT0YbpX2AD1CD8jBorpuDxTv0e7pNNSemFEfLgrMmg==",
+        "requested": "[0.50.0, )",
+        "resolved": "0.50.0",
+        "contentHash": "/RjFt98nw8D580F5jXSF6sF8jyuFxaaHfaarr5ix6tqci7U/lTvd4TIAsud4yy69UuIh2KiO2AsHiEpc8nvJ+A==",
         "dependencies": {
-          "Spectre.Console": "0.49.1",
-          "Spectre.Console.Cli": "0.49.1"
+          "Spectre.Console": "0.50.0",
+          "Spectre.Console.Cli": "0.50.0"
         }
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
@@ -470,10 +470,10 @@
       },
       "Spectre.Console.Cli": {
         "type": "Transitive",
-        "resolved": "0.49.1",
-        "contentHash": "wBZzyEbKqfPFFUPhV5E7/k4Kwy4UDO42IVzvzk0C4Pkjjw+NSd0EOBkIutYET4vJY4X81pD9ooQO9gfBGXj4+g==",
+        "resolved": "0.50.0",
+        "contentHash": "PrctsupqHEbyoP/iRL30awUWB0Z91i21myKl70qcPwoH6marEPkPyaPgzc37xFm9QSx+/jVBQGUH7tsn0mWGNQ==",
         "dependencies": {
-          "Spectre.Console": "0.49.1"
+          "Spectre.Console": "0.50.0"
         }
       },
       "System.Buffers": {
@@ -599,8 +599,8 @@
       },
       "System.Memory": {
         "type": "Transitive",
-        "resolved": "4.5.4",
-        "contentHash": "1MbJTHS1lZ4bS4FmsJjnuGJOu88ZzTT2rLvrhW7Ygic+pC0NWA+3hgAen0HRdsocuQXCkUTdFn9yHJJhsijDXw=="
+        "resolved": "4.6.3",
+        "contentHash": "qdcDOgnFZY40+Q9876JUHnlHu7bosOHX8XISRoH94fwk6hgaeQGSgfZd8srWRZNt5bV9ZW2TljcegDNxsf+96A=="
       },
       "System.Memory.Data": {
         "type": "Transitive",
@@ -902,7 +902,7 @@
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
           "Serilog.Sinks.Console": "[6.0.0, )",
           "ShellProgressBar": "[5.2.0, )",
-          "Spectre.Console": "[0.49.1, )",
+          "Spectre.Console": "[0.50.0, )",
           "Stryker.Abstractions": "[4.5.1, )",
           "Stryker.Configuration": "[4.5.1, )",
           "Stryker.DataCollector": "[4.5.1, )",
@@ -1215,9 +1215,12 @@
       },
       "Spectre.Console": {
         "type": "CentralTransitive",
-        "requested": "[0.49.1, )",
-        "resolved": "0.49.1",
-        "contentHash": "USV+pdu49OJ3nCjxNuw1K9Zw/c1HCBbwbjXZp0EOn6wM99tFdAtN34KEBZUMyRuJuXlUMDqhd8Yq9obW2MslYA=="
+        "requested": "[0.50.0, )",
+        "resolved": "0.50.0",
+        "contentHash": "gkwYncFqMjlPF6Yz8KeVsKWpdfv15sr6uKm+vXVa/8Q4tvx52LPzMQOO5m+bXwI3AGGFeY3cok3ZJbguYizswg==",
+        "dependencies": {
+          "System.Memory": "4.6.3"
+        }
       },
       "Stryker.Regex.Parser": {
         "type": "CentralTransitive",
