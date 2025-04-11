@@ -1,93 +1,94 @@
-//using System;
-//using System.Collections.Generic;
-//using System.IO.Abstractions;
-//using System.Reflection;
-//using Stryker.Abstractions.Exceptions;
-//using Stryker.Abstractions.ProjectComponents;
-//using Stryker.Core.TestRunners.MsTest.Setup;
+using System;
+using System.Collections.Generic;
+using System.IO.Abstractions;
+using System.Reflection;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Core.TestRunners.MsTest.Setup;
+using Stryker.TestRunner.TestProjects;
 
-//namespace Stryker.Core.TestRunners.MSTest.Setup;
+namespace Stryker.Core.TestRunners.MSTest.Setup;
 
-//internal class TestProjectLoader
-//{
-//    // Caches loaded assemblies
-//    private readonly Dictionary<string, ITestProject> _projects = [];
-//    private readonly Dictionary<string, ITestProject> _shadowProjects = [];
+internal class TestProjectLoader
+{
+    // Caches loaded assemblies
+    private readonly Dictionary<string, ITestProject> _projects = [];
+    private readonly Dictionary<string, ITestProject> _shadowProjects = [];
 
-//    private readonly IFileSystem _fileSystem;
-//    private readonly AssemblyCopy _assemblyCopy;
-   
-//    public TestProjectLoader(IFileSystem? fileSystem)
-//    {
-//        _fileSystem = fileSystem ?? new FileSystem();
-//        _assemblyCopy = new AssemblyCopy(_fileSystem);
-//    }
+    private readonly IFileSystem _fileSystem;
+    private readonly AssemblyCopy _assemblyCopy;
 
-//    public ITestProject Load(string path)
-//    {
-//        var isCached = _projects.TryGetValue(path, out var project);
+    public TestProjectLoader(IFileSystem? fileSystem)
+    {
+        _fileSystem = fileSystem ?? new FileSystem();
+        _assemblyCopy = new AssemblyCopy(_fileSystem);
+    }
 
-//        if (isCached)
-//        {
-//            return project!;
-//        }
+    public ITestProject Load(string path)
+    {
+        var isCached = _projects.TryGetValue(path, out var project);
 
-//        var assembly = LoadAssembly(path);
-//        var testProject = LoadTestProject(assembly);
+        if (isCached)
+        {
+            return project!;
+        }
 
-//        _projects.Add(path, testProject);
-//        return testProject;
-//    }
+        var assembly = LoadAssembly(path);
+        var testProject = LoadTestProject(assembly);
 
-//    public ITestProject LoadCopy(string path)
-//    {
-//        var isCached = _shadowProjects.TryGetValue(path, out var project);
-       
-//        if (isCached)
-//        {
-//            return project!;
-//        }
+        _projects.Add(path, testProject);
+        return testProject;
+    }
 
-//        // Find all .csproj files so we only copy referenced assemblies
-//        var root = DirectoryScanner.FindSolutionRoot(path);
-//        var csprojFiles = DirectoryScanner.FindCsprojFiles(root);
+    public ITestProject LoadCopy(string path)
+    {
+        var isCached = _shadowProjects.TryGetValue(path, out var project);
 
-//        // Makes a copy of the current assemblies
-//        var projectNames = _assemblyCopy.CopyProjects(csprojFiles, path);
-//        var copyPath = _assemblyCopy.CopyUnitTestProject(path, projectNames);
+        if (isCached)
+        {
+            return project!;
+        }
 
-//        // Loads the copy into memory
-//        var testAssembly = LoadAssembly(copyPath);
-//        var testProject = LoadTestProject(testAssembly);
+        // Find all .csproj files so we only copy referenced assemblies
+        var root = DirectoryScanner.FindSolutionRoot(path);
+        var csprojFiles = DirectoryScanner.FindCsprojFiles(root);
 
-//        _shadowProjects.Add(path, testProject);
-//        return testProject;
-//    }
+        // Makes a copy of the current assemblies
+        var projectNames = _assemblyCopy.CopyProjects(csprojFiles, path);
+        var copyPath = _assemblyCopy.CopyUnitTestProject(path, projectNames);
 
-//    private static Assembly LoadAssembly(string path)
-//    {
-//        try
-//        {
-//            // Loads the assembly in the default AssemblyLoadContext.
-//            // Locks the corresponding file for any IO-operations.
-//            return Assembly.LoadFrom(path);
-//        }
-//        catch
-//        {
-//            throw new GeneralStrykerException($"Could not load assembly from path: {path}");
-//        }
-//    }
+        // Loads the copy into memory
+        var testAssembly = LoadAssembly(copyPath);
+        var testProject = LoadTestProject(testAssembly);
 
-//    private static ITestProject LoadTestProject(Assembly assembly)
-//    {
-//        foreach (var reference in assembly.GetReferencedAssemblies())
-//        {
-//            if (reference.FullName?.Contains(MsTestProject.EntryPoint, StringComparison.OrdinalIgnoreCase) is true)
-//            {
-//                return MsTestProject.Create(assembly);
-//            }
-//        }
+        _shadowProjects.Add(path, testProject);
+        return testProject;
+    }
 
-//        throw new GeneralStrykerException("No supported test adapter found");
-//    }
-//}
+    private static Assembly LoadAssembly(string path)
+    {
+        try
+        {
+            // Loads the assembly in the default AssemblyLoadContext.
+            // Locks the corresponding file for any IO-operations.
+            return Assembly.LoadFrom(path);
+        }
+        catch
+        {
+            throw new GeneralStrykerException($"Could not load assembly from path: {path}");
+        }
+    }
+
+    private static ITestProject LoadTestProject(Assembly assembly)
+    {
+        foreach (var reference in assembly.GetReferencedAssemblies())
+        {
+            if (reference.FullName?.Contains(MsTestProject.EntryPoint, StringComparison.OrdinalIgnoreCase) is true)
+            {
+                return MsTestProject.Create(assembly);
+            }
+        }
+
+        throw new GeneralStrykerException("No supported test adapter found");
+    }
+}

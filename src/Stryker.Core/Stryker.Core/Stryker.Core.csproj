@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk/3.7.0">
   <PropertyGroup>
     <DebugType>Full</DebugType>
     <AssemblyName>Stryker.Core</AssemblyName>

@@ -27,6 +27,8 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Library.FSharp", "Library.F
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Library.FSharp.XUnit", "Library.FSharp.XUnit\Library.FSharp.XUnit.fsproj", "{E477F234-607E-4F10-9AEE-EC106AC40AC8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCoreTestProject.MSTestV2", "NetCoreTestProject.MSTestV2\NetCoreTestProject.MSTestV2.csproj", "{533B311C-9644-4AEF-B679-2B4F8AA6AD26}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,10 @@ Global
 		{E477F234-607E-4F10-9AEE-EC106AC40AC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E477F234-607E-4F10-9AEE-EC106AC40AC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E477F234-607E-4F10-9AEE-EC106AC40AC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{533B311C-9644-4AEF-B679-2B4F8AA6AD26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{533B311C-9644-4AEF-B679-2B4F8AA6AD26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{533B311C-9644-4AEF-B679-2B4F8AA6AD26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{533B311C-9644-4AEF-B679-2B4F8AA6AD26}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
