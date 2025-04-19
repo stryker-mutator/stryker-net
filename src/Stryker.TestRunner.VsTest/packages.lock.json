@@ -272,7 +272,7 @@
           "Microsoft.CodeAnalysis.Common": "[4.12.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[17.13.0, )",
           "Serilog": "[4.2.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.13, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.14, )"
         }
       },
       "stryker.datacollector": {
@@ -286,7 +286,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.TestPlatform.ObjectModel": "[17.13.0, )",
-          "Stryker.Abstractions": "[4.5.1, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "stryker.utilities": {
@@ -298,7 +298,7 @@
           "Microsoft.Extensions.Logging.Abstractions": "[9.0.4, )",
           "Mono.Cecil": "[0.11.6, )",
           "ResXResourceReader.NetStandard": "[1.3.0, )",
-          "Stryker.Abstractions": "[4.5.1, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "Buildalyzer": {
@@ -401,9 +401,9 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[22.0.13, )",
-        "resolved": "22.0.13",
-        "contentHash": "IdkOdnhmiK7wR3ObL/nUomw2tfEKtykUSefIhTOo6IhdBuywtbwj6F3zoXC/7KCD/7QxxP2jfax4s38daBQeMQ==",
+        "requested": "[22.0.14, )",
+        "resolved": "22.0.14",
+        "contentHash": "w8VwX0jiDSfj5bM+BopyZszvvEnQKDTNDp9pUKYwSOj34P9GAllmJ6kcGyye2IrzctdQs3xFpg8Vdsm8TrWfgQ==",
         "dependencies": {
           "Testably.Abstractions.FileSystem.Interface": "9.0.0"
         }
