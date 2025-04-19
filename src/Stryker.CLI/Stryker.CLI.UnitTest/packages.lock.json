@@ -910,7 +910,7 @@
           "Stryker.RegexMutators": "[4.5.1, )",
           "Stryker.TestRunner.VsTest": "[4.5.1, )",
           "Stryker.Utilities": "[4.5.1, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.13, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.14, )"
         }
       },
       "stryker.abstractions": {
@@ -922,7 +922,7 @@
           "Microsoft.CodeAnalysis.Common": "[4.12.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[17.13.0, )",
           "Serilog": "[4.2.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.13, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.14, )"
         }
       },
       "stryker.configuration": {
@@ -1230,7 +1230,7 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[22.0.13, )",
+        "requested": "[22.0.14, )",
         "resolved": "22.0.14",
         "contentHash": "w8VwX0jiDSfj5bM+BopyZszvvEnQKDTNDp9pUKYwSOj34P9GAllmJ6kcGyye2IrzctdQs3xFpg8Vdsm8TrWfgQ==",
         "dependencies": {
