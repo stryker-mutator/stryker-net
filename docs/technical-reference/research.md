@@ -21,7 +21,7 @@ The framework had to conform the following criteria:
 ## Options
 By looking at other frameworks two options could be found regarding architectures:
 * Mutating source code ([Stryker](https://stryker-mutator.io/))
-* Mutating byte code ([PiTest](http://pitest.org/))
+* Mutating byte code ([PiTest](https://pitest.org/))
 
 Later another architecture was found: mutant schemata (also dubbed mutation switching). This technique places all mutations inside if statements. Such an if statement could look like:
 ``` csharp
