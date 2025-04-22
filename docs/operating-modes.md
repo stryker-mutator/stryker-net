@@ -20,7 +20,7 @@ cd /my-solution-dir
 dotnet stryker
 ```
 
-You can also pass a solution file using the solution option ([see docs](https://stryker-mutator.io/docs/stryker-net/configuration/#solution-path)).
+You can also pass a solution file using the solution option ([see docs](./configuration.md#solution-path)).
 
 ```bash
 cd /my-solution-dir
@@ -40,7 +40,7 @@ dotnet stryker
 
 Stryker will automatically detect the source project based on the project reference.
 
-If your test project has multiple project references, you need to specify the source project with `--project <filename>` ([see docs](https://stryker-mutator.io/docs/stryker-net/configuration/#project-file-name)). You can only specify one source project at a time.
+If your test project has multiple project references, you need to specify the source project with `--project <filename>` ([see docs](./configuration.md#project-file-name)). You can only specify one source project at a time.
 
 ```bash
 cd /my-solution-dir/my-test-project-dir
@@ -58,11 +58,9 @@ cd /my-solution-dir/my-source-project-dir
 dotnet stryker --test-project "../my-test-project-dir/tests.csproj"
 ```
 
-If multiple test projects (ex unit tests, specs) target the same source project you need to specify each test project. You can include multiple test projects like this ([see docs](https://stryker-mutator.io/docs/stryker-net/configuration/#test-projects-string)):
+If multiple test projects (ex unit tests, specs) target the same source project you need to specify each test project. You can include multiple test projects like this ([see docs](./configuration.md#test-projects-string)):
 
 ```bash
 cd /my-solution-dir/my-source-project-dir
 dotnet stryker --test-project "../my-test-project-dir/Tests.csproj" --test-project "../my-test-project-dir/MoreTests.csproj"
 ```
-
-

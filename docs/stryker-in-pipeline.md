@@ -52,7 +52,7 @@ The following minimal steps are needed to use dashboard compare
 1. Choose a storage provider (Dashboard for public projects or Azure File Share for private projects)
 1. Set up authentication for the chosen storage provider 
 1. Set --version to the name of the source branch (usually current branch)
-1. Set any other options needed for your chosen storage provider (see: [storage provider docs](https://stryker-mutator.io/docs/stryker-net/configuration#baselineprovider-string))
+1. Set any other options needed for your chosen storage provider (see: [storage provider docs](./configuration.md#baselineprovider-string))
 
 Example for azure devops with dashboard storage provider:
 ```

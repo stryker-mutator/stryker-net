@@ -9,7 +9,7 @@ There are several ways of ignoring mutations in Stryker.NET. By using these opti
 
 ## Ignore mutations option
 
-Every occurrence of a specific mutation type can be ignored using the [ignore mutations](https://stryker-mutator.io/docs/stryker-net/configuration#ignore-mutations-string) option.
+Every occurrence of a specific mutation type can be ignored using the [ignore mutations](./configuration.md#ignore-mutations-string) option.
 
 ``` json
 "stryker-config": {
@@ -21,7 +21,7 @@ Every occurrence of a specific mutation type can be ignored using the [ignore mu
 
 ## Ignore methods option
 
-Specific method calls can be ignored using the [ignore methods](https://stryker-mutator.io/docs/stryker-net/configuration#ignore-methods-string) option.
+Specific method calls can be ignored using the [ignore methods](./configuration.md#ignore-methods-string) option.
 
 ``` json
 "stryker-config": {
@@ -37,7 +37,7 @@ _Note that this only ignores mutation inside the method calls, not the method de
 
 ## Mutate option
 
-Whole files can be ignored using the [mutate](https://stryker-mutator.io/docs/stryker-net/configuration#mutate-glob) option.
+Whole files can be ignored using the [mutate](./configuration.md#mutate-glob) option.
 
 ``` json
 "stryker-config": {
