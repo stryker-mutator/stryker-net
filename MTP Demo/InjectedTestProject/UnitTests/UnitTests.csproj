@@ -1,0 +1,16 @@
+<Project Sdk="MSTest.Sdk/3.6.3">
+	
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+	<StartupObject>UnitTests.Injected</StartupObject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TargetProject\TargetProject.csproj" />
+  </ItemGroup>
+
+</Project>
