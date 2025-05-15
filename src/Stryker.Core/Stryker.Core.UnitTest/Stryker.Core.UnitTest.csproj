@@ -2,35 +2,6 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="TestResources\ExampleSourceFile.cs" />
-    <Compile Remove="TestResources\ExampleTestFileA.cs" />
-    <Compile Remove="TestResources\ExampleTestFileB.cs" />
-    <Compile Remove="TestResources\ExampleTestFilePreprocessorSymbols.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="TestResources\StrongNameKeyFile.snk" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="TestResources\ExampleTestFilePreprocessorSymbols.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestResources\ExampleTestFileB.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestResources\ExampleTestFileA.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestResources\StrongNameKeyFile.snk">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="TestResources\ExampleSourceFile.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="LaunchDarkly.EventSource" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" />
