@@ -896,7 +896,7 @@
           "Microsoft.Web.LibraryManager.Build": "[3.0.71, )",
           "Mono.Cecil": "[0.11.6, )",
           "NuGet.Frameworks": "[6.14.0, )",
-          "Serilog": "[4.2.0, )",
+          "Serilog": "[4.3.0, )",
           "Serilog.Extensions.Logging": "[9.0.1, )",
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
           "Serilog.Sinks.Console": "[6.0.0, )",
@@ -920,7 +920,7 @@
           "Microsoft.CodeAnalysis.CSharp": "[4.12.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.12.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[17.13.0, )",
-          "Serilog": "[4.2.0, )",
+          "Serilog": "[4.3.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.14, )"
         }
       },
@@ -930,7 +930,7 @@
           "DotNet.Glob": "[3.1.3, )",
           "Microsoft.CodeAnalysis.CSharp": "[4.12.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.12.0, )",
-          "Serilog": "[4.2.0, )",
+          "Serilog": "[4.3.0, )",
           "Stryker.Abstractions": "[4.5.1, )",
           "Stryker.Utilities": "[4.5.1, )"
         }
@@ -1164,9 +1164,9 @@
       },
       "Serilog": {
         "type": "CentralTransitive",
-        "requested": "[4.2.0, )",
-        "resolved": "4.2.0",
-        "contentHash": "gmoWVOvKgbME8TYR+gwMf7osROiWAURterc6Rt2dQyX7wtjZYpqFiA/pY6ztjGQKKV62GGCyOcmtP1UKMHgSmA=="
+        "requested": "[4.3.0, )",
+        "resolved": "4.3.0",
+        "contentHash": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ=="
       },
       "Serilog.Extensions.Logging": {
         "type": "CentralTransitive",
