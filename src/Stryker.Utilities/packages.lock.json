@@ -280,7 +280,7 @@
           "Microsoft.CodeAnalysis.CSharp": "[4.12.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.12.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[17.13.0, )",
-          "Serilog": "[4.2.0, )",
+          "Serilog": "[4.3.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.14, )"
         }
       },
@@ -335,9 +335,9 @@
       },
       "Serilog": {
         "type": "CentralTransitive",
-        "requested": "[4.2.0, )",
-        "resolved": "4.2.0",
-        "contentHash": "gmoWVOvKgbME8TYR+gwMf7osROiWAURterc6Rt2dQyX7wtjZYpqFiA/pY6ztjGQKKV62GGCyOcmtP1UKMHgSmA=="
+        "requested": "[4.3.0, )",
+        "resolved": "4.3.0",
+        "contentHash": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ=="
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",

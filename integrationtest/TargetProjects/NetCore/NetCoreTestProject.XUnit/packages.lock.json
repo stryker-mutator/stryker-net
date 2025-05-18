@@ -73,8 +73,8 @@
       },
       "Serilog": {
         "type": "Transitive",
-        "resolved": "4.2.0",
-        "contentHash": "gmoWVOvKgbME8TYR+gwMf7osROiWAURterc6Rt2dQyX7wtjZYpqFiA/pY6ztjGQKKV62GGCyOcmtP1UKMHgSmA=="
+        "resolved": "4.3.0",
+        "contentHash": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ=="
       },
       "System.Collections.Immutable": {
         "type": "Transitive",
@@ -135,9 +135,9 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "[4.5.1, )",
+          "Library": "[1.0.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.12.0, )",
-          "Serilog": "[4.2.0, )"
+          "Serilog": "[4.3.0, )"
         }
       }
     }
