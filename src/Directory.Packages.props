@@ -40,7 +40,7 @@
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="coverlet.msbuild" Version="6.0.4" />
-    <PackageVersion Include="Moq" Version="4.20.71" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Stryker.Regex.Parser" Version="1.0.0" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.50.0" />
