@@ -21,7 +21,7 @@
     <PackageVersion Include="Mono.Cecil" Version="0.11.6" />
     <PackageVersion Include="NuGet.Frameworks" Version="6.14.0" />
     <PackageVersion Include="Serilog" Version="4.3.0" />
-    <PackageVersion Include="Serilog.Extensions.Logging" Version="9.0.1" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="9.0.2" />
     <PackageVersion Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageVersion Include="ShellProgressBar" Version="5.2.0" />
