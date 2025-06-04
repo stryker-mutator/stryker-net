@@ -29,12 +29,8 @@ public class RegexMutatorTest : TestBase
         var mutation = result.ShouldHaveSingleItem();
 
         mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
-        var replacementNode = mutation.ReplacementNode as InvocationExpressionSyntax;
+        var replacementNode = mutation.ReplacementNode as ObjectCreationExpressionSyntax;
         replacementNode.ShouldNotBeNull();
-        var memberAccess = replacementNode.Expression as MemberAccessExpressionSyntax;
-        memberAccess.ShouldBeNull(); // Ensure it's a simple invocation, not a member access
-        var identifier = (replacementNode.Expression as IdentifierNameSyntax)?.Identifier.Text;
-        identifier.ShouldBe("Regex");
         var argument = replacementNode.ArgumentList.Arguments.First().Expression as LiteralExpressionSyntax;
         argument.ShouldNotBeNull();
         argument.Token.ValueText.ShouldBe("abc");
@@ -115,7 +111,7 @@ public class RegexMutatorTest : TestBase
         var mutation = result.ShouldHaveSingleItem();
 
         mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
-        var replacementNode = mutation.ReplacementNode as InvocationExpressionSyntax;
+        var replacementNode = mutation.ReplacementNode as ObjectCreationExpressionSyntax;
         replacementNode.ShouldNotBeNull();
 
         var argumentList = replacementNode.ArgumentList;
