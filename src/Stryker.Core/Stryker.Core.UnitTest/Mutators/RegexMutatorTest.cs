@@ -29,8 +29,7 @@ public class RegexMutatorTest : TestBase
         var mutation = result.ShouldHaveSingleItem();
 
         mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
-        var replacement = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
-        replacement.Token.ValueText.ShouldBe("abc");
+        mutation.ReplacementNode.ToString().ShouldBe("new Regex(\"abc\")");
     }
 
     [TestMethod]
@@ -44,8 +43,7 @@ public class RegexMutatorTest : TestBase
         var mutation = result.ShouldHaveSingleItem();
 
         mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
-        var replacement = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
-        replacement.Token.ValueText.ShouldBe("abc");
+        mutation.ReplacementNode.ToString().ShouldBe("new System.Text.RegularExpressions.Regex(\"abc\")");
     }
 
 
@@ -79,10 +77,9 @@ public class RegexMutatorTest : TestBase
 
         result.Count().ShouldBe(2);
         result.ShouldAllBe(mutant => mutant.DisplayName == "Regex anchor removal mutation");
-        var first = result.First().ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
-        var last = result.Last().ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
-        first.Token.ValueText.ShouldBe("abc$");
-        last.Token.ValueText.ShouldBe("^abc");
+
+        result.First().ReplacementNode.ToString().ShouldBe("new Regex(\"abc$\")");
+        result.Last().ReplacementNode.ToString().ShouldBe("new Regex(\"^abc\")");
     }
 
     [TestMethod]
@@ -96,7 +93,6 @@ public class RegexMutatorTest : TestBase
         var mutation = result.ShouldHaveSingleItem();
 
         mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
-        var replacement = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
-        replacement.Token.ValueText.ShouldBe("abc");
+        mutation.ReplacementNode.ToString().ShouldBe("new Regex(options: RegexOptions.None, pattern: \"abc\")");
     }
 }
