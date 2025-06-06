@@ -28,16 +28,16 @@
     <PackageVersion Include="Spectre.Console" Version="0.50.0" />
     <PackageVersion Include="Spectre.Console.Analyzer" Version="1.0.0" />
     <PackageVersion Include="System.Net.Http.Json" Version="9.0.5" />
-    <PackageVersion Include="Microsoft.TestPlatform" Version="17.14.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.14.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.14.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.14.0" />
+    <PackageVersion Include="Microsoft.TestPlatform" Version="17.14.1" />
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.14.1" />
+    <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.14.1" />
+    <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.14.1" />
     <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.0.14" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.5" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="coverlet.msbuild" Version="6.0.4" />
     <PackageVersion Include="Moq" Version="4.20.72" />
