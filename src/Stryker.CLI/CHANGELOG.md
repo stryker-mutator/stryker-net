@@ -1,3 +1,12 @@
+# [4.6.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.5.1...dotnet-stryker@4.6.0) (2025-06-06)
+
+
+### Bug Fixes
+
+* Typo in exception message ([#3197](https://github.com/stryker-mutator/stryker-net/issues/3197)) ([b873b62](https://github.com/stryker-mutator/stryker-net/commit/b873b6268c7bdd9ca7529ac50e6329d05327f389))
+
+
+
 ## [4.5.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.5.0...dotnet-stryker@4.5.1) (2025-02-04)
 
 

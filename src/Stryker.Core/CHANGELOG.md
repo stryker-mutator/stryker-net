@@ -1,3 +1,20 @@
+# [4.6.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.5.1...stryker@4.6.0) (2025-06-06)
+
+
+### Bug Fixes
+
+* adjust RegexMutator to handle new parsing orchestration ([#3252](https://github.com/stryker-mutator/stryker-net/issues/3252)) ([c92b149](https://github.com/stryker-mutator/stryker-net/commit/c92b149ff1f0a37802f34a6693288e2e31692bb4))
+* Improve project analysis when normal analysis fails ([#3184](https://github.com/stryker-mutator/stryker-net/issues/3184)) ([8d1bb7a](https://github.com/stryker-mutator/stryker-net/commit/8d1bb7a966321f52a8c9b1614c395d4bb8e09fe2))
+
+
+### Features
+
+* **mutating:** Mutate unsigned right-shift operator ([#3200](https://github.com/stryker-mutator/stryker-net/issues/3200)) ([f02d015](https://github.com/stryker-mutator/stryker-net/commit/f02d015f777ca85376f58cdef9c4bc1e15805029))
+* **mutating:** Support static using references for Math mutations ([#3205](https://github.com/stryker-mutator/stryker-net/issues/3205)) ([8739133](https://github.com/stryker-mutator/stryker-net/commit/87391336949f11a4ddbf497c6ef9f7e0f375f0ff)), closes [#2933](https://github.com/stryker-mutator/stryker-net/issues/2933) [#2933](https://github.com/stryker-mutator/stryker-net/issues/2933) [#2933](https://github.com/stryker-mutator/stryker-net/issues/2933) [#2933](https://github.com/stryker-mutator/stryker-net/issues/2933) [#2933](https://github.com/stryker-mutator/stryker-net/issues/2933)
+* **mutation:** LINQ Append/Prepend mutation ([#3199](https://github.com/stryker-mutator/stryker-net/issues/3199)) ([3e91f5d](https://github.com/stryker-mutator/stryker-net/commit/3e91f5d353bd3f3c12c3dc0c22cba8190c52c0e4))
+
+
+
 ## [4.5.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.5.0...stryker@4.5.1) (2025-02-04)
 
 
