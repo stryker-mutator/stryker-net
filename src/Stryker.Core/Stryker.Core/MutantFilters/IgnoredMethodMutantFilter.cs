@@ -45,6 +45,9 @@ public sealed class IgnoredMethodMutantFilter : IMutantFilter
             ObjectCreationExpressionSyntax creation => MatchesAnIgnoredMethod(
                 _triviaRemover.Visit(creation.Type) + ".ctor", options),
 
+            ImplicitObjectCreationExpressionSyntax creation => MatchesAnIgnoredMethod(
+                _triviaRemover.Visit(creation.FirstAncestorOrSelf<VariableDeclarationSyntax>().Type) + ".ctor", options),
+
             ConditionalAccessExpressionSyntax conditional => IsPartOfIgnoredMethodCall(conditional.WhenNotNull, options,
                 false),
 
