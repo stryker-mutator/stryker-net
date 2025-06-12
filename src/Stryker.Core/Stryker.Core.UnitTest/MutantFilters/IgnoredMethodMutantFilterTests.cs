@@ -265,6 +265,35 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
     }
 
     [TestMethod]
+    public void MutantFilter_WorksWithImplicitNew()
+    {
+        // Arrange
+        var source = @"
+public class IgnoredMethodMutantFilter_NestedMethodCalls
+{
+    private void TestMethod()
+    {
+        Dispose(new(""anchor""));
+    }
+}";
+        var options = new StrykerOptions
+        {
+            IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "*.ctor" } }.Validate()
+        };
+
+        var sut = new IgnoredMethodMutantFilter();
+
+            foreach (var (mutant, label) in BuildMutantsToFilter(source, "anchor"))
+            {
+                // Act
+                var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
+
+            // Assert
+            filteredMutants.ShouldContain(mutant, $"{label} should have not been filtered out.");
+        }
+    }
+
+    [TestMethod]
     [DataRow("Dispose")]
     [DataRow("Dispose*")]
     [DataRow("*Dispose")]
