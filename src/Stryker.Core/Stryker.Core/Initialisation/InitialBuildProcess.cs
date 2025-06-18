@@ -11,7 +11,7 @@ namespace Stryker.Core.Initialisation;
 public interface IInitialBuildProcess
 {
     void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration = null,
-        string msbuildPath = null);
+        string msbuildPath = null, string targetFramework = null);
 }
 
 public class InitialBuildProcess : IInitialBuildProcess
@@ -25,7 +25,7 @@ public class InitialBuildProcess : IInitialBuildProcess
         _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
     }
 
-    public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration = null,
+    public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration = null, string targetFramework = null,
         string msbuildPath = null)
     {
         if (fullFramework && string.IsNullOrEmpty(solutionPath))
@@ -40,7 +40,11 @@ public class InitialBuildProcess : IInitialBuildProcess
         var target = !string.IsNullOrEmpty(solutionPath) ? solutionPath : projectPath;
         var buildPath = Path.GetFileName(target);
         var directoryName = Path.GetDirectoryName(target);
-        var (result, exe, args) = msBuildHelper.BuildProject(directoryName, buildPath, fullFramework, configuration);
+        var (result, exe, args) = msBuildHelper.BuildProject(directoryName,
+            buildPath,
+            fullFramework,
+            configuration: configuration,
+            forcedFramework: targetFramework);
 
         if (result.ExitCode != ExitCodes.Success && !string.IsNullOrEmpty(solutionPath))
         {
@@ -51,7 +55,8 @@ public class InitialBuildProcess : IInitialBuildProcess
                 buildPath,
                 true,
                 configuration,
-                "-t:restore -p:RestorePackagesConfig=true");
+                "-t:restore -p:RestorePackagesConfig=true", forcedFramework: targetFramework);
+
             if (result.ExitCode != ExitCodes.Success)
             {
                 _logger.LogWarning("Package restore failed: {Result}", result.Output);
@@ -60,7 +65,8 @@ public class InitialBuildProcess : IInitialBuildProcess
             (result, exe, args) = msBuildHelper.BuildProject(directoryName,
                 buildPath,
                 true,
-                configuration);
+                configuration
+                , forcedFramework: targetFramework);
         }
 
         CheckBuildResult(result, target, exe, args);

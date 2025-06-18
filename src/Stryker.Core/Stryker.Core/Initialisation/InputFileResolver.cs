@@ -195,6 +195,7 @@ public class InputFileResolver : IInputFileResolver
             buildResult = [SelectAnalyzerResult(buildResult, entry.framework)];
         }
 
+        // apply project name filter (except for test projects)
         if (isTestProject || normalizedProjectUnderTestNameFilter == null ||
             project.ProjectFile.Path.Replace('\\', '/')
                 .Contains(normalizedProjectUnderTestNameFilter, StringComparison.InvariantCultureIgnoreCase))
@@ -278,6 +279,13 @@ public class InputFileResolver : IInputFileResolver
             // check the new status
             buildResultOverallSuccess = Array.TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
                 buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
+
+            if (!buildResultOverallSuccess && !string.IsNullOrEmpty(options.TargetFramework))
+            {
+                // still failed, we can try using targeframework option
+               buildResult = project.Build(options.TargetFramework);
+               buildResultOverallSuccess = buildResult.Any( br => IsValid(br) && br.TargetFramework == options.TargetFramework);
+            }
         }
 
         LogAnalyzerResult(buildResult, options);

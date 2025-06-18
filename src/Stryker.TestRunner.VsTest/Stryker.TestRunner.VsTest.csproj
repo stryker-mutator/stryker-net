@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <PackageReference Include="Microsoft.TestPlatform.Portable" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" />
+    <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
