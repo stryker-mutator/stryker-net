@@ -1,4 +1,5 @@
 using System.IO;
+using System.IO.Abstractions;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Configuration;
@@ -17,14 +18,16 @@ public interface IInitialBuildProcess
 public class InitialBuildProcess : IInitialBuildProcess
 {
     private readonly IProcessExecutor _processExecutor;
+    private readonly IFileSystem _fileSystem;
     private readonly ILogger _logger;
 
-    public InitialBuildProcess(IProcessExecutor processExecutor = null)
+    public InitialBuildProcess(IProcessExecutor processExecutor = null, IFileSystem fileSystem = null)
     {
         _processExecutor = processExecutor ?? new ProcessExecutor();
+        _fileSystem = fileSystem ?? new FileSystem();
         _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
     }
-
+    
     public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration = null, string targetFramework = null,
         string msbuildPath = null)
     {
@@ -33,13 +36,13 @@ public class InitialBuildProcess : IInitialBuildProcess
             throw new InputException("Stryker could not build your project as no solution file was presented. Please pass the solution path to stryker.");
         }
 
-        var msBuildHelper = new MsBuildHelper(executor: _processExecutor, msBuildPath: msbuildPath);
+        var msBuildHelper = new MsBuildHelper(fileSystem: _fileSystem, executor: _processExecutor, msBuildPath: msbuildPath);
 
         _logger.LogDebug("Started initial build using dotnet build");
 
         var target = !string.IsNullOrEmpty(solutionPath) ? solutionPath : projectPath;
-        var buildPath = Path.GetFileName(target);
-        var directoryName = Path.GetDirectoryName(target);
+        var buildPath = _fileSystem.Path.GetFileName(target);
+        var directoryName = _fileSystem.Path.GetDirectoryName(target);
         var (result, exe, args) = msBuildHelper.BuildProject(directoryName,
             buildPath,
             fullFramework,

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions.TestingHelpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
@@ -13,9 +14,12 @@ namespace Stryker.Core.UnitTest.Initialisation;
 [TestClass]
 public class InitialBuildProcessTests : TestBase
 {
-    private readonly string _cProjectsExampleCsproj;
+    private readonly string _cProjectsExampleCsproj = Environment.OSVersion.Platform == PlatformID.Win32NT ? @"C:\Projects \Example.csproj" : "/usr/projects/Example.csproj";
 
-    public InitialBuildProcessTests() => _cProjectsExampleCsproj = Environment.OSVersion.Platform == PlatformID.Win32NT ? @"C:\Projects \Example.csproj" : "/usr/projects/Example.csproj";
+    private readonly MockFileSystem _mockFileSystem = new(new Dictionary<string, MockFileData>
+    {
+        [@"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe"] = new("msbuild code")
+    });
 
     [TestMethod]
     public void InitialBuildProcess_ShouldThrowStrykerInputExceptionOnFail()
@@ -24,7 +28,7 @@ public class InitialBuildProcessTests : TestBase
 
         processMock.SetupProcessMockToReturn("", 1);
 
-        var target = new InitialBuildProcess(processMock.Object);
+        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem);
 
         Should.Throw<InputException>(() => target.InitialBuild(false, _cProjectsExampleCsproj, null))
             .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"dotnet build Example.csproj\"");
@@ -38,7 +42,7 @@ public class InitialBuildProcessTests : TestBase
 
         processMock.SetupProcessMockToReturn("", 1);
 
-        var target = new InitialBuildProcess(processMock.Object);
+        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem);
 
         Should.Throw<InputException>(() => target.InitialBuild(true, null, _cProjectsExampleCsproj, null, @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
             .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
@@ -53,9 +57,9 @@ public class InitialBuildProcessTests : TestBase
 
         processMock.SetupProcessMockToReturn("", 2);
 
-        var target = new InitialBuildProcess(processMock.Object);
+        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem);
 
-        Should.Throw<InputException>(() => target.InitialBuild(false, null, _cProjectsExampleCsproj, null, @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
+        Should.Throw<InputException>(() => target.InitialBuild(false, null, _cProjectsExampleCsproj, null, null, @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
             .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
                               @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" " + Path.GetFileName(_cProjectsExampleCsproj) + "\"");
 
@@ -70,7 +74,7 @@ public class InitialBuildProcessTests : TestBase
 
         processMock.SetupProcessMockToReturn("");
 
-        var target = new InitialBuildProcess(processMock.Object);
+        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem);
 
         target.InitialBuild(false, "/", "/");
 
@@ -78,15 +82,21 @@ public class InitialBuildProcessTests : TestBase
             It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Once);
     }
 
+    // Stryker should be able to find and run MsBuild on DotnetFramework
     [TestMethodWithIgnoreIfSupport]
     [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
-    public void InitialBuildProcess_ShouldRunMsBuildOnDotnetFramework()
+    [DataRow( @"C:\Windows\Microsoft.Net\Framework64\v2.0.50727\MSBuild.exe")]
+    [DataRow( @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe")]
+    [DataRow(  @"C:\Windows\Microsoft.Net\Framework\v2.0.50727\MSBuild.exe")]
+    public void InitialBuildProcess_ShouldRunMsBuildOnDotnetFramework(string msBuildLocation)
     {
         var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
-
         processMock.SetupProcessMockToReturn("");
 
-        var target = new InitialBuildProcess(processMock.Object);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.AddFile(msBuildLocation, new MockFileData("Mocked MsBuild Executable"));
+
+        var target = new InitialBuildProcess(processMock.Object, mockFileSystem);
 
         target.InitialBuild(true, "./ExampleProject.sln", "./ExampleProject.sln", "Debug");
 
@@ -103,15 +113,18 @@ public class InitialBuildProcessTests : TestBase
     public void InitialBuildProcess_ShouldUseCustomMsbuildIfNotNull()
     {
         var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+        var mockFileSystem = new MockFileSystem();
+        const string CustomMsBuildPath = "C:/User/Test/Msbuild.exe";
+
+        mockFileSystem.AddFile(CustomMsBuildPath, new MockFileData("Mocked MsBuild Executable"));
 
         processMock.SetupProcessMockToReturn("");
 
-        var target = new InitialBuildProcess(processMock.Object);
+        var target = new InitialBuildProcess(processMock.Object, mockFileSystem);
 
-        var customMsBuildPath = "C:/User/Test/Msbuild.exe";
-        target.InitialBuild(true, "/", "./ExampleProject.sln", null, customMsBuildPath);
+        target.InitialBuild(true, "/", "./ExampleProject.sln", null, null, CustomMsBuildPath);
         processMock.Verify(x => x.Start(It.IsAny<string>(),
-                It.Is<string>(applicationParam => applicationParam == customMsBuildPath),
+                It.Is<string>(applicationParam => applicationParam == CustomMsBuildPath),
                 It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
                 It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
                 It.IsAny<int>()),
@@ -125,7 +138,7 @@ public class InitialBuildProcessTests : TestBase
 
         processMock.SetupProcessMockToReturn("");
 
-        var target = new InitialBuildProcess(processMock.Object);
+        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem);
 
         target.InitialBuild(false, "./ExampleProject.csproj", null);
 
@@ -144,7 +157,7 @@ public class InitialBuildProcessTests : TestBase
 
         processMock.SetupProcessMockToReturn("");
 
-        var target = new InitialBuildProcess(processMock.Object);
+        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem);
 
         target.InitialBuild(false, "", "./ExampleProject.sln");
 

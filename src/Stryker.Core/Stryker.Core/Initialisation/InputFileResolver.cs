@@ -247,7 +247,19 @@ public class InputFileResolver : IInputFileResolver
         }
         var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
         _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
-        var buildResult = project.Build();
+
+
+        IAnalyzerResults buildResult;
+
+        var env = new EnvironmentOptions();
+
+        if (!string.IsNullOrEmpty(options.MsBuildPath))
+        {
+            // we need to forward this path to buildalyzer
+            env.EnvironmentVariables[EnvironmentVariables.MSBUILD_EXE_PATH] = options.MsBuildPath;
+        }
+
+        buildResult = project.Build(env);
 
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
             TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
