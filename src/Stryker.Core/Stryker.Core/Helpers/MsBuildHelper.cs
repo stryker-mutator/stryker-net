@@ -71,7 +71,8 @@ public class MsBuildHelper
         return _msBuildPath;
     }
 
-    public (ProcessResult result, string exe, string command) BuildProject(string path, string projectFile, bool usingMsBuild, string configuration = null, string options = null)
+    public (ProcessResult result, string exe, string command) BuildProject(string path, string projectFile, bool usingMsBuild
+        , string configuration = null, string options = null, string forcedFramework = null)
     {
         var (exe, command) = usingMsBuild ? GetMsBuildExeAndCommand() : ("dotnet", "build");
 

@@ -195,6 +195,7 @@ public class InputFileResolver : IInputFileResolver
             buildResult = [SelectAnalyzerResult(buildResult, entry.framework)];
         }
 
+        // apply project name filter (except for test projects)
         if (isTestProject || normalizedProjectUnderTestNameFilter == null ||
             project.ProjectFile.Path.Replace('\\', '/')
                 .Contains(normalizedProjectUnderTestNameFilter, StringComparison.InvariantCultureIgnoreCase))
@@ -246,7 +247,19 @@ public class InputFileResolver : IInputFileResolver
         }
         var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
         _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
-        var buildResult = project.Build();
+
+
+        IAnalyzerResults buildResult;
+
+        var env = new EnvironmentOptions();
+
+        if (!string.IsNullOrEmpty(options.MsBuildPath))
+        {
+            // we need to forward this path to buildalyzer
+            env.EnvironmentVariables[EnvironmentVariables.MSBUILD_EXE_PATH] = options.MsBuildPath;
+        }
+
+        buildResult = project.Build(env);
 
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
             TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
@@ -278,6 +291,13 @@ public class InputFileResolver : IInputFileResolver
             // check the new status
             buildResultOverallSuccess = Array.TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
                 buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
+
+            if (!buildResultOverallSuccess && !string.IsNullOrEmpty(options.TargetFramework))
+            {
+                // still failed, we can try using targeframework option
+               buildResult = project.Build(options.TargetFramework);
+               buildResultOverallSuccess = buildResult.Any( br => IsValid(br) && br.TargetFramework == options.TargetFramework);
+            }
         }
 
         LogAnalyzerResult(buildResult, options);

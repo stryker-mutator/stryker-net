@@ -207,10 +207,17 @@ Generated source code may be missing.", analyzer);
     public static bool IsSignedAssembly(this IAnalyzerResult analyzerResult) =>
         analyzerResult.GetPropertyOrDefault("SignAssembly", false);
 
-    public static string GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult)
+    public static string? GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult)
     {
         var assemblyKeyFileProp = analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile");
-        return assemblyKeyFileProp is null ? null : Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath) ?? ".", assemblyKeyFileProp);
+        if (assemblyKeyFileProp is not null)
+        {
+            return Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath) ?? ".", assemblyKeyFileProp);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public static ImmutableDictionary<string, ReportDiagnostic> GetDiagnosticOptions(
