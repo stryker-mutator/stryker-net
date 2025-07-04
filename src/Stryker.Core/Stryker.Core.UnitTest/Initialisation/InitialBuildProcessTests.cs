@@ -44,7 +44,8 @@ public class InitialBuildProcessTests : TestBase
 
         var target = new InitialBuildProcess(processMock.Object, _mockFileSystem);
 
-        Should.Throw<InputException>(() => target.InitialBuild(true, null, _cProjectsExampleCsproj, null, @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
+        Should.Throw<InputException>(() => target.InitialBuild(true, null, _cProjectsExampleCsproj, null, null,
+                @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
             .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
                               @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" " + Path.GetFileName(_cProjectsExampleCsproj) + "\"");
     }
@@ -61,7 +62,7 @@ public class InitialBuildProcessTests : TestBase
 
         Should.Throw<InputException>(() => target.InitialBuild(false, null, _cProjectsExampleCsproj, null, null, @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
             .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
-                              @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" " + Path.GetFileName(_cProjectsExampleCsproj) + "\"");
+                              @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" " + _mockFileSystem.Path.GetFileName(_cProjectsExampleCsproj) + "\"");
 
         processMock.Verify(x => x.Start(It.IsAny<string>(), It.Is<string>(app => app.Contains("dotnet")), It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Once());
         processMock.Verify(x => x.Start(It.IsAny<string>(), It.Is<string>(app => app.Contains("MSBuild.exe")), It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(2));
