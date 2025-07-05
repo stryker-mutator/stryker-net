@@ -71,7 +71,8 @@ public class MsBuildHelper
         return _msBuildPath;
     }
 
-    public (ProcessResult result, string exe, string command) BuildProject(string path, string projectFile, bool usingMsBuild, string configuration = null, string options = null)
+    public (ProcessResult result, string exe, string command) BuildProject(string path, string projectFile, bool usingMsBuild
+        , string configuration = null, string options = null, string forcedFramework = null)
     {
         var (exe, command) = usingMsBuild ? GetMsBuildExeAndCommand() : ("dotnet", "build");
 
@@ -97,12 +98,12 @@ public class MsBuildHelper
     {
         foreach (var drive in Directory.GetLogicalDrives())
         {
-            var visualStudioPath = Path.Combine(drive, "Program Files (x86)", "Microsoft Visual Studio");
+            var visualStudioPath = _fileSystem.Path.Combine(drive, "Program Files (x86)", "Microsoft Visual Studio");
             if (!_fileSystem.Directory.Exists(visualStudioPath))
                 continue;
             _logger.LogDebug("Using vswhere.exe to locate msbuild");
 
-            var vsWherePath = Path.Combine(visualStudioPath, "Installer", "vswhere.exe");
+            var vsWherePath = _fileSystem.Path.Combine(visualStudioPath, "Installer", "vswhere.exe");
             var vsWhereCommand =
                 $@"-{version} -requires Microsoft.Component.MSBuild -products * -find MSBuild\**\Bin\MSBuild.exe";
             var vsWhereResult = _executor.Start(visualStudioPath, vsWherePath, vsWhereCommand);

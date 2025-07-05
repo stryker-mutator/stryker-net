@@ -188,6 +188,74 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
     }
 
     [TestMethod]
+    public void ShouldUseCustomMsBuildPath()
+    {
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectPath, new MockFileData(_defaultTestProjectFileContents) },
+            { Path.Combine(_sourcePath, "Recursive.cs"), new MockFileData(_sourceFile) },
+            { Path.Combine(_sourcePath, "Plain.cs"), new MockFileData(_sourceFile) },
+            {
+                Path.Combine(_sourcePath, "OneFolderDeeperOneFolderDeeper", "Deep", "Recursive.cs"),
+                new MockFileData(_sourceFile)
+            },
+            {
+                Path.Combine(_sourcePath, "OneFolderDeeperOneFolderDeeper", "Deep2", "Recursive.cs"),
+                new MockFileData(_sourceFile)
+            },
+            { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath,
+            fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, _sourceProjectPath, ["netcoreapp2.1"]);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+
+        var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
+
+        var options = new StrykerOptions { MsBuildPath = "\\msbuild.exe",ProjectPath = _testPath };
+        var result = target.ResolveSourceProjectInfos(options).First();
+
+        result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
+    }
+
+
+    [TestMethod]
+    public void ShouldHandleFailedAnalysis()
+    {
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectPath, new MockFileData(_defaultTestProjectFileContents) },
+            { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+            { Path.Combine(_sourcePath, "Recursive.cs"), new MockFileData(_sourceFile) },
+            { Path.Combine(_sourcePath, "Plain.cs"), new MockFileData(_sourceFile) },
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath,
+            fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, _sourceProjectPath, ["netcoreapp2.1"], success: false);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+
+        var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
+
+        var action = () => target.ResolveSourceProjectInfos(_options).First();
+        action.ShouldThrow<InputException>();
+    }
+
+    [TestMethod]
     public void InitializeShouldNotSkipXamlFiles()
     {
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
