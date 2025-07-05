@@ -249,8 +249,6 @@ public class InputFileResolver : IInputFileResolver
         _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
 
 
-        IAnalyzerResults buildResult;
-
         var env = new EnvironmentOptions();
 
         if (!string.IsNullOrEmpty(options.MsBuildPath))
@@ -259,7 +257,7 @@ public class InputFileResolver : IInputFileResolver
             env.EnvironmentVariables[EnvironmentVariables.MSBUILD_EXE_PATH] = options.MsBuildPath;
         }
 
-        buildResult = project.Build(env);
+        var buildResult = project.Build(env);
 
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
             TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
