@@ -1,3 +1,12 @@
+# [4.7.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.6.0...dotnet-stryker@4.7.0) (2025-07-08)
+
+
+### Features
+
+* **build:** Improve targetframework and msbuild-path options ([#3262](https://github.com/stryker-mutator/stryker-net/issues/3262)) ([6c0f9d9](https://github.com/stryker-mutator/stryker-net/commit/6c0f9d9ad96c792b4108f56b0705062592f4a5ec))
+
+
+
 # [4.6.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.5.1...dotnet-stryker@4.6.0) (2025-06-06)
 
 

@@ -1,3 +1,17 @@
+# [4.7.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.6.0...stryker@4.7.0) (2025-07-08)
+
+
+### Bug Fixes
+
+* Safe parsing of implicit new in IgnoreMutantFilter ([#3258](https://github.com/stryker-mutator/stryker-net/issues/3258)) ([fad30b7](https://github.com/stryker-mutator/stryker-net/commit/fad30b7051dc69ec6ff4a2f6910a51d248fe156e))
+
+
+### Features
+
+* **build:** Improve targetframework and msbuild-path options ([#3262](https://github.com/stryker-mutator/stryker-net/issues/3262)) ([6c0f9d9](https://github.com/stryker-mutator/stryker-net/commit/6c0f9d9ad96c792b4108f56b0705062592f4a5ec))
+
+
+
 # [4.6.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.5.1...stryker@4.6.0) (2025-06-06)
 
 
