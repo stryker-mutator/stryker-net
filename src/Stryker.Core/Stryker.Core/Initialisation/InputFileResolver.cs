@@ -195,6 +195,7 @@ public class InputFileResolver : IInputFileResolver
             buildResult = [SelectAnalyzerResult(buildResult, entry.framework)];
         }
 
+        // apply project name filter (except for test projects)
         if (isTestProject || normalizedProjectUnderTestNameFilter == null ||
             project.ProjectFile.Path.Replace('\\', '/')
                 .Contains(normalizedProjectUnderTestNameFilter, StringComparison.InvariantCultureIgnoreCase))
@@ -246,7 +247,17 @@ public class InputFileResolver : IInputFileResolver
         }
         var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
         _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
-        var buildResult = project.Build();
+
+
+        var env = new EnvironmentOptions();
+
+        if (!string.IsNullOrEmpty(options.MsBuildPath))
+        {
+            // we need to forward this path to buildalyzer
+            env.EnvironmentVariables[EnvironmentVariables.MSBUILD_EXE_PATH] = options.MsBuildPath;
+        }
+
+        var buildResult = project.Build(env);
 
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
             TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
@@ -255,29 +266,7 @@ public class InputFileResolver : IInputFileResolver
         if (!buildResultOverallSuccess)
         {
             // if this is a full framework project, we can retry after a nuget restore
-            if (buildResult.Any(r => !IsValid(r) && r.TargetsFullFramework()))
-            {
-                _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
-
-                if (options.DevMode)
-                {
-                    _logger.LogWarning("The MsBuild log is below.");
-                    _logger.LogInformation(_buildalyzerLog.ToString());
-                    _buildalyzerLog.GetStringBuilder().Clear();
-                }
-
-                _nugetRestoreProcess.RestorePackages(options.SolutionPath, options.MsBuildPath ?? buildResult.First().MsBuildPath());
-            }
-            var buildOptions = new EnvironmentOptions
-            {
-                Restore = true
-            };
-            // retry the analysis
-            buildResult = project.Build(buildOptions);
-
-            // check the new status
-            buildResultOverallSuccess = Array.TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
-                buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
+            buildResult = RetryBuild(project, options, projectLogName, buildResult, out buildResultOverallSuccess);
         }
 
         LogAnalyzerResult(buildResult, options);
@@ -286,6 +275,7 @@ public class InputFileResolver : IInputFileResolver
             _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", projectLogName);
             return buildResult;
         }
+
         var failedFrameworks = project.ProjectFile.TargetFrameworks.Where(tf =>
             !buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)).ToList();
         _logger.LogWarning(
@@ -300,6 +290,43 @@ public class InputFileResolver : IInputFileResolver
 
         // if there is no valid result, drop it altogether
         return buildResult.All(br => !IsValid(br)) ? new AnalyzerResults() : buildResult;
+    }
+
+    private IAnalyzerResults RetryBuild(IProjectAnalyzer project, IStrykerOptions options, string projectLogName,
+        IAnalyzerResults buildResult, out bool buildResultOverallSuccess)
+    {
+        if (buildResult.Any(r => !IsValid(r) && r.TargetsFullFramework()))
+        {
+            _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
+
+            if (options.DevMode)
+            {
+                _logger.LogWarning("The MsBuild log is below.");
+                _logger.LogInformation(_buildalyzerLog.ToString());
+                _buildalyzerLog.GetStringBuilder().Clear();
+            }
+
+            _nugetRestoreProcess.RestorePackages(options.SolutionPath, options.MsBuildPath ?? buildResult.First().MsBuildPath());
+        }
+        var buildOptions = new EnvironmentOptions
+        {
+            Restore = true
+        };
+        // retry the analysis
+        buildResult = project.Build(buildOptions);
+
+        // check the new status
+        buildResultOverallSuccess = Array.TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
+            buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
+
+        if (!buildResultOverallSuccess && !string.IsNullOrEmpty(options.TargetFramework))
+        {
+            // still failed, we can try using targeframework option
+            buildResult = project.Build(options.TargetFramework);
+            buildResultOverallSuccess = buildResult.Any( br => IsValid(br) && br.TargetFramework == options.TargetFramework);
+        }
+
+        return buildResult;
     }
 
     private void LogAnalyzerResult(IAnalyzerResults analyzerResults, IStrykerOptions options)
