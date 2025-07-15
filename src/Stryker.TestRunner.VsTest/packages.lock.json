@@ -295,7 +295,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.TestPlatform.ObjectModel": "[17.14.1, )",
-          "Stryker.Abstractions": "[4.7.0, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "stryker.utilities": {
@@ -307,7 +307,7 @@
           "Microsoft.Extensions.Logging.Abstractions": "[9.0.7, )",
           "Mono.Cecil": "[0.11.6, )",
           "ResXResourceReader.NetStandard": "[1.3.0, )",
-          "Stryker.Abstractions": "[4.7.0, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "Buildalyzer": {
