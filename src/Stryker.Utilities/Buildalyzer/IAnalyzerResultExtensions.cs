@@ -207,6 +207,9 @@ Generated source code may be missing.", analyzer);
     public static bool IsSignedAssembly(this IAnalyzerResult analyzerResult) =>
         analyzerResult.GetPropertyOrDefault("SignAssembly", false);
 
+    public static bool IsDelayedSignedAssembly(this IAnalyzerResult analyzerResult) =>
+            analyzerResult.GetPropertyOrDefault("DelaySign", false);
+
     public static string? GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult)
     {
         var assemblyKeyFileProp = analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile");
