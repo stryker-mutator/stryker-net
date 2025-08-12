@@ -3,6 +3,7 @@ using System.Linq;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json.SourceFiles;
 using Stryker.Core.Reporters.Json.TestFiles;
 
@@ -25,18 +26,23 @@ public class JsonReport : IJsonReport
 
         ProjectRoot = mutationReport.FullPath;
 
-        Merge(Files, GenerateReportComponents(mutationReport));
+        Merge(Files, GenerateReportComponents(options, mutationReport));
         AddTestFiles(testProjectsInfo);
     }
 
     public static IJsonReport Build(IStrykerOptions options, IReadOnlyProjectComponent mutationReport, ITestProjectsInfo testProjectsInfo) => new JsonReport(options, mutationReport, testProjectsInfo);
 
-    private IDictionary<string, ISourceFile> GenerateReportComponents(IReadOnlyProjectComponent component)
+    private IDictionary<string, ISourceFile> GenerateReportComponents(IStrykerOptions options, IReadOnlyProjectComponent component)
     {
         var files = new Dictionary<string, ISourceFile>();
+        if (component.IsComponentExcluded(options.Mutate))
+        {
+            return files;
+        }
+
         if (component is IFolderComposite folder)
         {
-            Merge(files, GenerateFolderReportComponents(folder));
+            Merge(files, GenerateFolderReportComponents(options, folder));
         }
         else if (component is IReadOnlyFileLeaf file)
         {
@@ -46,12 +52,12 @@ public class JsonReport : IJsonReport
         return files;
     }
 
-    private IDictionary<string, ISourceFile> GenerateFolderReportComponents(IFolderComposite folderComponent)
+    private IDictionary<string, ISourceFile> GenerateFolderReportComponents(IStrykerOptions options, IFolderComposite folderComponent)
     {
         var files = new Dictionary<string, ISourceFile>();
         foreach (var child in folderComponent.Children)
         {
-            Merge(files, GenerateReportComponents(child));
+            Merge(files, GenerateReportComponents(options, child));
         }
 
         return files;
