@@ -4,6 +4,7 @@
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.2.25" />
     <PackageVersion Include="LaunchDarkly.EventSource" Version="5.2.0" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
+    <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
     <PackageVersion Include="MSTest" Version="3.9.3" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.9.3" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0" />

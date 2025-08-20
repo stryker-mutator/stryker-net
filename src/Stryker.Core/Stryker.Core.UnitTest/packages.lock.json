@@ -887,13 +887,13 @@
           "Serilog.Sinks.Console": "[6.0.0, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.50.0, )",
-          "Stryker.Abstractions": "[4.7.0, )",
-          "Stryker.Configuration": "[4.7.0, )",
-          "Stryker.DataCollector": "[4.7.0, )",
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.Configuration": "[1.0.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
-          "Stryker.RegexMutators": "[4.7.0, )",
-          "Stryker.TestRunner.VsTest": "[4.7.0, )",
-          "Stryker.Utilities": "[4.7.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
+          "Stryker.TestRunner.VsTest": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.15, )"
         }
       },
@@ -916,8 +916,8 @@
           "Microsoft.CodeAnalysis.CSharp": "[4.14.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.14.0, )",
           "Serilog": "[4.3.0, )",
-          "Stryker.Abstractions": "[4.7.0, )",
-          "Stryker.Utilities": "[4.7.0, )"
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )"
         }
       },
       "stryker.datacollector": {
@@ -933,11 +933,17 @@
           "Stryker.Regex.Parser": "[1.0.0, )"
         }
       },
+      "stryker.solutions": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.VisualStudio.SolutionPersistence": "[1.0.52, )"
+        }
+      },
       "stryker.testrunner": {
         "type": "Project",
         "dependencies": {
           "Microsoft.TestPlatform.ObjectModel": "[17.14.1, )",
-          "Stryker.Abstractions": "[4.7.0, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "stryker.testrunner.vstest": {
@@ -948,10 +954,10 @@
           "Microsoft.TestPlatform.ObjectModel": "[17.14.1, )",
           "Microsoft.TestPlatform.Portable": "[17.14.1, )",
           "Microsoft.TestPlatform.TranslationLayer": "[17.14.1, )",
-          "Stryker.Abstractions": "[4.7.0, )",
-          "Stryker.DataCollector": "[4.7.0, )",
-          "Stryker.TestRunner": "[4.7.0, )",
-          "Stryker.Utilities": "[4.7.0, )",
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.TestRunner": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.15, )"
         }
       },
@@ -964,7 +970,7 @@
           "Microsoft.Extensions.Logging.Abstractions": "[9.0.7, )",
           "Mono.Cecil": "[0.11.6, )",
           "ResXResourceReader.NetStandard": "[1.3.0, )",
-          "Stryker.Abstractions": "[4.7.0, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "Azure.Storage.Files.Shares": {
@@ -1093,6 +1099,12 @@
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }
+      },
+      "Microsoft.VisualStudio.SolutionPersistence": {
+        "type": "CentralTransitive",
+        "requested": "[1.0.52, )",
+        "resolved": "1.0.52",
+        "contentHash": "oNv2JtYXhpdJrX63nibx1JT3uCESOBQ1LAk7Dtz/sr0+laW0KRM6eKp4CZ3MHDR2siIkKsY8MmUkeP5DKkQQ5w=="
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "CentralTransitive",
