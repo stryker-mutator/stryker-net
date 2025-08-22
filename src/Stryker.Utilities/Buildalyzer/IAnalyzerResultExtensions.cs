@@ -269,8 +269,14 @@ Generated source code may be missing.", analyzer);
     public static string GetRootNamespace(this IAnalyzerResult analyzerResult) =>
         analyzerResult.GetPropertyOrDefault("RootNamespace") ?? analyzerResult.GetAssemblyName();
 
-    public static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean) =>
-        bool.Parse(analyzerResult.GetPropertyOrDefault(name, defaultBoolean.ToString()));
+    public static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean)
+    {
+        if (analyzerResult.Properties.TryGetValue(name, out var value) && !string.IsNullOrEmpty(value))
+        {
+            return bool.Parse(value);
+        }
+        return defaultBoolean;
+    }
 
     public static string GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name,
         string defaultValue = default) =>
