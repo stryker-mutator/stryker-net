@@ -23,7 +23,8 @@ public static class IAnalyzerResultCSharpExtensions
         if (analyzerResult.IsSignedAssembly() && analyzerResult.GetAssemblyOriginatorKeyFile() is var keyFile && keyFile is not null)
         {
             compilationOptions = compilationOptions.WithCryptoKeyFile(keyFile)
-                .WithStrongNameProvider(new DesktopStrongNameProvider());
+                .WithStrongNameProvider(new DesktopStrongNameProvider())
+                .WithDelaySign(analyzerResult.IsDelayedSignedAssembly());
         }
         return compilationOptions;
     }

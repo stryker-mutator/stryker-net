@@ -1,3 +1,21 @@
+## [4.8.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.8.0...stryker@4.8.1) (2025-08-23)
+
+
+### Bug Fixes
+
+* **filter:** materialize mutants to prevent deferred where clause issue in SinceMutantFilter ([#3283](https://github.com/stryker-mutator/stryker-net/issues/3283)) ([a5635e9](https://github.com/stryker-mutator/stryker-net/commit/a5635e9627b6898b028324531f5dafe33b73ccc9))
+
+
+
+# [4.8.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.7.0...stryker@4.8.0) (2025-08-06)
+
+
+### Features
+
+* **compilation:** Support projects using DelaySign ([#3273](https://github.com/stryker-mutator/stryker-net/issues/3273)) ([e9e80d5](https://github.com/stryker-mutator/stryker-net/commit/e9e80d598a9fb5cb778a4666c9341b1c5c38adf6))
+
+
+
 # [4.7.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.6.0...stryker@4.7.0) (2025-07-08)
 
 
