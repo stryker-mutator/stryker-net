@@ -252,8 +252,8 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                 // we have to remove every mutation
                 var errorLocation = diagnostic.Location.GetMappedLineSpan();
                 Logger.LogWarning(
-                    "Stryker.NET encountered a compile error in {Path} (at {Line}:{StartCharacter}) with message: {Message} (Source code: {BrokenMutation})",
-                    errorLocation.Path, errorLocation.StartLinePosition.Line,
+                    "Stryker.NET encountered a compile error in {Path} (at {Line}:{StartCharacter}) with id: {DiagnosticId}, message: {Message} (Source code: {BrokenMutation})",
+                    errorLocation.Path, errorLocation.StartLinePosition.Line, diagnostic.Id,
                     errorLocation.StartLinePosition.Character, diagnostic.GetMessage(), brokenMutation);
 
                 Logger.LogInformation(
