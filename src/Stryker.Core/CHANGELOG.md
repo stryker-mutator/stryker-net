@@ -1,3 +1,12 @@
+## [4.8.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.8.0...stryker@4.8.1) (2025-08-23)
+
+
+### Bug Fixes
+
+* **filter:** materialize mutants to prevent deferred where clause issue in SinceMutantFilter ([#3283](https://github.com/stryker-mutator/stryker-net/issues/3283)) ([a5635e9](https://github.com/stryker-mutator/stryker-net/commit/a5635e9627b6898b028324531f5dafe33b73ccc9))
+
+
+
 # [4.8.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.7.0...stryker@4.8.0) (2025-08-06)
 
 
