@@ -260,7 +260,7 @@ Generated source code may be missing.", analyzer);
 
         return diagnostics
             .Split(";")
-            .Select(x => Regex.Replace(x, "[^a-zA-Z0-9_.]+", "", RegexOptions.Compiled))
+            .Select(x => x.Trim('\r', '\n', ' '))
             .Distinct()
             .Where(x => !string.IsNullOrWhiteSpace(x));
     }
