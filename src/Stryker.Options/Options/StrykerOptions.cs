@@ -87,7 +87,7 @@ public class StrykerOptions : IStrykerOptions
     public IThresholds Thresholds { get; init; } = new Thresholds() { Break = 0, Low = 60, High = 80 };
 
     /// <summary>
-    /// The ammount of milliseconds that should be added to the timeout period when testing mutants.
+    /// How many milliseconds should be added to the timeout period when testing mutants.
     /// </summary>
     public int AdditionalTimeout { get; init; }
 
@@ -225,12 +225,10 @@ public class StrykerOptions : IStrykerOptions
     /// </summary>
     public bool BreakOnInitialTestFailure { get; set; }
 
-
     /// <summary>
     /// Get/set the mutation id provider
     /// </summary>
     public IProvideId MutantIdProvider {get; set;}
-
 
     private readonly string _workingDirectoryField;
 

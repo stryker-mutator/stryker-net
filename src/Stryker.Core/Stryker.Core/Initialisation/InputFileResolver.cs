@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Buildalyzer;
 using Buildalyzer.Environment;
+using Microsoft.Build.Construction;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
@@ -58,9 +59,15 @@ public class InputFileResolver : IInputFileResolver
     public IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(IStrykerOptions options)
     {
         var manager = _analyzerProvider.Provide(options.SolutionPath, options.DevMode ? new AnalyzerManagerOptions { LogWriter = _buildalyzerLog } : null);
+        if (!string.IsNullOrEmpty(options.Configuration))
+        {
+            manager.SetGlobalProperty("Configuration", options.Configuration);
+        }
+
         if (options.IsSolutionContext)
         {
-            var projectList = manager.Projects.Values.Select(p => p.ProjectFile.Path).ToList();
+            var solution = Solutions.SolutionFile.LoadSolution(options.SolutionPath);
+            var projectList = solution.GetProjects(options.Configuration).ToList();
             _logger.LogInformation("Identifying projects to mutate in {solution}. This can take a while.", options.SolutionPath);
 
             return AnalyzeAndIdentifyProjects(projectList, options, manager, ScanMode.NoScan);
@@ -114,10 +121,7 @@ public class InputFileResolver : IInputFileResolver
         IAnalyzerManager manager, ScanMode mode)
     {
         // build all projects
-        if (!string.IsNullOrEmpty(options.Configuration))
-        {
-            manager.SetGlobalProperty("Configuration", options.Configuration);
-        }
+
         _logger.LogDebug("Analyzing {count} projects.", manager.Projects.Count);
 
         // we match test projects to mutable projects
