@@ -231,7 +231,7 @@
           "Microsoft.CodeAnalysis.Common": "[4.14.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[17.14.1, )",
           "Serilog": "[4.3.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.15, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.16, )"
         }
       },
       "Buildalyzer": {
@@ -328,9 +328,9 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[22.0.15, )",
-        "resolved": "22.0.15",
-        "contentHash": "WwHT48iDN+EuTcllexcM0/sdcZ4oCdNS/6eteJrXv2eJ7CcE+Qp9C6wPw6V/RKJ7LZ1nnMREbmtWWEggt364mQ==",
+        "requested": "[22.0.16, )",
+        "resolved": "22.0.16",
+        "contentHash": "QUX0TLMvnRLEgvuMRotrZKN9eCdX4yzK7HJCaPj17T4jvUf+G4XifdLpB5wmRct2zKlscYzpWMOmHjKabse3yw==",
         "dependencies": {
           "Testably.Abstractions.FileSystem.Interface": "9.0.0"
         }
