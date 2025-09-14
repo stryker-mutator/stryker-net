@@ -877,7 +877,7 @@
           "Stryker.Abstractions": "[4.8.1, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
           "Stryker.Utilities": "[4.8.1, )",
-          "TestableIO.System.IO.Abstractions.TestingHelpers": "[22.0.15, )",
+          "TestableIO.System.IO.Abstractions.TestingHelpers": "[22.0.16, )",
           "stryker": "[4.8.1, )"
         }
       },
@@ -1192,19 +1192,19 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "CentralTransitive",
-        "requested": "[22.0.15, )",
-        "resolved": "22.0.15",
-        "contentHash": "QBHlMyYfNRJNlA3kiUARmrRhtdLQ8Sol6s5/lR/RNNq2/Q/4Q0s4RspeIw3qsdRbBB1nzVwe6qF5pU9ltRMZqA==",
+        "requested": "[22.0.16, )",
+        "resolved": "22.0.16",
+        "contentHash": "dIZ2qtrvWbilx2HGkBIp5LNZmEZT2rve2M/NEg3RAzR4WbTa/Gis1x/qRggnoqfDrZ0VnPaybJJKh6r9POQ1EQ==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions.Wrappers": "22.0.15",
+          "TestableIO.System.IO.Abstractions.Wrappers": "22.0.16",
           "Testably.Abstractions.FileSystem.Interface": "9.0.0"
         }
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
         "requested": "[22.0.15, )",
-        "resolved": "22.0.15",
-        "contentHash": "WwHT48iDN+EuTcllexcM0/sdcZ4oCdNS/6eteJrXv2eJ7CcE+Qp9C6wPw6V/RKJ7LZ1nnMREbmtWWEggt364mQ==",
+        "resolved": "22.0.16",
+        "contentHash": "QUX0TLMvnRLEgvuMRotrZKN9eCdX4yzK7HJCaPj17T4jvUf+G4XifdLpB5wmRct2zKlscYzpWMOmHjKabse3yw==",
         "dependencies": {
           "Testably.Abstractions.FileSystem.Interface": "9.0.0"
         }
