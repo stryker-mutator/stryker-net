@@ -52,7 +52,7 @@ public class DashboardReporter : IReporter
             {
                 _browser.Open(reportUri);
             }
-            else if (!string.Equals(Environment.GetEnvironmentVariable("CI"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            else if (!IsCI())
             {
                 var aqua = new Style(Color.Aqua);
                 _console.WriteLine(
@@ -75,6 +75,15 @@ public class DashboardReporter : IReporter
 
         _console.WriteLine();
         _console.WriteLine();
+
+        static bool IsCI()
+        {
+            var value =
+                Environment.GetEnvironmentVariable("CI") ??
+                Environment.GetEnvironmentVariable("TF_BUILD");
+
+            return string.Equals(value, bool.TrueString, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)

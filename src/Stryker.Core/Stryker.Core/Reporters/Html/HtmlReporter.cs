@@ -77,10 +77,19 @@ public class HtmlReporter : IReporter
             return;
         }
 
-        if (!string.Equals(Environment.GetEnvironmentVariable("CI"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
+        if (!IsCI())
         {
             var aqua = new Style(Color.Aqua);
             _console.WriteLine("Hint: by passing \"--open-report or -o\" the report will open automatically and update the report in real-time.", aqua);
+        }
+
+        static bool IsCI()
+        {
+            var value =
+                Environment.GetEnvironmentVariable("CI") ??
+                Environment.GetEnvironmentVariable("TF_BUILD");
+
+            return string.Equals(value, bool.TrueString, StringComparison.OrdinalIgnoreCase);
         }
     }
 
