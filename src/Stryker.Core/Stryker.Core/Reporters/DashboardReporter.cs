@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
@@ -51,7 +52,7 @@ public class DashboardReporter : IReporter
             {
                 _browser.Open(reportUri);
             }
-            else
+            else if(!string.Equals(Environment.GetEnvironmentVariable("CI"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
             {
                 var aqua = new Style(Color.Aqua);
                 _console.WriteLine(
