@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -7,7 +8,6 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
-using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Html.RealTime;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.WebBrowserOpener;
@@ -77,8 +77,20 @@ public class HtmlReporter : IReporter
             return;
         }
 
-        var aqua = new Style(Color.Aqua);
-        _console.WriteLine("Hint: by passing \"--open-report or -o\" the report will open automatically and update the report in real-time.", aqua);
+        if (!IsCI())
+        {
+            var aqua = new Style(Color.Aqua);
+            _console.WriteLine("Hint: by passing \"--open-report or -o\" the report will open automatically and update the report in real-time.", aqua);
+        }
+
+        static bool IsCI()
+        {
+            var value =
+                Environment.GetEnvironmentVariable("CI") ??
+                Environment.GetEnvironmentVariable("TF_BUILD");
+
+            return string.Equals(value, bool.TrueString, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     public void OnMutantTested(IReadOnlyMutant result)
