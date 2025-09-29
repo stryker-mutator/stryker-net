@@ -36,9 +36,9 @@
       },
       "DotNet.ReproducibleBuilds": {
         "type": "Direct",
-        "requested": "[1.2.25, )",
-        "resolved": "1.2.25",
-        "contentHash": "xCXiw7BCxHJ8pF6wPepRUddlh2dlQlbr81gXA72hdk4FLHkKXas7EH/n+fk5UCA/YfMqG1Z6XaPiUjDbUNBUzg=="
+        "requested": "[1.2.39, )",
+        "resolved": "1.2.39",
+        "contentHash": "fcFN01tDTIQqDuTwr1jUQK/geofiwjG5DycJQOnC72i1SsLAk1ELe+apBOuZ11UMQG8YKFZG1FgvjZPbqHyatg=="
       },
       "Grynwald.MarkdownGenerator": {
         "type": "Direct",
@@ -830,8 +830,8 @@
           "Microsoft.CodeAnalysis.CSharp": "[4.14.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.14.0, )",
           "Serilog": "[4.3.0, )",
-          "Stryker.Abstractions": "[4.8.1, )",
-          "Stryker.Utilities": "[4.8.1, )"
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )"
         }
       },
       "stryker.datacollector": {
@@ -851,7 +851,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.TestPlatform.ObjectModel": "[17.14.1, )",
-          "Stryker.Abstractions": "[4.8.1, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "stryker.testrunner.vstest": {
@@ -862,10 +862,10 @@
           "Microsoft.TestPlatform.ObjectModel": "[17.14.1, )",
           "Microsoft.TestPlatform.Portable": "[17.14.1, )",
           "Microsoft.TestPlatform.TranslationLayer": "[17.14.1, )",
-          "Stryker.Abstractions": "[4.8.1, )",
-          "Stryker.DataCollector": "[4.8.1, )",
-          "Stryker.TestRunner": "[4.8.1, )",
-          "Stryker.Utilities": "[4.8.1, )",
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.TestRunner": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.16, )"
         }
       },
@@ -878,7 +878,7 @@
           "Microsoft.Extensions.Logging.Abstractions": "[9.0.9, )",
           "Mono.Cecil": "[0.11.6, )",
           "ResXResourceReader.NetStandard": "[1.3.0, )",
-          "Stryker.Abstractions": "[4.8.1, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "Microsoft.CodeAnalysis.VisualBasic": {
