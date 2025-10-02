@@ -231,6 +231,11 @@ public class StrykerOptions : IStrykerOptions
     /// </summary>
     public IProvideId MutantIdProvider {get; set;}
 
+    /// <summary>
+    /// When true, excludes the test files in the report.
+    /// </summary>
+    public bool ExcludeTestFilesInReport { get; init; }
+
 
     private readonly string _workingDirectoryField;
 

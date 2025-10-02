@@ -20,6 +20,7 @@ public interface IStrykerInputs
     DiffIgnoreChangesInput DiffIgnoreChangesInput { get; init; }
     DisableBailInput DisableBailInput { get; set; }
     DisableMixMutantsInput DisableMixMutantsInput { get; set; }
+    ExcludeTestFilesInReportInput ExcludeTestFilesInReportInput { get; init; }
     IgnoreMutationsInput IgnoreMutationsInput { get; init; }
     FallbackVersionInput FallbackVersionInput { get; init; }
     IgnoreMethodsInput IgnoredMethodsInput { get; init; }
@@ -106,6 +107,7 @@ public class StrykerInputs : IStrykerInputs
     public OpenReportInput OpenReportInput { get; init; } = new();
     public OpenReportEnabledInput OpenReportEnabledInput { get; init; } = new();
     public BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; } = new();
+    public ExcludeTestFilesInReportInput ExcludeTestFilesInReportInput { get; init; } = new();
 
     public IStrykerOptions ValidateAll()
     {
@@ -147,6 +149,7 @@ public class StrykerInputs : IStrykerInputs
             AdditionalTimeout = AdditionalTimeoutInput.Validate(),
             ExcludedMutations = IgnoreMutationsInput.Validate<Mutator>(),
             ExcludedLinqExpressions = IgnoreMutationsInput.ValidateLinqExpressions(),
+            ExcludeTestFilesInReport = ExcludeTestFilesInReportInput.Validate(),
             IgnoredMethods = IgnoredMethodsInput.Validate(),
             Mutate = MutateInput.Validate(),
             LanguageVersion = LanguageVersionInput.Validate(),
