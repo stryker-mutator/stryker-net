@@ -208,9 +208,37 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
                 });
 
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
+            var initialisationProcessMock = new Mock<IInitialisationProcess>();
+            var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, nugetRestoreMock.Object);
+            
+            // Setup the mocks similar to BuildProjectOrchestrator
+            initialisationProcessMock.Setup(x => x.GetMutableProjectsInfo(It.IsAny<Stryker.Abstractions.Options.IStrykerOptions>()))
+                .Returns((Stryker.Abstractions.Options.IStrykerOptions opts) => inputFileResolver.ResolveSourceProjectInfos(opts));
+            initialisationProcessMock.Setup(x => x.BuildProjects(It.IsAny<Stryker.Abstractions.Options.IStrykerOptions>(), It.IsAny<IReadOnlyCollection<Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo>>()));
+            initialisationProcessMock.Setup(x => x.GetMutationTestInputs(
+                It.IsAny<Stryker.Abstractions.Options.IStrykerOptions>(), 
+                It.IsAny<IReadOnlyCollection<Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo>>(), 
+                It.IsAny<ITestRunner>()))
+                .Returns((Stryker.Abstractions.Options.IStrykerOptions opts, IReadOnlyCollection<Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo> projects, ITestRunner runner) =>
+                {
+                    var inputs = new List<Stryker.Core.MutationTest.MutationTestInput>();
+                    foreach (var project in projects)
+                    {
+                        inputs.Add(new Stryker.Core.MutationTest.MutationTestInput
+                        {
+                            SourceProjectInfo = project,
+                            TestProjectsInfo = project.TestProjectsInfo,
+                            TestRunner = runner,
+                            InitialTestRun = new InitialTestRun(new TestRunResult(true), null)
+                        });
+                    }
+                    return inputs;
+                });
+            
             var target = new ProjectOrchestrator(_projectMutatorMock.Object,
-                initialBuildProcessMock.Object,
-                new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, nugetRestoreMock.Object));
+                initialisationProcessMock.Object,
+                inputFileResolver,
+                TestLoggerFactory.CreateLogger<ProjectOrchestrator>());
 
             // act
             var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
@@ -447,8 +475,43 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         mockRunner.Setup(r => r.InitialTest(It.IsAny<IProjectAndTests>())).Returns(new TestRunResult(true));
 
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
+        var initialisationProcessMock = new Mock<IInitialisationProcess>();
+        
+        // Create a real InputFileResolver since the orchestrator delegates to InitialisationProcess
+        var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object);
+        
+        // Setup the InitialisationProcess mock to delegate to InputFileResolver for project resolution
+        initialisationProcessMock.Setup(x => x.GetMutableProjectsInfo(It.IsAny<Stryker.Abstractions.Options.IStrykerOptions>()))
+            .Returns((Stryker.Abstractions.Options.IStrykerOptions opts) => inputFileResolver.ResolveSourceProjectInfos(opts));
+        
+        // Mock BuildProjects to do nothing
+        initialisationProcessMock.Setup(x => x.BuildProjects(It.IsAny<Stryker.Abstractions.Options.IStrykerOptions>(), It.IsAny<IReadOnlyCollection<Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo>>()));
+        
+        // Setup GetMutationTestInputs to create inputs from the projects
+        initialisationProcessMock.Setup(x => x.GetMutationTestInputs(
+            It.IsAny<Stryker.Abstractions.Options.IStrykerOptions>(), 
+            It.IsAny<IReadOnlyCollection<Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo>>(), 
+            It.IsAny<ITestRunner>()))
+            .Returns((Stryker.Abstractions.Options.IStrykerOptions opts, IReadOnlyCollection<Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo> projects, ITestRunner runner) =>
+            {
+                // Create MutationTestInput for each project
+                var inputs = new List<Stryker.Core.MutationTest.MutationTestInput>();
+                foreach (var project in projects)
+                {
+                    inputs.Add(new Stryker.Core.MutationTest.MutationTestInput
+                    {
+                        SourceProjectInfo = project,
+                        TestProjectsInfo = project.TestProjectsInfo,
+                        TestRunner = runner,
+                        InitialTestRun = new InitialTestRun(new TestRunResult(true), null)
+                    });
+                }
+                return inputs;
+            });
+        
         return new ProjectOrchestrator(_projectMutatorMock.Object,
-            initialBuildProcessMock.Object,
-            new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object));
+            initialisationProcessMock.Object,
+            inputFileResolver,
+            TestLoggerFactory.CreateLogger<ProjectOrchestrator>());
     }
 }

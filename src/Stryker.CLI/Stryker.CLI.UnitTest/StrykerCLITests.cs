@@ -1,4 +1,5 @@
 using System;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using Moq;
 using NuGet.Versioning;
 using Serilog.Events;
 using Shouldly;
+using Spectre.Console;
 using Spectre.Console.Testing;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
@@ -55,7 +57,7 @@ public class StrykerCLITests
     {
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
         var console = new TestConsole().EmitAnsiSequences().Width(160);
-        var target = new StrykerCli(mock.Object, console:console);
+        var target = new StrykerCli(mock.Object, Mock.Of<IConfigBuilder>(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), console, Mock.Of<IFileSystem>());
 
         target.Run(new string[] { "--help" });
 
@@ -80,7 +82,7 @@ Options:";
             .Verifiable();
 
         var console = new TestConsole().EmitAnsiSequences().Width(160);
-        var target = new StrykerCli(strykerRunnerMock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object, console);
+        var target = new StrykerCli(strykerRunnerMock.Object, Mock.Of<IConfigBuilder>(), _loggingInitializerMock.Object, _nugetClientMock.Object, console, Mock.Of<IFileSystem>());
 
         target.Run(Array.Empty<string>());
 
@@ -133,7 +135,7 @@ Options:";
                 .Returns(strykerRunResult)
                 .Verifiable();
 
-        var target = new StrykerCli(mock.Object);
+        var target = new StrykerCli(mock.Object, Mock.Of<IConfigBuilder>(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
         var result = target.Run(new string[] { });
 
         mock.Verify();
@@ -157,7 +159,7 @@ Options:";
             .Returns(strykerRunResult)
             .Verifiable();
 
-        var target = new StrykerCli(mock.Object);
+        var target = new StrykerCli(mock.Object, Mock.Of<IConfigBuilder>(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
         var result = target.Run(new string[] { });
 
         mock.Verify();
@@ -204,7 +206,7 @@ Options:";
 
         mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>())).Returns(strykerRunResult).Verifiable();
 
-        var target = new StrykerCli(mock.Object);
+        var target = new StrykerCli(mock.Object, Mock.Of<IConfigBuilder>(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
         var result = target.Run(new string[] { });
 
         mock.Verify();
@@ -219,7 +221,7 @@ Options:";
     public void ShouldNotStartStryker_WithHelpArgument(string argName)
     {
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-        var target = new StrykerCli(mock.Object);
+        var target = new StrykerCli(mock.Object, Mock.Of<IConfigBuilder>(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
 
         target.Run(new string[] { argName });
 

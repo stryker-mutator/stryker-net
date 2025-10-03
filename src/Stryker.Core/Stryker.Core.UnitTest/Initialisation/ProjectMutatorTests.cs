@@ -70,7 +70,7 @@ namespace ExtraProject.XUnit
     {
         // arrange
         var options = new StrykerOptions();
-        var target = new ProjectMutator(_mutationTestProcessMock.Object);
+        var target = new ProjectMutator(TestLoggerFactory.CreateLogger<ProjectMutator>());
         var testCase1 = new VsTestCase(new TestCase("mytestname1", new Uri(_testFilePath), _testFileContents)
         {
             Id = Guid.NewGuid(),

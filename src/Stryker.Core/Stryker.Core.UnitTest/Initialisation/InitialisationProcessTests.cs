@@ -45,7 +45,7 @@ public class InitialisationProcessTests : TestBase
         });
 
         inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
-        var target = new InitialisationProcess(inputFileResolverMock.Object);
+        var target = new InitialisationProcess(inputFileResolverMock.Object, Mock.Of<IInitialBuildProcess>(), Mock.Of<IInitialTestProcess>(), TestLoggerFactory.CreateLogger<InitialisationProcess>());
 
         var options = new StrykerOptions
         {

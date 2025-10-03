@@ -1,10 +1,15 @@
 using System.IO;
+using System.IO.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using Spectre.Console;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
+using Stryker.CLI.Clients;
+using Stryker.CLI.Logging;
+using Stryker.Configuration;
 using Stryker.Core;
 using Stryker.Core.Initialisation;
 
@@ -29,7 +34,7 @@ public class FileConfigReaderTests
         var currentDirectory = Directory.GetCurrentDirectory();
         Directory.SetCurrentDirectory($"..{Path.DirectorySeparatorChar}");
         var runResults = new StrykerRunResult(options, 0.3);
-        mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>())).Returns(runResults).Verifiable();
+        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>())).Returns(runResults).Verifiable();
         var target = new StrykerCli(mock.Object, Mock.Of<IConfigBuilder>(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
 
         target.Run(new string[] { });

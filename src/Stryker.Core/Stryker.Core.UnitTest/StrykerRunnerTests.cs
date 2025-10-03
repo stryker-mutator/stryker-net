@@ -79,7 +79,7 @@ public class StrykerRunnerTests : TestBase
         mutationTestProcessMock.InSequence(seq).Setup(x => x.FilterMutants());
         reporterMock.InSequence(seq).Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()));
 
-        var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
+        var target = new StrykerRunner(reporterFactoryMock.Object, projectOrchestratorMock.Object, TestLoggerFactory.CreateLogger<StrykerRunner>());
 
         target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
 
@@ -133,7 +133,7 @@ public class StrykerRunnerTests : TestBase
         reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()));
         reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()));
 
-        var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
+        var target = new StrykerRunner(reporterFactoryMock.Object, projectOrchestratorMock.Object, TestLoggerFactory.CreateLogger<StrykerRunner>());
 
         var result = target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
 
@@ -178,7 +178,7 @@ public class StrykerRunnerTests : TestBase
 
         reporterFactoryMock.Setup(x => x.Create(It.IsAny<StrykerOptions>(), It.IsAny<IGitInfoProvider>())).Returns(reporterMock.Object);
 
-        var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
+        var target = new StrykerRunner(reporterFactoryMock.Object, projectOrchestratorMock.Object, TestLoggerFactory.CreateLogger<StrykerRunner>());
 
         Should.Throw<NoTestProjectsException>(() => target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object));
 
