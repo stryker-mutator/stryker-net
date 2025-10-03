@@ -6,11 +6,13 @@ This document provides guidance for GitHub Copilot when working with the Stryker
 
 Reference these external instruction files when applicable:
 - **Always**: [Taming Copilot](./instructions/taming-copilot.instructions.md)
+- **Always**: [Conventional Commit Guidelines](./instructions/conventional-commit.instructions.md)
+- **Always**: [Security Best Practices](./instructions/security-and-owasp.instructions.md)
+- **Always**: [Self-Explanatory Code Commenting](./instructions/self-explanatory-code-commenting.instructions.md)
 - **When writing documentation**: [Markdown Instructions](./instructions/markdown.instructions.md)
 - **When writing C#**: [C# Instructions](./instructions/csharp.instructions.md)
-- **When writing comments**: [Self-Explanatory Code Commenting](./instructions/self-explanatory-code-commenting.instructions.md)
 - **When working with Azure Pipelines**: [Azure DevOps Pipelines](./instructions/azure-devops-pipelines.instructions.md)
-- **When writing commit messages**: [Conventional Commit Guidelines](./instructions/conventional-commit.prompt.md)
+- **When working with GitHub Actions**: [GitHub Actions](./instructions/github-actions-ci-cd-best-practices.instructions.md)
 
 ## Project Overview
 
