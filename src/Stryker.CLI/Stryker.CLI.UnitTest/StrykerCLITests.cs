@@ -181,7 +181,7 @@ Options:";
             .Returns(strykerRunResult)
             .Verifiable();
 
-        var target = new StrykerCli(mock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object);
+        var target = new StrykerCli(mock.Object, Mock.Of<IConfigBuilder>(), _loggingInitializerMock.Object, _nugetClientMock.Object, Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
         var result = target.Run(new string[] { });
 
         mock.Verify();
@@ -234,7 +234,7 @@ Options:";
             .Throws(new Exception("Initial testrun failed"))
             .Verifiable();
 
-        var target = new StrykerCli(mock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object);
+        var target = new StrykerCli(mock.Object, Mock.Of<IConfigBuilder>(), _loggingInitializerMock.Object, _nugetClientMock.Object, Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
         Should.Throw<Exception>(() => target.Run(new string[] { }));
     }
 

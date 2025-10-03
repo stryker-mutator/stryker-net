@@ -82,9 +82,7 @@ public class InitialisationProcessTests : TestBase
         testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>())).Throws(new InputException("")); // failing test
 
-        var target = new InitialisationProcess(inputFileResolverMock.Object,
-            initialBuildProcessMock.Object,
-            initialTestProcessMock.Object);
+        var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
@@ -129,9 +127,7 @@ public class InitialisationProcessTests : TestBase
             new InitialTestRun(
             new TestRunResult(Array.Empty<VsTestDescription>(), ranTests, failedTests, TestIdentifierList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), new TimeoutValueCalculator(0))); // failing test
 
-        var target = new InitialisationProcess(inputFileResolverMock.Object,
-            initialBuildProcessMock.Object,
-            initialTestProcessMock.Object);
+        var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
@@ -180,9 +176,7 @@ public class InitialisationProcessTests : TestBase
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>())).Returns(new InitialTestRun(
             new TestRunResult(Array.Empty<VsTestDescription>(), ranTests, failedTests, TestIdentifierList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), new TimeoutValueCalculator(0))); // failing test
 
-        var target = new InitialisationProcess(inputFileResolverMock.Object,
-            initialBuildProcessMock.Object,
-            initialTestProcessMock.Object);
+        var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
@@ -228,9 +222,7 @@ public class InitialisationProcessTests : TestBase
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>()))
             .Returns(new InitialTestRun(new TestRunResult(true), null)); // failing test
 
-        var target = new InitialisationProcess(inputFileResolverMock.Object,
-            initialBuildProcessMock.Object,
-            initialTestProcessMock.Object);
+        var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
@@ -283,9 +275,7 @@ public class InitialisationProcessTests : TestBase
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>()))
             .Returns(new InitialTestRun(new TestRunResult(Array.Empty<VsTestDescription>(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), null)); // failing test
 
-        var target = new InitialisationProcess(inputFileResolverMock.Object,
-            initialBuildProcessMock.Object,
-            initialTestProcessMock.Object);
+        var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
@@ -334,9 +324,7 @@ public class InitialisationProcessTests : TestBase
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>()))
             .Returns(new InitialTestRun(new TestRunResult(Array.Empty<VsTestDescription>(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), null)); // failing test
 
-        var target = new InitialisationProcess(inputFileResolverMock.Object,
-            initialBuildProcessMock.Object,
-            initialTestProcessMock.Object);
+        var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
