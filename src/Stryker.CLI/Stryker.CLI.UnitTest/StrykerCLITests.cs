@@ -35,12 +35,19 @@ public class StrykerCLITests
     {
         _options = new StrykerOptions() { Thresholds = new Thresholds { Break = 0 } };
         _runResults = new StrykerRunResult(_options, 0.3);
+        _strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
+            .Callback<IStrykerInputs>(c => _inputs = c)
+            .Returns(_runResults)
+            .Verifiable();
         _strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
             .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => _inputs = c)
             .Returns(_runResults)
             .Verifiable();
         _nugetClientMock.Setup(x => x.GetLatestVersionAsync()).Returns(Task.FromResult(new SemanticVersion(10, 0, 0)));
-        _target = new StrykerCli(_strykerRunnerMock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object);
+        var configBuilderMock = new Mock<IConfigBuilder>();
+        var consoleMock = new Mock<IAnsiConsole>();
+        var fileSystemMock = new Mock<IFileSystem>();
+        _target = new StrykerCli(_strykerRunnerMock.Object, configBuilderMock.Object, _loggingInitializerMock.Object, _nugetClientMock.Object, consoleMock.Object, fileSystemMock.Object);
     }
 
     [TestMethod]

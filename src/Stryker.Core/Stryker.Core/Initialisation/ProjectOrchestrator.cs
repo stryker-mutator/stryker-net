@@ -14,7 +14,6 @@ using Stryker.Abstractions.Testing;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.TestRunner.VsTest;
-using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Initialisation;
 
@@ -25,30 +24,27 @@ public interface IProjectOrchestrator : IDisposable
 
 public sealed class ProjectOrchestrator : IProjectOrchestrator
 {
-    private IInitialisationProcess _initializationProcess;
+    private readonly IInitialisationProcess _initializationProcess;
     private readonly ILogger _logger;
     private readonly IProjectMutator _projectMutator;
-    private readonly IInitialBuildProcess _initialBuildProcess;
     private readonly IInputFileResolver _fileResolver;
     private ITestRunner _runner;
 
-    public ProjectOrchestrator(IProjectMutator projectMutator = null,
-        IInitialBuildProcess initialBuildProcess = null,
-        IInputFileResolver fileResolver = null,
-        IInitialisationProcess initializationProcess = null)
+    public ProjectOrchestrator(
+        IProjectMutator projectMutator,
+        IInitialisationProcess initializationProcess,
+        IInputFileResolver fileResolver,
+        ILogger<ProjectOrchestrator> logger)
     {
-        _projectMutator = projectMutator ?? new ProjectMutator();
-        _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
-        _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
-        _fileResolver = fileResolver ?? new InputFileResolver();
-        _initializationProcess = initializationProcess;
+        _projectMutator = projectMutator ?? throw new ArgumentNullException(nameof(projectMutator));
+        _initializationProcess = initializationProcess ?? throw new ArgumentNullException(nameof(initializationProcess));
+        _fileResolver = fileResolver ?? throw new ArgumentNullException(nameof(fileResolver));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public IEnumerable<IMutationTestProcess> MutateProjects(IStrykerOptions options, IReporter reporters,
         ITestRunner runner = null)
     {
-
-        _initializationProcess ??= new InitialisationProcess(_fileResolver, _initialBuildProcess);
         var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
 
         if (!projectInfos.Any())

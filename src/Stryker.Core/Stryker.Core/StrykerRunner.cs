@@ -1,6 +1,4 @@
-#if !DEBUG
 using System;
-#endif
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -21,38 +19,36 @@ namespace Stryker.Core;
 public interface IStrykerRunner
 {
     StrykerRunResult RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null);
+    StrykerRunResult RunMutationTest(IStrykerInputs inputs);
 }
 
 public class StrykerRunner : IStrykerRunner
 {
     private IEnumerable<IMutationTestProcess> _mutationTestProcesses;
-    private ILogger _logger;
+    private readonly ILogger _logger;
     private readonly IReporterFactory _reporterFactory;
+    private readonly IProjectOrchestrator _projectOrchestrator;
 
-    public StrykerRunner(IEnumerable<IMutationTestProcess> mutationTestProcesses = null,
-        IReporterFactory reporterFactory = null)
+    public StrykerRunner(
+        IReporterFactory reporterFactory,
+        IProjectOrchestrator projectOrchestrator,
+        ILogger<StrykerRunner> logger)
     {
-        _mutationTestProcesses = mutationTestProcesses ?? new List<IMutationTestProcess>();
-        _reporterFactory = reporterFactory ?? new ReporterFactory();
+        _reporterFactory = reporterFactory ?? throw new ArgumentNullException(nameof(reporterFactory));
+        _projectOrchestrator = projectOrchestrator ?? throw new ArgumentNullException(nameof(projectOrchestrator));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _mutationTestProcesses = new List<IMutationTestProcess>();
     }
 
     /// <summary>
-    /// Starts a mutation test run
+    /// Starts a mutation test run (DI-based)
     /// </summary>
     /// <param name="inputs">user options</param>
-    /// <param name="loggerFactory">This loggerfactory will be used to create loggers during the stryker run</param>
-    /// <param name="projectOrchestrator"></param>
     /// <exception cref="InputException">For managed exceptions</exception>
-    public StrykerRunResult RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null)
+    public StrykerRunResult RunMutationTest(IStrykerInputs inputs)
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
-
-        SetupLogging(loggerFactory);
-
-        var disposeOrchestrator = projectOrchestrator == null;
-        // Setup project orchestrator can't be done sooner since it needs logging
-        projectOrchestrator ??= new ProjectOrchestrator();
 
         var options = inputs.ValidateAll();
         _logger.LogDebug("Stryker started with options: {@Options}", options);
@@ -62,7 +58,7 @@ public class StrykerRunner : IStrykerRunner
         try
         {
             // Mutate
-            _mutationTestProcesses = projectOrchestrator.MutateProjects(options, reporters).ToList();
+            _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, reporters).ToList();
 
             var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
             var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo).Aggregate((a, b) => (TestProjectsInfo)a + (TestProjectsInfo)b);
@@ -103,10 +99,7 @@ public class StrykerRunner : IStrykerRunner
                 }
 
                 reporters.OnAllMutantsTested(rootComponent, combinedTestProjectsInfo);
-                if (disposeOrchestrator)
-                {
-                    projectOrchestrator.Dispose();
-                }
+                _projectOrchestrator.Dispose();
                 return new StrykerRunResult(options, rootComponent.GetMutationScore());
             }
 
@@ -119,10 +112,8 @@ public class StrykerRunner : IStrykerRunner
                 project.Test(project.Input.SourceProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.Pending).ToList());
             }
             // dispose and stop runners
-            if (disposeOrchestrator)
-            {
-                projectOrchestrator.Dispose();
-            }
+            _projectOrchestrator.Dispose();
+            
             // Restore assemblies
             foreach (var project in _mutationTestProcesses)
             {
@@ -130,7 +121,6 @@ public class StrykerRunner : IStrykerRunner
             }
 
             reporters.OnAllMutantsTested(rootComponent, combinedTestProjectsInfo);
-
 
             return new StrykerRunResult(options, rootComponent.GetMutationScore());
         }
@@ -151,11 +141,24 @@ public class StrykerRunner : IStrykerRunner
         }
     }
 
-    private void SetupLogging(ILoggerFactory loggerFactory)
+    /// <summary>
+    /// Starts a mutation test run (Legacy API for backward compatibility)
+    /// </summary>
+    /// <param name="inputs">user options</param>
+    /// <param name="loggerFactory">This loggerfactory will be used to create loggers during the stryker run</param>
+    /// <param name="projectOrchestrator">Optional project orchestrator (ignored, uses DI)</param>
+    /// <exception cref="InputException">For managed exceptions</exception>
+    [Obsolete("Use RunMutationTest(IStrykerInputs) with DI container. This method will be removed in a future version.")]
+    public StrykerRunResult RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null)
+    {
+        SetupLogging(loggerFactory);
+        return RunMutationTest(inputs);
+    }
+
+    private static void SetupLogging(ILoggerFactory loggerFactory)
     {
         // setup logging
         ApplicationLogging.LoggerFactory = loggerFactory;
-        _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
     }
 
     private void AnalyzeCoverage(IStrykerOptions options)

@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -8,7 +9,6 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Initialisation;
 
@@ -20,17 +20,15 @@ public interface IProjectMutator
 public class ProjectMutator : IProjectMutator
 {
     private readonly ILogger _logger;
-    private readonly IMutationTestProcess _injectedMutationTestProcess;
 
-    public ProjectMutator(IMutationTestProcess mutationTestProcess = null)
+    public ProjectMutator(ILogger<ProjectMutator> logger)
     {
-        _injectedMutationTestProcess = mutationTestProcess;
-        _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public IMutationTestProcess MutateProject(IStrykerOptions options, MutationTestInput input, IReporter reporters)
     {
-        var process = _injectedMutationTestProcess ?? new MutationTestProcess(input, options, reporters,
+        var process = new MutationTestProcess(input, options, reporters,
             new MutationTestExecutor(input.TestRunner));
 
         // Enrich test projects info with unit tests
