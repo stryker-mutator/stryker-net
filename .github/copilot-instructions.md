@@ -10,7 +10,7 @@ Reference these external instruction files when applicable:
 - **When writing C#**: [C# Instructions](./instructions/csharp.instructions.md)
 - **When writing comments**: [Self-Explanatory Code Commenting](./instructions/self-explanatory-code-commenting.instructions.md)
 - **When working with Azure Pipelines**: [Azure DevOps Pipelines](./instructions/azure-devops-pipelines.instructions.md)
-- **When writing commit messages**: [Conventional Commit Guidelines](./instructions/conventional-commit.prompt.md)
+- **When writing commit messages**: [Conventional Commit Guidelines](./instructions/conventional-commit.instructions.md)
 
 ## Project Overview
 
