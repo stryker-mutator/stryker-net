@@ -15,10 +15,6 @@ Stryker.NET is a mutation testing framework for .NET projects. It allows you to 
 
 ## Contributing Workflow
 
-### Creating Issues
-- Create an issue first before working on new features or bug fixes
-- For bugs, run `dotnet stryker --verbosity debug` and include the output in the issue
-
 ### Code Standards
 - Follow the repository's `.editorconfig` and [Microsoft C# coding guidelines](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions)
 - Create or edit unit tests or integration tests for all changes
@@ -43,7 +39,7 @@ To test Stryker.NET on a project:
 5. You can use projects in `.\integrationtest\TargetProjects` for testing
 6. Run with `Stryker.CLI` as the startup project
 
-**Note**: Running Stryker on itself doesn't work as assemblies will be in use by Visual Studio. You can run Stryker on a copy of Stryker instead.
+**Note**: Running Stryker on itself doesn't work as assemblies will be in use. To run Stryker on the stryker codebase, use the official nuget release via `dotnet tool install dotnet-stryker` and then `dotnet stryker`.
 
 ## Adding a New Mutator
 
@@ -74,11 +70,6 @@ See the full guide in [adding_a_mutator.md](../adding_a_mutator.md).
 - Support various C# syntax versions (expression body vs block statement)
 - Invest in unit tests early - look at existing mutator tests for examples
 
-### Helpful Resources
-- [.NET Compiler Platform SDK](https://docs.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/get-started/syntax-analysis) - use the Syntax Visualizer in Visual Studio
-- [Roslyn Quoter](http://roslynquoter.azurewebsites.net/) - determine SyntaxFactory AST builder methods
-- [Sharplab](https://sharplab.io/) - visualize compilation steps (AST, IL, etc.)
-
 ## Commit Message Format
 
 Follow [Angular commit message style](https://docs.google.com/document/d/1rk04jEuGfk9kYzfqCuOlPTSJw3hEDZJTBN5E5f1SALo):
@@ -86,9 +77,3 @@ Follow [Angular commit message style](https://docs.google.com/document/d/1rk04jE
 - Types: feat, fix, docs, style, refactor, test, chore
 - Use present tense (e.g., "change" not "changed", "add" not "added")
 - Include motivation and contrasts with previous behavior
-
-## Community and Support
-
-- Ask questions via GitHub discussions or [project Slack](https://join.slack.com/t/stryker-mutator/shared_invite/enQtOTUyMTYyNTg1NDQ0LTU4ODNmZDlmN2I3MmEyMTVhYjZlYmJkOThlNTY3NTM1M2QxYmM5YTM3ODQxYmJjY2YyYzllM2RkMmM1NjNjZjM)
-- Report HTML report issues at [mutation-testing-elements](https://github.com/stryker-mutator/mutation-testing-elements)
-- See [CONTRIBUTING.md](../CONTRIBUTING.md) for more details
