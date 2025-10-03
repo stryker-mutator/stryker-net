@@ -32,6 +32,8 @@
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.14.1" />
     <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.14.1" />
     <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.14.1" />
+    <PackageVersion Include="Microsoft.Testing.Platform" Version="1.5.0" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="1.5.0" />
     <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.0.16" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.9" />

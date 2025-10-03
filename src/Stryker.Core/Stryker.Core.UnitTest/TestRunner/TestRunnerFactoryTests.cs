@@ -27,7 +27,7 @@ public class TestRunnerFactoryTests : TestBase
     }
 
     [TestMethod]
-    public void ShouldThrowExceptionForMtpRunner()
+    public void ShouldCreateMtpRunner()
     {
         var options = new StrykerOptions
         {
@@ -39,9 +39,6 @@ public class TestRunnerFactoryTests : TestBase
 
         runner.ShouldNotBeNull();
         runner.GetType().Name.ShouldBe("MicrosoftTestingPlatformRunner");
-
-        // Verify that calling a method throws NotImplementedException
-        Should.Throw<NotImplementedException>(() => runner.DiscoverTests("test.dll"));
     }
 
     [TestMethod]
