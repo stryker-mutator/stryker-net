@@ -27,7 +27,9 @@ Stryker.NET is a mutation testing framework for .NET projects. It allows you to 
 
 ### Running Tests
 - **Unit tests**: Run `dotnet test` in the `/src` directory
-- **Integration tests**: Run `integration-tests.ps1` in the root of the repo
+- **Integration tests**: 
+  - On **Windows**: Run `.\integration-tests.ps1` in the root of the repo (PowerShell 7 recommended)
+  - On **macOS/Linux**: Run `pwsh ./integration-tests.ps1` in the root of the repo (requires [PowerShell 7](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell))
 - Always run unit tests and integration tests before committing changes
 
 ### Testing Locally
