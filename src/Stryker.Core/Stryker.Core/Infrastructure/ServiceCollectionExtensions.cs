@@ -5,6 +5,7 @@ using Stryker.Core.Helpers.ProcessUtil;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Reporters;
+using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.Infrastructure;
 
@@ -25,9 +26,11 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IInitialBuildProcess, InitialBuildProcess>();
         services.AddTransient<IInitialTestProcess, InitialTestProcess>();
         services.AddTransient<IInputFileResolver, InputFileResolver>();
+        services.AddTransient<INugetRestoreProcess, NugetRestoreProcess>();
         
         // Helpers and utilities - Transient or Singleton based on state
         services.AddTransient<IProcessExecutor, ProcessExecutor>();
+        services.AddTransient<IBuildalyzerProvider, BuildalyzerProvider>();
         services.AddSingleton<IFileSystem, FileSystem>();
         
         // Reporter factory - Singleton as it's stateless

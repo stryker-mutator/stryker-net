@@ -209,7 +209,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
             var initialisationProcessMock = new Mock<IInitialisationProcess>();
-            var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, nugetRestoreMock.Object);
+            var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, nugetRestoreMock.Object, TestLoggerFactory.CreateLogger<InputFileResolver>());
             
             // Setup the mocks similar to BuildProjectOrchestrator
             initialisationProcessMock.Setup(x => x.GetMutableProjectsInfo(It.IsAny<Stryker.Abstractions.Options.IStrykerOptions>()))
@@ -478,7 +478,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var initialisationProcessMock = new Mock<IInitialisationProcess>();
         
         // Create a real InputFileResolver since the orchestrator delegates to InitialisationProcess
-        var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object);
+        var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, new Mock<INugetRestoreProcess>().Object, TestLoggerFactory.CreateLogger<InputFileResolver>());
         
         // Setup the InitialisationProcess mock to delegate to InputFileResolver for project resolution
         initialisationProcessMock.Setup(x => x.GetMutableProjectsInfo(It.IsAny<Stryker.Abstractions.Options.IStrykerOptions>()))
