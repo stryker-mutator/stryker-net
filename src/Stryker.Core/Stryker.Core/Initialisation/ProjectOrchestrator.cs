@@ -27,17 +27,20 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
     private readonly IInitialisationProcess _initializationProcess;
     private readonly ILogger _logger;
     private readonly IProjectMutator _projectMutator;
+    private readonly IInitialBuildProcess _initialBuildProcess;
     private readonly IInputFileResolver _fileResolver;
     private ITestRunner _runner;
 
     public ProjectOrchestrator(
         IProjectMutator projectMutator,
         IInitialisationProcess initializationProcess,
+        IInitialBuildProcess initialBuildProcess,
         IInputFileResolver fileResolver,
         ILogger<ProjectOrchestrator> logger)
     {
         _projectMutator = projectMutator ?? throw new ArgumentNullException(nameof(projectMutator));
         _initializationProcess = initializationProcess ?? throw new ArgumentNullException(nameof(initializationProcess));
+        _initialBuildProcess = initialBuildProcess ?? throw new ArgumentNullException(nameof(initialBuildProcess));
         _fileResolver = fileResolver ?? throw new ArgumentNullException(nameof(fileResolver));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }

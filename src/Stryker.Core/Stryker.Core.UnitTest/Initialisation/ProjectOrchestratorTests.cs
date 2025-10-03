@@ -237,6 +237,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             
             var target = new ProjectOrchestrator(_projectMutatorMock.Object,
                 initialisationProcessMock.Object,
+                initialBuildProcessMock.Object,
                 inputFileResolver,
                 TestLoggerFactory.CreateLogger<ProjectOrchestrator>());
 
@@ -511,6 +512,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         
         return new ProjectOrchestrator(_projectMutatorMock.Object,
             initialisationProcessMock.Object,
+            initialBuildProcessMock.Object,
             inputFileResolver,
             TestLoggerFactory.CreateLogger<ProjectOrchestrator>());
     }

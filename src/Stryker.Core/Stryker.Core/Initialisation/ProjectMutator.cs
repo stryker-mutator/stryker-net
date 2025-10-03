@@ -20,15 +20,17 @@ public interface IProjectMutator
 public class ProjectMutator : IProjectMutator
 {
     private readonly ILogger _logger;
+    private readonly IMutationTestProcess _injectedMutationTestProcess;
 
-    public ProjectMutator(ILogger<ProjectMutator> logger)
+    public ProjectMutator(ILogger<ProjectMutator> logger, IMutationTestProcess mutationTestProcess = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _injectedMutationTestProcess = mutationTestProcess;
     }
 
     public IMutationTestProcess MutateProject(IStrykerOptions options, MutationTestInput input, IReporter reporters)
     {
-        var process = new MutationTestProcess(input, options, reporters,
+        var process = _injectedMutationTestProcess ?? new MutationTestProcess(input, options, reporters,
             new MutationTestExecutor(input.TestRunner));
 
         // Enrich test projects info with unit tests
