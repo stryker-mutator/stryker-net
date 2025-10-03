@@ -52,21 +52,27 @@ namespace ExtraProject.XUnit
     {
         _mutationTestProcessMock.Setup(x => x.Mutate());
         _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
+        
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            properties: new Dictionary<string, string> { { "Language", "C#" } },
+            projectFilePath: "c:\\project.csproj",
+            targetFramework: "netcoreapp3.1",
+            projectReferences: Array.Empty<string>(),
+            sourceFiles: Array.Empty<string>()).Object;
+        
         _mutationTestInput = new MutationTestInput()
         {
             SourceProjectInfo = new Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo()
             {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>(),
-                    targetFramework: "netcoreapp3.1",
-                    projectReferences: Array.Empty<string>(),
-                    sourceFiles: Array.Empty<string>()).Object
+                AnalyzerResult = analyzerResult
             },
             TestProjectsInfo = new TestProjectsInfo(_fileSystemMock)
             {
                 TestProjects = new List<TestProject>
                 {
                     new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
+                        projectFilePath: "c:\\testproject.csproj",
+                        targetFramework: "netcoreapp3.1",
                         sourceFiles: new [] { _testFilePath }).Object)
                 }
             }
