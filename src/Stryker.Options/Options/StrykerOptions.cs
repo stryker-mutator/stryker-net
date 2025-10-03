@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Testing;
 using Stryker.Utilities;
 
 namespace Stryker.Abstractions;
@@ -115,6 +116,11 @@ public class StrykerOptions : IStrykerOptions
     /// Filters out tests in the project using the given expression.
     /// </summary>
     public string TestCaseFilter { get; init; }
+
+    /// <summary>
+    /// The test runner to use for running tests. Defaults to VsTest.
+    /// </summary>
+    public Testing.TestRunner TestRunner { get; init; } = Testing.TestRunner.VsTest;
 
     /// <summary>
     /// The reports that should be activated when stryker is done testing.
