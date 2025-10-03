@@ -41,7 +41,7 @@ We advise to use the `.NET Compiler Platform SDK` during development. The `Synta
 - [Sharplab](https://sharplab.io/), for visualising different compilation steps of C# (AST, IL etc.) 
 
 ## Maintainers
-When merging pull requests or creating commits, please conform to [the angular commit message style](https://docs.google.com/document/d/1rk04jEuGfk9kYzfqCuOlPTSJw3hEDZJTBN5E5f1SALo), so our changelog will be updated.
+When merging pull requests or creating commits, please conform to the [Conventional Commit guidelines](https://github.com/github/awesome-copilot/blob/main/instructions/conventional-commit.prompt.md), so our changelog will be updated.
    Namely in the form `<type>(<scope>): <subject>\n\n[body]`
    * Type: feat, fix, docs, style, refactor, test, chore.
    * Scope: the file or group of files (not a strict right or wrong)

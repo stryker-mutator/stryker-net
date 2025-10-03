@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -259,6 +260,7 @@ Generated source code may be missing.", analyzer);
 
         return diagnostics
             .Split(";")
+            .Select(x => x.Trim('\r', '\n', ' '))
             .Distinct()
             .Where(x => !string.IsNullOrWhiteSpace(x));
     }
