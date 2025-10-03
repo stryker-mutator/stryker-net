@@ -17,6 +17,15 @@
           "System.Reflection.Metadata": "8.0.0"
         }
       },
+      "TestableIO.System.IO.Abstractions.Wrappers": {
+        "type": "Direct",
+        "requested": "[22.0.16, )",
+        "resolved": "22.0.16",
+        "contentHash": "QUX0TLMvnRLEgvuMRotrZKN9eCdX4yzK7HJCaPj17T4jvUf+G4XifdLpB5wmRct2zKlscYzpWMOmHjKabse3yw==",
+        "dependencies": {
+          "Testably.Abstractions.FileSystem.Interface": "9.0.0"
+        }
+      },
       "Buildalyzer.Logger": {
         "type": "Transitive",
         "resolved": "7.1.0",
@@ -325,15 +334,6 @@
         "requested": "[4.3.0, )",
         "resolved": "4.3.0",
         "contentHash": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ=="
-      },
-      "TestableIO.System.IO.Abstractions.Wrappers": {
-        "type": "CentralTransitive",
-        "requested": "[22.0.16, )",
-        "resolved": "22.0.16",
-        "contentHash": "QUX0TLMvnRLEgvuMRotrZKN9eCdX4yzK7HJCaPj17T4jvUf+G4XifdLpB5wmRct2zKlscYzpWMOmHjKabse3yw==",
-        "dependencies": {
-          "Testably.Abstractions.FileSystem.Interface": "9.0.0"
-        }
       }
     }
   }

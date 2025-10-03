@@ -18,45 +18,6 @@
           "System.Diagnostics.DiagnosticSource": "9.0.9"
         }
       },
-      "Microsoft.TestPlatform": {
-        "type": "Direct",
-        "requested": "[17.14.1, )",
-        "resolved": "17.14.1",
-        "contentHash": "chV8QnyU0mY1i8kBG6UsfHMn7sTasloBKh+A9yuyRw760vDc1qKvFq1PAp3wujtTnX3WWwy49okuzrT2ZHJhfA=="
-      },
-      "Microsoft.TestPlatform.ObjectModel": {
-        "type": "Direct",
-        "requested": "[17.14.1, )",
-        "resolved": "17.14.1",
-        "contentHash": "xTP1W6Mi6SWmuxd3a+jj9G9UoC850WGwZUps1Wah9r1ZxgXhdJfj1QqDLJkFjHDCvN42qDL2Ps5KjQYWUU0zcQ==",
-        "dependencies": {
-          "System.Reflection.Metadata": "8.0.0"
-        }
-      },
-      "Microsoft.TestPlatform.Portable": {
-        "type": "Direct",
-        "requested": "[17.14.1, )",
-        "resolved": "17.14.1",
-        "contentHash": "YiNhY7vP5IQnhCf8AHEaxvK85xG+4gpFDBvgx1nZhwxjt7yPz094K6i8JpFU4mgmO6T/gT3Q+ylfkpYFqtKkUw=="
-      },
-      "Microsoft.TestPlatform.TranslationLayer": {
-        "type": "Direct",
-        "requested": "[17.14.1, )",
-        "resolved": "17.14.1",
-        "contentHash": "LvxCfuUqu1Xs3xAs2hPlLYnrezqdqu14swUuVyoGCywJ63dD+FRD2lLG/3nAXux4MAXClFtp2y5FiBvLgEAbdA==",
-        "dependencies": {
-          "NETStandard.Library": "2.0.0"
-        }
-      },
-      "TestableIO.System.IO.Abstractions.Wrappers": {
-        "type": "Direct",
-        "requested": "[22.0.16, )",
-        "resolved": "22.0.16",
-        "contentHash": "QUX0TLMvnRLEgvuMRotrZKN9eCdX4yzK7HJCaPj17T4jvUf+G4XifdLpB5wmRct2zKlscYzpWMOmHjKabse3yw==",
-        "dependencies": {
-          "Testably.Abstractions.FileSystem.Interface": "9.0.0"
-        }
-      },
       "Buildalyzer.Logger": {
         "type": "Transitive",
         "resolved": "7.1.0",
@@ -145,11 +106,6 @@
         "resolved": "17.10.4",
         "contentHash": "wyABaqY+IHCMMSTQmcc3Ca6vbmg5BaEPgicnEgpll+4xyWZWlkQqUwafweUd9VAhBb4jqplMl6voUHQ6yfdUcg=="
       },
-      "Microsoft.NETCore.Platforms": {
-        "type": "Transitive",
-        "resolved": "1.1.0",
-        "contentHash": "kz0PEW2lhqygehI/d6XsPCQzD7ff7gUJaVGPVETX611eadGsA3A877GdSlU0LRVMCTH/+P3o2iDTak+S08V2+A=="
-      },
       "MSBuild.StructuredLogger": {
         "type": "Transitive",
         "resolved": "2.2.158",
@@ -165,14 +121,6 @@
         "contentHash": "rls0hb7plSfVFCqScDxTqtGpIlMfoQEchqjmK/YtXDML11GU5jI+oCi9YsikGulJVUv/vLSY6Ktah0uXwv25EA==",
         "dependencies": {
           "Microsoft.Build": "15.3.409"
-        }
-      },
-      "NETStandard.Library": {
-        "type": "Transitive",
-        "resolved": "2.0.0",
-        "contentHash": "7jnbRU+L08FXKMxqUflxEXtVymWvNOrS8yHgu9s6EM8Anr6T/wIX4nZ08j/u3Asz+tCufp3YVwFSEvFTPYmBPA==",
-        "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.1.0"
         }
       },
       "System.CodeDom": {
@@ -284,13 +232,6 @@
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.16, )"
         }
       },
-      "stryker.datacollector": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "[17.14.1, )",
-          "Microsoft.TestPlatform.Portable": "[17.14.1, )"
-        }
-      },
       "stryker.testrunner": {
         "type": "Project",
         "dependencies": {
@@ -385,6 +326,15 @@
           "System.Diagnostics.DiagnosticSource": "6.0.0"
         }
       },
+      "Microsoft.TestPlatform.ObjectModel": {
+        "type": "CentralTransitive",
+        "requested": "[17.14.1, )",
+        "resolved": "17.14.1",
+        "contentHash": "xTP1W6Mi6SWmuxd3a+jj9G9UoC850WGwZUps1Wah9r1ZxgXhdJfj1QqDLJkFjHDCvN42qDL2Ps5KjQYWUU0zcQ==",
+        "dependencies": {
+          "System.Reflection.Metadata": "8.0.0"
+        }
+      },
       "Mono.Cecil": {
         "type": "CentralTransitive",
         "requested": "[0.11.6, )",
@@ -408,6 +358,15 @@
         "requested": "[4.3.0, )",
         "resolved": "4.3.0",
         "contentHash": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ=="
+      },
+      "TestableIO.System.IO.Abstractions.Wrappers": {
+        "type": "CentralTransitive",
+        "requested": "[22.0.16, )",
+        "resolved": "22.0.16",
+        "contentHash": "QUX0TLMvnRLEgvuMRotrZKN9eCdX4yzK7HJCaPj17T4jvUf+G4XifdLpB5wmRct2zKlscYzpWMOmHjKabse3yw==",
+        "dependencies": {
+          "Testably.Abstractions.FileSystem.Interface": "9.0.0"
+        }
       }
     }
   }
