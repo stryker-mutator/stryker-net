@@ -8,6 +8,8 @@ Reference these external instruction files when applicable:
 - **Always**: [Taming Copilot](https://github.com/github/awesome-copilot/blob/main/instructions/taming-copilot.instructions.md)
 - **When writing documentation**: [Markdown Instructions](https://github.com/github/awesome-copilot/blob/main/instructions/markdown.instructions.md)
 - **When writing C#**: [C# Instructions](https://github.com/github/awesome-copilot/blob/main/instructions/csharp.instructions.md)
+- **When writing comments**: [Self-Explanatory Code Commenting](https://github.com/github/awesome-copilot/blob/main/instructions/self-explanatory-code-commenting.instructions.md)
+- **When working with Azure Pipelines**: [Azure DevOps Pipelines](https://github.com/github/awesome-copilot/blob/main/instructions/azure-devops-pipelines.instructions.md)
 
 ## Project Overview
 
@@ -72,8 +74,9 @@ See the full guide in [adding_a_mutator.md](../adding_a_mutator.md).
 
 ## Commit Message Format
 
-Follow [Angular commit message style](https://docs.google.com/document/d/1rk04jEuGfk9kYzfqCuOlPTSJw3hEDZJTBN5E5f1SALo):
+Follow the [Conventional Commit guidelines](https://github.com/github/awesome-copilot/blob/main/instructions/conventional-commit.prompt.md):
 - Format: `<type>(<scope>): <subject>\n\n[body]`
 - Types: feat, fix, docs, style, refactor, test, chore
-- Use present tense (e.g., "change" not "changed", "add" not "added")
-- Include motivation and contrasts with previous behavior
+- Scope: the file or group of files (not strict)
+- Subject and body: use present tense (e.g., "change" not "changed", "add" not "added")
+- Include motivation and contrasts with previous behavior in the body
