@@ -5,11 +5,14 @@ This document provides guidance for GitHub Copilot when working with the Stryker
 ## Additional Copilot Instructions
 
 Reference these external instruction files when applicable:
-- **Always**: [Taming Copilot](https://github.com/github/awesome-copilot/blob/main/instructions/taming-copilot.instructions.md)
-- **When writing documentation**: [Markdown Instructions](https://github.com/github/awesome-copilot/blob/main/instructions/markdown.instructions.md)
-- **When writing C#**: [C# Instructions](https://github.com/github/awesome-copilot/blob/main/instructions/csharp.instructions.md)
-- **When writing comments**: [Self-Explanatory Code Commenting](https://github.com/github/awesome-copilot/blob/main/instructions/self-explanatory-code-commenting.instructions.md)
-- **When working with Azure Pipelines**: [Azure DevOps Pipelines](https://github.com/github/awesome-copilot/blob/main/instructions/azure-devops-pipelines.instructions.md)
+- **Always**: [Taming Copilot](./instructions/taming-copilot.instructions.md)
+- **Always**: [Conventional Commit Guidelines](./instructions/conventional-commit.instructions.md)
+- **Always**: [Security Best Practices](./instructions/security-and-owasp.instructions.md)
+- **Always**: [Self-Explanatory Code Commenting](./instructions/self-explanatory-code-commenting.instructions.md)
+- **When writing documentation**: [Markdown Instructions](./instructions/markdown.instructions.md)
+- **When writing C#**: [C# Instructions](./instructions/csharp.instructions.md)
+- **When working with Azure Pipelines**: [Azure DevOps Pipelines](./instructions/azure-devops-pipelines.instructions.md)
+- **When working with GitHub Actions**: [GitHub Actions](./instructions/github-actions-ci-cd-best-practices.instructions.md)
 
 ## Project Overview
 
@@ -71,12 +74,3 @@ See the full guide in [adding_a_mutator.md](../adding_a_mutator.md).
 - Mutators must not throw exceptions
 - Support various C# syntax versions (expression body vs block statement)
 - Invest in unit tests early - look at existing mutator tests for examples
-
-## Commit Message Format
-
-Follow the [Conventional Commit guidelines](https://github.com/github/awesome-copilot/blob/main/instructions/conventional-commit.prompt.md):
-- Format: `<type>(<scope>): <subject>\n\n[body]`
-- Types: feat, fix, docs, style, refactor, test, chore
-- Scope: the file or group of files (not strict)
-- Subject and body: use present tense (e.g., "change" not "changed", "add" not "added")
-- Include motivation and contrasts with previous behavior in the body
