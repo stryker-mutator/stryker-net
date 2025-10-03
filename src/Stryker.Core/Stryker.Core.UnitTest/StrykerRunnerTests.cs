@@ -84,7 +84,7 @@ public class StrykerRunnerTests : TestBase
 
         var target = new StrykerRunner(reporterFactoryMock.Object, projectOrchestratorMock.Object, TestLoggerFactory.CreateLogger<StrykerRunner>());
 
-        target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
+        target.RunMutationTest(inputsMock.Object);
 
         projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(x => x.ProjectPath == "C:/test"), It.IsAny<IReporter>(), It.IsAny<ITestRunner>()), Times.Once);
         mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Once);
@@ -141,7 +141,7 @@ public class StrykerRunnerTests : TestBase
 
         var target = new StrykerRunner(reporterFactoryMock.Object, projectOrchestratorMock.Object, TestLoggerFactory.CreateLogger<StrykerRunner>());
 
-        var result = target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
+        var result = target.RunMutationTest(inputsMock.Object);
 
         result.MutationScore.ShouldBe(double.NaN);
 
@@ -189,7 +189,7 @@ public class StrykerRunnerTests : TestBase
 
         var target = new StrykerRunner(reporterFactoryMock.Object, projectOrchestratorMock.Object, TestLoggerFactory.CreateLogger<StrykerRunner>());
 
-        Should.Throw<NoTestProjectsException>(() => target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object));
+        Should.Throw<NoTestProjectsException>(() => target.RunMutationTest(inputsMock.Object));
 
         reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<IMutant>>()), Times.Never);
         reporterMock.Verify(x => x.OnMutantTested(It.IsAny<IMutant>()), Times.Never);

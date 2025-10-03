@@ -18,7 +18,6 @@ namespace Stryker.Core;
 
 public interface IStrykerRunner
 {
-    StrykerRunResult RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null);
     StrykerRunResult RunMutationTest(IStrykerInputs inputs);
 }
 
@@ -41,7 +40,7 @@ public class StrykerRunner : IStrykerRunner
     }
 
     /// <summary>
-    /// Starts a mutation test run (DI-based)
+    /// Starts a mutation test run
     /// </summary>
     /// <param name="inputs">user options</param>
     /// <exception cref="InputException">For managed exceptions</exception>
@@ -139,26 +138,6 @@ public class StrykerRunner : IStrykerRunner
             stopwatch.Stop();
             _logger.LogInformation("Time Elapsed {duration}", stopwatch.Elapsed);
         }
-    }
-
-    /// <summary>
-    /// Starts a mutation test run (Legacy API for backward compatibility)
-    /// </summary>
-    /// <param name="inputs">user options</param>
-    /// <param name="loggerFactory">This loggerfactory will be used to create loggers during the stryker run</param>
-    /// <param name="projectOrchestrator">Optional project orchestrator (ignored, uses DI)</param>
-    /// <exception cref="InputException">For managed exceptions</exception>
-    [Obsolete("Use RunMutationTest(IStrykerInputs) with DI container. This method will be removed in a future version.")]
-    public StrykerRunResult RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null)
-    {
-        SetupLogging(loggerFactory);
-        return RunMutationTest(inputs);
-    }
-
-    private static void SetupLogging(ILoggerFactory loggerFactory)
-    {
-        // setup logging
-        ApplicationLogging.LoggerFactory = loggerFactory;
     }
 
     private void AnalyzeCoverage(IStrykerOptions options)

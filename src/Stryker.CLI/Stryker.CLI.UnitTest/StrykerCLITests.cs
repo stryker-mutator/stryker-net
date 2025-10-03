@@ -41,10 +41,6 @@ public class StrykerCLITests
             .Callback<IStrykerInputs>(c => _inputs = c)
             .Returns(_runResults)
             .Verifiable();
-        _strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
-            .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => _inputs = c)
-            .Returns(_runResults)
-            .Verifiable();
         _nugetClientMock.Setup(x => x.GetLatestVersionAsync()).Returns(Task.FromResult(new SemanticVersion(10, 0, 0)));
         var configBuilderMock = new Mock<IConfigBuilder>();
         var consoleMock = new Mock<IAnsiConsole>();
