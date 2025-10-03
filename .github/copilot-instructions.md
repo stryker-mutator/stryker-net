@@ -4,7 +4,7 @@ This document provides guidance for GitHub Copilot when working with the Stryker
 
 ## Additional Copilot Instructions
 
-Reference these external instruction files when applicable:
+Reference these instruction files when applicable:
 - **Always**: [Taming Copilot](./instructions/taming-copilot.instructions.md)
 - **Always**: [Conventional Commit Guidelines](./instructions/conventional-commit.instructions.md)
 - **Always**: [Security Best Practices](./instructions/security-and-owasp.instructions.md)
@@ -25,15 +25,12 @@ Stryker.NET is a mutation testing framework for .NET projects. It allows you to 
 - Create or edit unit tests or integration tests for all changes
 - Update documentation when adding features
 
-### Development Setup
-1. Clone the repository: `https://github.com/stryker-mutator/stryker-net.git`
-2. Open `Stryker.sln` in Visual Studio or your preferred IDE
-3. The solution contains multiple projects under the `src/` directory
-
 ### Running Tests
 - **Unit tests**: Run `dotnet test` in the `/src` directory
-- **Integration tests**: These will be run automatically in the CI/CD pipeline during pull requests
-- Always run unit tests before committing changes
+- **Integration tests**: 
+  - On **Windows**: Run `.\integration-tests.ps1` in the root of the repo (PowerShell 7 recommended)
+  - On **macOS/Linux**: Run `pwsh ./integration-tests.ps1` in the root of the repo (requires [PowerShell 7](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell))
+- Always run unit tests and integration tests before committing changes
 
 ### Testing Locally
 To test Stryker.NET on a project:
