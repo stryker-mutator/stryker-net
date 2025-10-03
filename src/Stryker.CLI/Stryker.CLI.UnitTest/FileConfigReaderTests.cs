@@ -35,7 +35,7 @@ public class FileConfigReaderTests
         Directory.SetCurrentDirectory($"..{Path.DirectorySeparatorChar}");
         var runResults = new StrykerRunResult(options, 0.3);
         mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>())).Returns(runResults).Verifiable();
-        var target = new StrykerCli(mock.Object, Mock.Of<IConfigBuilder>(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
+        var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
 
         target.Run(new string[] { });
 
@@ -67,7 +67,7 @@ public class FileConfigReaderTests
             .Returns(runResults)
             .Verifiable();
 
-        var target = new StrykerCli(mock.Object, Mock.Of<IConfigBuilder>(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
+        var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
 
         target.Run(new string[] { argName, "filled-stryker-config.json" });
 
@@ -114,7 +114,7 @@ public class FileConfigReaderTests
             .Returns(runResults)
             .Verifiable();
 
-        var target = new StrykerCli(mock.Object, Mock.Of<IConfigBuilder>(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
+        var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
 
         target.Run(new string[] { "-f", "filled-stryker-config.yaml" });
 
