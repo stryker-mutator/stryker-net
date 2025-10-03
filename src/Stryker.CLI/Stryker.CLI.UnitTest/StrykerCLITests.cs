@@ -77,7 +77,7 @@ Options:";
         var strykerRunnerMock = new Mock<IStrykerRunner>(MockBehavior.Strict);
         var strykerRunResult = new StrykerRunResult(_options, 0.3);
 
-        strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
+        strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
             .Returns(strykerRunResult)
             .Verifiable();
 
@@ -130,8 +130,7 @@ Options:";
         };
         var strykerRunResult = new StrykerRunResult(options, 0.3);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
-                .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => Utilities.Logging.ApplicationLogging.LoggerFactory = l)
+            mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
                 .Returns(strykerRunResult)
                 .Verifiable();
 
@@ -155,7 +154,7 @@ Options:";
             }
         };
         var strykerRunResult = new StrykerRunResult(options, double.NaN);
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
+        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
             .Returns(strykerRunResult)
             .Verifiable();
 
@@ -179,7 +178,7 @@ Options:";
             }
         };
         var strykerRunResult = new StrykerRunResult(options, double.NaN);
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
+        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
             .Returns(strykerRunResult)
             .Verifiable();
 
@@ -204,7 +203,7 @@ Options:";
         };
         var strykerRunResult = new StrykerRunResult(options, 0.1);
 
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>())).Returns(strykerRunResult).Verifiable();
+        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>())).Returns(strykerRunResult).Verifiable();
 
         var target = new StrykerCli(mock.Object, Mock.Of<IConfigBuilder>(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
         var result = target.Run(new string[] { });
@@ -232,7 +231,7 @@ Options:";
     public void ShouldThrow_OnException()
     {
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
+        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
             .Throws(new Exception("Initial testrun failed"))
             .Verifiable();
 

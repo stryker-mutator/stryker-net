@@ -62,8 +62,8 @@ public class FileConfigReaderTests
         var runResults = new StrykerRunResult(options, 0.3);
 
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
-            .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => actualInputs = c)
+        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
+            .Callback<IStrykerInputs>(c => actualInputs = c)
             .Returns(runResults)
             .Verifiable();
 
@@ -109,8 +109,8 @@ public class FileConfigReaderTests
         var runResults = new StrykerRunResult(options, 0.3);
 
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
-            .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => actualInputs = c)
+        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
+            .Callback<IStrykerInputs>(c => actualInputs = c)
             .Returns(runResults)
             .Verifiable();
 

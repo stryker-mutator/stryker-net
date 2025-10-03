@@ -54,6 +54,14 @@ namespace ExtraProject.XUnit
         _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
         _mutationTestInput = new MutationTestInput()
         {
+            SourceProjectInfo = new Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo()
+            {
+                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>(),
+                    targetFramework: "netcoreapp3.1",
+                    projectReferences: Array.Empty<string>(),
+                    sourceFiles: Array.Empty<string>()).Object
+            },
             TestProjectsInfo = new TestProjectsInfo(_fileSystemMock)
             {
                 TestProjects = new List<TestProject>

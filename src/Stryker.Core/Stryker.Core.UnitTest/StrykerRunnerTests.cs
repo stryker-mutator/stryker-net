@@ -79,6 +79,9 @@ public class StrykerRunnerTests : TestBase
         mutationTestProcessMock.InSequence(seq).Setup(x => x.FilterMutants());
         reporterMock.InSequence(seq).Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()));
 
+        // Setup Dispose for ProjectOrchestrator
+        projectOrchestratorMock.Setup(x => x.Dispose());
+
         var target = new StrykerRunner(reporterFactoryMock.Object, projectOrchestratorMock.Object, TestLoggerFactory.CreateLogger<StrykerRunner>());
 
         target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
@@ -133,6 +136,9 @@ public class StrykerRunnerTests : TestBase
         reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()));
         reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()));
 
+        // Setup Dispose for ProjectOrchestrator
+        projectOrchestratorMock.Setup(x => x.Dispose());
+
         var target = new StrykerRunner(reporterFactoryMock.Object, projectOrchestratorMock.Object, TestLoggerFactory.CreateLogger<StrykerRunner>());
 
         var result = target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
@@ -177,6 +183,9 @@ public class StrykerRunnerTests : TestBase
             .Returns(new List<IMutationTestProcess>() { });
 
         reporterFactoryMock.Setup(x => x.Create(It.IsAny<StrykerOptions>(), It.IsAny<IGitInfoProvider>())).Returns(reporterMock.Object);
+
+        // Setup Dispose for ProjectOrchestrator (even though exception is thrown, Dispose may still be called in cleanup)
+        projectOrchestratorMock.Setup(x => x.Dispose());
 
         var target = new StrykerRunner(reporterFactoryMock.Object, projectOrchestratorMock.Object, TestLoggerFactory.CreateLogger<StrykerRunner>());
 

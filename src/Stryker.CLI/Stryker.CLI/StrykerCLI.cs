@@ -170,7 +170,7 @@ public class StrykerCli
 
         if (result.ScoreIsLowerThanThresholdBreak())
         {
-            var thresholdBreak = (double)inputs.ValidateAll().Thresholds.Break / 100;
+            var thresholdBreak = (double)result.Options.Thresholds.Break / 100;
             logger.LogWarning("Final mutation score is below threshold break. Crashing...");
 
             _console.WriteLine();
