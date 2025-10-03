@@ -2,6 +2,13 @@
 
 This document provides guidance for GitHub Copilot when working with the Stryker.NET repository.
 
+## Additional Copilot Instructions
+
+Reference these external instruction files when applicable:
+- **Always**: [Taming Copilot](https://github.com/github/awesome-copilot/blob/main/instructions/taming-copilot.instructions.md)
+- **When writing documentation**: [Markdown Instructions](https://github.com/github/awesome-copilot/blob/main/instructions/markdown.instructions.md)
+- **When writing C#**: [C# Instructions](https://github.com/github/awesome-copilot/blob/main/instructions/csharp.instructions.md)
+
 ## Project Overview
 
 Stryker.NET is a mutation testing framework for .NET projects. It allows you to test your tests by temporarily inserting bugs (mutations) in your source code to verify that tests catch them.
@@ -13,7 +20,7 @@ Stryker.NET is a mutation testing framework for .NET projects. It allows you to 
 - For bugs, run `dotnet stryker --verbosity debug` and include the output in the issue
 
 ### Code Standards
-- Follow [Microsoft C# coding guidelines](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions)
+- Follow the repository's `.editorconfig` and [Microsoft C# coding guidelines](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions)
 - Create or edit unit tests or integration tests for all changes
 - Update documentation when adding features
 
@@ -36,7 +43,7 @@ To test Stryker.NET on a project:
 5. You can use projects in `.\integrationtest\TargetProjects` for testing
 6. Run with `Stryker.CLI` as the startup project
 
-**Note**: Running Stryker on itself doesn't work as assemblies will be in use by Visual Studio.
+**Note**: Running Stryker on itself doesn't work as assemblies will be in use by Visual Studio. You can run Stryker on a copy of Stryker instead.
 
 ## Adding a New Mutator
 
