@@ -1,14 +1,15 @@
 using System.Diagnostics;
-using System.Text.Json;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using Microsoft.Testing.Platform;
 using Microsoft.Testing.Platform.Builder;
 using Microsoft.Testing.Platform.Extensions;
 using Microsoft.Testing.Platform.Extensions.TestHostControllers;
+using StreamJsonRpc;
 
 Console.WriteLine("Starting demo....");
-string testAssemblyPath = Path.GetFullPath("C:\\Dev\\Repos\\stryker-net\\MTP Demo\\InjectedTestProject\\UnitTests\\bin\\Debug\\net8.0\\UnitTests.dll");
+string testAssemblyPath = Path.GetFullPath("C:\\Dev\\Repos\\stryker-net\\MTP Demo\\MsTestRunnerDemo\\XUnitRunnerDemo\\bin\\Debug\\net9.0\\XUnitRunnerDemo.dll");
 var exits = File.Exists(testAssemblyPath);
 if (!exits)
 {
@@ -24,18 +25,27 @@ static async Task<(Process proc, MtpJsonRpcConnection rpc)> StartRunnerAsync(
         FileName = "dotnet",
         Arguments = $"\"{testDllPath}\" --server --client-port {rpc.Port}",
         UseShellExecute = false,
-        RedirectStandardOutput = true
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        RedirectStandardInput = true,
     };
-    await rpc.AcceptAsync(ct);
     var proc = Process.Start(psi)!;
+    Console.WriteLine(proc.Id);
 
-    Console.WriteLine("RCP started");
-    // initialize
-    await rpc.RequestAsync("initialize", new
+    JsonRpc jsonRpc = JsonRpc.Attach(proc.StandardInput.BaseStream, proc.StandardOutput.BaseStream);
+    Console.WriteLine("RPC started");
+    var result = await jsonRpc.InvokeWithParameterObjectAsync<string>("initialize", new
     {
         clientInfo = new { name = "Stryker", version = "1.0" },
         capabilities = new[] { "testing/discoverTests", "testing/runTests" }
-    }, ct);
+    });
+    //await rpc.AcceptAsync(ct);
+    // initialize
+    //await rpc.RequestAsync("initialize", new
+    //{
+    //    clientInfo = new { name = "Stryker", version = "1.0" },
+    //    capabilities = new[] { "testing/discoverTests", "testing/runTests" }
+    //}, ct);
 
     return (proc, rpc);
 }
