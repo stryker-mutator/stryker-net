@@ -1,4 +1,4 @@
-﻿// Stryker.Mtp.Orchestrator
+// Stryker.Mtp.Orchestrator
 using System.Net;
 using System.Net.Sockets;
 using System.Text;

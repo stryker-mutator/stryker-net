@@ -1,4 +1,4 @@
-namespace TUnit.RpcTests.Clients;
+namespace MsTestRunnerDemo;
 
 public interface IProcessHandle
 {

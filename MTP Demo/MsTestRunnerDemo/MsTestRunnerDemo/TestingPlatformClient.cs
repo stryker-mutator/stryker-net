@@ -2,16 +2,11 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
-using Microsoft.Testing.Platform.Extensions.Messages;
-using Microsoft.Testing.Platform.Logging;
-using Microsoft.Testing.Platform.TestHost;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
+using MsTestRunnerDemo.Models;
 using StreamJsonRpc;
-using TUnit.RpcTests.Models;
 // ReSharper disable All
 
-namespace TUnit.RpcTests.Clients;
+namespace MsTestRunnerDemo;
 
 public sealed class TestingPlatformClient : IDisposable
 {
@@ -110,7 +105,7 @@ public sealed class TestingPlatformClient : IDisposable
         using CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromMinutes(3));
         return await CheckedInvokeAsync(async () => await JsonRpcClient.InvokeWithParameterObjectAsync<InitializeResponse>(
             "initialize",
-            new InitializeRequest(Environment.ProcessId, new ClientInfo("test-client"),
+            new InitializeRequest(Environment.ProcessId, new Models.ClientInfo("test-client"),
                 new ClientCapabilities(new ClientTestingCapabilities(DebuggerProvider: false))), cancellationToken: cancellationTokenSource.Token));
     }
 
@@ -138,7 +133,7 @@ public sealed class TestingPlatformClient : IDisposable
                 return discoveryListener;
             }, @checked);
 
-    public async Task<ResponseListener> RunTestsAsync(Guid requestId, Func<TestNodeUpdate[], Task> action, TestNode[]? testNodes = null)
+    public async Task<ResponseListener> RunTestsAsync(Guid requestId, Func<TestNodeUpdate[], Task> action, Models.TestNode[]? testNodes = null)
         => await CheckedInvokeAsync(async () =>
         {
             using CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromMinutes(3));
@@ -154,7 +149,7 @@ public sealed class TestingPlatformClient : IDisposable
         _tcpClient.Dispose();
     }
 
-    public record Log(LogLevel LogLevel, string Message);
+    public record Log(Microsoft.Testing.Platform.Logging.LogLevel LogLevel, string Message);
 
     private sealed class TargetHandler
     {
@@ -207,11 +202,11 @@ public sealed class TestingPlatformClient : IDisposable
         }
 
         [JsonRpcMethod("client/log")]
-        public Task LogAsync(LogLevel level, string message)
+        public Task LogAsync(string level, string message)
         {
             foreach (var listener in _logListeners)
             {
-                listener.Add(new Log(level, message));
+                listener.Add(new Log(Enum.Parse<Microsoft.Testing.Platform.Logging.LogLevel>(level), message));
             }
 
             return Task.CompletedTask;

@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace MsTestRunnerDemo;
+namespace MsTestRunnerDemo.Models;
 
 internal sealed class ConsoleRpcListener : TraceListener
 {

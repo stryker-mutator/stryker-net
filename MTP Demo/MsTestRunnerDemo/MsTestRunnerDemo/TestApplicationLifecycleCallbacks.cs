@@ -1,7 +1,6 @@
-﻿using Microsoft.Testing.Platform.Capabilities.TestFramework;
 using Microsoft.Testing.Platform.Extensions.TestHost;
 
-internal class TestApplicationLifecycleCallbacks : ITestApplicationLifecycleCallbacks
+internal class TestApplicationLifecycleCallbacks : ITestHostApplicationLifetime
 {
     public TestApplicationLifecycleCallbacks(IServiceProvider serviceProvider)
     {
