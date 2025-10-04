@@ -1,6 +1,7 @@
 using TestProject1;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Testing.Platform.Services;
+using Shared;
 using Xunit.Runner.InProc.SystemConsole.TestingPlatform;
 
 public class Program
@@ -21,7 +22,7 @@ public class Program
                     builder.TestHost.AddDataConsumer(sp =>
                         new StrykerDataConsumer(sp.GetOutputDevice())
                     );
-                    
+
                 })
             .GetAwaiter().GetResult();
     }

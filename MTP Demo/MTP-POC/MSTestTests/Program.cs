@@ -1,14 +1,16 @@
+
+
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Testing.Platform.Builder;
 using Microsoft.Testing.Platform.Services;
 using Shared;
 using TestProject1;
-using TUnit.Engine.Extensions;
 
 var testApplicationBuilder = await TestApplication.CreateBuilderAsync(args);
 
 // Register the testing framework
-testApplicationBuilder.AddTUnit();
+testApplicationBuilder.AddMSTest(() => [Assembly.GetExecutingAssembly()]);
 
 testApplicationBuilder.TestHostControllers.AddEnvironmentVariableProvider(sp => ActivatorUtilities.CreateInstance<StrykerEnvironmentVariableProvider>(sp));
 testApplicationBuilder.TestHostControllers.AddProcessLifetimeHandler(sp => ActivatorUtilities.CreateInstance<StykerProcessLifeTimeHandler>(sp));

@@ -1,13 +1,10 @@
-using System.Text.Json;
 using Microsoft.Testing.Platform.Extensions;
+using Microsoft.Testing.Platform.Extensions.Messages;
 using Microsoft.Testing.Platform.OutputDevice;
 
-namespace TestProject1;
+namespace Shared;
 
 // Stryker.Mtp.Agent
-using Microsoft.Testing.Platform.Extensions.Messages;
-using Microsoft.Testing.Platform.Extensions.TestHost;
-using Microsoft.Testing.Platform.Services;
 
 public sealed class StrykerDataConsumer : IDataConsumer
 {
@@ -32,7 +29,7 @@ public sealed class StrykerDataConsumer : IDataConsumer
     //     var node = msg.TestNode;
     //     msg.
     //     if (node is null) return;
-    //     
+    //
     //     node.Properties.
 
 

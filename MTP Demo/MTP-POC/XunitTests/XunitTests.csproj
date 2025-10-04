@@ -36,6 +36,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ConsoleApp1\ConsoleApp1.csproj" />
+      <ProjectReference Include="..\Shared\Shared.csproj" />
     </ItemGroup>
 
 </Project>
