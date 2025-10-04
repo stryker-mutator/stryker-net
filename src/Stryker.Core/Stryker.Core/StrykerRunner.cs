@@ -43,7 +43,7 @@ public class StrykerRunner : IStrykerRunner
     /// <param name="loggerFactory">This loggerfactory will be used to create loggers during the stryker run</param>
     /// <param name="projectOrchestrator"></param>
     /// <exception cref="InputException">For managed exceptions</exception>
-    public StrykerRunResult RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null)
+    public StrykerRunResult  RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null)
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
