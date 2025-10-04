@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Text.Json;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Testing.Platform;
@@ -5,44 +7,59 @@ using Microsoft.Testing.Platform.Builder;
 using Microsoft.Testing.Platform.Extensions;
 using Microsoft.Testing.Platform.Extensions.TestHostControllers;
 
-string testAssemblyPath = Path.GetFullPath("C:\\Dev\\Repos\\stryker-net\\integrationtest\\TargetProjects\\NetCore\\NetCoreTestProject.XUnit\\bin\\Debug\\net8.0\\NetCoreTestProject.XUnit.dll");
+Console.WriteLine("Starting demo....");
+string testAssemblyPath = Path.GetFullPath("C:\\Dev\\Repos\\stryker-net\\MTP Demo\\InjectedTestProject\\UnitTests\\bin\\Debug\\net8.0\\UnitTests.dll");
 var exits = File.Exists(testAssemblyPath);
 if (!exits)
 {
     throw new FileNotFoundException($"Test assembly not found at path: {testAssemblyPath}");
 }
-// this works, as long as the target framework is the same
-var testAssembly = Assembly.LoadFrom(testAssemblyPath);
 
-var testApplicationBuilder = await TestApplication.CreateBuilderAsync(args);
-// Register the testing framework
-testApplicationBuilder.AddMSTest(() => new[] { testAssembly });
-testApplicationBuilder.TestHostControllers.AddEnvironmentVariableProvider(x => new TestHostEnvironmentVariableProvider(x));
-//var factory = new CompositeExtensionFactory<StrykerExtension>(serviceProvider => new StrykerExtension());
-//testApplicationBuilder.TestHost.AddDataConsumer(factory);
-var testApplication = await testApplicationBuilder.BuildAsync();
-var result = await testApplication.RunAsync();
-
-Console.WriteLine($"Test run succeeded: {result == 0}");
-
-public class TestHostEnvironmentVariableProvider : ITestHostEnvironmentVariableProvider
+static async Task<(Process proc, MtpJsonRpcConnection rpc)> StartRunnerAsync(
+    string testDllPath, CancellationToken ct)
 {
-    public TestHostEnvironmentVariableProvider(IServiceProvider serviceProvider)
+    var rpc = new MtpJsonRpcConnection();
+    var psi = new ProcessStartInfo
     {
-        ServiceProvider = serviceProvider;
-    }
+        FileName = "dotnet",
+        Arguments = $"\"{testDllPath}\" --server --client-port {rpc.Port}",
+        UseShellExecute = false,
+        RedirectStandardOutput = true
+    };
+    await rpc.AcceptAsync(ct);
+    var proc = Process.Start(psi)!;
 
-    public IServiceProvider ServiceProvider { get; }
+    Console.WriteLine("RCP started");
+    // initialize
+    await rpc.RequestAsync("initialize", new
+    {
+        clientInfo = new { name = "Stryker", version = "1.0" },
+        capabilities = new[] { "testing/discoverTests", "testing/runTests" }
+    }, ct);
 
-    public string Uid => throw new NotImplementedException();
-
-    public string Version => throw new NotImplementedException();
-
-    public string DisplayName => throw new NotImplementedException();
-
-    public string Description => throw new NotImplementedException();
-
-    public Task<bool> IsEnabledAsync() => throw new NotImplementedException();
-    public Task UpdateAsync(IEnvironmentVariables environmentVariables) => throw new NotImplementedException();
-    public Task<ValidationResult> ValidateTestHostEnvironmentVariablesAsync(IReadOnlyEnvironmentVariables environmentVariables) => throw new NotImplementedException();
+    return (proc, rpc);
 }
+
+var cancellationTokenSource = new CancellationTokenSource();
+var startResult = await StartRunnerAsync(testAssemblyPath, cancellationTokenSource.Token); //TODO: In de initialize voert hij al het ophalen van de tests uit.
+Console.WriteLine("Test runner started.");
+var discoverResult = await DiscoverAsync(startResult.rpc, cancellationTokenSource.Token);
+Console.WriteLine("Tests discovered: " + discoverResult.Value.ToString());
+
+static Task<JsonElement?> DiscoverAsync(MtpJsonRpcConnection rpc, CancellationToken ct)
+    => rpc.RequestAsync("testing/discoverTests", new { }, ct);
+
+static Task RunAsync(MtpJsonRpcConnection rpc,
+    IEnumerable<string> testIds,
+    int[] activeMutants,
+    CancellationToken ct)
+    => rpc.RequestAsync("testing/runTests", new
+    {
+        tests = testIds.ToArray(),
+        // Pass active mutants to the runner as test run parameters.
+        // Frameworks surface these via TestContext (MSTest), TestContext.TestParameters (NUnit), etc.
+        parameters = new Dictionary<string, string>
+        {
+            ["Stryker.ActiveMutants"] = string.Join(",", activeMutants)
+        }
+    }, ct);
