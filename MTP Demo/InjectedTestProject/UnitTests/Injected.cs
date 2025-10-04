@@ -32,7 +32,6 @@ namespace UnitTests
             var factory = new CompositeExtensionFactory<StrykerExtension>(serviceProvider => new StrykerExtension());
             testApplicationBuilder.TestHost.AddDataConsumer(factory);
             var testApplication = await testApplicationBuilder.BuildAsync();
-
             await testApplication.RunAsync();
         }
     }

@@ -1,40 +1,48 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using Microsoft.Testing.Platform;
+using Microsoft.Testing.Platform.Builder;
+using Microsoft.Testing.Platform.Extensions;
+using Microsoft.Testing.Platform.Extensions.TestHostControllers;
 
-string testAssemblyPath = Path.GetFullPath("..\\..\\..\\..\\..\\InjectedTestProject\\UnitTests\\bin\\Debug\\net9.0\\UnitTests.dll");
+string testAssemblyPath = Path.GetFullPath("C:\\Dev\\Repos\\stryker-net\\integrationtest\\TargetProjects\\NetCore\\NetCoreTestProject.XUnit\\bin\\Debug\\net8.0\\NetCoreTestProject.XUnit.dll");
 var exits = File.Exists(testAssemblyPath);
-
+if (!exits)
+{
+    throw new FileNotFoundException($"Test assembly not found at path: {testAssemblyPath}");
+}
 // this works, as long as the target framework is the same
 var testAssembly = Assembly.LoadFrom(testAssemblyPath);
 
-var entryPoint = testAssembly.GetExportedTypes()
-    .Where(t => t.IsClass && !t.IsAbstract)
-    .FirstOrDefault(t => t.Name == "Injected");
+var testApplicationBuilder = await TestApplication.CreateBuilderAsync(args);
+// Register the testing framework
+testApplicationBuilder.AddMSTest(() => new[] { testAssembly });
+testApplicationBuilder.TestHostControllers.AddEnvironmentVariableProvider(x => new TestHostEnvironmentVariableProvider(x));
+//var factory = new CompositeExtensionFactory<StrykerExtension>(serviceProvider => new StrykerExtension());
+//testApplicationBuilder.TestHost.AddDataConsumer(factory);
+var testApplication = await testApplicationBuilder.BuildAsync();
+var result = await testApplication.RunAsync();
 
-var instance = Activator.CreateInstance(entryPoint);
-var method = entryPoint.GetMethod("Main");
+Console.WriteLine($"Test run succeeded: {result == 0}");
 
-// call the test method multiple times, works fast!
-Environment.SetEnvironmentVariable("StrykerActiveMutation", "1");
-var result = method.Invoke(instance, new object[] { new string[] { } });
-Console.WriteLine(result);
+public class TestHostEnvironmentVariableProvider : ITestHostEnvironmentVariableProvider
+{
+    public TestHostEnvironmentVariableProvider(IServiceProvider serviceProvider)
+    {
+        ServiceProvider = serviceProvider;
+    }
 
-Environment.SetEnvironmentVariable("StrykerActiveMutation", "2");
-var result2 = method.Invoke(instance, new object[] { new string[] { } });
-Console.WriteLine(result2);
+    public IServiceProvider ServiceProvider { get; }
 
-Environment.SetEnvironmentVariable("StrykerActiveMutation", "3");
+    public string Uid => throw new NotImplementedException();
 
-var result3 = method.Invoke(instance, new object[] { new string[] { } });
-Console.WriteLine(result3);
+    public string Version => throw new NotImplementedException();
 
-Environment.SetEnvironmentVariable("StrykerActiveMutation", "4");
-var result4 = method.Invoke(instance, new object[] { new string[] { } });
-Console.WriteLine(result4);
+    public string DisplayName => throw new NotImplementedException();
 
-// We don't want this, because it's slow, and doesn't support reruns... But it works for any target framework (as long as it's installed on the host)
-//var process = new System.Diagnostics.Process();
-//process.StartInfo.FileName = "dotnet";
-//process.StartInfo.Arguments = $"exec \"{testAssemblyPath}\"";
-//process.Start();
-//process.WaitForExit();
-//Console.WriteLine($"Process exited with code {process.ExitCode}");
+    public string Description => throw new NotImplementedException();
+
+    public Task<bool> IsEnabledAsync() => throw new NotImplementedException();
+    public Task UpdateAsync(IEnvironmentVariables environmentVariables) => throw new NotImplementedException();
+    public Task<ValidationResult> ValidateTestHostEnvironmentVariablesAsync(IReadOnlyEnvironmentVariables environmentVariables) => throw new NotImplementedException();
+}
