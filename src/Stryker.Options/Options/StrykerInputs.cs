@@ -41,6 +41,7 @@ public interface IStrykerInputs
     TargetFrameworkInput TargetFrameworkInput { get; init; }
     TestProjectsInput TestProjectsInput { get; init; }
     TestCaseFilterInput TestCaseFilterInput { get; init; }
+    TestRunnerInput TestRunnerInput { get; init; }
     ThresholdBreakInput ThresholdBreakInput { get; init; }
     ThresholdHighInput ThresholdHighInput { get; init; }
     ThresholdLowInput ThresholdLowInput { get; init; }
@@ -82,6 +83,7 @@ public class StrykerInputs : IStrykerInputs
     public SourceProjectNameInput SourceProjectNameInput { get; init; } = new();
     public TestProjectsInput TestProjectsInput { get; init; } = new();
     public TestCaseFilterInput TestCaseFilterInput { get; init; } = new();
+    public TestRunnerInput TestRunnerInput { get; init; } = new();
     public WithBaselineInput WithBaselineInput { get; init; } = new();
     public ReportersInput ReportersInput { get; init; } = new();
     public BaselineProviderInput BaselineProviderInput { get; init; } = new();
@@ -153,6 +155,7 @@ public class StrykerInputs : IStrykerInputs
             OptimizationMode = CoverageAnalysisInput.Validate() | DisableBailInput.Validate() | DisableMixMutantsInput.Validate(),
             TestProjects = TestProjectsInput.Validate(),
             TestCaseFilter = TestCaseFilterInput.Validate(),
+            TestRunner = TestRunnerInput.Validate(),
             DashboardUrl = DashboardUrlInput.Validate(),
             DashboardApiKey = DashboardApiKeyInput.Validate(withBaseline, baselineProvider, reporters),
             ProjectName = ProjectNameInput.Validate(),

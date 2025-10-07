@@ -13,7 +13,7 @@ using Stryker.Abstractions.Reporting;
 using Stryker.Abstractions.Testing;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.SourceProjects;
-using Stryker.TestRunner.VsTest;
+using Stryker.TestRunner;
 using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Initialisation;
@@ -59,8 +59,8 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
 
         _initializationProcess.BuildProjects(options, projectInfos);
 
-        // create a test runner
-        _runner = runner ?? new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem);
+        // create a test runner using the factory
+        _runner = runner ?? TestRunnerFactory.Create(options, _fileResolver.FileSystem);
 
         InitializeDashboardProjectInformation(options, projectInfos.First());
         var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
