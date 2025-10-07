@@ -27,21 +27,18 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
     private readonly IInitialisationProcess _initializationProcess;
     private readonly ILogger _logger;
     private readonly IProjectMutator _projectMutator;
-    private readonly IInitialBuildProcess _initialBuildProcess;
-    private readonly IInputFileResolver _fileResolver;
+    private readonly IFileSystem _fileSystem;
     private ITestRunner _runner;
 
     public ProjectOrchestrator(
         IProjectMutator projectMutator,
         IInitialisationProcess initializationProcess,
-        IInitialBuildProcess initialBuildProcess,
-        IInputFileResolver fileResolver,
+        IFileSystem fileSystem,
         ILogger<ProjectOrchestrator> logger)
     {
         _projectMutator = projectMutator ?? throw new ArgumentNullException(nameof(projectMutator));
         _initializationProcess = initializationProcess ?? throw new ArgumentNullException(nameof(initializationProcess));
-        _initialBuildProcess = initialBuildProcess ?? throw new ArgumentNullException(nameof(initialBuildProcess));
-        _fileResolver = fileResolver ?? throw new ArgumentNullException(nameof(fileResolver));
+        _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -59,7 +56,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         _initializationProcess.BuildProjects(options, projectInfos);
 
         // create a test runner
-        _runner = runner ?? new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem);
+        _runner = runner ?? new VsTestRunnerPool(options, fileSystem: _fileSystem);
 
         InitializeDashboardProjectInformation(options, projectInfos.First());
         var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
