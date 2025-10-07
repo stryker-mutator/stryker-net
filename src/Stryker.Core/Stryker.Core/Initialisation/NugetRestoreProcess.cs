@@ -23,10 +23,10 @@ public class NugetRestoreProcess : INugetRestoreProcess
     private IProcessExecutor ProcessExecutor { get; set; }
     private readonly ILogger _logger;
 
-    public NugetRestoreProcess(IProcessExecutor processExecutor = null)
+    public NugetRestoreProcess(IProcessExecutor processExecutor, ILogger<NugetRestoreProcess> logger)
     {
-        ProcessExecutor = processExecutor ?? new ProcessExecutor();
-        _logger = ApplicationLogging.LoggerFactory.CreateLogger<NugetRestoreProcess>();
+        ProcessExecutor = processExecutor ?? throw new ArgumentNullException(nameof(processExecutor));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public void RestorePackages(string solutionPath, string msbuildPath = null)

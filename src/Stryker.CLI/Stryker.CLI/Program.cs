@@ -1,6 +1,10 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Stryker.Abstractions.Exceptions;
+using Stryker.CLI.Logging;
 using Stryker.Configuration;
+using Stryker.Core.Infrastructure;
 
 namespace Stryker.CLI;
 
@@ -10,7 +14,14 @@ public static class Program
     {
         try
         {
-            var app = new StrykerCli();
+            // Build DI container
+            var services = new ServiceCollection()
+                .AddLogging()
+                .AddStrykerCore()
+                .AddStrykerCli()
+                .BuildServiceProvider();
+
+            var app = services.GetRequiredService<StrykerCli>();
             return app.Run(args);
         }
         catch (NoTestProjectsException exception)

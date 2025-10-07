@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
@@ -10,6 +11,7 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
@@ -52,13 +54,41 @@ namespace ExtraProject.XUnit
     {
         _mutationTestProcessMock.Setup(x => x.Mutate());
         _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
+        
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            properties: new Dictionary<string, string> 
+            { 
+                { "Language", "C#" },
+                { "AssemblyName", "TestProject" },
+                { "TargetDir", "c:\\bin\\Debug\\netcoreapp3.1" },
+                { "TargetFileName", "TestProject.dll" }
+            },
+            projectFilePath: "c:\\project.csproj",
+            targetFramework: "netcoreapp3.1",
+            projectReferences: Array.Empty<string>(),
+            sourceFiles: Array.Empty<string>()).Object;
+        
+        var folder = new CsharpFolderComposite();
+        folder.Add(new CsharpFileLeaf
+        {
+            FullPath = "c:\\TestClass.cs",
+            SyntaxTree = CSharpSyntaxTree.ParseText("class TestClass { }")
+        });
+        
         _mutationTestInput = new MutationTestInput()
         {
+            SourceProjectInfo = new Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo()
+            {
+                AnalyzerResult = analyzerResult,
+                ProjectContents = folder
+            },
             TestProjectsInfo = new TestProjectsInfo(_fileSystemMock)
             {
                 TestProjects = new List<TestProject>
                 {
                     new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
+                        projectFilePath: "c:\\testproject.csproj",
+                        targetFramework: "netcoreapp3.1",
                         sourceFiles: new [] { _testFilePath }).Object)
                 }
             }
@@ -70,7 +100,7 @@ namespace ExtraProject.XUnit
     {
         // arrange
         var options = new StrykerOptions();
-        var target = new ProjectMutator(_mutationTestProcessMock.Object);
+        var target = new ProjectMutator(TestLoggerFactory.CreateLogger<ProjectMutator>(), _mutationTestProcessMock.Object);
         var testCase1 = new VsTestCase(new TestCase("mytestname1", new Uri(_testFilePath), _testFileContents)
         {
             Id = Guid.NewGuid(),
