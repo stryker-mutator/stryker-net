@@ -244,16 +244,16 @@
       },
       "Microsoft.Extensions.DependencyInjection": {
         "type": "Transitive",
-        "resolved": "9.0.9",
-        "contentHash": "zQV2WOSP+3z1EuK91ULxfGgo2Y75bTRnmJHp08+w/YXAyekZutX/qCd88/HOMNh35MDW9mJJJxPpMPS+1Rww8A==",
+        "resolved": "9.0.10",
+        "contentHash": "iEtXCkNd5XhjNJAOb/wO4IhDRdLIE2CsPxZggZQWJ/q2+sa8dmEPC393nnsiqdH8/4KV8Xn25IzgKPR1UEQ0og==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.9"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.10"
         }
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "Transitive",
-        "resolved": "9.0.9",
-        "contentHash": "/hymojfWbE9AlDOa0mczR44m00Jj+T3+HZO0ZnVTI032fVycI0ZbNOVFP6kqZMcXiLSYXzR2ilcwaRi6dzeGyA=="
+        "resolved": "9.0.10",
+        "contentHash": "r9waLiOPe9ZF1PvzUT+RDoHvpMmY8MW+lb4lqjYGObwKpnyPMLI3odVvlmshwuZcdoHynsGWOrCPA0hxZ63lIA=="
       },
       "Microsoft.Extensions.DependencyModel": {
         "type": "Transitive",
@@ -269,17 +269,17 @@
       },
       "Microsoft.Extensions.Options": {
         "type": "Transitive",
-        "resolved": "9.0.9",
-        "contentHash": "loxGGHE1FC2AefwPHzrjPq7X92LQm64qnU/whKfo6oWaceewPUVYQJBJs3S3E2qlWwnCpeZ+dGCPTX+5dgVAuQ==",
+        "resolved": "9.0.10",
+        "contentHash": "zMNABt8eBv0B0XrWjFy9nZNgddavaOeq3ZdaD5IlHhRH65MrU7HM+Hd8GjWE3e2VDGFPZFfSAc6XVXC17f9fOA==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.9",
-          "Microsoft.Extensions.Primitives": "9.0.9"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.10",
+          "Microsoft.Extensions.Primitives": "9.0.10"
         }
       },
       "Microsoft.Extensions.Primitives": {
         "type": "Transitive",
-        "resolved": "9.0.9",
-        "contentHash": "z4pyMePOrl733ltTowbN565PxBw1oAr8IHmIXNDiDqd22nFpYltX9KhrNC/qBWAG1/Zx5MHX+cOYhWJQYCO/iw=="
+        "resolved": "9.0.10",
+        "contentHash": "3pl8D1O5ZwMpDkZAT2uXrhQ6NipkwEgDLMFuURiHTf72TvkoMP61QYH3Vk1yrzVHnHBdNZk3cQACz8Zc7YGNhQ=="
       },
       "Microsoft.NET.StringTools": {
         "type": "Transitive",
@@ -548,8 +548,8 @@
       },
       "System.Diagnostics.DiagnosticSource": {
         "type": "Transitive",
-        "resolved": "9.0.9",
-        "contentHash": "8hy61dsFYYSDjT9iTAfygGMU3A0EAnG69x5FUXeKsCjMhBmtTBt4UMUEW3ipprFoorOW6Jw/7hDMjXtlrsOvVQ=="
+        "resolved": "9.0.10",
+        "contentHash": "uIpKiKp7EWlYZBK71jYP+maGYjDY9YTi/FxBlZoqDzM1ZHZB7gLqUm4jHvRFwaKfR1/Lrt2rQih9LGPIKyNEow=="
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
@@ -882,7 +882,7 @@
           "LibGit2Sharp": "[0.31.0, )",
           "Microsoft.CodeAnalysis.CSharp": "[4.14.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.14.0, )",
-          "Microsoft.Extensions.Logging": "[9.0.9, )",
+          "Microsoft.Extensions.Logging": "[9.0.10, )",
           "Microsoft.TestPlatform": "[17.14.1, )",
           "Microsoft.TestPlatform.ObjectModel": "[17.14.1, )",
           "Microsoft.TestPlatform.Portable": "[17.14.1, )",
@@ -896,13 +896,13 @@
           "Serilog.Sinks.Console": "[6.0.0, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.52.0, )",
-          "Stryker.Abstractions": "[4.8.1, )",
-          "Stryker.Configuration": "[4.8.1, )",
-          "Stryker.DataCollector": "[4.8.1, )",
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.Configuration": "[1.0.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
-          "Stryker.RegexMutators": "[4.8.1, )",
-          "Stryker.TestRunner.VsTest": "[4.8.1, )",
-          "Stryker.Utilities": "[4.8.1, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
+          "Stryker.TestRunner.VsTest": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.16, )"
         }
       },
@@ -925,8 +925,8 @@
           "Microsoft.CodeAnalysis.CSharp": "[4.14.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.14.0, )",
           "Serilog": "[4.3.0, )",
-          "Stryker.Abstractions": "[4.8.1, )",
-          "Stryker.Utilities": "[4.8.1, )"
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )"
         }
       },
       "stryker.datacollector": {
@@ -946,21 +946,21 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.TestPlatform.ObjectModel": "[17.14.1, )",
-          "Stryker.Abstractions": "[4.8.1, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "stryker.testrunner.vstest": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.Extensions.Logging.Abstractions": "[9.0.9, )",
+          "Microsoft.Extensions.Logging.Abstractions": "[9.0.10, )",
           "Microsoft.TestPlatform": "[17.14.1, )",
           "Microsoft.TestPlatform.ObjectModel": "[17.14.1, )",
           "Microsoft.TestPlatform.Portable": "[17.14.1, )",
           "Microsoft.TestPlatform.TranslationLayer": "[17.14.1, )",
-          "Stryker.Abstractions": "[4.8.1, )",
-          "Stryker.DataCollector": "[4.8.1, )",
-          "Stryker.TestRunner": "[4.8.1, )",
-          "Stryker.Utilities": "[4.8.1, )",
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.TestRunner": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.16, )"
         }
       },
@@ -970,10 +970,10 @@
           "Buildalyzer": "[7.1.0, )",
           "Microsoft.CodeAnalysis.CSharp": "[4.14.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.14.0, )",
-          "Microsoft.Extensions.Logging.Abstractions": "[9.0.9, )",
+          "Microsoft.Extensions.Logging.Abstractions": "[9.0.10, )",
           "Mono.Cecil": "[0.11.6, )",
           "ResXResourceReader.NetStandard": "[1.3.0, )",
-          "Stryker.Abstractions": "[4.8.1, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "Azure.Storage.Files.Shares": {
@@ -1055,23 +1055,23 @@
       },
       "Microsoft.Extensions.Logging": {
         "type": "CentralTransitive",
-        "requested": "[9.0.9, )",
-        "resolved": "9.0.9",
-        "contentHash": "MaCB0Y9hNDs4YLu3HCJbo199WnJT8xSgajG1JYGANz9FkseQ5f3v/llu3HxLI6mjDlu7pa7ps9BLPWjKzsAAzQ==",
+        "requested": "[9.0.10, )",
+        "resolved": "9.0.10",
+        "contentHash": "UBXHqE9vyptVhaFnT1R7YJKCve7TqVI10yjjUZBNGMlW2lZ4c031Slt9hxsOzWCzlpPxxIFyf1Yk4a6Iubxx7w==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection": "9.0.9",
-          "Microsoft.Extensions.Logging.Abstractions": "9.0.9",
-          "Microsoft.Extensions.Options": "9.0.9"
+          "Microsoft.Extensions.DependencyInjection": "9.0.10",
+          "Microsoft.Extensions.Logging.Abstractions": "9.0.10",
+          "Microsoft.Extensions.Options": "9.0.10"
         }
       },
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "CentralTransitive",
-        "requested": "[9.0.9, )",
-        "resolved": "9.0.9",
-        "contentHash": "FEgpSF+Z9StMvrsSViaybOBwR0f0ZZxDm8xV5cSOFiXN/t+ys+rwAlTd/6yG7Ld1gfppgvLcMasZry3GsI9lGA==",
+        "requested": "[9.0.10, )",
+        "resolved": "9.0.10",
+        "contentHash": "MFUPv/nN1rAQ19w43smm6bbf0JDYN/1HEPHoiMYY50pvDMFpglzWAuoTavByDmZq7UuhjaxwrET3joU69ZHoHQ==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.9",
-          "System.Diagnostics.DiagnosticSource": "9.0.9"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.10",
+          "System.Diagnostics.DiagnosticSource": "9.0.10"
         }
       },
       "Microsoft.TestPlatform": {
