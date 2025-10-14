@@ -29,6 +29,7 @@
   
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="NuGet.Protocol" />
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
