@@ -214,7 +214,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>(), It.IsAny<SourceProjectInfo>(), It.IsAny<ITestRunner>()))
                 .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
             var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, nugetRestoreMock.Object, TestLoggerFactory.CreateLogger<InputFileResolver>());
-            var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
+            var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object);
             
             var target = new ProjectOrchestrator(_projectMutatorMock.Object,
                 initialisationProcess,
@@ -461,7 +461,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>(), It.IsAny<SourceProjectInfo>(), It.IsAny<ITestRunner>()))
             .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
         var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, new Mock<INugetRestoreProcess>().Object, TestLoggerFactory.CreateLogger<InputFileResolver>());
-        var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
+        var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object);
         
         return new ProjectOrchestrator(_projectMutatorMock.Object,
             initialisationProcess,

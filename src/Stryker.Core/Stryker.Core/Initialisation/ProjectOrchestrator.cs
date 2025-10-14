@@ -25,27 +25,31 @@ public interface IProjectOrchestrator : IDisposable
 
 public sealed class ProjectOrchestrator : IProjectOrchestrator
 {
-    private readonly IInitialisationProcess _initializationProcess;
+    private IInitialisationProcess _initializationProcess;
     private readonly ILogger _logger;
     private readonly IProjectMutator _projectMutator;
-    private readonly IFileSystem _fileSystem;
+    private readonly IInitialBuildProcess _initialBuildProcess;
+    private readonly IInputFileResolver _fileResolver;
     private ITestRunner _runner;
 
     public ProjectOrchestrator(
         IProjectMutator projectMutator,
         IInitialisationProcess initializationProcess,
-        IFileSystem fileSystem,
+        IInitialBuildProcess initialBuildProcess,
+        IInputFileResolver fileResolver,
         ILogger<ProjectOrchestrator> logger)
     {
         _projectMutator = projectMutator ?? throw new ArgumentNullException(nameof(projectMutator));
         _initializationProcess = initializationProcess ?? throw new ArgumentNullException(nameof(initializationProcess));
-        _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+        _fileResolver = fileResolver ?? throw new ArgumentNullException(nameof(fileResolver));
+        _initialBuildProcess = initialBuildProcess ?? throw new ArgumentNullException(nameof(initialBuildProcess));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public IEnumerable<IMutationTestProcess> MutateProjects(IStrykerOptions options, IReporter reporters,
         ITestRunner runner = null)
     {
+        _initializationProcess ??= new InitialisationProcess(_fileResolver, _initialBuildProcess, new InitialTestProcess());
         var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
 
         if (!projectInfos.Any())
@@ -57,7 +61,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         _initializationProcess.BuildProjects(options, projectInfos);
 
         // create a test runner
-        _runner = runner ?? new VsTestRunnerPool(options, fileSystem: _fileSystem);
+        _runner = runner ?? new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem);
 
         InitializeDashboardProjectInformation(options, projectInfos.First());
         var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);

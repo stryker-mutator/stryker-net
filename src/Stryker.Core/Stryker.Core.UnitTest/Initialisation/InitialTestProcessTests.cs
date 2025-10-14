@@ -22,7 +22,7 @@ public class InitialTestProcessTests : TestBase
 
     public InitialTestProcessTests()
     {
-        _target = new InitialTestProcess(TestLoggerFactory.CreateLogger<InitialTestProcess>());
+        _target = new InitialTestProcess();
         _options = new StrykerOptions
         {
             AdditionalTimeout = 0
