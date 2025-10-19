@@ -107,7 +107,7 @@ namespace ExampleProject
         var options = new StrykerOptions
         {
             MutationLevel = MutationLevel.Complete,
-            DevMode = true
+            DiagMode = true
         };
         var codeInjection = new CodeInjection();
         var placer = new MutantPlacer(codeInjection);
@@ -191,7 +191,7 @@ namespace ExampleProject
         var options = new StrykerOptions
         {
             MutationLevel = MutationLevel.Complete,
-            DevMode = true
+            DiagMode = true
         };
         var codeInjection = new CodeInjection();
         var placer = new MutantPlacer(codeInjection);

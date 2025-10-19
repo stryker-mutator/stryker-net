@@ -57,7 +57,7 @@ public class InputFileResolver : IInputFileResolver
 
     public IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(IStrykerOptions options)
     {
-        var manager = _analyzerProvider.Provide(options.SolutionPath, options.DevMode ? new AnalyzerManagerOptions { LogWriter = _buildalyzerLog } : null);
+        var manager = _analyzerProvider.Provide(options.SolutionPath, options.DiagMode ? new AnalyzerManagerOptions { LogWriter = _buildalyzerLog } : null);
         if (options.IsSolutionContext)
         {
             var projectList = manager.Projects.Values.Select(p => p.ProjectFile.Path).ToList();
@@ -165,7 +165,7 @@ public class InputFileResolver : IInputFileResolver
             {
                 foreach (var testProject in testProjects)
                 {
-                    _logger.LogInformation("  referenced by test project {0} analysis {1}.", testProject.ProjectFilePath, IsValid(testProject) ? "succeeded" : "failed");
+                    _logger.LogInformation("  referenced by test project {0}, analysis {1}.", testProject.ProjectFilePath, IsValid(testProject) ? "succeeded" : "failed");
                 }
 
                 _logger.LogInformation(!testProjects.Any(IsValid)
@@ -186,7 +186,7 @@ public class InputFileResolver : IInputFileResolver
             {
                 Parallel.ForEach(list.Consume(),
                     new ParallelOptions
-                    { MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency, 1) }, entry =>
+                    { MaxDegreeOfParallelism = options.DiagMode ? 1 : Math.Max(options.Concurrency, 1) }, entry =>
                     {
                         var buildResult = GetProjectAndAddIt(options, manager, entry, normalizedProjectUnderTestNameFilter, mutableProjectsAnalyzerResults);
 
@@ -268,7 +268,7 @@ public class InputFileResolver : IInputFileResolver
 
     private IAnalyzerResults AnalyzeSingleProject(IProjectAnalyzer project, IStrykerOptions options)
     {
-        if (options.DevMode)
+        if (options.DiagMode)
         {
             // clear the logs for the next project
             _buildalyzerLog.GetStringBuilder().Clear();
@@ -310,7 +310,7 @@ public class InputFileResolver : IInputFileResolver
             "Analysis of project {projectFilePath} failed for frameworks {frameworkList}.",
             projectLogName, string.Join(',', failedFrameworks));
 
-        if (options.DevMode)
+        if (options.DiagMode)
         {
             _logger.LogWarning("Project analysis failed. The MsBuild log is below.");
             _logger.LogInformation(_buildalyzerLog.ToString());
@@ -327,7 +327,7 @@ public class InputFileResolver : IInputFileResolver
         {
             _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
 
-            if (options.DevMode)
+            if (options.DiagMode)
             {
                 _logger.LogWarning("The MsBuild log is below.");
                 _logger.LogInformation(_buildalyzerLog.ToString());
@@ -360,7 +360,7 @@ public class InputFileResolver : IInputFileResolver
     private void LogAnalyzerResult(IAnalyzerResults analyzerResults, IStrykerOptions options)
     {
         // do not log if trace is not enabled
-        if (!_logger.IsEnabled(LogLevel.Trace) || !options.DevMode)
+        if (!_logger.IsEnabled(LogLevel.Trace) || !options.DiagMode)
         {
             return;
         }
