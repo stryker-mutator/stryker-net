@@ -25,10 +25,11 @@ public class LoggingInitializer : ILoggingInitializer
         var outputPath = CreateOutputPath(inputs, fileSystem);
         inputs.OutputPathInput.SuppliedInput = outputPath;
 
+        var diagnoseMode = inputs.DiagModeInput.Validate();
         var logLevel = inputs.VerbosityInput.Validate();
-        var logToFile = inputs.LogToFileInput.Validate(outputPath);
+        var logToFile = inputs.LogToFileInput.Validate(outputPath) || diagnoseMode;
 
-        ApplicationLogging.ConfigureLogger(logLevel, logToFile, inputs.DevModeInput.Validate(), outputPath);
+        ApplicationLogging.ConfigureLogger(logLevel, logToFile, inputs.DiagModeInput.Validate(), outputPath);
     }
 
     private string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)
