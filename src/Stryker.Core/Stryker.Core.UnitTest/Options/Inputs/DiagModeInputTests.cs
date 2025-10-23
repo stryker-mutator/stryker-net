@@ -12,8 +12,10 @@ public class DiagModeInputTests : TestBase
     public void ShouldHaveHelpText()
     {
         var target = new DiagModeInput();
-        target.HelpText.ShouldBe(@"Stryker enters diagnostic mode. Useful when encountering issues.
-    Setting this flag makes Stryker increase the debug level and log more information to help troubleshooting. | default: 'False'");
+        target.HelpText.ShouldBe("""
+                                 Stryker enters diagnostic mode. Useful when encountering issues.
+                                 Setting this flag makes Stryker increase the debug level and log more information to help troubleshooting. | default: 'False'
+                                 """);
     }
 
     [TestMethod]
