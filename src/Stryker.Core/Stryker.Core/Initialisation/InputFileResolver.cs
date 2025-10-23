@@ -135,7 +135,7 @@ public class InputFileResolver : IInputFileResolver
         // keep only projects with one or more test projects
         var analyzerResults = findMutableAnalyzerResults
             .Where(p => p.Value.Count > 0)
-            .Select(p =>p.Key).GroupBy(p => p.ProjectFilePath);
+            .Select(p => p.Key).GroupBy(p => p.ProjectFilePath);
         // we must select projects according to framework settings if any
         var projectInfos = analyzerResults.
             Select(g => SelectAnalyzerResult(g, options.TargetFramework)).
