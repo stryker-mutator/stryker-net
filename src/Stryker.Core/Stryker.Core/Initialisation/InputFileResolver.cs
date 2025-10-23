@@ -390,7 +390,7 @@ public class InputFileResolver : IInputFileResolver
         }
         if (analyzerResults.Count == 0)
         {
-            _logger.LogTrace("No analyzer results to log. This indicate an early failure in analysis, check log file for details.");
+            _logger.LogTrace("No analyzer results to log. This indicates an early failure in analysis, check log file for details.");
             return;
         }
         var log = new StringBuilder();
