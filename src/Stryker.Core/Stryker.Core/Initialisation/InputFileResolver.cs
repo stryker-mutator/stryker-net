@@ -110,6 +110,8 @@ public class InputFileResolver : IInputFileResolver
         ScanTestProjectReferences = 1 // add test project references during scan
     }
 
+    // analyze projects, do same for their upstream dependencies if activated, and identify which one(s)
+    // to proceed with
     private List<SourceProjectInfo> AnalyzeAndIdentifyProjects(List<string> projectList, IStrykerOptions options,
         IAnalyzerManager manager, ScanMode mode)
     {
@@ -130,27 +132,32 @@ public class InputFileResolver : IInputFileResolver
             throw new InputException("No project references found. Please add a project reference to your test project and retry.");
         }
 
-        var analyzerResults = findMutableAnalyzerResults.Keys.GroupBy(p => p.ProjectFilePath).ToList();
+        // keep only projects with one or more test projects
+        var analyzerResults = findMutableAnalyzerResults
+            .Where(p => p.Value.Count > 0)
+            .Select(p =>p.Key).GroupBy(p => p.ProjectFilePath);
         // we must select projects according to framework settings if any
         var projectInfos = analyzerResults.
             Select(g => SelectAnalyzerResult(g, options.TargetFramework)).
             Select(analyzerResult => BuildSourceProjectInfo(options, analyzerResult, findMutableAnalyzerResults[analyzerResult])).ToList();
 
 
-        if (projectInfos.Count == 0)
+        if (projectInfos.Count != 0)
         {
-            _logger.LogError("Project analysis failed.");
-            throw new InputException("No valid project analysis results could be found.");
+            return projectInfos;
         }
-        return projectInfos;
+
+        _logger.LogError("Project analysis failed.");
+        throw new InputException("No valid project analysis results could be found.");
     }
 
     // Log the analysis results
     private void LogAnalysis(Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults, List<IAnalyzerResult> unusedTestProjects)
     {
-        if (!findMutableAnalyzerResults.Any())
+        if (findMutableAnalyzerResults.Count == 0)
         {
-            _logger.LogInformation("No project found, check settings and ensure project file is not corrupted.");
+            _logger.LogWarning("No project found, check settings and ensure project file is not corrupted.");
+            _logger.LogWarning("Use --diag option to have the analysis' logs in the log file.");
             return;
         }
         foreach (var (mutableProject, testProjects) in findMutableAnalyzerResults)
@@ -158,8 +165,8 @@ public class InputFileResolver : IInputFileResolver
             _logger.LogInformation("Project {0} analysis {1}.", mutableProject.ProjectFilePath, IsValid(mutableProject) ? "succeeded" : "failed hence can't be mutated");
             if (testProjects.Count == 0)
             {
-                _logger.LogInformation("  can't be mutated because no test project references it. If this is a test project, " +
-                                       "ensure it has the property <IsTestProject>true</IsTestProject> in its project file.");
+                _logger.LogWarning("  can't be mutated because no test project references it. If this is a test project, " +
+                                   "ensure it has the property <IsTestProject>true</IsTestProject> in its project file.");
             }
             else
             {
@@ -168,11 +175,12 @@ public class InputFileResolver : IInputFileResolver
                     _logger.LogInformation("  referenced by test project {0}, analysis {1}.", testProject.ProjectFilePath, IsValid(testProject) ? "succeeded" : "failed");
                 }
 
-                _logger.LogInformation(!testProjects.Any(IsValid)
-                    ? "  can't be mutated because all referencing test projects' analysis failed."
-                    : "  can be mutated.");
+                _logger.LogWarning(testProjects.Any(IsValid)
+                    ? "  can be mutated."
+                    : "  can't be mutated because all referencing test projects' analysis failed.");
             }
         }
+        _logger.LogWarning("Use --diag option to have the analysis' logs in the log file.");
     }
 
     private ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> AnalyzeAllNeededProjects(List<string> projectList, IStrykerOptions options, IAnalyzerManager manager, ScanMode mode)
@@ -289,7 +297,7 @@ public class InputFileResolver : IInputFileResolver
         var buildResult = project.Build(env);
 
         var buildResultOverallSuccess = buildResult.OverallSuccess
-                                        || (project.ProjectFile.TargetFrameworks.Length>0 &&
+                                        || (project.ProjectFile.TargetFrameworks.Length > 0 &&
                                            Array.TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
                                             buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)));
 
@@ -346,8 +354,9 @@ public class InputFileResolver : IInputFileResolver
         buildResult = project.Build(buildOptions);
 
         // check the new status
-        buildResultOverallSuccess = project.ProjectFile.TargetFrameworks.Length>0 && Array.TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
-            buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
+        buildResultOverallSuccess = project.ProjectFile.TargetFrameworks.Length > 0 &&
+                                    Array.TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
+                                    buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
 
         if (!buildResultOverallSuccess && !string.IsNullOrEmpty(options.TargetFramework))
         {
