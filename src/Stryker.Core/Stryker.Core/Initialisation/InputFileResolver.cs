@@ -177,9 +177,14 @@ public class InputFileResolver : IInputFileResolver
                     _logger.LogInformation("  referenced by test project {0}, analysis {1}.", testProject.ProjectFilePath, IsValid(testProject) ? "succeeded" : "failed");
                 }
 
-                _logger.LogWarning(testProjects.Any(IsValid)
-                    ? "  can be mutated."
-                    : "  can't be mutated because all referencing test projects' analysis failed.");
+                if (testProjects.Any(IsValid))
+                {
+                    _logger.LogInformation("  can be mutated.");
+                }
+                else
+                {
+                    _logger.LogWarning("  can't be mutated because all referencing test projects' analysis failed.");
+                }
             }
         }
 
