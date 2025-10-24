@@ -46,6 +46,7 @@ public class MutationTestProcessTests : TestBase
                     {
                         { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                         { "TargetFileName", "ProjectUnderTest.dll" },
+                        { "AssemblyName", "ProjectUnderTest" },
                         { "Language", "C#" }
                     }).Object,
                 ProjectContents = _folder
@@ -110,6 +111,7 @@ public class MutationTestProcessTests : TestBase
 
         var loggerMock = new Mock<ILogger<MutationTestExecutor>>();
         var mutationExecutor = new MutationTestExecutor(loggerMock.Object);
+        mutationExecutor.TestRunner = _testScenario.GetTestRunnerMock().Object;
         var coverageAnalyzerMock = new Mock<ICoverageAnalyser>();
 
         var options = new StrykerOptions()
@@ -153,6 +155,7 @@ public class MutationTestProcessTests : TestBase
 
         var loggerMock2 = new Mock<ILogger<MutationTestExecutor>>();
         var mutationExecutor = new MutationTestExecutor(loggerMock2.Object);
+        mutationExecutor.TestRunner = _testScenario.GetTestRunnerMock().Object;
 
         var options = new StrykerOptions()
         {
@@ -198,6 +201,7 @@ public class MutationTestProcessTests : TestBase
         // setup coverage
         var loggerMock3 = new Mock<ILogger<MutationTestExecutor>>();
         var executor = new MutationTestExecutor(loggerMock3.Object);
+        executor.TestRunner = _testScenario.GetTestRunnerMock().Object;
 
         var options = new StrykerOptions
         {
@@ -246,6 +250,7 @@ public class MutationTestProcessTests : TestBase
         // setup coverage
         var loggerMock4 = new Mock<ILogger<MutationTestExecutor>>();
         var executor = new MutationTestExecutor(loggerMock4.Object);
+        executor.TestRunner = _testScenario.GetTestRunnerMock().Object;
 
         var options = new StrykerOptions
         {
@@ -292,6 +297,7 @@ public class MutationTestProcessTests : TestBase
         // setup coverage
         var loggerMock5 = new Mock<ILogger<MutationTestExecutor>>();
         var executor = new MutationTestExecutor(loggerMock5.Object);
+        executor.TestRunner = _testScenario.GetTestRunnerMock().Object;
 
         var options = new StrykerOptions
         {
@@ -306,6 +312,7 @@ public class MutationTestProcessTests : TestBase
         // test mutants
         target.Initialize(_input, options, null);
         target.GetCoverage();
+        target.Test(_input.SourceProjectInfo.ProjectContents.Mutants);
 
         // first mutant should be marked as survived without any test
         _testScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
@@ -335,6 +342,7 @@ public class MutationTestProcessTests : TestBase
         // setup coverage
         var loggerMock6 = new Mock<ILogger<MutationTestExecutor>>();
         var executor = new MutationTestExecutor(loggerMock6.Object);
+        executor.TestRunner = _testScenario.GetTestRunnerMock().Object;
 
         var options = new StrykerOptions
         {

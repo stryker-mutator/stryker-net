@@ -28,6 +28,7 @@ public class MutationTestExecutorTests : TestBase
 
         var loggerMock = new Mock<ILogger<MutationTestExecutor>>();
         var target = new MutationTestExecutor(loggerMock.Object);
+        target.TestRunner = testRunnerMock.Object;
 
         target.Test(null, new List<IMutant> { mutant }, null, null);
 
@@ -44,6 +45,7 @@ public class MutationTestExecutorTests : TestBase
 
         var loggerMock = new Mock<ILogger<MutationTestExecutor>>();
         var target = new MutationTestExecutor(loggerMock.Object);
+        target.TestRunner = testRunnerMock.Object;
 
         target.Test(null, new List<IMutant> { mutant }, null, null);
 
@@ -61,6 +63,7 @@ public class MutationTestExecutorTests : TestBase
 
         var loggerMock = new Mock<ILogger<MutationTestExecutor>>();
         var target = new MutationTestExecutor(loggerMock.Object);
+        target.TestRunner = testRunnerMock.Object;
 
         var timeoutValueCalculator = new TimeoutValueCalculator(500);
         target.Test(null, new List<IMutant> { mutant }, timeoutValueCalculator, null);
@@ -80,6 +83,7 @@ public class MutationTestExecutorTests : TestBase
 
         var loggerMock = new Mock<ILogger<MutationTestExecutor>>();
         var target = new MutationTestExecutor(loggerMock.Object);
+        target.TestRunner = testRunnerMock.Object;
 
         var timeoutValueCalculator = new TimeoutValueCalculator(500);
         target.Test(null, new List<IMutant> { mutant1, mutant2 }, timeoutValueCalculator, null);

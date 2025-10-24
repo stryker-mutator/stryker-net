@@ -549,9 +549,10 @@ public class VsTestMockingHelper : TestBase
         };
         var mutator = new CsharpMutationProcess(_fileSystem, options);
         var executor = new MutationTestExecutor(TestLoggerFactory.CreateLogger<MutationTestExecutor>());
+        executor.TestRunner = runner;
         var coverageAnalyser = new Mock<ICoverageAnalyser>().Object;
 
-        var process = new MutationTestProcess(executor, coverageAnalyser, mutator, TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        var process = new MutationTestProcess(executor, coverageAnalyser, null, TestLoggerFactory.CreateLogger<MutationTestProcess>());
         process.Initialize(input, options, null);
         return process;
     }

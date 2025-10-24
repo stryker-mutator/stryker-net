@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
@@ -45,7 +46,8 @@ public class InitialisationProcessTests : TestBase
         });
 
         inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
-        var target = new InitialisationProcess(inputFileResolverMock.Object, Mock.Of<IInitialBuildProcess>(), Mock.Of<IInitialTestProcess>());
+        var loggerMock = new Mock<ILogger<InitialisationProcess>>();
+        var target = new InitialisationProcess(inputFileResolverMock.Object, Mock.Of<IInitialBuildProcess>(), Mock.Of<IInitialTestProcess>(), loggerMock.Object);
 
         var options = new StrykerOptions
         {
@@ -82,7 +84,7 @@ public class InitialisationProcessTests : TestBase
         testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>())).Throws(new InputException("")); // failing test
 
-        var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object);
+        var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
@@ -127,7 +129,7 @@ public class InitialisationProcessTests : TestBase
             new InitialTestRun(
             new TestRunResult(Array.Empty<VsTestDescription>(), ranTests, failedTests, TestIdentifierList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), new TimeoutValueCalculator(0))); // failing test
 
-        var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object);
+        var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
@@ -176,7 +178,7 @@ public class InitialisationProcessTests : TestBase
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>())).Returns(new InitialTestRun(
             new TestRunResult(Array.Empty<VsTestDescription>(), ranTests, failedTests, TestIdentifierList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), new TimeoutValueCalculator(0))); // failing test
 
-        var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object);
+        var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
@@ -222,7 +224,7 @@ public class InitialisationProcessTests : TestBase
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>()))
             .Returns(new InitialTestRun(new TestRunResult(true), null)); // failing test
 
-        var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object);
+        var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
@@ -275,7 +277,7 @@ public class InitialisationProcessTests : TestBase
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>()))
             .Returns(new InitialTestRun(new TestRunResult(Array.Empty<VsTestDescription>(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), null)); // failing test
 
-        var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object);
+        var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
@@ -324,7 +326,7 @@ public class InitialisationProcessTests : TestBase
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>()))
             .Returns(new InitialTestRun(new TestRunResult(Array.Empty<VsTestDescription>(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), null)); // failing test
 
-        var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object);
+        var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
@@ -335,3 +337,4 @@ public class InitialisationProcessTests : TestBase
         Should.Throw<InputException>(() => target.GetMutationTestInputs(options, projects, testRunnerMock.Object)).Message.ShouldContain("failed to deploy or run.");
     }
 }
+

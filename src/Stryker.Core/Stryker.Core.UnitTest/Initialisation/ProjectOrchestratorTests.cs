@@ -215,7 +215,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>(), It.IsAny<SourceProjectInfo>(), It.IsAny<ITestRunner>()))
                 .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
             var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, nugetRestoreMock.Object, TestLoggerFactory.CreateLogger<InputFileResolver>());
-            var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object);
+            var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
             
             var serviceProviderMock = new Mock<IServiceProvider>();
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>();
@@ -465,7 +465,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>(), It.IsAny<SourceProjectInfo>(), It.IsAny<ITestRunner>()))
             .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
         var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, new Mock<INugetRestoreProcess>().Object, TestLoggerFactory.CreateLogger<InputFileResolver>());
-        var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object);
+        var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
         
         var serviceProviderMock = new Mock<IServiceProvider>();
         var mutationTestExecutorMock = new Mock<IMutationTestExecutor>();

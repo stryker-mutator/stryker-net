@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
@@ -54,6 +55,7 @@ namespace ExtraProject.XUnit
     public ProjectMutatorTests()
     {
         _mutationTestProcessMock.Setup(x => x.Mutate());
+        _mutationTestProcessMock.Setup(x => x.Initialize(It.IsAny<MutationTestInput>(), It.IsAny<IStrykerOptions>(), It.IsAny<IReporter>()));
         _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
         
         var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
