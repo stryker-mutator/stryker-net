@@ -18,6 +18,7 @@ using Moq;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Testing;
+using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
@@ -547,8 +548,12 @@ public class VsTestMockingHelper : TestBase
             InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500))
         };
         var mutator = new CsharpMutationProcess(_fileSystem, options);
+        var executor = new MutationTestExecutor(TestLoggerFactory.CreateLogger<MutationTestExecutor>());
+        var coverageAnalyser = new Mock<ICoverageAnalyser>().Object;
 
-        return new MutationTestProcess(input, options, null, new MutationTestExecutor(runner), mutator);
+        var process = new MutationTestProcess(executor, coverageAnalyser, mutator, TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        process.Initialize(input, options, null);
+        return process;
     }
 
     private class MockStrykerTestHostLauncher : IStrykerTestHostLauncher

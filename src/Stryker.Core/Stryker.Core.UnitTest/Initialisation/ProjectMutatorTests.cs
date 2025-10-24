@@ -4,6 +4,7 @@ using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
@@ -100,7 +101,8 @@ namespace ExtraProject.XUnit
     {
         // arrange
         var options = new StrykerOptions();
-        var target = new ProjectMutator(TestLoggerFactory.CreateLogger<ProjectMutator>(), _mutationTestProcessMock.Object);
+        var serviceProviderMock = new Mock<IServiceProvider>();
+        var target = new ProjectMutator(TestLoggerFactory.CreateLogger<ProjectMutator>(), serviceProviderMock.Object, _mutationTestProcessMock.Object);
         var testCase1 = new VsTestCase(new TestCase("mytestname1", new Uri(_testFilePath), _testFileContents)
         {
             Id = Guid.NewGuid(),

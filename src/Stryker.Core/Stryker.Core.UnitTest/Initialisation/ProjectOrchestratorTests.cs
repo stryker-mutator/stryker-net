@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -216,10 +217,13 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, nugetRestoreMock.Object, TestLoggerFactory.CreateLogger<InputFileResolver>());
             var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object);
             
+            var serviceProviderMock = new Mock<IServiceProvider>();
+            var mutationTestExecutorMock = new Mock<IMutationTestExecutor>();
             var target = new ProjectOrchestrator(_projectMutatorMock.Object,
                 initialisationProcess,
-                initialBuildProcessMock.Object,
                 inputFileResolver,
+                serviceProviderMock.Object,
+                mutationTestExecutorMock.Object,
                 TestLoggerFactory.CreateLogger<ProjectOrchestrator>());
 
             // act
@@ -463,10 +467,13 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, new Mock<INugetRestoreProcess>().Object, TestLoggerFactory.CreateLogger<InputFileResolver>());
         var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object);
         
+        var serviceProviderMock = new Mock<IServiceProvider>();
+        var mutationTestExecutorMock = new Mock<IMutationTestExecutor>();
         return new ProjectOrchestrator(_projectMutatorMock.Object,
             initialisationProcess,
-            initialBuildProcessMock.Object,
             inputFileResolver,
+            serviceProviderMock.Object,
+            mutationTestExecutorMock.Object,
             TestLoggerFactory.CreateLogger<ProjectOrchestrator>());
     }
 }
