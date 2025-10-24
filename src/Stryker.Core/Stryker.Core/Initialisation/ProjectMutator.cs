@@ -34,6 +34,7 @@ public class ProjectMutator : IProjectMutator
     public IMutationTestProcess MutateProject(IStrykerOptions options, MutationTestInput input, IReporter reporters)
     {
         var process = _injectedMutationTestProcess ?? _serviceProvider.GetRequiredService<IMutationTestProcess>();
+        process.Initialize(input, options, reporters);
 
         // Enrich test projects info with unit tests
         EnrichTestProjectsWithTestInfo(input.InitialTestRun, input.TestProjectsInfo);

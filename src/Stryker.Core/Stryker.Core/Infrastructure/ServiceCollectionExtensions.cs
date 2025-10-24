@@ -22,16 +22,20 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IStrykerRunner, StrykerRunner>();
         services.AddTransient<IProjectOrchestrator, ProjectOrchestrator>();
         services.AddTransient<IProjectMutator, ProjectMutator>();
-        services.AddTransient<IMutationTestProcess, MutationTestProcess>();
         services.AddTransient<IMutationTestExecutor, MutationTestExecutor>();
-        services.AddTransient<ITestRunner, VsTestRunnerPool>();
+
+        // Mutation test process - Scoped as they manage per-project state
+        services.AddScoped<IMutationTestProcess, MutationTestProcess>();
+        services.AddScoped<IInitialisationProcess, InitialisationProcess>();
 
         // Initialisation services - Transient as they perform per-run operations
-        services.AddScoped<IInitialisationProcess, InitialisationProcess>();
         services.AddTransient<IInitialBuildProcess, InitialBuildProcess>();
         services.AddTransient<IInitialTestProcess, InitialTestProcess>();
         services.AddTransient<IInputFileResolver, InputFileResolver>();
         services.AddTransient<INugetRestoreProcess, NugetRestoreProcess>();
+
+        // Testing (use vstest by default for now)
+        services.AddTransient<ITestRunner, VsTestRunnerPool>();
         
         // Helpers and utilities - Transient or Singleton based on state
         services.AddTransient<IProcessExecutor, ProcessExecutor>();

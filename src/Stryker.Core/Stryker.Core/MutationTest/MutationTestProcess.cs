@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
@@ -19,6 +20,7 @@ namespace Stryker.Core.MutationTest;
 public interface IMutationTestProcess
 {
     MutationTestInput Input { get; }
+    void Initialize(MutationTestInput input, IStrykerOptions options, IReporter reporter);
     void Mutate();
     StrykerRunResult Test(IEnumerable<IMutant> mutantsToTest);
     void Restore();
@@ -28,13 +30,15 @@ public interface IMutationTestProcess
 
 public class MutationTestProcess : IMutationTestProcess
 {
-    private static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-    private readonly IReadOnlyProjectComponent _projectContents;
+    public MutationTestInput Input { get; set; }
+
+    private readonly ILogger _logger;
+    private IStrykerOptions _options;
+    private IReadOnlyProjectComponent _projectContents;
     private readonly IMutationTestExecutor _mutationTestExecutor;
-    private readonly IReporter _reporter;
+    private IReporter _reporter;
     private readonly ICoverageAnalyser _coverageAnalyser;
-    private readonly IStrykerOptions _options;
-    private readonly IMutationProcess _mutationProcess;
+    private IMutationProcess _mutationProcess;
     private static readonly Dictionary<Language, Func<IStrykerOptions, IMutationProcess>> LanguageMap = [];
 
     static MutationTestProcess() => DeclareMutationProcessForLanguage<CsharpMutationProcess>(Language.Csharp);
@@ -51,23 +55,18 @@ public class MutationTestProcess : IMutationTestProcess
         LanguageMap[language] = y => (IMutationProcess)constructor.Invoke([y]);
     }
 
-    public MutationTestProcess(MutationTestInput input,
-        IStrykerOptions options,
-        IReporter reporter,
+    public MutationTestProcess(
         IMutationTestExecutor executor,
         IMutationProcess mutationProcess = null,
-        ICoverageAnalyser coverageAnalyzer = null)
+        ICoverageAnalyser coverageAnalyzer = null,
+        ILogger<MutationTestProcess> logger = null)
     {
-        Input = input;
-        _reporter = reporter;
-        _options = options;
         _mutationTestExecutor = executor;
         _mutationProcess = mutationProcess ?? BuildMutationProcess();
         _coverageAnalyser = coverageAnalyzer ?? new CoverageAnalyser(_options);
-        _projectContents = input.SourceProjectInfo.ProjectContents;
+        _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
     }
 
-    public MutationTestInput Input { get; }
 
     private IMutationProcess BuildMutationProcess()
     {
@@ -79,9 +78,18 @@ public class MutationTestProcess : IMutationTestProcess
         throw new GeneralStrykerException("no valid language detected || no valid csproj or fsproj was given.");
     }
 
+    public void Initialize(MutationTestInput input, IStrykerOptions options, IReporter reporter)
+    {
+        Input = input;
+        _options = options;
+        _reporter = reporter;
+        _projectContents = input.SourceProjectInfo.ProjectContents;
+        Input.TestProjectsInfo.BackupOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
+        _mutationProcess = BuildMutationProcess();
+    }
+
     public void Mutate()
     {
-        Input.TestProjectsInfo.BackupOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
         _mutationProcess.Mutate(Input);
     }
 
@@ -154,7 +162,7 @@ public class MutationTestProcess : IMutationTestProcess
         {
             if (mutant.ResultStatus == MutantStatus.Pending)
             {
-                Logger.LogWarning("Mutation {Id} was not fully tested.", mutant.Id);
+                _logger.LogWarning("Mutation {Id} was not fully tested.", mutant.Id);
             }
 
             OnMutantTested(mutant, reportedMutants);
@@ -241,14 +249,14 @@ public class MutationTestProcess : IMutationTestProcess
 
         if (mutantsNotRun.Count > blocks.Count)
         {
-            Logger.LogDebug(
+            _logger.LogDebug(
                 "Mutations will be tested in {BlocksCount} test runs, instead of {MutantsNotRun}.",
                 blocks.Count,
                 mutantsNotRun.Count);
         }
         else
         {
-            Logger.LogDebug(
+            _logger.LogDebug(
                 "Mutations will be tested in {BlocksCount} test runs.",
                 blocks.Count);
         }
