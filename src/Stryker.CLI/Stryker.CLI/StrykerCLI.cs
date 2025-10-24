@@ -152,10 +152,10 @@ public class StrykerCli
     {
         var result = _stryker.RunMutationTest(inputs);
 
-        HandleStrykerRunResult(inputs, result);
+        HandleStrykerRunResult(result);
     }
 
-    private void HandleStrykerRunResult(IStrykerInputs inputs, StrykerRunResult result)
+    private void HandleStrykerRunResult(StrykerRunResult result)
     {
         var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
 
