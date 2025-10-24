@@ -4,6 +4,8 @@
     <AssemblyName>Stryker.Core</AssemblyName>
     <RootNamespace>Stryker.Core</RootNamespace>
     <OutputType>Library</OutputType>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   
   <PropertyGroup>

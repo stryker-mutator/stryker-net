@@ -30,6 +30,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
     private readonly ILogger _logger;
     private readonly IProjectMutator _projectMutator;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IMutationTestExecutor _mutationTestExecutor;
     private readonly IInputFileResolver _fileResolver;
     private ITestRunner _runner;
 
@@ -38,12 +39,14 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         IInitialisationProcess initializationProcess,
         IInputFileResolver fileResolver,
         IServiceProvider serviceProvider,
+        IMutationTestExecutor mutationTestExecutor,
         ILogger<ProjectOrchestrator> logger)
     {
         _projectMutator = projectMutator ?? throw new ArgumentNullException(nameof(projectMutator));
         _initializationProcess = initializationProcess ?? throw new ArgumentNullException(nameof(initializationProcess));
         _fileResolver = fileResolver ?? throw new ArgumentNullException(nameof(fileResolver));
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        _mutationTestExecutor = mutationTestExecutor ?? throw new ArgumentNullException(nameof(mutationTestExecutor));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -63,7 +66,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
 
         // create a test runner
         _runner = runner ?? new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem);
-
+        _mutationTestExecutor.TestRunner = _runner;
         InitializeDashboardProjectInformation(options, projectInfos.First());
         var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
 

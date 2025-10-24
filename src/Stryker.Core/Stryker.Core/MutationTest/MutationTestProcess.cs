@@ -57,16 +57,15 @@ public class MutationTestProcess : IMutationTestProcess
 
     public MutationTestProcess(
         IMutationTestExecutor executor,
+        ICoverageAnalyser coverageAnalyzer,
         IMutationProcess mutationProcess = null,
-        ICoverageAnalyser coverageAnalyzer = null,
         ILogger<MutationTestProcess> logger = null)
     {
         _mutationTestExecutor = executor;
-        _mutationProcess = mutationProcess ?? BuildMutationProcess();
-        _coverageAnalyser = coverageAnalyzer ?? new CoverageAnalyser(_options);
+        _mutationProcess = mutationProcess;
+        _coverageAnalyser = coverageAnalyzer ?? throw new ArgumentNullException(nameof(coverageAnalyzer));
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
     }
-
 
     private IMutationProcess BuildMutationProcess()
     {
@@ -265,6 +264,6 @@ public class MutationTestProcess : IMutationTestProcess
         return blocks;
     }
 
-    public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(Input.SourceProjectInfo,
+    public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(_options, Input.SourceProjectInfo,
         _mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests);
 }

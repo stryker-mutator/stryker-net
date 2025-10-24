@@ -2,6 +2,7 @@ using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Testing;
+using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Helpers.ProcessUtil;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
@@ -22,7 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IStrykerRunner, StrykerRunner>();
         services.AddTransient<IProjectOrchestrator, ProjectOrchestrator>();
         services.AddTransient<IProjectMutator, ProjectMutator>();
-        services.AddTransient<IMutationTestExecutor, MutationTestExecutor>();
+        services.AddSingleton<IMutationTestExecutor, MutationTestExecutor>();
 
         // Mutation test process - Scoped as they manage per-project state
         services.AddScoped<IMutationTestProcess, MutationTestProcess>();
@@ -33,9 +34,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IInitialTestProcess, InitialTestProcess>();
         services.AddTransient<IInputFileResolver, InputFileResolver>();
         services.AddTransient<INugetRestoreProcess, NugetRestoreProcess>();
-
-        // Testing (use vstest by default for now)
-        services.AddTransient<ITestRunner, VsTestRunnerPool>();
+        services.AddTransient<ICoverageAnalyser, CoverageAnalyser>();
         
         // Helpers and utilities - Transient or Singleton based on state
         services.AddTransient<IProcessExecutor, ProcessExecutor>();
