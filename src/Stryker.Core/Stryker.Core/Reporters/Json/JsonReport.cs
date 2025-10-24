@@ -32,13 +32,9 @@ public class JsonReport : IJsonReport
 
     public static IJsonReport Build(IStrykerOptions options, IReadOnlyProjectComponent mutationReport, ITestProjectsInfo testProjectsInfo) => new JsonReport(options, mutationReport, testProjectsInfo);
 
-    private IDictionary<string, ISourceFile> GenerateReportComponents(IStrykerOptions options, IReadOnlyProjectComponent component)
+    private Dictionary<string, ISourceFile> GenerateReportComponents(IStrykerOptions options, IReadOnlyProjectComponent component)
     {
         var files = new Dictionary<string, ISourceFile>();
-        if (component.IsComponentExcluded(options.Mutate))
-        {
-            return files;
-        }
 
         if (component is IFolderComposite folder)
         {
@@ -46,13 +42,13 @@ public class JsonReport : IJsonReport
         }
         else if (component is IReadOnlyFileLeaf file)
         {
-            Merge(files, GenerateFileReportComponents(file));
+            Merge(files, GenerateFileReportComponents(options, file));
         }
 
         return files;
     }
 
-    private IDictionary<string, ISourceFile> GenerateFolderReportComponents(IStrykerOptions options, IFolderComposite folderComponent)
+    private Dictionary<string, ISourceFile> GenerateFolderReportComponents(IStrykerOptions options, IFolderComposite folderComponent)
     {
         var files = new Dictionary<string, ISourceFile>();
         foreach (var child in folderComponent.Children)
@@ -63,7 +59,14 @@ public class JsonReport : IJsonReport
         return files;
     }
 
-    private static IDictionary<string, ISourceFile> GenerateFileReportComponents(IReadOnlyFileLeaf fileComponent) => new Dictionary<string, ISourceFile> { { fileComponent.FullPath, new SourceFile(fileComponent) } };
+    private static Dictionary<string, ISourceFile> GenerateFileReportComponents(IStrykerOptions options, IReadOnlyFileLeaf fileComponent)
+    {
+        if (fileComponent.IsComponentExcluded(options.Mutate))
+        {
+            return new Dictionary<string, ISourceFile> { { fileComponent.FullPath, SourceFile.Ignored } };
+        }
+        return new Dictionary<string, ISourceFile> { { fileComponent.FullPath, new SourceFile(fileComponent) } };
+     }
 
     private void AddTestFiles(ITestProjectsInfo testProjectsInfo)
     {

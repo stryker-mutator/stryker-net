@@ -17,6 +17,8 @@ public class SourceFile : ISourceFile
 
     public SourceFile() { }
 
+    public static SourceFile Ignored => new() { Source = $"File ignored by mutate filter", Language = "none", Mutants = new HashSet<IJsonMutant>() };
+
     public SourceFile(IReadOnlyFileLeaf file, ILogger logger = null)
     {
         logger ??= ApplicationLogging.LoggerFactory.CreateLogger<SourceFile>();
