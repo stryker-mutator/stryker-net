@@ -75,19 +75,20 @@ public class StrykerCli
 
     public int ExitCode { get; private set; } = ExitCodes.Success;
 
-    public StrykerCli(IStrykerRunner stryker = null,
-        IConfigBuilder configReader = null,
-        ILoggingInitializer loggingInitializer = null,
-        IStrykerNugetFeedClient nugetClient = null,
-        IAnsiConsole console = null,
-        IFileSystem fileSystem = null)
+    public StrykerCli(
+        IStrykerRunner stryker,
+        IConfigBuilder configReader,
+        ILoggingInitializer loggingInitializer,
+        IStrykerNugetFeedClient nugetClient,
+        IAnsiConsole console,
+        IFileSystem fileSystem)
     {
-        _stryker = stryker ?? new StrykerRunner();
-        _configReader = configReader ?? new ConfigBuilder();
-        _loggingInitializer = loggingInitializer ?? new LoggingInitializer();
-        _nugetClient = nugetClient ?? new StrykerNugetFeedClient();
-        _console = console ?? AnsiConsole.Console;
-        _fileSystem = fileSystem ?? new FileSystem();
+        _stryker = stryker ?? throw new ArgumentNullException(nameof(stryker));
+        _configReader = configReader ?? throw new ArgumentNullException(nameof(configReader));
+        _loggingInitializer = loggingInitializer ?? throw new ArgumentNullException(nameof(loggingInitializer));
+        _nugetClient = nugetClient ?? throw new ArgumentNullException(nameof(nugetClient));
+        _console = console ?? throw new ArgumentNullException(nameof(console));
+        _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
     }
 
     /// <summary>
@@ -149,12 +150,12 @@ public class StrykerCli
 
     private void RunStryker(IStrykerInputs inputs)
     {
-        var result = _stryker.RunMutationTest(inputs, ApplicationLogging.LoggerFactory);
+        var result = _stryker.RunMutationTest(inputs);
 
-        HandleStrykerRunResult(inputs, result);
+        HandleStrykerRunResult(result);
     }
 
-    private void HandleStrykerRunResult(IStrykerInputs inputs, StrykerRunResult result)
+    private void HandleStrykerRunResult(StrykerRunResult result)
     {
         var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
 
@@ -169,7 +170,7 @@ public class StrykerCli
 
         if (result.ScoreIsLowerThanThresholdBreak())
         {
-            var thresholdBreak = (double)inputs.ValidateAll().Thresholds.Break / 100;
+            var thresholdBreak = (double)result.Options.Thresholds.Break / 100;
             logger.LogWarning("Final mutation score is below threshold break. Crashing...");
 
             _console.WriteLine();

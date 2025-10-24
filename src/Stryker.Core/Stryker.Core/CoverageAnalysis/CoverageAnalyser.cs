@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
@@ -5,26 +6,23 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.Tests;
-using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.CoverageAnalysis;
 
 public class CoverageAnalyser : ICoverageAnalyser
 {
     private readonly ILogger<CoverageAnalyser> _logger;
-    private readonly IStrykerOptions _options;
 
-    public CoverageAnalyser(IStrykerOptions options)
+    public CoverageAnalyser(ILogger<CoverageAnalyser> logger)
     {
-        _options = options;
-        _logger = ApplicationLogging.LoggerFactory.CreateLogger<CoverageAnalyser>();
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public void DetermineTestCoverage(IProjectAndTests project, ITestRunner runner, IEnumerable<IMutant> mutants,
+    public void DetermineTestCoverage(IStrykerOptions options, IProjectAndTests project, ITestRunner runner, IEnumerable<IMutant> mutants,
         ITestIdentifiers resultFailingTests)
     {
-        if (!_options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
-            !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+        if (!options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
+            !options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
         {
             AssumeAllTestsAreNeeded(mutants);
 

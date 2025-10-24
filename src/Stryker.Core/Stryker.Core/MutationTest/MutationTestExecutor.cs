@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.Results;
-using Stryker.Utilities.Logging;
 using static Stryker.Abstractions.Testing.ITestRunner;
 
 namespace Stryker.Core.MutationTest;
@@ -15,7 +14,7 @@ namespace Stryker.Core.MutationTest;
 /// </summary>
 public interface IMutationTestExecutor
 {
-    ITestRunner TestRunner { get; }
+    ITestRunner TestRunner { get; set; }
 
     void Test(IProjectAndTests project, IList<IMutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
         TestUpdateHandler updateHandler);
@@ -23,13 +22,13 @@ public interface IMutationTestExecutor
 
 public class MutationTestExecutor : IMutationTestExecutor
 {
-    public ITestRunner TestRunner { get; }
+    // Test runner can't be set in the constructor because it is determined at runtime.
+    public ITestRunner TestRunner { get; set; }
     private ILogger Logger { get; }
 
-    public MutationTestExecutor(ITestRunner testRunner)
+    public MutationTestExecutor(ILogger<MutationTestExecutor> logger)
     {
-        TestRunner = testRunner;
-        Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
+        Logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public void Test(IProjectAndTests project, IList<IMutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
