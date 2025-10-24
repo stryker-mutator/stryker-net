@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Reporting;
@@ -20,18 +21,19 @@ public interface IProjectMutator
 public class ProjectMutator : IProjectMutator
 {
     private readonly ILogger _logger;
+    private readonly IServiceProvider _serviceProvider;
     private readonly IMutationTestProcess _injectedMutationTestProcess;
 
-    public ProjectMutator(ILogger<ProjectMutator> logger, IMutationTestProcess mutationTestProcess = null)
+    public ProjectMutator(ILogger<ProjectMutator> logger, IServiceProvider serviceProvider, IMutationTestProcess mutationTestProcess = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _injectedMutationTestProcess = mutationTestProcess;
     }
 
     public IMutationTestProcess MutateProject(IStrykerOptions options, MutationTestInput input, IReporter reporters)
     {
-        var process = _injectedMutationTestProcess ?? new MutationTestProcess(input, options, reporters,
-            new MutationTestExecutor(input.TestRunner));
+        var process = _injectedMutationTestProcess ?? _serviceProvider.GetRequiredService<IMutationTestProcess>();
 
         // Enrich test projects info with unit tests
         EnrichTestProjectsWithTestInfo(input.InitialTestRun, input.TestProjectsInfo);

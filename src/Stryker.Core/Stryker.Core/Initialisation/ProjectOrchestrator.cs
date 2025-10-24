@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using Stryker.Abstractions.Baseline;
@@ -28,28 +29,28 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
     private IInitialisationProcess _initializationProcess;
     private readonly ILogger _logger;
     private readonly IProjectMutator _projectMutator;
-    private readonly IInitialBuildProcess _initialBuildProcess;
+    private readonly IServiceProvider _serviceProvider;
     private readonly IInputFileResolver _fileResolver;
     private ITestRunner _runner;
 
     public ProjectOrchestrator(
         IProjectMutator projectMutator,
         IInitialisationProcess initializationProcess,
-        IInitialBuildProcess initialBuildProcess,
         IInputFileResolver fileResolver,
+        IServiceProvider serviceProvider,
         ILogger<ProjectOrchestrator> logger)
     {
         _projectMutator = projectMutator ?? throw new ArgumentNullException(nameof(projectMutator));
         _initializationProcess = initializationProcess ?? throw new ArgumentNullException(nameof(initializationProcess));
         _fileResolver = fileResolver ?? throw new ArgumentNullException(nameof(fileResolver));
-        _initialBuildProcess = initialBuildProcess ?? throw new ArgumentNullException(nameof(initialBuildProcess));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public IEnumerable<IMutationTestProcess> MutateProjects(IStrykerOptions options, IReporter reporters,
         ITestRunner runner = null)
     {
-        _initializationProcess ??= new InitialisationProcess(_fileResolver, _initialBuildProcess, new InitialTestProcess());
+        _initializationProcess ??= _serviceProvider.GetRequiredService<IInitialisationProcess>();
         var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
 
         if (!projectInfos.Any())

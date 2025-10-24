@@ -12,7 +12,6 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
-using Stryker.Utilities.Logging;
 
 namespace Stryker.Core;
 
