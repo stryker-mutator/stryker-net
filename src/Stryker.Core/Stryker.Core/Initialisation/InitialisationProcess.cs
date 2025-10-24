@@ -9,6 +9,7 @@ using Stryker.Abstractions.Testing;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Utilities.Buildalyzer;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Initialisation;
 
@@ -37,13 +38,12 @@ public class InitialisationProcess : IInitialisationProcess
     public InitialisationProcess(
         IInputFileResolver inputFileResolver,
         IInitialBuildProcess initialBuildProcess,
-        IInitialTestProcess initialTestProcess,
-        ILogger<InitialisationProcess> logger)
+        IInitialTestProcess initialTestProcess)
     {
         _inputFileResolver = inputFileResolver ?? throw new ArgumentNullException(nameof(inputFileResolver));
         _initialBuildProcess = initialBuildProcess ?? throw new ArgumentNullException(nameof(initialBuildProcess));
         _initialTestProcess = initialTestProcess ?? throw new ArgumentNullException(nameof(initialTestProcess));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
     }
 
     /// <inheritdoc/>

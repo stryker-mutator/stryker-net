@@ -11,11 +11,13 @@ using Serilog.Events;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Reporting;
 using Stryker.Abstractions.Testing;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.VsTest;
 using Stryker.Utilities.Logging;
@@ -208,35 +210,14 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
                 });
 
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
-            var initialisationProcessMock = new Mock<IInitialisationProcess>();
+            var initialTestProcessMock = new Mock<IInitialTestProcess>();
+            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>(), It.IsAny<SourceProjectInfo>(), It.IsAny<ITestRunner>()))
+                .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
             var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, nugetRestoreMock.Object, TestLoggerFactory.CreateLogger<InputFileResolver>());
-            
-            // Setup the mocks similar to BuildProjectOrchestrator
-            initialisationProcessMock.Setup(x => x.GetMutableProjectsInfo(It.IsAny<Stryker.Abstractions.Options.IStrykerOptions>()))
-                .Returns((Stryker.Abstractions.Options.IStrykerOptions opts) => inputFileResolver.ResolveSourceProjectInfos(opts));
-            initialisationProcessMock.Setup(x => x.BuildProjects(It.IsAny<Stryker.Abstractions.Options.IStrykerOptions>(), It.IsAny<IReadOnlyCollection<Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo>>()));
-            initialisationProcessMock.Setup(x => x.GetMutationTestInputs(
-                It.IsAny<Stryker.Abstractions.Options.IStrykerOptions>(), 
-                It.IsAny<IReadOnlyCollection<Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo>>(), 
-                It.IsAny<ITestRunner>()))
-                .Returns((Stryker.Abstractions.Options.IStrykerOptions opts, IReadOnlyCollection<Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo> projects, ITestRunner runner) =>
-                {
-                    var inputs = new List<Stryker.Core.MutationTest.MutationTestInput>();
-                    foreach (var project in projects)
-                    {
-                        inputs.Add(new Stryker.Core.MutationTest.MutationTestInput
-                        {
-                            SourceProjectInfo = project,
-                            TestProjectsInfo = project.TestProjectsInfo,
-                            TestRunner = runner,
-                            InitialTestRun = new InitialTestRun(new TestRunResult(true), null)
-                        });
-                    }
-                    return inputs;
-                });
+            var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object);
             
             var target = new ProjectOrchestrator(_projectMutatorMock.Object,
-                initialisationProcessMock.Object,
+                initialisationProcess,
                 initialBuildProcessMock.Object,
                 inputFileResolver,
                 TestLoggerFactory.CreateLogger<ProjectOrchestrator>());
@@ -476,42 +457,14 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         mockRunner.Setup(r => r.InitialTest(It.IsAny<IProjectAndTests>())).Returns(new TestRunResult(true));
 
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
-        var initialisationProcessMock = new Mock<IInitialisationProcess>();
-        
-        // Create a real InputFileResolver since the orchestrator delegates to InitialisationProcess
+        var initialTestProcessMock = new Mock<IInitialTestProcess>();
+        initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>(), It.IsAny<SourceProjectInfo>(), It.IsAny<ITestRunner>()))
+            .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
         var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, new Mock<INugetRestoreProcess>().Object, TestLoggerFactory.CreateLogger<InputFileResolver>());
-        
-        // Setup the InitialisationProcess mock to delegate to InputFileResolver for project resolution
-        initialisationProcessMock.Setup(x => x.GetMutableProjectsInfo(It.IsAny<Stryker.Abstractions.Options.IStrykerOptions>()))
-            .Returns((Stryker.Abstractions.Options.IStrykerOptions opts) => inputFileResolver.ResolveSourceProjectInfos(opts));
-        
-        // Mock BuildProjects to do nothing
-        initialisationProcessMock.Setup(x => x.BuildProjects(It.IsAny<Stryker.Abstractions.Options.IStrykerOptions>(), It.IsAny<IReadOnlyCollection<Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo>>()));
-        
-        // Setup GetMutationTestInputs to create inputs from the projects
-        initialisationProcessMock.Setup(x => x.GetMutationTestInputs(
-            It.IsAny<Stryker.Abstractions.Options.IStrykerOptions>(), 
-            It.IsAny<IReadOnlyCollection<Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo>>(), 
-            It.IsAny<ITestRunner>()))
-            .Returns((Stryker.Abstractions.Options.IStrykerOptions opts, IReadOnlyCollection<Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo> projects, ITestRunner runner) =>
-            {
-                // Create MutationTestInput for each project
-                var inputs = new List<Stryker.Core.MutationTest.MutationTestInput>();
-                foreach (var project in projects)
-                {
-                    inputs.Add(new Stryker.Core.MutationTest.MutationTestInput
-                    {
-                        SourceProjectInfo = project,
-                        TestProjectsInfo = project.TestProjectsInfo,
-                        TestRunner = runner,
-                        InitialTestRun = new InitialTestRun(new TestRunResult(true), null)
-                    });
-                }
-                return inputs;
-            });
+        var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object);
         
         return new ProjectOrchestrator(_projectMutatorMock.Object,
-            initialisationProcessMock.Object,
+            initialisationProcess,
             initialBuildProcessMock.Object,
             inputFileResolver,
             TestLoggerFactory.CreateLogger<ProjectOrchestrator>());

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -24,7 +25,7 @@ public interface IProjectOrchestrator : IDisposable
 
 public sealed class ProjectOrchestrator : IProjectOrchestrator
 {
-    private readonly IInitialisationProcess _initializationProcess;
+    private IInitialisationProcess _initializationProcess;
     private readonly ILogger _logger;
     private readonly IProjectMutator _projectMutator;
     private readonly IInitialBuildProcess _initialBuildProcess;
@@ -40,14 +41,15 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
     {
         _projectMutator = projectMutator ?? throw new ArgumentNullException(nameof(projectMutator));
         _initializationProcess = initializationProcess ?? throw new ArgumentNullException(nameof(initializationProcess));
-        _initialBuildProcess = initialBuildProcess ?? throw new ArgumentNullException(nameof(initialBuildProcess));
         _fileResolver = fileResolver ?? throw new ArgumentNullException(nameof(fileResolver));
+        _initialBuildProcess = initialBuildProcess ?? throw new ArgumentNullException(nameof(initialBuildProcess));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public IEnumerable<IMutationTestProcess> MutateProjects(IStrykerOptions options, IReporter reporters,
         ITestRunner runner = null)
     {
+        _initializationProcess ??= new InitialisationProcess(_fileResolver, _initialBuildProcess, new InitialTestProcess());
         var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
 
         if (!projectInfos.Any())
