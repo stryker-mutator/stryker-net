@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Moq;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Testing;
@@ -545,14 +546,15 @@ public class VsTestMockingHelper : TestBase
         {
             SourceProjectInfo = sourceProject ?? SourceProjectInfo,
             TestRunner = runner,
-            InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500))
+            InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500)),
+            TestProjectsInfo = _testProjectsInfo
         };
         var mutator = new CsharpMutationProcess(_fileSystem, options);
         var executor = new MutationTestExecutor(TestLoggerFactory.CreateLogger<MutationTestExecutor>());
         executor.TestRunner = runner;
-        var coverageAnalyser = new Mock<ICoverageAnalyser>().Object;
+        var coverageAnalyser = new CoverageAnalyser(TestLoggerFactory.CreateLogger<CoverageAnalyser>());
 
-        var process = new MutationTestProcess(executor, coverageAnalyser, null, TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        var process = new MutationTestProcess(executor, coverageAnalyser, mutator, TestLoggerFactory.CreateLogger<MutationTestProcess>());
         process.Initialize(input, options, null);
         return process;
     }

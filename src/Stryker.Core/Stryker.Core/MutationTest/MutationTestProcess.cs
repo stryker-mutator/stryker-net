@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
@@ -13,7 +12,6 @@ using Stryker.Abstractions.Testing;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.TestRunner.Tests;
 using Stryker.Utilities.Buildalyzer;
-using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.MutationTest;
 
@@ -58,13 +56,13 @@ public class MutationTestProcess : IMutationTestProcess
     public MutationTestProcess(
         IMutationTestExecutor executor,
         ICoverageAnalyser coverageAnalyzer,
-        IMutationProcess mutationProcess = null,
-        ILogger<MutationTestProcess> logger = null)
+        IMutationProcess mutationProcess,
+        ILogger<MutationTestProcess> logger)
     {
-        _mutationTestExecutor = executor;
-        _mutationProcess = mutationProcess;
+        _mutationTestExecutor = executor ?? throw new ArgumentNullException(nameof(executor));
+        _mutationProcess = mutationProcess ?? throw new ArgumentNullException(nameof(mutationProcess));
         _coverageAnalyser = coverageAnalyzer ?? throw new ArgumentNullException(nameof(coverageAnalyzer));
-        _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     private IMutationProcess BuildMutationProcess()
@@ -84,7 +82,7 @@ public class MutationTestProcess : IMutationTestProcess
         _reporter = reporter;
         _projectContents = input.SourceProjectInfo.ProjectContents;
         Input.TestProjectsInfo.BackupOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
-        _mutationProcess = BuildMutationProcess();
+        // _mutationProcess = BuildMutationProcess();
     }
 
     public void Mutate()
