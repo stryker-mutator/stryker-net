@@ -200,7 +200,6 @@ public class ConfigBuilderTests
         inputs.Setup(x => x.ProjectVersionInput).Returns(new ProjectVersionInput());
         inputs.Setup(x => x.DashboardApiKeyInput).Returns(new DashboardApiKeyInput());
         inputs.Setup(x => x.AzureFileStorageSasInput).Returns(new AzureFileStorageSasInput());
-        inputs.Setup(x => x.DevModeInput).Returns(new DiagModeInput());
         inputs.Setup(x => x.DiagModeInput).Returns(new DiagModeInput());
 
         inputs.Setup(x => x.SinceInput).Returns(new SinceInput());

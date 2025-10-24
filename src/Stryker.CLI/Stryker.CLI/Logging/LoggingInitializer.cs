@@ -29,7 +29,7 @@ public class LoggingInitializer : ILoggingInitializer
         var logLevel = inputs.VerbosityInput.Validate();
         var logToFile = inputs.LogToFileInput.Validate(outputPath) || diagnoseMode;
 
-        ApplicationLogging.ConfigureLogger(logLevel, logToFile, inputs.DiagModeInput.Validate(), outputPath);
+        ApplicationLogging.ConfigureLogger(logLevel, logToFile, diagnoseMode, outputPath);
     }
 
     private string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)

@@ -22,7 +22,7 @@ public class StrykerInputsTests : TestBase
         ConcurrencyInput = new ConcurrencyInput(),
         DashboardApiKeyInput = new DashboardApiKeyInput(),
         DashboardUrlInput = new DashboardUrlInput(),
-        DevModeInput = new DiagModeInput(),
+        DiagModeInput = new DiagModeInput(),
         DiffIgnoreChangesInput = new DiffIgnoreChangesInput(),
         DisableBailInput = new DisableBailInput(),
         DisableMixMutantsInput = new DisableMixMutantsInput(),

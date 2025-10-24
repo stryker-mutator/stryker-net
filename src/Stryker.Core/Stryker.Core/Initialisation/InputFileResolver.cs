@@ -35,7 +35,7 @@ public class InputFileResolver : IInputFileResolver
     private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules", "StrykerOutput" };
     private readonly ILogger _logger;
     private readonly IBuildalyzerProvider _analyzerProvider;
-    private static readonly HashSet<string> ImportantProperties =
+    private static readonly HashSet<string> _ImportantProperties =
         ["Configuration", "Platform", "AssemblyName", "Configurations"];
 
     private readonly INugetRestoreProcess _nugetRestoreProcess;
@@ -137,9 +137,9 @@ public class InputFileResolver : IInputFileResolver
             .Where(p => p.Value.Count > 0)
             .Select(p => p.Key).GroupBy(p => p.ProjectFilePath);
         // we must select projects according to framework settings if any
-        var projectInfos = analyzerResults.
-            Select(g => SelectAnalyzerResult(g, options.TargetFramework)).
-            Select(analyzerResult => BuildSourceProjectInfo(options, analyzerResult, findMutableAnalyzerResults[analyzerResult]))
+        var projectInfos = analyzerResults
+            .Select(g => SelectAnalyzerResult(g, options.TargetFramework))
+            .Select(analyzerResult => BuildSourceProjectInfo(options, analyzerResult, findMutableAnalyzerResults[analyzerResult]))
             .ToList();
 
 
@@ -311,9 +311,9 @@ public class InputFileResolver : IInputFileResolver
         var buildResult = project.Build(env);
 
         var buildResultOverallSuccess = buildResult.OverallSuccess
-                                        || (project.ProjectFile.TargetFrameworks.Length > 0 &&
-                                           Array.TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
-                                            buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)));
+               || (project.ProjectFile.TargetFrameworks.Length > 0 &&
+                Array.TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
+                buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)));
 
         if (!buildResultOverallSuccess)
         {
@@ -369,8 +369,8 @@ public class InputFileResolver : IInputFileResolver
 
         // check the new status
         buildResultOverallSuccess = project.ProjectFile.TargetFrameworks.Length > 0 &&
-                                    Array.TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
-                                    buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
+            Array.TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
+            buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
 
         if (!buildResultOverallSuccess && !string.IsNullOrEmpty(options.TargetFramework))
         {
@@ -405,7 +405,7 @@ public class InputFileResolver : IInputFileResolver
             log.AppendLine($"Succeeded: {analyzerResult.Succeeded}");
 
             var properties = analyzerResult.Properties ?? new Dictionary<string, string>();
-            foreach (var property in ImportantProperties)
+            foreach (var property in _ImportantProperties)
             {
                 log.AppendLine($"Property {property}={properties.GetValueOrDefault(property) ?? "\"'undefined'\""}");
             }
@@ -421,7 +421,7 @@ public class InputFileResolver : IInputFileResolver
 
             foreach (var property in properties)
             {
-                if (ImportantProperties.Contains(property.Key))
+                if (_ImportantProperties.Contains(property.Key))
                 {
                     continue; // already logged
                 }

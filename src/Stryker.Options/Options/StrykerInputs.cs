@@ -16,7 +16,6 @@ public interface IStrykerInputs
     CoverageAnalysisInput CoverageAnalysisInput { get; init; }
     DashboardApiKeyInput DashboardApiKeyInput { get; init; }
     DashboardUrlInput DashboardUrlInput { get; init; }
-    DiagModeInput DevModeInput { get; init; }
     DiagModeInput DiagModeInput { get; init; }
     DiffIgnoreChangesInput DiffIgnoreChangesInput { get; init; }
     DisableBailInput DisableBailInput { get; set; }
@@ -64,7 +63,6 @@ public class StrykerInputs : IStrykerInputs
         _fileSystem = fileSystem ?? new FileSystem();
     }
 
-    public DiagModeInput DevModeInput { get; init; } = new();
     public DiagModeInput DiagModeInput { get; init; } = new();
     public BasePathInput BasePathInput { get; init; } = new();
     public OutputPathInput OutputPathInput { get; init; } = new();
@@ -128,7 +126,7 @@ public class StrykerInputs : IStrykerInputs
             ReportFileName = reportFileNameInput,
             Concurrency = ConcurrencyInput.Validate(),
             MutationLevel = MutationLevelInput.Validate(),
-            DiagMode = DiagModeInput.Validate() || DevModeInput.Validate(),
+            DiagMode = DiagModeInput.Validate() ,
             MsBuildPath = MsBuildPathInput.Validate(_fileSystem),
             SolutionPath = SolutionInput.Validate(basePath, _fileSystem),
             Configuration = ConfigurationInput.Validate(),
