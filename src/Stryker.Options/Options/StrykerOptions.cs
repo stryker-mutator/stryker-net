@@ -20,7 +20,7 @@ public class StrykerOptions : IStrykerOptions
     /// <summary>
     /// when true: adjust Stryker logic to make it easier to analyse/debug
     /// </summary>
-    public bool DevMode { get; init; }
+    public bool DiagMode { get; init; }
 
     /// <summary>
     /// The path of the project currently being tested. In the context of solution runs this is custom for each project
