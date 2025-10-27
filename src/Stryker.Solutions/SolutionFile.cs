@@ -50,7 +50,7 @@ public class SolutionFile
                 foreach (var solutionProject in solution.SolutionProjects)
                 {
                     var (projectBuildType, projectPlatform, isBuilt, _) = solutionProject.GetProjectConfiguration(buildType, solutionPlatform);
-                    if (!isBuilt)
+                    if (!isBuilt || projectBuildType == null || projectPlatform == null)
                     {
                         continue;
                     }
