@@ -46,11 +46,11 @@ public abstract class VsTestHelper : IVsTestHelper
 
         if (isOsPlatform(OSPlatform.Linux) || isOsPlatform(OSPlatform.OSX))
         {
-            return new UnixTestHelper(fileSystem, logger, isOsPlatform);
+            return new UnixTestHelper(fileSystem, logger);
         }
         if (isOsPlatform(OSPlatform.Windows))
         {
-            return new WindowsTestHelper(fileSystem, logger, isOsPlatform);
+            return new WindowsTestHelper(fileSystem, logger);
         }
 
         return new NotSupportedTestHelper(OSPlatform.Windows, OSPlatform.Linux, OSPlatform.OSX);
@@ -71,12 +71,8 @@ public abstract class VsTestHelper : IVsTestHelper
             }
 
             var platformVsTestToolPath = GetVsTestToolPaths();
-            if (platformVsTestToolPath is null)
-            {
-                throw new PlatformNotSupportedException(
-                    "Could not find any VS test tool paths for this platform.");
-            }
-            _platformVsTestToolPath = platformVsTestToolPath;
+            _platformVsTestToolPath = platformVsTestToolPath ?? throw new PlatformNotSupportedException(
+                "Could not find any VS test tool paths for this platform.");
 
             var osPlatform = "Bla";
             _logger.LogDebug("Using vstest.console: {OsPlatform} for OS {TestToolPath}",
@@ -228,7 +224,7 @@ public class NotSupportedTestHelper : IVsTestHelper
 
 public class UnixTestHelper : VsTestHelper
 {
-    protected internal UnixTestHelper(IFileSystem fileSystem, ILogger logger, Func<OSPlatform, bool> isOsPlatform) : base(fileSystem, logger)
+    protected internal UnixTestHelper(IFileSystem fileSystem, ILogger logger) : base(fileSystem, logger)
     {
     }
 
@@ -266,7 +262,7 @@ public class UnixTestHelper : VsTestHelper
 
 public class WindowsTestHelper : VsTestHelper
 {
-    protected internal WindowsTestHelper(IFileSystem fileSystem, ILogger logger, Func<OSPlatform, bool> isOsPlatform) : base(fileSystem, logger)
+    protected internal WindowsTestHelper(IFileSystem fileSystem, ILogger logger) : base(fileSystem, logger)
     {
     }
 
