@@ -20,7 +20,8 @@ public partial class VsTestHelperTests : TestBase
     [TestMethod]
     public void DeployEmbeddedVsTestBinaries()
     {
-        var deployPath = (VsTestHelper.CreateInstance() as VsTestHelper)?.DeployEmbeddedVsTestBinaries();
+        var vsTestHelper = (VsTestHelper.CreateInstance() as VsTestHelper);
+        var deployPath = vsTestHelper!.DeployEmbeddedVsTestBinaries();
 
         var vsTestFiles = Directory.EnumerateFiles(deployPath, "*", SearchOption.AllDirectories)
             .Select(Path.GetFileName).ToList();
@@ -29,11 +30,14 @@ public partial class VsTestHelperTests : TestBase
         {
             vsTestFiles.ShouldContain("vstest.console.dll");
             vsTestFiles.ShouldContain("vstest.console.exe");
+            Assert.IsNotEmpty(Directory.EnumerateFiles(deployPath, "*", SearchOption.AllDirectories));
         }
         finally
         {
-            Directory.Delete(deployPath, recursive: true);
+            vsTestHelper.Cleanup();
         }
+
+        Assert.IsEmpty(Directory.EnumerateFiles(deployPath, "*", SearchOption.AllDirectories));
     }
 
     [TestMethod]
