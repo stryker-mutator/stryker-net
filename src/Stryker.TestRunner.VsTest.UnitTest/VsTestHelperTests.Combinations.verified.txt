@@ -1,14 +1,14 @@
 ﻿{
   True , WINDOWS, True : {UserProfile}/.nuget/packages/microsoft.testplatform.portable/17.14.1/tools/net462/vstest.console.exe,
-  True , WINDOWS, False: The current OS is not any of the following currently supported: ,
+  True , WINDOWS, False: Could not find any VS test tool paths for this platform.,
   True , FREEBSD, True : The current OS is not any of the following currently supported: WINDOWS, LINUX, OSX,
   True , FREEBSD, False: The current OS is not any of the following currently supported: WINDOWS, LINUX, OSX,
   True , OSX    , True : {UserProfile}/.nuget/packages/microsoft.testplatform.portable/17.14.1/tools/net8.0/vstest.console.dll,
-  True , OSX    , False: The current OS is not any of the following currently supported: ,
+  True , OSX    , False: Could not find any VS test tool paths for this platform.,
   False, WINDOWS, True : {UserProfile}/.nuget/packages/microsoft.testplatform.portable/17.14.1/tools/net462/vstest.console.exe,
-  False, WINDOWS, False: The current OS is not any of the following currently supported: ,
+  False, WINDOWS, False: Could not find any VS test tool paths for this platform.,
   False, FREEBSD, True : The current OS is not any of the following currently supported: WINDOWS, LINUX, OSX,
   False, FREEBSD, False: The current OS is not any of the following currently supported: WINDOWS, LINUX, OSX,
   False, OSX    , True : {UserProfile}/.nuget/packages/microsoft.testplatform.portable/17.14.1/tools/net8.0/vstest.console.dll,
-  False, OSX    , False: The current OS is not any of the following currently supported: 
+  False, OSX    , False: Could not find any VS test tool paths for this platform.
 }
