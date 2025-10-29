@@ -27,10 +27,10 @@ public interface IVsTestHelper
 public abstract class VsTestHelper : IVsTestHelper
 {
     private readonly ILogger _logger;
-    protected readonly IFileSystem _fileSystem;
+    private readonly IFileSystem _fileSystem;
     private string _platformVsTestToolPath;
     private readonly object _lck = new();
-    private List<string> dirsToClean = new();
+    private readonly List<string> _dirsToClean = [];
 
     protected VsTestHelper(IFileSystem fileSystem, ILogger logger)
     {
@@ -99,8 +99,6 @@ public abstract class VsTestHelper : IVsTestHelper
 
         if (DeployEmbeddedVsTestBinaries() is var deployPath)
         {
-            dirsToClean.Add(deployPath);
-
             var packageFolders = SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false);
             if (packageFolders is not null)
             {
@@ -170,7 +168,7 @@ public abstract class VsTestHelper : IVsTestHelper
         _fileSystem.File.Delete(zipPath);
 
         _logger.LogDebug("VsTest zip was unzipped to: {TempDir}", tempDir);
-
+        _dirsToClean.Add(tempDir);
         return tempDir;
     }
 
@@ -182,7 +180,7 @@ public abstract class VsTestHelper : IVsTestHelper
     {
         try
         {
-            foreach (var dir in dirsToClean)
+            foreach (var dir in _dirsToClean)
             {
                 foreach (var entry in _fileSystem.Directory
                              .EnumerateFiles(dir, "*", SearchOption.AllDirectories))
