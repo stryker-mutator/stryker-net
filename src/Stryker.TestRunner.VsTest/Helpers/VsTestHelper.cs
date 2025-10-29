@@ -28,15 +28,13 @@ public abstract class VsTestHelper : IVsTestHelper
 {
     private readonly ILogger _logger;
     protected readonly IFileSystem _fileSystem;
-    private readonly Dictionary<OSPlatform, string> _vsTestPaths = new();
     private string _platformVsTestToolPath;
     private readonly object _lck = new();
-    private readonly Func<OSPlatform, bool> _isOsPlatform;
+    private List<string> dirsToClean = new();
 
-    protected VsTestHelper(IFileSystem fileSystem, ILogger logger, Func<OSPlatform, bool> isOsPlatform)
+    protected VsTestHelper(IFileSystem fileSystem, ILogger logger)
     {
         _logger = logger;
-        _isOsPlatform = isOsPlatform;
         _fileSystem = fileSystem;
     }
 
@@ -104,6 +102,7 @@ public abstract class VsTestHelper : IVsTestHelper
         }
         else if (DeployEmbeddedVsTestBinaries() is var deployPath)
         {
+            dirsToClean.Add(deployPath);
             var packageFolders = SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false);
             if (packageFolders is not null)
             {
@@ -183,22 +182,12 @@ public abstract class VsTestHelper : IVsTestHelper
     /// <param name="tries">Remaining attempts.</param>
     public void Cleanup(int tries = 5)
     {
-        var nugetPackageFolders = CollectNugetPackageFolders();
-
         try
         {
-            foreach (var vsTestConsole in _vsTestPaths.Values)
+            foreach (var dir in dirsToClean)
             {
-                var path = vsTestConsole;
-                // If vstest path is not in nuget package folder, clean it up
-                if (nugetPackageFolders.Any(nf => path.Contains(nf)) ||
-                    !_fileSystem.Directory.Exists(Path.GetDirectoryName(path)))
-                {
-                    continue;
-                }
-
                 foreach (var entry in _fileSystem.Directory
-                             .EnumerateFiles(Path.GetDirectoryName(path), "*", SearchOption.AllDirectories))
+                             .EnumerateFiles(dir, "*", SearchOption.AllDirectories))
                 {
                     _fileSystem.File.Delete(entry);
                 }
@@ -239,7 +228,7 @@ public class NotSupportedTestHelper : IVsTestHelper
 
 public class UnixTestHelper : VsTestHelper
 {
-    protected internal UnixTestHelper(IFileSystem fileSystem, ILogger logger, Func<OSPlatform, bool> isOsPlatform) : base(fileSystem, logger, isOsPlatform)
+    protected internal UnixTestHelper(IFileSystem fileSystem, ILogger logger, Func<OSPlatform, bool> isOsPlatform) : base(fileSystem, logger)
     {
     }
 
@@ -277,7 +266,7 @@ public class UnixTestHelper : VsTestHelper
 
 public class WindowsTestHelper : VsTestHelper
 {
-    protected internal WindowsTestHelper(IFileSystem fileSystem, ILogger logger, Func<OSPlatform, bool> isOsPlatform) : base(fileSystem, logger, isOsPlatform)
+    protected internal WindowsTestHelper(IFileSystem fileSystem, ILogger logger, Func<OSPlatform, bool> isOsPlatform) : base(fileSystem, logger)
     {
     }
 
