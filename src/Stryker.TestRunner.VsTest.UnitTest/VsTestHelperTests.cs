@@ -20,7 +20,7 @@ public partial class VsTestHelperTests : TestBase
     [TestMethod]
     public void DeployEmbeddedVsTestBinaries()
     {
-        var deployPath = VsTestHelper.CreateInstance().DeployEmbeddedVsTestBinaries();
+        var deployPath = (VsTestHelper.CreateInstance() as VsTestHelper)?.DeployEmbeddedVsTestBinaries();
 
         var vsTestFiles = Directory.EnumerateFiles(deployPath, "*", SearchOption.AllDirectories)
             .Select(Path.GetFileName).ToList();
