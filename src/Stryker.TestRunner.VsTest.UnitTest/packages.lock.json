@@ -41,6 +41,24 @@
           "EmptyFiles": "4.4.0"
         }
       },
+      "Verify.MSTest": {
+        "type": "Direct",
+        "requested": "[30.20.1, )",
+        "resolved": "30.20.1",
+        "contentHash": "AuNvo2dNzn9rYymsTJMJYXv1lLq/0WyX7Qi6ZscBPlaVPMFySE37RTj+ZzcBNVGLHBn753zmGqzbeIQOeb/Esg==",
+        "dependencies": {
+          "Argon": "0.32.0",
+          "DiffEngine": "16.7.1",
+          "MSTest.TestFramework": "3.11.0",
+          "SimpleInfoName": "3.1.2",
+          "Verify": "30.20.1"
+        }
+      },
+      "Argon": {
+        "type": "Transitive",
+        "resolved": "0.32.0",
+        "contentHash": "sW2tLL6cllHx5Q305AkXmGN4gWSGk8Ij2xH6kje1dy5k0Ef3V9g/qE6Y0GH5du515k3coiR9PY8EvZ5SIl9jOw=="
+      },
       "Azure.Core": {
         "type": "Transitive",
         "resolved": "1.47.3",
@@ -75,17 +93,17 @@
       },
       "DiffEngine": {
         "type": "Transitive",
-        "resolved": "11.3.0",
-        "contentHash": "k0ZgZqd09jLZQjR8FyQbSQE86Q7QZnjEzq1LPHtj1R2AoWO8sjV5x+jlSisL7NZAbUOI4y+7Bog8gkr9WIRBGw==",
+        "resolved": "16.7.1",
+        "contentHash": "5b2mPwUYwlS8ktIRqeMW+Erdxjil4wiKGFjmDrlvyOgutGaYfXwvBoH563SEHhFmMCoeaY6JHhwFDz4NLvgw7A==",
         "dependencies": {
-          "EmptyFiles": "4.4.0",
-          "System.Management": "6.0.1"
+          "EmptyFiles": "8.14.0",
+          "System.Management": "8.0.0"
         }
       },
       "EmptyFiles": {
         "type": "Transitive",
-        "resolved": "4.4.0",
-        "contentHash": "gwJEfIGS7FhykvtZoscwXj/XwW+mJY6UbAZk+qtLKFUGWC95kfKXnj8VkxsZQnWBxJemM/q664rGLN5nf+OHZw=="
+        "resolved": "8.14.0",
+        "contentHash": "qH9yrlrNjweyWY3Toc9Xfo9yGYTIj0DSPJ519WtUIHVzaIP4PWNRyvzlfVXYc1bHsXzMnawVivfva3RVFLPcNA=="
       },
       "LaunchDarkly.Logging": {
         "type": "Transitive",
@@ -438,6 +456,11 @@
           "System.Text.Encoding.Extensions": "4.0.11"
         }
       },
+      "SimpleInfoName": {
+        "type": "Transitive",
+        "resolved": "3.1.2",
+        "contentHash": "/OoEZQxSW6DeTJ9nfrg8BLCOCWpxBiWHV4NkG3t+Xpe8tvzm7yCwKwxkhpauMl3fg9OjlIjJMKX61H6VavLkrw=="
+      },
       "Spectre.Console.Cli": {
         "type": "Transitive",
         "resolved": "0.53.0",
@@ -557,10 +580,10 @@
       },
       "System.Management": {
         "type": "Transitive",
-        "resolved": "6.0.1",
-        "contentHash": "10J1D0h/lioojphfJ4Fuh5ZUThT/xOVHdV9roGBittKKNP2PMjrvibEdbVTGZcPra1399Ja3tqIJLyQrc5Wmhg==",
+        "resolved": "8.0.0",
+        "contentHash": "jrK22i5LRzxZCfGb+tGmke2VH7oE0DvcDlJ1HAKYU8cPmD8XnpUT0bYn2Gy98GEhGjtfbR/sxKTVb+dE770pfA==",
         "dependencies": {
-          "System.CodeDom": "6.0.0"
+          "System.CodeDom": "8.0.0"
         }
       },
       "System.Memory": {
@@ -816,6 +839,16 @@
         "resolved": "9.0.0",
         "contentHash": "uksk86YlnzAdyfVNu3wICU0X5iXVe9LF7Q3UkngNliHWEvM5gvAlOUr+jmd9JwmbJWISH5+i1vyXE02lEVz7WQ=="
       },
+      "Verify": {
+        "type": "Transitive",
+        "resolved": "30.20.1",
+        "contentHash": "AAaw1I09Za1y9dgb0HLpQbz6KSTv8rsfju1HV1+t6Y+mbtTYy//q5jV1ugR3vCkpIao4ggTDP9ADDA5jx+jm/w==",
+        "dependencies": {
+          "Argon": "0.32.0",
+          "DiffEngine": "16.7.1",
+          "SimpleInfoName": "3.1.2"
+        }
+      },
       "stryker": {
         "type": "Project",
         "dependencies": {
@@ -840,13 +873,13 @@
           "Serilog.Sinks.Console": "[6.0.0, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.53.0, )",
-          "Stryker.Abstractions": "[4.8.1, )",
-          "Stryker.Configuration": "[4.8.1, )",
-          "Stryker.DataCollector": "[4.8.1, )",
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.Configuration": "[1.0.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
-          "Stryker.RegexMutators": "[4.8.1, )",
-          "Stryker.TestRunner.VsTest": "[4.8.1, )",
-          "Stryker.Utilities": "[4.8.1, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
+          "Stryker.TestRunner.VsTest": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.16, )"
         }
       },
@@ -869,8 +902,8 @@
           "Microsoft.CodeAnalysis.CSharp": "[4.14.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.14.0, )",
           "Serilog": "[4.3.0, )",
-          "Stryker.Abstractions": "[4.8.1, )",
-          "Stryker.Utilities": "[4.8.1, )"
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )"
         }
       },
       "stryker.core.unittest": {
@@ -883,9 +916,9 @@
           "Moq": "[4.20.72, )",
           "Shouldly": "[4.3.0, )",
           "Spectre.Console.Testing": "[0.53.0, )",
-          "Stryker.Abstractions": "[4.8.1, )",
+          "Stryker.Abstractions": "[1.0.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
-          "Stryker.Utilities": "[4.8.1, )",
+          "Stryker.Utilities": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.TestingHelpers": "[22.0.16, )",
           "stryker": "[4.8.1, )"
         }
@@ -907,7 +940,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.TestPlatform.ObjectModel": "[17.14.1, )",
-          "Stryker.Abstractions": "[4.8.1, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "stryker.testrunner.vstest": {
@@ -918,10 +951,10 @@
           "Microsoft.TestPlatform.ObjectModel": "[17.14.1, )",
           "Microsoft.TestPlatform.Portable": "[17.14.1, )",
           "Microsoft.TestPlatform.TranslationLayer": "[17.14.1, )",
-          "Stryker.Abstractions": "[4.8.1, )",
-          "Stryker.DataCollector": "[4.8.1, )",
-          "Stryker.TestRunner": "[4.8.1, )",
-          "Stryker.Utilities": "[4.8.1, )",
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.TestRunner": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.16, )"
         }
       },
@@ -934,7 +967,7 @@
           "Microsoft.Extensions.Logging.Abstractions": "[9.0.10, )",
           "Mono.Cecil": "[0.11.6, )",
           "ResXResourceReader.NetStandard": "[1.3.0, )",
-          "Stryker.Abstractions": "[4.8.1, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "Azure.Storage.Files.Shares": {
