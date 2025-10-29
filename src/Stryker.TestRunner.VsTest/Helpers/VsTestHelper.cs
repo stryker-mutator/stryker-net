@@ -44,7 +44,7 @@ public abstract class VsTestHelper : IVsTestHelper
         fileSystem ??= new FileSystem();
         isOsPlatform ??= RuntimeInformation.IsOSPlatform;
 
-        if (isOsPlatform(OSPlatform.Linux) || isOsPlatform(OSPlatform.OSX))
+        if (isOsPlatform(OSPlatform.Linux) || isOsPlatform(OSPlatform.OSX) || RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
         {
             return new UnixTestHelper(fileSystem, logger);
         }
@@ -96,9 +96,11 @@ public abstract class VsTestHelper : IVsTestHelper
             _logger.LogDebug("Using vstest from nuget package folders");
             return searchNugetPackageFolders;
         }
-        else if (DeployEmbeddedVsTestBinaries() is var deployPath)
+
+        if (DeployEmbeddedVsTestBinaries() is var deployPath)
         {
             dirsToClean.Add(deployPath);
+
             var packageFolders = SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false);
             if (packageFolders is not null)
             {
