@@ -70,7 +70,7 @@ public sealed class VsTestContextInformation : IDisposable
         Options = options;
         _ownVsTestHelper = helper == null;
         _fileSystem = fileSystem ?? new FileSystem();
-        _vsTestHelper = helper ?? new VsTestHelper(_fileSystem, logger);
+        _vsTestHelper = helper ?? VsTestHelper.CreateInstance(_fileSystem, logger);
         _wrapperBuilder = builder ?? BuildActualVsTestWrapper;
         var devMode = options.DevMode;
         _hostBuilder = hostBuilder ?? (name => new StrykerVsTestHostLauncher(name, devMode));
@@ -273,7 +273,7 @@ public sealed class VsTestContextInformation : IDisposable
         return
             $@"
 <MaxCpuCount>{Math.Max(0, maxCpu)}</MaxCpuCount>
-{frameworkConfig}{platformConfig}{testCaseFilter} 
+{frameworkConfig}{platformConfig}{testCaseFilter}
 <DisableAppDomain>true</DisableAppDomain>";
     }
 

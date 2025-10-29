@@ -24,7 +24,7 @@ public interface IVsTestHelper
 /// Locates VsTest folder. Installs one if none is found.
 /// </summary>
 /// This class is not unit tested currently, so proceed with caution
-[ExcludeFromCodeCoverage(Justification = "Deeply dependent on current platform, need a lot of work for mocking.")]
+// [ExcludeFromCodeCoverage(Justification = "Deeply dependent on current platform, need a lot of work for mocking.")]
 public class VsTestHelper : IVsTestHelper
 {
     private readonly ILogger _logger;
@@ -32,11 +32,22 @@ public class VsTestHelper : IVsTestHelper
     private readonly Dictionary<OSPlatform, string> _vsTestPaths = new();
     private string _platformVsTestToolPath;
     private readonly object _lck = new();
+    private readonly Func<OSPlatform, bool> _isOsPlatform;
 
-    public VsTestHelper(IFileSystem fileSystem = null, ILogger logger = null)
+    protected VsTestHelper(IFileSystem fileSystem, ILogger logger, Func<OSPlatform, bool> isOsPlatform)
     {
-        _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestHelper>();
-        _fileSystem = fileSystem ?? new FileSystem();
+        _logger = logger;
+        _isOsPlatform = isOsPlatform;
+        _fileSystem = fileSystem;
+    }
+
+    public static VsTestHelper CreateInstance(IFileSystem? fileSystem = null, ILogger? logger = null, Func<OSPlatform, bool>? isOsPlatform = null)
+    {
+        logger ??= ApplicationLogging.LoggerFactory.CreateLogger<VsTestHelper>();
+        fileSystem ??= new FileSystem();
+        isOsPlatform ??= RuntimeInformation.IsOSPlatform;
+
+        return new VsTestHelper(fileSystem, logger, isOsPlatform);
     }
 
     /// <summary>
@@ -55,13 +66,13 @@ public class VsTestHelper : IVsTestHelper
 
             var paths = GetVsTestToolPaths();
 
-            if (!paths.Keys.Any(RuntimeInformation.IsOSPlatform))
+            if (!paths.Keys.Any(platform => _isOsPlatform(platform)))
             {
                 throw new PlatformNotSupportedException(
                     $"The current OS is not any of the following currently supported: {string.Join(", ", paths.Keys)}");
             }
 
-            var osPlatform = paths.Keys.First(RuntimeInformation.IsOSPlatform);
+            var osPlatform = paths.Keys.First(platform => _isOsPlatform(platform));
             _platformVsTestToolPath = paths[osPlatform];
             _logger.LogDebug("Using vstest.console: {OsPlatform} for OS {TestToolPath}",
                 osPlatform, _platformVsTestToolPath);
@@ -78,7 +89,7 @@ public class VsTestHelper : IVsTestHelper
     private Dictionary<OSPlatform, string> GetVsTestToolPaths()
     {
         // If any of the found paths is for the current OS, just return the paths as we have what we need
-        if (_vsTestPaths.Any(p => RuntimeInformation.IsOSPlatform(p.Key)))
+        if (_vsTestPaths.Any(p => _isOsPlatform(p.Key)))
         {
             return _vsTestPaths;
         }
@@ -86,7 +97,7 @@ public class VsTestHelper : IVsTestHelper
         var nugetPackageFolders = CollectNugetPackageFolders();
 
         if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies
-            && nugetAssemblies.Any(p => RuntimeInformation.IsOSPlatform(p.Key)))
+            && nugetAssemblies.Any(p => _isOsPlatform(p.Key)))
         {
             Merge(_vsTestPaths, nugetAssemblies);
             _logger.LogDebug("Using vstest from nuget package folders");
