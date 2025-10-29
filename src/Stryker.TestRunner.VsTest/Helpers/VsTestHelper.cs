@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Abstractions;
 using System.IO.Compression;
@@ -25,10 +24,10 @@ public interface IVsTestHelper
 /// </summary>
 /// This class is not unit tested currently, so proceed with caution
 // [ExcludeFromCodeCoverage(Justification = "Deeply dependent on current platform, need a lot of work for mocking.")]
-public class VsTestHelper : IVsTestHelper
+public abstract class VsTestHelper : IVsTestHelper
 {
     private readonly ILogger _logger;
-    private readonly IFileSystem _fileSystem;
+    protected readonly IFileSystem _fileSystem;
     private readonly Dictionary<OSPlatform, string> _vsTestPaths = new();
     private string _platformVsTestToolPath;
     private readonly object _lck = new();
@@ -41,13 +40,22 @@ public class VsTestHelper : IVsTestHelper
         _fileSystem = fileSystem;
     }
 
-    public static VsTestHelper CreateInstance(IFileSystem? fileSystem = null, ILogger? logger = null, Func<OSPlatform, bool>? isOsPlatform = null)
+    public static IVsTestHelper CreateInstance(IFileSystem? fileSystem = null, ILogger? logger = null, Func<OSPlatform, bool>? isOsPlatform = null)
     {
         logger ??= ApplicationLogging.LoggerFactory.CreateLogger<VsTestHelper>();
         fileSystem ??= new FileSystem();
         isOsPlatform ??= RuntimeInformation.IsOSPlatform;
 
-        return new VsTestHelper(fileSystem, logger, isOsPlatform);
+        if (isOsPlatform(OSPlatform.Linux) || isOsPlatform(OSPlatform.OSX))
+        {
+            return new UnixTestHelper(fileSystem, logger, isOsPlatform);
+        }
+        if (isOsPlatform(OSPlatform.Windows))
+        {
+            return new WindowsTestHelper(fileSystem, logger, isOsPlatform);
+        }
+
+        return new NotSupportedTestHelper(OSPlatform.Windows, OSPlatform.Linux, OSPlatform.OSX);
     }
 
     /// <summary>
@@ -120,58 +128,8 @@ public class VsTestHelper : IVsTestHelper
         }
     }
 
-    private Dictionary<OSPlatform, string> SearchNugetPackageFolders(IEnumerable<string> nugetPackageFolders,
-        bool versionDependent = true)
-    {
-        var vsTestPaths = new Dictionary<OSPlatform, string>();
-
-        var versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location)
-            .ProductVersion;
-        const string PortablePackageName = "microsoft.testplatform.portable";
-        bool dllFound = false, exeFound = false;
-
-        foreach (var nugetPackageFolder in nugetPackageFolders)
-        {
-            var searchFolder = versionDependent
-                ? Path.Combine(nugetPackageFolder, PortablePackageName, versionString)
-                : nugetPackageFolder;
-            if (!_fileSystem.Directory.Exists(searchFolder))
-            {
-                continue;
-            }
-
-            var dllPath = FilePathUtils.NormalizePathSeparators(
-                _fileSystem.Directory.GetFiles(
-                    searchFolder,
-                    "vstest.console.dll",
-                    SearchOption.AllDirectories).FirstOrDefault());
-            var exePath = FilePathUtils.NormalizePathSeparators(
-                _fileSystem.Directory.GetFiles(
-                    searchFolder,
-                    "vstest.console.exe",
-                    SearchOption.AllDirectories).FirstOrDefault());
-
-            if (!dllFound && _fileSystem.File.Exists(dllPath))
-            {
-                vsTestPaths[OSPlatform.Linux] = dllPath;
-                vsTestPaths[OSPlatform.OSX] = dllPath;
-                dllFound = true;
-            }
-
-            if (!exeFound && _fileSystem.File.Exists(exePath))
-            {
-                vsTestPaths[OSPlatform.Windows] = exePath;
-                exeFound = true;
-            }
-
-            if (dllFound && exeFound)
-            {
-                break;
-            }
-        }
-
-        return vsTestPaths;
-    }
+    protected abstract Dictionary<OSPlatform, string> SearchNugetPackageFolders(IEnumerable<string> nugetPackageFolders,
+        bool versionDependent = true);
 
     private IEnumerable<string> CollectNugetPackageFolders()
     {
@@ -274,5 +232,105 @@ public class VsTestHelper : IVsTestHelper
                     "Tried cleaning up used vstest resources but we weren't ready to clean. Out of tries, we're giving up sorry.");
             }
         }
+    }
+}
+
+public class NotSupportedTestHelper : IVsTestHelper
+{
+    private IEnumerable<OSPlatform> supported;
+
+    public NotSupportedTestHelper(params OSPlatform[] supported) => this.supported = supported;
+
+    public string GetCurrentPlatformVsTestToolPath()
+    {
+        throw new PlatformNotSupportedException(
+            $"The current OS is not any of the following currently supported: {string.Join(", ", supported)}");
+    }
+
+    public void Cleanup(int tries = 5) => throw new NotImplementedException();
+}
+
+public class UnixTestHelper : VsTestHelper
+{
+    protected internal UnixTestHelper(IFileSystem fileSystem, ILogger logger, Func<OSPlatform, bool> isOsPlatform) : base(fileSystem, logger, isOsPlatform)
+    {
+    }
+
+    protected override Dictionary<OSPlatform, string> SearchNugetPackageFolders(IEnumerable<string> nugetPackageFolders,
+        bool versionDependent = true)
+    {
+        var vsTestPaths = new Dictionary<OSPlatform, string>();
+
+        var versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location)
+            .ProductVersion;
+        const string PortablePackageName = "microsoft.testplatform.portable";
+
+        foreach (var nugetPackageFolder in nugetPackageFolders)
+        {
+            var searchFolder = versionDependent
+                ? Path.Combine(nugetPackageFolder, PortablePackageName, versionString)
+                : nugetPackageFolder;
+            if (!_fileSystem.Directory.Exists(searchFolder))
+            {
+                continue;
+            }
+
+            var dllPath = FilePathUtils.NormalizePathSeparators(
+                _fileSystem.Directory.GetFiles(
+                    searchFolder,
+                    "vstest.console.dll",
+                    SearchOption.AllDirectories).FirstOrDefault());
+            if (_fileSystem.File.Exists(dllPath))
+            {
+                vsTestPaths[OSPlatform.Linux] = dllPath;
+                vsTestPaths[OSPlatform.OSX] = dllPath;
+                return vsTestPaths;
+            }
+        }
+
+        return vsTestPaths;
+    }
+}
+
+public class WindowsTestHelper : VsTestHelper
+{
+    protected internal WindowsTestHelper(IFileSystem fileSystem, ILogger logger, Func<OSPlatform, bool> isOsPlatform) : base(fileSystem, logger, isOsPlatform)
+    {
+    }
+
+    protected override Dictionary<OSPlatform, string> SearchNugetPackageFolders(IEnumerable<string> nugetPackageFolders,
+        bool versionDependent = true)
+    {
+        var vsTestPaths = new Dictionary<OSPlatform, string>();
+
+        var versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location)
+            .ProductVersion;
+        const string PortablePackageName = "microsoft.testplatform.portable";
+
+        foreach (var nugetPackageFolder in nugetPackageFolders)
+        {
+            var searchFolder = versionDependent
+                ? Path.Combine(nugetPackageFolder, PortablePackageName, versionString)
+                : nugetPackageFolder;
+            if (!_fileSystem.Directory.Exists(searchFolder))
+            {
+                continue;
+            }
+
+            var exePath = FilePathUtils.NormalizePathSeparators(
+                _fileSystem.Directory.GetFiles(
+                    searchFolder,
+                    "vstest.console.exe",
+                    SearchOption.AllDirectories).FirstOrDefault());
+
+
+            if (_fileSystem.File.Exists(exePath))
+            {
+                vsTestPaths[OSPlatform.Windows] = exePath;
+                return vsTestPaths;
+            }
+        }
+
+        return vsTestPaths;
     }
 }
