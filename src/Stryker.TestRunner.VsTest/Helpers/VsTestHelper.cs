@@ -44,7 +44,7 @@ public abstract class VsTestHelper : IVsTestHelper
         fileSystem ??= new FileSystem();
         isOsPlatform ??= RuntimeInformation.IsOSPlatform;
 
-        if (isOsPlatform(OSPlatform.Linux) || isOsPlatform(OSPlatform.OSX) || RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+        if (isOsPlatform(OSPlatform.Linux) || isOsPlatform(OSPlatform.OSX))
         {
             return new UnixTestHelper(fileSystem, logger);
         }
@@ -207,6 +207,36 @@ public abstract class VsTestHelper : IVsTestHelper
             }
         }
     }
+
+    protected string? FindVsTestConsole(IEnumerable<string> nugetPackageFolders, bool versionDependent, string vstestConsoleFileName)
+    {
+        var versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location)
+            .ProductVersion;
+        const string PortablePackageName = "microsoft.testplatform.portable";
+
+        foreach (var nugetPackageFolder in nugetPackageFolders)
+        {
+            var searchFolder = versionDependent
+                ? Path.Combine(nugetPackageFolder, PortablePackageName, versionString)
+                : nugetPackageFolder;
+            if (!_fileSystem.Directory.Exists(searchFolder))
+            {
+                continue;
+            }
+
+            var vsTestConsole = FilePathUtils.NormalizePathSeparators(
+                _fileSystem.Directory.GetFiles(
+                    searchFolder,
+                    vstestConsoleFileName,
+                    SearchOption.AllDirectories).FirstOrDefault());
+            if (_fileSystem.File.Exists(vsTestConsole))
+            {
+                return vsTestConsole;
+            }
+        }
+
+        return null;
+    }
 }
 
 public class NotSupportedTestHelper : IVsTestHelper
@@ -233,32 +263,7 @@ public class UnixTestHelper : VsTestHelper
     protected override string? SearchNugetPackageFolders(IEnumerable<string> nugetPackageFolders,
         bool versionDependent = true)
     {
-        var versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location)
-            .ProductVersion;
-        const string PortablePackageName = "microsoft.testplatform.portable";
-
-        foreach (var nugetPackageFolder in nugetPackageFolders)
-        {
-            var searchFolder = versionDependent
-                ? Path.Combine(nugetPackageFolder, PortablePackageName, versionString)
-                : nugetPackageFolder;
-            if (!_fileSystem.Directory.Exists(searchFolder))
-            {
-                continue;
-            }
-
-            var dllPath = FilePathUtils.NormalizePathSeparators(
-                _fileSystem.Directory.GetFiles(
-                    searchFolder,
-                    "vstest.console.dll",
-                    SearchOption.AllDirectories).FirstOrDefault());
-            if (_fileSystem.File.Exists(dllPath))
-            {
-                return dllPath;
-            }
-        }
-
-        return null;
+        return FindVsTestConsole(nugetPackageFolders, versionDependent, "vstest.console.dll");
     }
 }
 
@@ -271,33 +276,6 @@ public class WindowsTestHelper : VsTestHelper
     protected override string? SearchNugetPackageFolders(IEnumerable<string> nugetPackageFolders,
         bool versionDependent = true)
     {
-        var versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location)
-            .ProductVersion;
-        const string PortablePackageName = "microsoft.testplatform.portable";
-
-        foreach (var nugetPackageFolder in nugetPackageFolders)
-        {
-            var searchFolder = versionDependent
-                ? Path.Combine(nugetPackageFolder, PortablePackageName, versionString)
-                : nugetPackageFolder;
-            if (!_fileSystem.Directory.Exists(searchFolder))
-            {
-                continue;
-            }
-
-            var exePath = FilePathUtils.NormalizePathSeparators(
-                _fileSystem.Directory.GetFiles(
-                    searchFolder,
-                    "vstest.console.exe",
-                    SearchOption.AllDirectories).FirstOrDefault());
-
-
-            if (_fileSystem.File.Exists(exePath))
-            {
-                return exePath;
-            }
-        }
-
-        return null;
+        return FindVsTestConsole(nugetPackageFolders, versionDependent, "vstest.console.exe");
     }
 }
