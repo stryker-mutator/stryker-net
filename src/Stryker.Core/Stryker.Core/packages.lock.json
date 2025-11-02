@@ -177,9 +177,9 @@
       },
       "Serilog.Sinks.Console": {
         "type": "Direct",
-        "requested": "[6.1.0, )",
-        "resolved": "6.1.0",
-        "contentHash": "oAjAxGbaKWl3kdh/PHP/z6kQJv1hbTCeXDIztzW3J4KIQk1WpQietIlm4piJpPg4wKzOKqgpjFry5iMef33MBQ==",
+        "requested": "[6.1.1, )",
+        "resolved": "6.1.1",
+        "contentHash": "8jbqgjUyZlfCuSTaJk6lOca465OndqOz3KZP6Cryt/IqZYybyBu7GP0fE/AXBzrrQB3EBmQntBFAvMVz1COvAA==",
         "dependencies": {
           "Serilog": "4.0.0"
         }

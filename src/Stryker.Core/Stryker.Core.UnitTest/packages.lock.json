@@ -893,7 +893,7 @@
           "Serilog": "[4.3.0, )",
           "Serilog.Extensions.Logging": "[9.0.2, )",
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
-          "Serilog.Sinks.Console": "[6.1.0, )",
+          "Serilog.Sinks.Console": "[6.1.1, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.53.0, )",
           "Stryker.Abstractions": "[4.8.1, )",
@@ -1170,9 +1170,9 @@
       },
       "Serilog.Sinks.Console": {
         "type": "CentralTransitive",
-        "requested": "[6.1.0, )",
-        "resolved": "6.1.0",
-        "contentHash": "oAjAxGbaKWl3kdh/PHP/z6kQJv1hbTCeXDIztzW3J4KIQk1WpQietIlm4piJpPg4wKzOKqgpjFry5iMef33MBQ==",
+        "requested": "[6.1.1, )",
+        "resolved": "6.1.1",
+        "contentHash": "8jbqgjUyZlfCuSTaJk6lOca465OndqOz3KZP6Cryt/IqZYybyBu7GP0fE/AXBzrrQB3EBmQntBFAvMVz1COvAA==",
         "dependencies": {
           "Serilog": "4.0.0"
         }
