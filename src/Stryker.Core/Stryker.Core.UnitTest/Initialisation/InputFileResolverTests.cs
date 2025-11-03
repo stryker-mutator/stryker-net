@@ -19,6 +19,7 @@ using Stryker.Utilities.Buildalyzer;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Solutions;
 using Stryker.Utilities;
 using static NuGet.Frameworks.FrameworkConstants;
 
@@ -145,7 +146,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
         };
         BuildBuildAnalyzerMock(analyzerResults);
 
-        var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
+        var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object, _ => BuildSolution());
 
         var result = target.ResolveSourceProjectInfos(_options).First();
 
@@ -968,14 +969,16 @@ Please specify a test project name filter that results in one project.
     [DataRow("net3.0,net462", "net461,net2.0", "net3.0", "net3.0", "net2.0")]
     [DataRow("net3.0,net462", "net461,net2.0", "net461", "net3.0", "net2.0")]
     [DataRow("net3.0,net462", "net461,net2.0", "net462", "net462", "net461")]
-    public void ShouldSelectFrameworkBasedOnTestProject(string testFrameworks, string projectFrameworks, string targetFramework, string expectedTestFramework,string expectedFramework)
+    public void ShouldSelectFrameworkBasedOnTestProject(string testFrameworks, string projectFrameworks
+        , string targetFramework
+        , string expectedTestFramework,string expectedFramework)
     {
         // Arrange
         var basePath = Path.Combine(_sourcePath, "ExampleProject");
         var testProjectPath = Path.Combine(_sourcePath, "TestProjectFolder", "TestProject.csproj");
         var sourceProjectPath = Path.Combine(_sourcePath, "ExampleProject", "ExampleProject.csproj");
         var sourceProjectNameFilter = "ExampleProject.csproj";
-        
+
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
             { sourceProjectPath, new MockFileData(_defaultTestProjectFileContents)},

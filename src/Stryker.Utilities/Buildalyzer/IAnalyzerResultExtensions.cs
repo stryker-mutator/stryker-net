@@ -56,10 +56,12 @@ public static class IAnalyzerResultExtensions
 
     public static string TargetPlatform(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("TargetPlatform", "AnyCPU");
 
-    public static string MsBuildPath(this IAnalyzerResult analyzerResult) => analyzerResult.Analyzer?.EnvironmentFactory.GetBuildEnvironment()?.MsBuildExePath;
+    public static string? MsBuildPath(this IAnalyzerResult analyzerResult) => analyzerResult.Analyzer?.EnvironmentFactory.GetBuildEnvironment()?.MsBuildExePath;
 
     public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger)
     {
+        ArgumentNullException.ThrowIfNull(logger);
+
         var generators = new List<ISourceGenerator>();
         foreach (var analyzer in analyzerResult.AnalyzerReferences)
         {
@@ -67,16 +69,15 @@ public static class IAnalyzerResultExtensions
             {
                 var analyzerFileReference = new AnalyzerFileReference(analyzer, AnalyzerAssemblyLoader.Instance);
                 analyzerFileReference.AnalyzerLoadFailed += (sender, e) => LogAnalyzerLoadError(logger, sender, e);
-                foreach (var generator in analyzerFileReference.GetGenerators(LanguageNames.CSharp))
-                {
-                    generators.Add(generator);
-                }
+                generators.AddRange(analyzerFileReference.GetGenerators(LanguageNames.CSharp));
             }
             catch (Exception e)
             {
                 logger?.LogWarning(e,
-                    @"Analyzer/Generator assembly {analyzer} could not be loaded.
-Generated source code may be missing.", analyzer);
+                    """
+                    Analyzer/Generator assembly {analyzer} could not be loaded.
+                    Generated source code may be missing.
+                    """, analyzer);
             }
         }
 
@@ -84,9 +85,9 @@ Generated source code may be missing.", analyzer);
     }
 
     [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]
-    private static void LogAnalyzerLoadError(ILogger logger, object sender, AnalyzerLoadFailureEventArgs e)
+    private static void LogAnalyzerLoadError(ILogger? logger, object? sender, AnalyzerLoadFailureEventArgs e)
     {
-        var source = ((AnalyzerReference)sender)?.Display ?? "unknown";
+        var source = (sender as AnalyzerReference)?.Display ?? "unknown";
         logger?.LogWarning(
             "Failed to load analyzer '{Source}': {Message} (error : {Error}, analyzer: {Analyzer}).",
             source, e.Message, Enum.GetName(e.ErrorCode.GetType(), e.ErrorCode) ?? e.ErrorCode.ToString(),
@@ -119,33 +120,7 @@ Generated source code may be missing.", analyzer);
         }
     }
 
-    public sealed class AnalyzerAssemblyLoader : IAnalyzerAssemblyLoader
-    {
-        public static readonly IAnalyzerAssemblyLoader Instance = new AnalyzerAssemblyLoader();
-
-        private readonly Dictionary<string, Assembly> _cache = [];
-
-        private AnalyzerAssemblyLoader() { }
-
-        public void AddDependencyLocation(string fullPath)
-        {
-            if (!_cache.ContainsKey(fullPath))
-            {
-                _cache[fullPath] = Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
-            }
-        }
-
-        public Assembly LoadFromPath(string fullPath)
-        {
-            if (!_cache.TryGetValue(fullPath, out var assembly))
-            {
-                _cache[fullPath] = assembly = Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
-            }
-            return assembly;
-        }
-    }
-
-    public static NuGetFramework GetNuGetFramework(this IAnalyzerResult analyzerResult)
+    public static NuGetFramework? GetNuGetFramework(this IAnalyzerResult analyzerResult)
     {
         if (string.IsNullOrEmpty(analyzerResult.TargetFramework))
         {
@@ -177,9 +152,14 @@ Generated source code may be missing.", analyzer);
 
     private static readonly string[] knownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit"];
 
+    // checks if an analyzer result is valid
+    public static bool IsValid(this IAnalyzerResult br) => br.Succeeded || (br.SourceFiles.Length > 0 && br.References.Length > 0);
+
+    public static bool IsValidFor(this IAnalyzerResult br, string framework) => br.IsValid() && br.TargetFramework == framework;
+
     public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
 
-    public static bool IsTestProject(this IAnalyzerResult analyzerResult)
+    private static bool IsTestProject(this IAnalyzerResult analyzerResult)
     {
         if (!bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestProject"), out var isTestProject))
         {
@@ -266,8 +246,8 @@ Generated source code may be missing.", analyzer);
     public static int GetWarningLevel(this IAnalyzerResult analyzerResult) =>
         int.Parse(analyzerResult.GetPropertyOrDefault("WarningLevel", "4"));
 
-    public static string GetRootNamespace(this IAnalyzerResult analyzerResult) =>
-        analyzerResult.GetPropertyOrDefault("RootNamespace") ?? analyzerResult.GetAssemblyName();
+    private static string GetRootNamespace(this IAnalyzerResult analyzerResult) =>
+        analyzerResult.GetPropertyOrDefault("RootNamespace", analyzerResult.GetAssemblyName());
 
     public static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean)
     {
@@ -282,5 +262,31 @@ Generated source code may be missing.", analyzer);
         string defaultValue = default) =>
         analyzerResult.Properties.GetValueOrDefault(name, defaultValue);
 
-    private static IEnumerable<IProjectItem> GetItem(this IAnalyzerResult analyzerResult, string name) => !analyzerResult.Items.TryGetValue(name, out var item) ? [] : item;
+    private static IProjectItem[] GetItem(this IAnalyzerResult analyzerResult, string name) => !analyzerResult.Items.TryGetValue(name, out var item) ? [] : item;
+
+    private sealed class AnalyzerAssemblyLoader : IAnalyzerAssemblyLoader
+    {
+        public static readonly IAnalyzerAssemblyLoader Instance = new AnalyzerAssemblyLoader();
+
+        private readonly Dictionary<string, Assembly> _cache = [];
+
+        private AnalyzerAssemblyLoader() { }
+
+        public void AddDependencyLocation(string fullPath)
+        {
+            if (!_cache.ContainsKey(fullPath))
+            {
+                _cache[fullPath] = Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
+            }
+        }
+
+        public Assembly LoadFromPath(string fullPath)
+        {
+            if (!_cache.TryGetValue(fullPath, out var assembly))
+            {
+                _cache[fullPath] = assembly = Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
+            }
+            return assembly;
+        }
+    }
 }

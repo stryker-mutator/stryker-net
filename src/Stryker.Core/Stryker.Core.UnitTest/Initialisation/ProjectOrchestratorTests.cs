@@ -157,7 +157,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
 
         // assert
-        buildalyzerAnalyzerManagerMock.Verify(x => x.SetGlobalProperty("Configuration", "Release"), Times.Once());
+        buildalyzerAnalyzerManagerMock.Verify(x => x.SetGlobalProperty("Configuration", "Release"), Times.AtLeastOnce);
     }
 
     [TestMethod]
@@ -449,6 +449,6 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
         return new ProjectOrchestrator(_projectMutatorMock.Object,
             initialBuildProcessMock.Object,
-            new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object));
+            new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, null, _ => BuildSolution()));
     }
 }
