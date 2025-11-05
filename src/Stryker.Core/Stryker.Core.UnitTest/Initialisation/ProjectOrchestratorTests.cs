@@ -143,7 +143,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         };
 
         var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
-        var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, new[] { csPathName }).Object;
+        var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, [csPathName]).Object;
         var testProjectAnalyzerMock = TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object;
         // The analyzer finds two projects
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>

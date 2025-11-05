@@ -73,7 +73,7 @@ public class InitialisationProcess : IInitialisationProcess
             _initialBuildProcess.InitialBuild(
                 framework,
                 _inputFileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
-                options.SolutionPath, options.Configuration, options.MsBuildPath);
+                options.SolutionPath, options.Configuration, options.Platform, targetFramework: options.MsBuildPath);
         }
         else
         {
@@ -90,8 +90,8 @@ public class InitialisationProcess : IInitialisationProcess
                     testProjects[i].TargetsFullFramework(),
                     testProjects[i].ProjectFilePath,
                     options.SolutionPath,
-                    options.Configuration,
-                    options.MsBuildPath ?? testProjects[i].MsBuildPath());
+                    testProjects[i].GetProperty("Configuration"),
+                    targetFramework: options.MsBuildPath ?? testProjects[i].MsBuildPath());
             }
         }
 

@@ -64,7 +64,29 @@ public class StrykerOptions : IStrykerOptions
     /// <summary>
     /// The configuration (in the VS sense) that should be used when building the project under test.
     /// </summary>
-    public string Configuration { get; init; }
+    /// <remarks>it may also contain the platform in the form of <configuration>|<platform></remarks>
+    public string Configuration
+    {
+        get => _configuration;
+        init
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return;
+            }
+            var blocks= value.Split('|');
+            _configuration = blocks[0];
+            if (blocks.Length>1)
+            {
+                Platform = blocks[1];
+            }
+        }
+    }
+
+    /// <summary>
+    /// The desired platform..
+    /// </summary>
+    public string Platform { get; init; }
 
     /// <summary>
     /// The detected target framework for the current project under test.
@@ -231,5 +253,5 @@ public class StrykerOptions : IStrykerOptions
     public IProvideId MutantIdProvider {get; set;}
 
     private readonly string _workingDirectoryField;
-
+    private readonly string _configuration;
 }

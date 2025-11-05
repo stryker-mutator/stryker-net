@@ -76,7 +76,8 @@ public class InputFileResolver : IInputFileResolver
             _logger.LogInformation("Identifying projects to mutate in {solution}. This can take a while.", options.SolutionPath);
 
             // build all projects
-            var projectsWithDetails = solution.GetProjectsWithDetails(options.Configuration).Select(p => (p.file, p.buildType, options.TargetFramework)).ToList();
+            var projectsWithDetails = solution.GetProjectsWithDetails(options.Configuration, options.Platform)
+                .Select(p => (p.file, p.buildType, options.TargetFramework)).ToList();
             _logger.LogDebug("Analyzing {count} projects.", projectsWithDetails.Count);
             // we match test projects to mutable projects
             findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectsWithDetails, options, manager, ScanMode.NoScan));
