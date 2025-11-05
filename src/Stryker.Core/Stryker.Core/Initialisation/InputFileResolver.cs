@@ -78,7 +78,7 @@ public class InputFileResolver : IInputFileResolver
             // build all projects
             var projectsWithDetails = solution.GetProjectsWithDetails(options.Configuration, options.Platform)
                 .Select(p => (p.file, p.buildType, options.TargetFramework)).ToList();
-            _logger.LogDebug("Analyzing {count} projects.", projectsWithDetails.Count);
+            _logger.LogDebug("Analyzing {0} projects.", projectsWithDetails.Count);
             // we match test projects to mutable projects
             findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectsWithDetails, options, manager, ScanMode.NoScan));
 
@@ -90,7 +90,7 @@ public class InputFileResolver : IInputFileResolver
         var testProjectFileNames = options.TestProjects.Any() ? options.TestProjects.Select(FindTestProject).ToList()
                                                     : [FindTestProject(options.ProjectPath)];
 
-        _logger.LogInformation("Analyzing {count} test project(s).", testProjectFileNames.Count);
+        _logger.LogInformation("Analyzing {0} test project(s).", testProjectFileNames.Count);
          var projectList = new List<(string projectFile, string framework, string configuration)>(testProjectFileNames.Select(p => (p, options.TargetFramework, options.Configuration)));
         // we match test projects to mutable projects
         findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectList, options, manager, ScanMode.ScanTestProjectReferences));
@@ -301,8 +301,7 @@ public class InputFileResolver : IInputFileResolver
 
         if (options.DevMode)
         {
-            _logger.LogWarning("Project analysis failed. The MsBuild log is below.");
-            _logger.LogWarning(_buildalyzerLog.ToString());
+            _logger.LogWarning("Project analysis failed. The MsBuild log: {0}",_buildalyzerLog.ToString());
         }
 
         return buildResult;

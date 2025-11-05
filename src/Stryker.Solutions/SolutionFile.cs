@@ -74,6 +74,11 @@ public class SolutionFile
             Console.WriteLine(e);
             return null;
         }
+        return AnalyzeSolution(solution);
+    }
+
+    private static SolutionFile AnalyzeSolution(SolutionModel solution)
+    {
         // extract needed information
         var result = new SolutionFile();
         foreach (var buildType in solution.BuildTypes)
