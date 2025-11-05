@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -239,6 +240,7 @@ public static class IAnalyzerResultExtensions
 
         return diagnostics
             .Split(";")
+            .Select(x => x.Trim('\r', '\n', ' '))
             .Distinct()
             .Where(x => !string.IsNullOrWhiteSpace(x));
     }
