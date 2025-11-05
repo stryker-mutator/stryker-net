@@ -17,7 +17,7 @@ public class SolutionFile
     public IReadOnlyCollection<string> GetProjects(string buildType, string? platform = null)
         => _configurations
             .Where(entry => entry.Key.buildType == buildType && (platform == null || entry.Key.platform == platform))
-            .SelectMany( entry => entry.Value.Keys).ToImmutableList();
+            .SelectMany(entry => entry.Value.Keys).ToImmutableList();
 
     private const string DefaultBuildType = "Debug";
     private string? GetBuildType(string? buildType)
@@ -67,7 +67,8 @@ public class SolutionFile
         SolutionModel solution;
         try
         {
-            solution = serializer.OpenAsync(path, CancellationToken.None).Result;
+            solution = serializer.OpenAsync(path, CancellationToken.None).ConfigureAwait(false).GetAwaiter()
+                .GetResult();
         }
         catch (Exception e)
         {

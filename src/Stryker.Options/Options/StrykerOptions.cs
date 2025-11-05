@@ -74,7 +74,7 @@ public class StrykerOptions : IStrykerOptions
             {
                 return;
             }
-            var blocks= value.Split('|');
+            var blocks = value.Split('|');
             _configuration = blocks[0];
             if (blocks.Length>1)
             {

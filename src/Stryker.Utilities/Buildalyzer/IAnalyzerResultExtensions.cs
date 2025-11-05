@@ -76,7 +76,7 @@ public static class IAnalyzerResultExtensions
             {
                 logger?.LogWarning(e,
                     """
-                    Analyzer/Generator assembly {analyzer} could not be loaded.
+                    Analyzer/Generator assembly {0} could not be loaded.
                     Generated source code may be missing.
                     """, analyzer);
             }
@@ -249,7 +249,10 @@ public static class IAnalyzerResultExtensions
         int.Parse(analyzerResult.GetPropertyOrDefault("WarningLevel", "4"));
 
     private static string GetRootNamespace(this IAnalyzerResult analyzerResult) =>
-        analyzerResult.GetPropertyOrDefault("RootNamespace", analyzerResult.GetAssemblyName());
+        analyzerResult.Properties.TryGetValue("RootNamespace", out var rootNamespace) &&
+        !string.IsNullOrEmpty(rootNamespace)
+            ? rootNamespace
+            : analyzerResult.GetAssemblyName();
 
     public static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean)
     {

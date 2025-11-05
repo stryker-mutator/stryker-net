@@ -95,7 +95,7 @@ public class InputFileResolver : IInputFileResolver
         // we match test projects to mutable projects
         findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectList, options, manager, ScanMode.ScanTestProjectReferences));
 
-        if (findMutableAnalyzerResults.All( p => p.Value.All(r => !r.Succeeded)) )
+        if (findMutableAnalyzerResults.All(p => p.Value.All(r => !r.Succeeded)) )
         {
             // no mutable project found
             throw new InputException("No project references found. Please add a project reference to your test project and retry.");
@@ -190,7 +190,7 @@ public class InputFileResolver : IInputFileResolver
                             manager.GetProject(entry.projectFile), entry.framework, normalizedProjectUnderTestNameFilter,
                             mutableProjectsAnalyzerResults);
                         // scan references if recursive scan is enabled
-                        ScanReferences(mode, buildResult).ForEach( p => list.Add((p, null, options.Configuration)));
+                        ScanReferences(mode, buildResult).ForEach(p => list.Add((p, null, options.Configuration)));
                     }
                 );
             }

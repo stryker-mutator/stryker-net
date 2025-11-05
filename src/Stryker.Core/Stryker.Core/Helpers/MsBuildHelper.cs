@@ -84,7 +84,7 @@ public class MsBuildHelper
 
         if (!string.IsNullOrEmpty(platform))
         {
-            fullOptions.Add($"{(usingMsBuild ? "/": "--")}property:Platform={QuotesIfNeeded(platform)}");
+            fullOptions.Add($"{(usingMsBuild ? "/" : "--")}property:Platform={QuotesIfNeeded(platform)}");
         }
 
         if (options is not null)
