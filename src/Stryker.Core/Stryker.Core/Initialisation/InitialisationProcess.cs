@@ -73,7 +73,8 @@ public class InitialisationProcess : IInitialisationProcess
             _initialBuildProcess.InitialBuild(
                 framework,
                 _inputFileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
-                options.SolutionPath, options.Configuration, options.Platform, targetFramework: options.MsBuildPath);
+                options.SolutionPath, options.Configuration, options.Platform,
+                options.TargetFramework, options.MsBuildPath);
         }
         else
         {

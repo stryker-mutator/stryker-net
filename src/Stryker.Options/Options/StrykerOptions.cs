@@ -86,7 +86,7 @@ public class StrykerOptions : IStrykerOptions
     /// <summary>
     /// The desired platform..
     /// </summary>
-    public string Platform { get; init; }
+    public string Platform { get; private set; }
 
     /// <summary>
     /// The detected target framework for the current project under test.

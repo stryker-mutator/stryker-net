@@ -61,7 +61,7 @@ public class SolutionFile
 
         if (serializer == null)
         {
-            return null;
+            throw new InvalidOperationException($"No suitable solution serializer found for the given path ({path}).");
         }
 
         var solution = serializer.OpenAsync(path, CancellationToken.None).

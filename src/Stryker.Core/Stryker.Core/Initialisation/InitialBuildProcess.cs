@@ -65,6 +65,7 @@ public class InitialBuildProcess : IInitialBuildProcess
                 buildPath,
                 true,
                 configuration,
+                null,
                 "-t:restore -p:RestorePackagesConfig=true", forcedFramework: targetFramework);
 
             if (result.ExitCode != ExitCodes.Success)

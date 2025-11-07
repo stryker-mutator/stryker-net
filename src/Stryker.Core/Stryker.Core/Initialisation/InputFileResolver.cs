@@ -77,18 +77,18 @@ public class InputFileResolver : IInputFileResolver
             }
             catch (IOException e)
             {
-                _logger.LogError(e, "Failed to load solution file {solution}.", options.SolutionPath);
-                return null;
+                _logger.LogError(e, "Failed to load solution file {0}.", options.SolutionPath);
+                return [];
             }
             catch (UnauthorizedAccessException e)
             {
-                _logger.LogError(e, "Failed to access solution file {solution}.", options.SolutionPath);
-                return null;
+                _logger.LogError(e, "Failed to access solution file {0}.", options.SolutionPath);
+                return [];
             }
             catch (AggregateException e) // Handles exceptions from .Result on Task
             {
-                _logger.LogError(e, "Failed to load solution file {solution}.", options.SolutionPath);
-                return null;
+                _logger.LogError(e, "Failed to load solution file {0}.", options.SolutionPath);
+                return [];
             }
             _logger.LogInformation("Identifying projects to mutate in {solution}. This can take a while.", options.SolutionPath);
 
@@ -207,7 +207,7 @@ public class InputFileResolver : IInputFileResolver
                             manager.GetProject(entry.projectFile), entry.framework, normalizedProjectUnderTestNameFilter,
                             mutableProjectsAnalyzerResults);
                         // scan references if recursive scan is enabled
-                        ScanReferences(mode, buildResult).ForEach(p => list.Add((p, null, options.Configuration)));
+                        ScanReferences(mode, buildResult).ForEach(p => list.Add((p, entry.framework, options.Configuration)));
                     }
                 );
             }
