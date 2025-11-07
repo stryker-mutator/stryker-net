@@ -22,7 +22,7 @@ public class SolutionFile
     private const string DefaultBuildType = "Debug";
     private string? GetBuildType(string? buildType)
     {
-        if (!string.IsNullOrWhiteSpace(buildType) || _configurations.Count==0)
+        if (!string.IsNullOrWhiteSpace(buildType) || _configurations.Count == 0)
         {
             return buildType;
         }
@@ -64,17 +64,8 @@ public class SolutionFile
             return null;
         }
 
-        SolutionModel solution;
-        try
-        {
-            solution = serializer.OpenAsync(path, CancellationToken.None).ConfigureAwait(false).GetAwaiter()
-                .GetResult();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            return null;
-        }
+        var solution = serializer.OpenAsync(path, CancellationToken.None).
+            ConfigureAwait(false).GetAwaiter().GetResult();
         return AnalyzeSolution(solution);
     }
 

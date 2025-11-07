@@ -68,10 +68,27 @@ public class InputFileResolver : IInputFileResolver
         Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults;
         if (options.IsSolutionContext)
         {
-            var solution = _solutionProvider(options.SolutionPath);
-            if (solution == null)
+
+            SolutionFile solution;
+
+            try
             {
-                throw new GeneralStrykerException($"Failed to load solution file {options.SolutionPath}.");
+                solution = _solutionProvider(options.SolutionPath);
+            }
+            catch (IOException e)
+            {
+                _logger.LogError(e, "Failed to load solution file {solution}.", options.SolutionPath);
+                return null;
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                _logger.LogError(e, "Failed to access solution file {solution}.", options.SolutionPath);
+                return null;
+            }
+            catch (AggregateException e) // Handles exceptions from .Result on Task
+            {
+                _logger.LogError(e, "Failed to load solution file {solution}.", options.SolutionPath);
+                return null;
             }
             _logger.LogInformation("Identifying projects to mutate in {solution}. This can take a while.", options.SolutionPath);
 
