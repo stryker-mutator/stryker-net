@@ -257,6 +257,93 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
     }
 
     [TestMethod]
+    public void ShouldFailIfSolutionNotFound()
+    {
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectPath, new MockFileData(_defaultTestProjectFileContents) },
+            { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+            { Path.Combine(_sourcePath, "Recursive.cs"), new MockFileData(_sourceFile) },
+            { Path.Combine(_sourcePath, "Plain.cs"), new MockFileData(_sourceFile) },
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath,
+            fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, _sourceProjectPath, ["netcoreapp2.1"], success: false);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+        var options = new StrykerOptions()
+        {
+            ProjectPath = _sourcePath,
+            SolutionPath = Path.Combine(_sourcePath, "solution.nope")
+        };
+        var target = new InputFileResolver(fileSystem,
+            BuildalyzerProviderMock.Object,
+            _nugetMock.Object);
+
+        var action = () => target.ResolveSourceProjectInfos(options).First();
+        action.ShouldThrow<InvalidOperationException>();
+    }
+
+    [TestMethod]
+    public void ShouldFailIfSolutionLoadFails()
+    {
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>());
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath,
+            fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, _sourceProjectPath, ["netcoreapp2.1"], success: false);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+        var options = new StrykerOptions()
+        {
+            ProjectPath = _sourcePath,
+            SolutionPath = Path.Combine(_sourcePath, "solution.sln")
+        };
+        var target = new InputFileResolver(fileSystem,
+            BuildalyzerProviderMock.Object,
+            _nugetMock.Object, _ => throw new IOException("Failed to read solution"));
+
+        target.ResolveSourceProjectInfos(options).ShouldBeEmpty();
+    }
+    [TestMethod]
+    public void ShouldFailIfSolutionCantBeAccessed()
+    {
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>());
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath,
+            fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, _sourceProjectPath, ["netcoreapp2.1"], success: false);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+        var options = new StrykerOptions()
+        {
+            ProjectPath = _sourcePath,
+            SolutionPath = Path.Combine(_sourcePath, "solution.slnx")
+        };
+        var target = new InputFileResolver(fileSystem,
+            BuildalyzerProviderMock.Object,
+            _nugetMock.Object, _ => throw new UnauthorizedAccessException("Access forbidden"));
+
+        target.ResolveSourceProjectInfos(options).ShouldBeEmpty();
+    }
+
+    [TestMethod]
     public void InitializeShouldNotSkipXamlFiles()
     {
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>

@@ -133,6 +133,26 @@ public class InitialBuildProcessTests : TestBase
     }
 
     [TestMethod]
+    public void InitialBuildProcess_ShouldUseProvidedConfiguration()
+    {
+        var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+        var mockFileSystem = new MockFileSystem();
+
+        processMock.SetupProcessMockToReturn("");
+
+        var target = new InitialBuildProcess(processMock.Object, mockFileSystem);
+
+        target.InitialBuild(false, "/", "./ExampleProject.sln", "TheDebug");
+        processMock.Verify(x => x.Start(It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.Is<string>(argumentsParam => argumentsParam.Contains("-c TheDebug")),
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()),
+            Times.Once);
+    }
+
+
+    [TestMethod]
     public void InitialBuildProcess_ShouldRunDotnetBuildIfNotDotnetFramework()
     {
         var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);

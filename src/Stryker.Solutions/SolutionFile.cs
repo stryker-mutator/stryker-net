@@ -10,8 +10,6 @@ public class SolutionFile
 
     public HashSet<string> GetBuildTypes() => _configurations.Keys.Select(x => x.buildType).ToHashSet();
 
-    public HashSet<string> GetPlatforms() => _configurations.Keys.Select(x => x.platform).ToHashSet();
-
     public bool ConfigurationExists(string buildType, string? platform = null) => _configurations.Keys.Any(x => x.buildType == buildType && (platform == null || platform == x.platform));
 
     public IReadOnlyCollection<string> GetProjects(string buildType, string? platform = null)

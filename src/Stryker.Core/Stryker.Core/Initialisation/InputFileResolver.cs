@@ -68,7 +68,6 @@ public class InputFileResolver : IInputFileResolver
         Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults;
         if (options.IsSolutionContext)
         {
-
             SolutionFile solution;
 
             try
