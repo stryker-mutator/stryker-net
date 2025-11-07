@@ -92,7 +92,8 @@ public class InitialisationProcess : IInitialisationProcess
                     testProjects[i].ProjectFilePath,
                     options.SolutionPath,
                     testProjects[i].GetProperty("Configuration"),
-                    targetFramework: options.MsBuildPath ?? testProjects[i].MsBuildPath());
+                    testProjects[i].GetProperty("Platform"),
+                    msbuildPath: options.MsBuildPath ?? testProjects[i].MsBuildPath());
             }
         }
 

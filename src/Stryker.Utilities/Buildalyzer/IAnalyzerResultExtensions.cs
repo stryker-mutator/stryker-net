@@ -153,9 +153,19 @@ public static class IAnalyzerResultExtensions
 
     private static readonly string[] knownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit"];
 
-    // checks if an analyzer result is valid
+    /// <summary>
+    /// checks if an analyzer result is valid
+    /// </summary>
+    /// <param name="br"></param>
+    /// <returns>true if result is complete enough</returns>
     public static bool IsValid(this IAnalyzerResult br) => br.Succeeded || (br.SourceFiles.Length > 0 && br.References.Length > 0);
 
+    /// <summary>
+    /// checks if an analyzer result is valid for a specific framework
+    /// </summary>
+    /// <param name="br"></param>
+    /// <param name="framework">framework to test for</param>
+    /// <returns>true if result is complete enough</returns>
     public static bool IsValidFor(this IAnalyzerResult br, string framework) => br.IsValid() && br.TargetFramework == framework;
 
     public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
