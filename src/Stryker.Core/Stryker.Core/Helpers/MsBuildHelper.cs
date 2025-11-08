@@ -79,7 +79,7 @@ public class MsBuildHelper
         List<string> fullOptions = string.IsNullOrEmpty(command) ? [QuotesIfNeeded(projectFile)] : [command, QuotesIfNeeded(projectFile)];
         if (!string.IsNullOrEmpty(configuration))
         {
-            fullOptions.Add($"{(usingMsBuild ? "/property:Configuration=" : "-c ")+QuotesIfNeeded(configuration)}");
+            fullOptions.Add($"{(usingMsBuild ? "/property:Configuration=" : "-c ") + QuotesIfNeeded(configuration)}");
         }
 
         if (!string.IsNullOrEmpty(platform))

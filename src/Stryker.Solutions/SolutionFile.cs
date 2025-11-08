@@ -10,8 +10,20 @@ public class SolutionFile
 
     public HashSet<string> GetBuildTypes() => _configurations.Keys.Select(x => x.buildType).ToHashSet();
 
+    /// <summary>
+    /// Checks if a given configuration (and optional platform) is defined in the seolution
+    /// </summary>
+    /// <param name="buildType">solution configuration name (Debug, Release...)</param>
+    /// <param name="platform">platform (AnyCPU, x86, x64...)</param>
+    /// <returns>true if at least one project exists in this configuration (and platform if specified)</returns>
     public bool ConfigurationExists(string buildType, string? platform = null) => _configurations.Keys.Any(x => x.buildType == buildType && (platform == null || platform == x.platform));
 
+    /// <summary>
+    /// Gets all projects for a given solution configuration (and optional platform)
+    /// </summary>
+    /// <param name="buildType">solution configuration name (Debug, Release...)</param>
+    /// <param name="platform">platform (AnyCPU, x86, x64...)</param>
+    /// <returns>A collection of projects' filenames that are defined for this configuration.</returns>
     public IReadOnlyCollection<string> GetProjects(string buildType, string? platform = null)
         => _configurations
             .Where(entry => entry.Key.buildType == buildType && (platform == null || entry.Key.platform == platform))
@@ -26,6 +38,13 @@ public class SolutionFile
         }
         return ConfigurationExists(DefaultBuildType) ? DefaultBuildType : _configurations.Keys.First().buildType;
     }
+
+    /// <summary>
+    /// Gets all projects for a given solution configuration (and optional platform) with project details
+    /// </summary>
+    /// <param name="buildType">configuration name (Debug, Release...)</param>
+    /// <param name="platform">platform (AnyCPU, x86, x64...)</param>
+    /// <returns>A collection of tuple wi the projects' filename, project's configuration and project's platform for the provided criteria .</returns>
     public IReadOnlyCollection<(string file, string buildType, string platform)> GetProjectsWithDetails(string buildType, string? platform = null)
     {
         buildType = GetBuildType(buildType);
@@ -35,6 +54,12 @@ public class SolutionFile
             .ToImmutableList();
     }
 
+    /// <summary>
+    /// Create a solution file from a list of projects, assuming all projects are built in Debug|Any CPU
+    /// </summary>
+    /// <param name="projects">list of csproj filenames</param>
+    /// <returns>a solutoin instance</returns>
+    /// <remarks>this method is used for testing purposes, as the underlying solution parser do not support any form of mocking</remarks>
     public static SolutionFile BuildFromProjectList(List<string> projects)
     {
         var result = new SolutionFile();
@@ -52,6 +77,12 @@ public class SolutionFile
         return result;
     }
 
+    /// <summary>
+    /// Loads a solution file from disk
+    /// </summary>
+    /// <param name="path">path to a sln or slnx file</param>
+    /// <returns>a solution instance</returns>
+    /// <exception cref="InvalidOperationException">if the solution file format is not supported</exception>
     public static SolutionFile? LoadSolution(string path)
     {
         // Implementation to load a solution file

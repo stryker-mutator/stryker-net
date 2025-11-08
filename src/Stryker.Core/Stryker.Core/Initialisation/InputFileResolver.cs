@@ -107,7 +107,8 @@ public class InputFileResolver : IInputFileResolver
                                                     : [FindTestProject(options.ProjectPath)];
 
         _logger.LogInformation("Analyzing {0} test project(s).", testProjectFileNames.Count);
-         var projectList = new List<(string projectFile, string framework, string configuration)>(testProjectFileNames.Select(p => (p, options.TargetFramework, options.Configuration)));
+         List<(string projectFile, string framework, string configuration)> projectList =
+             [..testProjectFileNames.Select(p => (p, options.TargetFramework, options.Configuration))];
         // we match test projects to mutable projects
         findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectList, options, manager, ScanMode.ScanTestProjectReferences));
 

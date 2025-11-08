@@ -84,7 +84,7 @@ public class StrykerOptions : IStrykerOptions
     }
 
     /// <summary>
-    /// The desired platform..
+    /// The desired platform.
     /// </summary>
     public string Platform { get; private set; }
 
