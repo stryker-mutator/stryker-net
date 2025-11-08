@@ -76,7 +76,7 @@ public class StrykerOptions : IStrykerOptions
             }
             var blocks = value.Split('|');
             _configuration = blocks[0];
-            if (blocks.Length>1)
+            if (blocks.Length > 1)
             {
                 Platform = blocks[1];
             }
