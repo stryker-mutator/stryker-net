@@ -199,6 +199,38 @@ internal static class RoslynHelper
                    && (child.Parent is not LocalFunctionStatementSyntax localFunction || localFunction.ExpressionBody != child);
         } ).Any(predicate);
 
+
+    /// <summary>
+    /// Ensure a statement is in a syntax bock.
+    /// </summary>
+    /// <param name="statement">the statement to put into a block.</param>
+    /// <returns>a block containing <paramref name="statement"/>, or <paramref name="statement"/> if it is already a block</returns>
+    public static BlockSyntax AsBlock(this StatementSyntax statement) => statement as BlockSyntax ?? SyntaxFactory.Block(statement);
+
+    /// <summary>
+    /// Ensure an expression is in a syntax bock.
+    /// </summary>
+    /// <param name="expression">the expression to put into a block.</param>
+    /// <returns>a block containing <paramref name="expression"/></returns>
+    public static BlockSyntax AsBlock(this ExpressionSyntax expression) =>SyntaxFactory.ExpressionStatement(expression).AsBlock();
+
+    /// <summary>
+    /// Ensure a <see cref="SyntaxNode"/> is followed by a trailing newline
+    /// </summary>
+    /// <typeparam name="T">Type of node, must be a SyntaxNode</typeparam>
+    /// <param name="node">Node</param>
+    /// <returns><paramref name="node"/> with a trailing newline</returns>
+    public static T WithTrailingNewLine<T>(this T node) where T: SyntaxNode
+        => node.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+
+
+    public static ClassDeclarationSyntax RemoveNamedMember(this ClassDeclarationSyntax classNode, string memberName) =>
+        classNode.RemoveNode(classNode.Members.First( m => m switch
+        {
+            MethodDeclarationSyntax method => method.Identifier.ToString() == memberName,
+            PropertyDeclarationSyntax field => field.Identifier.ToString() == memberName,
+            _ => false
+        }), SyntaxRemoveOptions.KeepNoTrivia);
         /// <summary>
     /// Cleaned trivia from a node
     /// </summary>
