@@ -11,7 +11,7 @@ public class SolutionFile
     public HashSet<string> GetBuildTypes() => _configurations.Keys.Select(x => x.buildType).ToHashSet();
 
     /// <summary>
-    /// Checks if a given configuration (and optional platform) is defined in the seolution
+    /// Checks if a given configuration (and optional platform) is defined in the solution
     /// </summary>
     /// <param name="buildType">solution configuration name (Debug, Release...)</param>
     /// <param name="platform">platform (AnyCPU, x86, x64...)</param>
@@ -30,13 +30,14 @@ public class SolutionFile
             .SelectMany(entry => entry.Value.Keys).ToImmutableList();
 
     private const string DefaultBuildType = "Debug";
+
     private string? GetBuildType(string? buildType)
     {
-        if (!string.IsNullOrWhiteSpace(buildType) || _configurations.Count == 0)
+        if (!string.IsNullOrWhiteSpace(buildType))
         {
             return buildType;
         }
-        return ConfigurationExists(DefaultBuildType) ? DefaultBuildType : _configurations.Keys.First().buildType;
+        return (_configurations.Count == 0 || ConfigurationExists(DefaultBuildType)) ? DefaultBuildType : _configurations.Keys.First().buildType;
     }
 
     /// <summary>
@@ -44,7 +45,7 @@ public class SolutionFile
     /// </summary>
     /// <param name="buildType">configuration name (Debug, Release...)</param>
     /// <param name="platform">platform (AnyCPU, x86, x64...)</param>
-    /// <returns>A collection of tuple wi the projects' filename, project's configuration and project's platform for the provided criteria .</returns>
+    /// <returns>A collection of tuple with the projects' filename, project's configuration and project's platform for the provided criteria .</returns>
     public IReadOnlyCollection<(string file, string buildType, string platform)> GetProjectsWithDetails(string buildType, string? platform = null)
     {
         buildType = GetBuildType(buildType);
@@ -58,7 +59,7 @@ public class SolutionFile
     /// Create a solution file from a list of projects, assuming all projects are built in Debug|Any CPU
     /// </summary>
     /// <param name="projects">list of csproj filenames</param>
-    /// <returns>a solutoin instance</returns>
+    /// <returns>a solution instance</returns>
     /// <remarks>this method is used for testing purposes, as the underlying solution parser do not support any form of mocking</remarks>
     public static SolutionFile BuildFromProjectList(List<string> projects)
     {

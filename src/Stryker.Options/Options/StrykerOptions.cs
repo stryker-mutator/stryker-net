@@ -72,6 +72,7 @@ public class StrykerOptions : IStrykerOptions
         {
             if (string.IsNullOrWhiteSpace(value))
             {
+                _configuration = null;
                 return;
             }
             var blocks = value.Split('|');

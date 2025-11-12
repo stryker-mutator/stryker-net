@@ -74,7 +74,7 @@ public static class IAnalyzerResultExtensions
             }
             catch (Exception e)
             {
-                logger?.LogWarning(e,
+                logger.LogWarning(e,
                     """
                     Analyzer/Generator assembly {0} could not be loaded.
                     Generated source code may be missing.
@@ -156,14 +156,14 @@ public static class IAnalyzerResultExtensions
     /// <summary>
     /// checks if an analyzer result is valid
     /// </summary>
-    /// <param name="br"></param>
+    /// <param name="br">analyzer result used for determination</param>
     /// <returns>true if result is complete enough</returns>
     public static bool IsValid(this IAnalyzerResult br) => br.Succeeded || (br.SourceFiles.Length > 0 && br.References.Length > 0);
 
     /// <summary>
     /// checks if an analyzer result is valid for a specific framework
     /// </summary>
-    /// <param name="br"></param>
+    /// <param name="br">analyzer result used for determination</param>
     /// <param name="framework">framework to test for</param>
     /// <returns>true if result is complete enough</returns>
     public static bool IsValidFor(this IAnalyzerResult br, string framework) => br.IsValid() && br.TargetFramework == framework;
