@@ -47,7 +47,7 @@ if ($LASTEXITCODE -ne 0) {
 pushd $netCoreTargetPath
 
 try {
-  & $stryker --dev-mode
+  & $stryker --diag
 } finally {
   popd
 }
@@ -66,7 +66,7 @@ if ($IsWindows) {
       throw "dotnet msbuild failed to restore NuGet packages with exit code ${LASTEXITCODE}"
     }
 
-    & $stryker --dev-mode
+    & $stryker --diag
 
     if ($LASTEXITCODE -ne 0) {
       throw "dotnet-stryker failed for .NET Framework with exit code ${LASTEXITCODE}"

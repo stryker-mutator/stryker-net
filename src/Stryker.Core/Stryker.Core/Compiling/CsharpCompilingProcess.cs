@@ -182,7 +182,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
             if (previousEmitResult != null)
             {
                 // remove broken mutations
-                rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, lastAttempt, _options.DevMode);
+                rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, lastAttempt, _options.DiagMode);
                 compilation = rollbackProcessResult.Compilation;
             }
 
