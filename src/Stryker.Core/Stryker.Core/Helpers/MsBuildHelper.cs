@@ -72,14 +72,19 @@ public class MsBuildHelper
     }
 
     public (ProcessResult result, string exe, string command) BuildProject(string path, string projectFile, bool usingMsBuild
-        , string configuration = null, string options = null, string forcedFramework = null)
+        , string configuration = null, string platform = null, string options = null, string forcedFramework = null)
     {
         var (exe, command) = usingMsBuild ? GetMsBuildExeAndCommand() : ("dotnet", "build");
 
         List<string> fullOptions = string.IsNullOrEmpty(command) ? [QuotesIfNeeded(projectFile)] : [command, QuotesIfNeeded(projectFile)];
         if (!string.IsNullOrEmpty(configuration))
         {
-            fullOptions.Add(usingMsBuild ? $"/property:Configuration={QuotesIfNeeded(configuration)}" : $"-c {QuotesIfNeeded(configuration)}");
+            fullOptions.Add($"{(usingMsBuild ? "/property:Configuration=" : "-c ") + QuotesIfNeeded(configuration)}");
+        }
+
+        if (!string.IsNullOrEmpty(platform))
+        {
+            fullOptions.Add($"{(usingMsBuild ? "/" : "--")}property:Platform={QuotesIfNeeded(platform)}");
         }
 
         if (options is not null)
