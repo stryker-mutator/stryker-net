@@ -50,12 +50,12 @@
       },
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "Direct",
-        "requested": "[9.0.10, )",
-        "resolved": "9.0.10",
-        "contentHash": "MFUPv/nN1rAQ19w43smm6bbf0JDYN/1HEPHoiMYY50pvDMFpglzWAuoTavByDmZq7UuhjaxwrET3joU69ZHoHQ==",
+        "requested": "[9.0.11, )",
+        "resolved": "9.0.11",
+        "contentHash": "UKWFTDwtZQIoypyt1YPVsxTnDK+0sKn26+UeSGeNlkRQddrkt9EC6kP4g94rgO/WOZkz94bKNlF1dVZN3QfPFQ==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.10",
-          "System.Diagnostics.DiagnosticSource": "9.0.10"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.11",
+          "System.Diagnostics.DiagnosticSource": "9.0.11"
         }
       },
       "Mono.Cecil": {
@@ -133,8 +133,8 @@
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "Transitive",
-        "resolved": "9.0.10",
-        "contentHash": "r9waLiOPe9ZF1PvzUT+RDoHvpMmY8MW+lb4lqjYGObwKpnyPMLI3odVvlmshwuZcdoHynsGWOrCPA0hxZ63lIA=="
+        "resolved": "9.0.11",
+        "contentHash": "+ZxxZzcVU+IEzq12GItUzf/V3mEc5nSLiXijwvDc4zyhbjvSZZ043giSZqGnhakrjwRWjkerIHPrRwm9okEIpw=="
       },
       "Microsoft.Extensions.Options": {
         "type": "Transitive",
@@ -196,8 +196,8 @@
       },
       "System.Diagnostics.DiagnosticSource": {
         "type": "Transitive",
-        "resolved": "9.0.10",
-        "contentHash": "uIpKiKp7EWlYZBK71jYP+maGYjDY9YTi/FxBlZoqDzM1ZHZB7gLqUm4jHvRFwaKfR1/Lrt2rQih9LGPIKyNEow=="
+        "resolved": "9.0.11",
+        "contentHash": "/QzMFklOm8Ak//YB0I2kR+ByxUndT63ucrRWQm0xZsuLExJWrVDeGKtYZDuBackd9dThbwMdOotIEc4c4KwJiw=="
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
@@ -307,7 +307,7 @@
       },
       "Microsoft.Extensions.Logging": {
         "type": "CentralTransitive",
-        "requested": "[9.0.10, )",
+        "requested": "[9.0.11, )",
         "resolved": "6.0.0",
         "contentHash": "eIbyj40QDg1NDz0HBW0S5f3wrLVnKWnDJ/JtZ+yJDFnDj90VoPuoPmFkeaXrtu+0cKm5GRAwoDf+dBWXK0TUdg==",
         "dependencies": {
