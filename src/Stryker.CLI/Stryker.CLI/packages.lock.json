@@ -650,7 +650,7 @@
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
           "Serilog.Sinks.Console": "[6.1.1, )",
           "ShellProgressBar": "[5.2.0, )",
-          "Spectre.Console": "[0.53.0, )",
+          "Spectre.Console": "[0.54.0, )",
           "Stryker.Abstractions": "[4.8.1, )",
           "Stryker.Configuration": "[4.8.1, )",
           "Stryker.DataCollector": "[4.8.1, )",
@@ -938,9 +938,9 @@
       },
       "Spectre.Console": {
         "type": "CentralTransitive",
-        "requested": "[0.53.0, )",
-        "resolved": "0.53.0",
-        "contentHash": "m2iv8Egfywp7FaNLKCmCFHbSf36D4ctzZKvlAK9NXMyGLh6L+CnrZWK8o+LOYsoAS1jtoHn0W1BT0W8vuq/FUw=="
+        "requested": "[0.54.0, )",
+        "resolved": "0.54.0",
+        "contentHash": "StDXCFayfy0yB1xzUHT2tgEpV1/HFTiS4JgsAQS49EYTfMixSwwucaQs/bIOCwXjWwIQTMuxjUIxcB5XsJkFJA=="
       },
       "Stryker.Regex.Parser": {
         "type": "CentralTransitive",
