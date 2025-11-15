@@ -56,7 +56,7 @@ internal static class CommentParser
                 else
                 {
                     Logger.LogError(
-                        "{Label} not recognized as a mutator at {Location}, {FilePath}. Legal values are {LegalValues}.",
+                        "{Label} not recognized as a mutator at {0}, {1}. Legal values are {2}.",
                         labels[i],
                         node.GetLocation().GetMappedLineSpan().StartLinePosition,
                         node.SyntaxTree.FilePath,
@@ -99,12 +99,12 @@ internal static class CommentParser
         {
             return InterpretStrykerComment(node, context, commentTrivia);
         }
-        catch (TimeoutException)
+        catch (TimeoutException exception)
         {
             Logger.LogWarning(
-                "Parsing Stryker comments at {0}, {1} took too long to parse and was ignored.",
+                "Parsing Stryker comments at {0}, {1} took too long to parse and was ignored ({2}). Comment: {3}",
                 node.GetLocation().GetMappedLineSpan().StartLinePosition,
-                node.SyntaxTree.FilePath);
+                node.SyntaxTree.FilePath, exception.Message, commentTrivia);
             return null;
         }
     }
