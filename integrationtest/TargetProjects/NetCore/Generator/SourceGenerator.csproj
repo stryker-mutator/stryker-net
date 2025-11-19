@@ -7,7 +7,7 @@
   
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces"
-        Version="4.14.0"
+        Version="5.0.0"
         PrivateAssets="all" />
   </ItemGroup>
 </Project>
