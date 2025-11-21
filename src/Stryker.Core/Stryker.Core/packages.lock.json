@@ -140,9 +140,9 @@
       },
       "NuGet.Frameworks": {
         "type": "Direct",
-        "requested": "[6.14.0, )",
-        "resolved": "6.14.0",
-        "contentHash": "xZ37J58DQAkVUX29qoMwla26iBYRScdcfSGNe1FIZjCX1tpafN9n7TinrkRxaJqYzW0D8Ob8a3eRSYhwEUauCA=="
+        "requested": "[7.0.0, )",
+        "resolved": "7.0.0",
+        "contentHash": "y63Mw1UhQ2Qkwj8LBAk9t+ciFd74biaVpFMQywBrCQC7Y53k41qTI5DJKPtnveH65uA2bnj5h30gMI6lMp7Wcg=="
       },
       "Serilog": {
         "type": "Direct",
