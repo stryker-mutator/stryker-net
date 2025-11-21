@@ -32,6 +32,7 @@ public interface IStrykerOptions
     MutationLevel MutationLevel { get; init; }
     OptimizationModes OptimizationMode { get; init; }
     string OutputPath { get; init; }
+    string Platform { get; }
     string ProjectName { get; set; }
     string ProjectPath { get; init; }
     string ProjectVersion { get; set; }

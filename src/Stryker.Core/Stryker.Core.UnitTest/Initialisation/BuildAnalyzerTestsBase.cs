@@ -7,6 +7,7 @@ using Buildalyzer;
 using Buildalyzer.Construction;
 using Buildalyzer.Environment;
 using Moq;
+using Stryker.Solutions;
 using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation;
@@ -26,6 +27,9 @@ public class BuildAnalyzerTestsBase : TestBase
 
         ProjectPath = FileSystem.Path.Combine(filesystemRoot, "sourceproject");
     }
+
+    protected SolutionFile BuildSolution() => SolutionFile.BuildFromProjectList(_projectCache.Keys.ToList());
+
 
     /// <summary>
     /// Build a simple production project
@@ -288,6 +292,7 @@ public class BuildAnalyzerTestsBase : TestBase
         buildalyzerAnalyzerManagerMock.Setup(x => x.Projects)
             .Returns(analyzerResults);
         buildalyzerAnalyzerManagerMock.Setup(x => x.SetGlobalProperty(It.IsAny<string>(), It.IsAny<string>()));
+        buildalyzerAnalyzerManagerMock.Setup(x => x.RemoveGlobalProperty(It.IsAny<string>()));
         buildalyzerAnalyzerManagerMock.Setup(x => x.SolutionFilePath).Returns((string)null);
 
         foreach (var analyzerResult in analyzerResults)
@@ -296,7 +301,7 @@ public class BuildAnalyzerTestsBase : TestBase
             buildalyzerAnalyzerManagerMock.Setup(x => x.GetProject(filename)).Returns(analyzerResult.Value);
         }
 
-        BuildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerManagerOptions>()))
+        BuildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<AnalyzerManagerOptions>()))
             .Returns(buildalyzerAnalyzerManagerMock.Object);
         BuildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<AnalyzerManagerOptions>()))
             .Returns(buildalyzerAnalyzerManagerMock.Object);

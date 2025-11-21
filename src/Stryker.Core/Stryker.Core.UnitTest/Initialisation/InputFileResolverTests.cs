@@ -19,6 +19,7 @@ using Stryker.Utilities.Buildalyzer;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Solutions;
 using Stryker.Utilities;
 using static NuGet.Frameworks.FrameworkConstants;
 
@@ -145,7 +146,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
         };
         BuildBuildAnalyzerMock(analyzerResults);
 
-        var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
+        var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object, _ => BuildSolution());
 
         var result = target.ResolveSourceProjectInfos(_options).First();
 
@@ -253,6 +254,93 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 
         var action = () => target.ResolveSourceProjectInfos(_options).First();
         action.ShouldThrow<InputException>();
+    }
+
+    [TestMethod]
+    public void ShouldFailIfSolutionNotFound()
+    {
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectPath, new MockFileData(_defaultTestProjectFileContents) },
+            { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+            { Path.Combine(_sourcePath, "Recursive.cs"), new MockFileData(_sourceFile) },
+            { Path.Combine(_sourcePath, "Plain.cs"), new MockFileData(_sourceFile) },
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath,
+            fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, _sourceProjectPath, ["netcoreapp2.1"], success: false);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+        var options = new StrykerOptions()
+        {
+            ProjectPath = _sourcePath,
+            SolutionPath = Path.Combine(_sourcePath, "solution.nope")
+        };
+        var target = new InputFileResolver(fileSystem,
+            BuildalyzerProviderMock.Object,
+            _nugetMock.Object);
+
+        var action = () => target.ResolveSourceProjectInfos(options).First();
+        action.ShouldThrow<InvalidOperationException>();
+    }
+
+    [TestMethod]
+    public void ShouldFailIfSolutionLoadFails()
+    {
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>());
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath,
+            fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, _sourceProjectPath, ["netcoreapp2.1"], success: false);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+        var options = new StrykerOptions()
+        {
+            ProjectPath = _sourcePath,
+            SolutionPath = Path.Combine(_sourcePath, "solution.sln")
+        };
+        var target = new InputFileResolver(fileSystem,
+            BuildalyzerProviderMock.Object,
+            _nugetMock.Object, _ => throw new IOException("Failed to read solution"));
+
+        target.ResolveSourceProjectInfos(options).ShouldBeEmpty();
+    }
+    [TestMethod]
+    public void ShouldFailIfSolutionCantBeAccessed()
+    {
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>());
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath,
+            fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, _sourceProjectPath, ["netcoreapp2.1"], success: false);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+        var options = new StrykerOptions()
+        {
+            ProjectPath = _sourcePath,
+            SolutionPath = Path.Combine(_sourcePath, "solution.slnx")
+        };
+        var target = new InputFileResolver(fileSystem,
+            BuildalyzerProviderMock.Object,
+            _nugetMock.Object, _ => throw new UnauthorizedAccessException("Access forbidden"));
+
+        target.ResolveSourceProjectInfos(options).ShouldBeEmpty();
     }
 
     [TestMethod]
@@ -968,14 +1056,16 @@ Please specify a test project name filter that results in one project.
     [DataRow("net3.0,net462", "net461,net2.0", "net3.0", "net3.0", "net2.0")]
     [DataRow("net3.0,net462", "net461,net2.0", "net461", "net3.0", "net2.0")]
     [DataRow("net3.0,net462", "net461,net2.0", "net462", "net462", "net461")]
-    public void ShouldSelectFrameworkBasedOnTestProject(string testFrameworks, string projectFrameworks, string targetFramework, string expectedTestFramework,string expectedFramework)
+    public void ShouldSelectFrameworkBasedOnTestProject(string testFrameworks, string projectFrameworks
+        , string targetFramework
+        , string expectedTestFramework,string expectedFramework)
     {
         // Arrange
         var basePath = Path.Combine(_sourcePath, "ExampleProject");
         var testProjectPath = Path.Combine(_sourcePath, "TestProjectFolder", "TestProject.csproj");
         var sourceProjectPath = Path.Combine(_sourcePath, "ExampleProject", "ExampleProject.csproj");
         var sourceProjectNameFilter = "ExampleProject.csproj";
-        
+
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
             { sourceProjectPath, new MockFileData(_defaultTestProjectFileContents)},

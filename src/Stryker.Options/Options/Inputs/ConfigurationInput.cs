@@ -5,7 +5,7 @@ namespace Stryker.Abstractions.Options.Inputs;
 public class ConfigurationInput : Input<string>
 {
     public override string Default => null;
-    protected override string Description => "Configuration to use when building the project(s).";
+    protected override string Description => "Configuration to use when building the project(s) (e.g., 'Debug' or 'Release'). If not specified, the default configuration of the project(s) will be used.";
 
     public string Validate()
     {
@@ -13,10 +13,7 @@ public class ConfigurationInput : Input<string>
         {
             return Default;
         }
-        if (string.IsNullOrWhiteSpace(SuppliedInput))
-        {
-            throw new InputException("Please provide a non whitespace only configuration.");
-        }
-        return SuppliedInput; 
+
+        return SuppliedInput;
     }
 }

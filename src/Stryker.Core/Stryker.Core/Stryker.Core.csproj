@@ -95,6 +95,7 @@
     <ProjectReference Include="..\..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
     <ProjectReference Include="..\..\Stryker.Options\Stryker.Configuration.csproj" />
     <ProjectReference Include="..\..\Stryker.RegexMutators\Stryker.RegexMutators\Stryker.RegexMutators.csproj" />
+    <ProjectReference Include="..\..\Stryker.Solutions\Stryker.Solutions.csproj" />
     <ProjectReference Include="..\..\Stryker.TestRunner.VsTest\Stryker.TestRunner.VsTest.csproj" />
     <ProjectReference Include="..\..\Stryker.Utilities\Stryker.Utilities.csproj" />
   </ItemGroup>
