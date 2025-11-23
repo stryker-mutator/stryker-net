@@ -61,12 +61,12 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[22.0.16, )",
-        "resolved": "22.0.16",
-        "contentHash": "dIZ2qtrvWbilx2HGkBIp5LNZmEZT2rve2M/NEg3RAzR4WbTa/Gis1x/qRggnoqfDrZ0VnPaybJJKh6r9POQ1EQ==",
+        "requested": "[22.1.0, )",
+        "resolved": "22.1.0",
+        "contentHash": "320o0GORJV6VDFyKL7e7At+CTBFciFKKwgFYthCAPNKnlZLqyY68NKGQ+h4xTVf5y6qBtIsV3ap+Qog7VzF65g==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions.Wrappers": "22.0.16",
-          "Testably.Abstractions.FileSystem.Interface": "9.0.0"
+          "TestableIO.System.IO.Abstractions.Wrappers": "22.1.0",
+          "Testably.Abstractions.FileSystem.Interface": "10.0.0"
         }
       },
       "Azure.Core": {
