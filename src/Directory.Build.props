@@ -2,6 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <!--
+      Suppress warnings to prevent GitHub Actions from showing check annotations on unchanged files.
+      See: https://github.com/stryker-mutator/stryker-net/issues/3363
+    -->
+    <!-- Nullable reference warnings -->
+    <NoWarn>$(NoWarn);CS8600;CS8601;CS8602;CS8603;CS8604;CS8605;CS8618;CS8620;CS8622;CS8625;CS8629;CS8765;CS8767</NoWarn>
+    <!-- Other warnings -->
+    <NoWarn>$(NoWarn);CS0067;MSTEST0003;MSTEST0044</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
