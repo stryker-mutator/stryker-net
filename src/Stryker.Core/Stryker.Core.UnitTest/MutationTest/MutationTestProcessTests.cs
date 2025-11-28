@@ -230,7 +230,10 @@ public class MutationTestProcessTests : TestBase
         target.Initialize(_input, options, null);
         target.GetCoverage();
 
-        target.Test(_input.SourceProjectInfo.ProjectContents.Mutants.Where(m => m.ResultStatus == MutantStatus.Pending));
+        var mutantsToTest = _input.SourceProjectInfo.ProjectContents.Mutants
+            .Where(m => m.ResultStatus == MutantStatus.Pending)
+            .ToList();
+        target.Test(mutantsToTest);
         // first mutant should be killed by test 2
         _testScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Killed);
         // other mutant survives
@@ -291,21 +294,21 @@ public class MutationTestProcessTests : TestBase
     public void ShouldNotKillMutantIfOnlyCoveredByFailingTest()
     {
         var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
-        _testScenario.CreateMutants(1, 2);
+        _testScenario.CreateMutants(1);
 
         _folder.Add(new CsharpFileLeaf()
         {
             SourceCode = SourceFile,
             Mutants = _testScenario.GetMutants()
         });
-        _testScenario.CreateTests(1, 2, 3);
+        _testScenario.CreateTests(1, 2);
 
         // mutant 1 is covered by both tests
-        _testScenario.DeclareCoverageForMutant(1, 1, 2, 3);
+        _testScenario.DeclareCoverageForMutant(1, 1, 2);
         // mutant 2 is covered only by test 1
-        _testScenario.DeclareTestsFailingAtInit(1, 2, 3);
+        _testScenario.DeclareTestsFailingAtInit(1, 2);
         // test 1 succeeds, test 2 fails
-        _testScenario.DeclareTestsFailingWhenTestingMutant(1, 1, 2, 3);
+        _testScenario.DeclareTestsFailingWhenTestingMutant(1, 1, 2);
         var runnerMock = _testScenario.GetTestRunnerMock();
 
         // setup coverage
@@ -327,7 +330,6 @@ public class MutationTestProcessTests : TestBase
         // test mutants
         target.Initialize(_input, options, null);
         target.GetCoverage();
-        target.Test(_input.SourceProjectInfo.ProjectContents.Mutants);
 
         // first mutant should be marked as survived without any test
         _testScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
