@@ -539,8 +539,8 @@ public class Calculator
             MutationLevel = MutationLevel.Complete,
             OptimizationMode = OptimizationModes.CoverageBasedTest,
         };
-        var process = new CsharpMutationProcess(fileSystem, options);
-        process.Mutate(input);
+        var process = new CsharpMutationProcess(fileSystem, TestLoggerFactory.CreateLogger<CsharpMutationProcess>());
+        process.Mutate(input, options);
 
         var projectContentsMutants = input.SourceProjectInfo.ProjectContents.Mutants;
         return projectContentsMutants;
