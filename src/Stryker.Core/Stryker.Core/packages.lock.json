@@ -223,11 +223,11 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "Direct",
-        "requested": "[22.0.16, )",
-        "resolved": "22.0.16",
-        "contentHash": "QUX0TLMvnRLEgvuMRotrZKN9eCdX4yzK7HJCaPj17T4jvUf+G4XifdLpB5wmRct2zKlscYzpWMOmHjKabse3yw==",
+        "requested": "[22.1.0, )",
+        "resolved": "22.1.0",
+        "contentHash": "IsW3jQqIiTN4GwdWFx+dzgRL5XR75UDTFVGuuIackPf2d7eH0KKyrx4wuIoASa1XnS9zhgLP39FKwJq6nbbx1w==",
         "dependencies": {
-          "Testably.Abstractions.FileSystem.Interface": "9.0.0"
+          "Testably.Abstractions.FileSystem.Interface": "10.0.0"
         }
       },
       "Azure.Core": {
@@ -770,8 +770,8 @@
       },
       "Testably.Abstractions.FileSystem.Interface": {
         "type": "Transitive",
-        "resolved": "9.0.0",
-        "contentHash": "uksk86YlnzAdyfVNu3wICU0X5iXVe9LF7Q3UkngNliHWEvM5gvAlOUr+jmd9JwmbJWISH5+i1vyXE02lEVz7WQ=="
+        "resolved": "10.0.0",
+        "contentHash": "tZOXFLGjkh8TxgMgKeEcM2HAlz9DwndGl6TFLo6ISHcszFX3FkuPMrtVbmqVjhooWNXrgJ/a9cH9ym5MZL1LAg=="
       },
       "stryker.abstractions": {
         "type": "Project",
@@ -782,7 +782,7 @@
           "Microsoft.CodeAnalysis.Common": "[4.14.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[18.0.1, )",
           "Serilog": "[4.3.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.16, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
         }
       },
       "stryker.configuration": {
@@ -828,7 +828,7 @@
           "Stryker.DataCollector": "[1.0.0, )",
           "Stryker.TestRunner": "[1.0.0, )",
           "Stryker.Utilities": "[1.0.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.0.16, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
         }
       },
       "stryker.utilities": {
