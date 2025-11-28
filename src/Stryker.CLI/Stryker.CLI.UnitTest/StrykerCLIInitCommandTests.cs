@@ -26,7 +26,7 @@ public class StrykerCLIInitCommandTests
 
     public StrykerCLIInitCommandTests()
     {
-        _target = new StrykerCli(_strykerRunnerMock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object, _consoleMock, _fileSystemMock);
+        _target = new StrykerCli(_strykerRunnerMock.Object, new ConfigBuilder(), _loggingInitializerMock.Object, _nugetClientMock.Object, _consoleMock, _fileSystemMock);
     }
 
     [TestMethod]

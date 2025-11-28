@@ -15,9 +15,11 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Moq;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Testing;
+using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
@@ -35,7 +37,7 @@ using VsTestObjModel = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 namespace Stryker.TestRunner.VsTest.UnitTest;
 
 /// <summary>
-/// This class has a set of methods that can be used to mock VsTest behavior. 
+/// This class has a set of methods that can be used to mock VsTest behavior.
 /// </summary>
 public class VsTestMockingHelper : TestBase
 {
@@ -544,11 +546,17 @@ public class VsTestMockingHelper : TestBase
         {
             SourceProjectInfo = sourceProject ?? SourceProjectInfo,
             TestRunner = runner,
-            InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500))
+            InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500)),
+            TestProjectsInfo = _testProjectsInfo
         };
-        var mutator = new CsharpMutationProcess(_fileSystem, options);
+        var mutator = new CsharpMutationProcess(_fileSystem, TestLoggerFactory.CreateLogger<CsharpMutationProcess>());
+        var executor = new MutationTestExecutor(TestLoggerFactory.CreateLogger<MutationTestExecutor>());
+        executor.TestRunner = runner;
+        var coverageAnalyser = new CoverageAnalyser(TestLoggerFactory.CreateLogger<CoverageAnalyser>());
 
-        return new MutationTestProcess(input, options, null, new MutationTestExecutor(runner), mutator);
+        var process = new MutationTestProcess(executor, coverageAnalyser, mutator, TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        process.Initialize(input, options, null);
+        return process;
     }
 
     private class MockStrykerTestHostLauncher : IStrykerTestHostLauncher

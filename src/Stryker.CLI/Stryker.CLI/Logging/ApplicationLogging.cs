@@ -22,6 +22,10 @@ public static class ApplicationLogging
             LoggerFactory.AddFile(Path.Combine(outputPath, "logs", "log-{Date}.txt"), traceToFile ? MSLogLevel.Trace : MSLogLevel.Debug);
         }
 
+        // Set the Utilities ApplicationLogging factory to the same instance
+        // This ensures that code in Stryker.Options and other projects can access the configured logger
+        Stryker.Utilities.Logging.ApplicationLogging.LoggerFactory = LoggerFactory;
+
         // When stryker log level is debug or trace, set LibGit2Sharp loglevel
         if (logLevel >= LogEventLevel.Information) return; // LibGit2Sharp does not handle LogEventLevel.None properly.
 
