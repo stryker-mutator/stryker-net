@@ -28,6 +28,7 @@ public static class ServiceCollectionExtensions
         // Mutation test process - Scoped as they manage per-project state
         services.AddScoped<IMutationTestProcess, MutationTestProcess>();
         services.AddScoped<IInitialisationProcess, InitialisationProcess>();
+        services.AddScoped<IMutationProcess, CsharpMutationProcess>();
 
         // Initialisation services - Transient as they perform per-run operations
         services.AddTransient<IInitialBuildProcess, InitialBuildProcess>();
@@ -35,12 +36,12 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IInputFileResolver, InputFileResolver>();
         services.AddTransient<INugetRestoreProcess, NugetRestoreProcess>();
         services.AddTransient<ICoverageAnalyser, CoverageAnalyser>();
-        
+
         // Helpers and utilities - Transient or Singleton based on state
         services.AddTransient<IProcessExecutor, ProcessExecutor>();
         services.AddTransient<IBuildalyzerProvider, BuildalyzerProvider>();
         services.AddSingleton<IFileSystem, FileSystem>();
-        
+
         // Reporter factory - Singleton as it's stateless
         services.AddSingleton<IReporterFactory, ReporterFactory>();
 

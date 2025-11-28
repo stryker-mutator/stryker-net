@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -37,21 +38,6 @@ public class MutationTestProcess : IMutationTestProcess
     private IReporter _reporter;
     private readonly ICoverageAnalyser _coverageAnalyser;
     private IMutationProcess _mutationProcess;
-    private static readonly Dictionary<Language, Func<IStrykerOptions, IMutationProcess>> LanguageMap = [];
-
-    static MutationTestProcess() => DeclareMutationProcessForLanguage<CsharpMutationProcess>(Language.Csharp);
-
-    public static void DeclareMutationProcessForLanguage<T>(Language language) where T : IMutationProcess
-    {
-        var constructor = typeof(T).GetConstructor([typeof(IStrykerOptions)]);
-        if (constructor == null)
-        {
-            throw new NotSupportedException(
-                $"Failed to find a constructor with the appropriate signature for type {typeof(T)}");
-        }
-
-        LanguageMap[language] = y => (IMutationProcess)constructor.Invoke([y]);
-    }
 
     public MutationTestProcess(
         IMutationTestExecutor executor,
@@ -65,16 +51,6 @@ public class MutationTestProcess : IMutationTestProcess
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    private IMutationProcess BuildMutationProcess()
-    {
-        if (LanguageMap.ContainsKey(Input.SourceProjectInfo.AnalyzerResult.GetLanguage()))
-        {
-            return LanguageMap[Input.SourceProjectInfo.AnalyzerResult.GetLanguage()](_options);
-        }
-
-        throw new GeneralStrykerException("no valid language detected || no valid csproj or fsproj was given.");
-    }
-
     public void Initialize(MutationTestInput input, IStrykerOptions options, IReporter reporter)
     {
         Input = input;
@@ -82,12 +58,11 @@ public class MutationTestProcess : IMutationTestProcess
         _reporter = reporter;
         _projectContents = input.SourceProjectInfo.ProjectContents;
         Input.TestProjectsInfo.BackupOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
-        // _mutationProcess = BuildMutationProcess();
     }
 
     public void Mutate()
     {
-        _mutationProcess.Mutate(Input);
+        _mutationProcess.Mutate(Input, _options);
     }
 
     public void FilterMutants() => _mutationProcess.FilterMutants(Input);

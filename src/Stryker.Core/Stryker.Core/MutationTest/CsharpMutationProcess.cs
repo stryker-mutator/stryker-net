@@ -19,42 +19,30 @@ namespace Stryker.Core.MutationTest;
 
 public class CsharpMutationProcess : IMutationProcess
 {
+    private IStrykerOptions _options;
+    private IMutantFilter _mutantFilter;
     private readonly ILogger _logger;
-    private readonly IStrykerOptions _options;
     private readonly IFileSystem _fileSystem;
     private readonly BaseMutantOrchestrator<SyntaxTree, SemanticModel> _orchestrator;
-    private readonly IMutantFilter _mutantFilter;
 
-    /// <summary>
-    /// This constructor is for tests
-    /// </summary>
-    /// <param name="fileSystem"></param>
-    /// <param name="options"></param>
-    /// <param name="mutantFilter"></param>
-    /// <param name="orchestrator"></param>
     public CsharpMutationProcess(
-        IFileSystem fileSystem = null,
-        IStrykerOptions options = null,
-        IMutantFilter mutantFilter = null,
-        BaseMutantOrchestrator<SyntaxTree, SemanticModel> orchestrator = null)
+        IFileSystem fileSystem,
+        ILogger<CsharpMutationProcess> logger)
     {
-        _options = options;
-        _orchestrator = orchestrator;
         _fileSystem = fileSystem ?? new FileSystem();
-        _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-
-        _mutantFilter = mutantFilter;
+        _logger = logger;
     }
 
-    /// <summary>
-    /// This constructor is used by the <see cref="MutationTestProcess"/> initialization logic.
-    /// </summary>
-    /// <param name="options"></param>
-    public CsharpMutationProcess(IStrykerOptions options) : this(null, options)
-    { }
+    // /// <summary>
+    // /// This constructor is used by the <see cref="MutationTestProcess"/> initialization logic.
+    // /// </summary>
+    // /// <param name="options"></param>
+    // public CsharpMutationProcess(IStrykerOptions options) : this(null, options)
+    // { }
 
-    public void Mutate(MutationTestInput input)
+    public void Mutate(MutationTestInput input, IStrykerOptions options)
     {
+        _options = options;
         var projectInfo = input.SourceProjectInfo.ProjectContents;
         var orchestrator = _orchestrator ?? new CsharpMutantOrchestrator(new MutantPlacer(input.SourceProjectInfo.CodeInjector), options: _options);
         var compilingProcess = new CsharpCompilingProcess(input, options: _options);
@@ -135,12 +123,12 @@ public class CsharpMutationProcess : IMutationProcess
 
     public void FilterMutants(MutationTestInput input)
     {
-        var mutantFilter = _mutantFilter ?? MutantFilterFactory.Create(_options, input);
+        _mutantFilter ??= MutantFilterFactory.Create(_options, input);
         foreach (var file in input.SourceProjectInfo.ProjectContents.GetAllFiles())
         {
             // CompileError is a final status and can not be changed during filtering.
             var mutantsToFilter = file.Mutants.Where(x => x.ResultStatus != MutantStatus.CompileError);
-            mutantFilter.FilterMutants(mutantsToFilter, file, _options);
+            _mutantFilter.FilterMutants(mutantsToFilter, file, _options);
         }
     }
 }
