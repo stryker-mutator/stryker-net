@@ -31,13 +31,13 @@ public class MutationTestProcess : IMutationTestProcess
 {
     public MutationTestInput Input { get; set; }
 
-    private readonly ILogger _logger;
     private IStrykerOptions _options;
     private IReadOnlyProjectComponent _projectContents;
-    private readonly IMutationTestExecutor _mutationTestExecutor;
     private IReporter _reporter;
+    private readonly ILogger _logger;
+    private readonly IMutationTestExecutor _mutationTestExecutor;
     private readonly ICoverageAnalyser _coverageAnalyser;
-    private IMutationProcess _mutationProcess;
+    private readonly IMutationProcess _mutationProcess;
 
     public MutationTestProcess(
         IMutationTestExecutor executor,

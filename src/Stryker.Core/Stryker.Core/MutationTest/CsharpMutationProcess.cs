@@ -23,7 +23,6 @@ public class CsharpMutationProcess : IMutationProcess
     private IMutantFilter _mutantFilter;
     private readonly ILogger _logger;
     private readonly IFileSystem _fileSystem;
-    private readonly BaseMutantOrchestrator<SyntaxTree, SemanticModel> _orchestrator;
 
     public CsharpMutationProcess(
         IFileSystem fileSystem,
@@ -33,18 +32,11 @@ public class CsharpMutationProcess : IMutationProcess
         _logger = logger;
     }
 
-    // /// <summary>
-    // /// This constructor is used by the <see cref="MutationTestProcess"/> initialization logic.
-    // /// </summary>
-    // /// <param name="options"></param>
-    // public CsharpMutationProcess(IStrykerOptions options) : this(null, options)
-    // { }
-
     public void Mutate(MutationTestInput input, IStrykerOptions options)
     {
         _options = options;
         var projectInfo = input.SourceProjectInfo.ProjectContents;
-        var orchestrator = _orchestrator ?? new CsharpMutantOrchestrator(new MutantPlacer(input.SourceProjectInfo.CodeInjector), options: _options);
+        var orchestrator = new CsharpMutantOrchestrator(new MutantPlacer(input.SourceProjectInfo.CodeInjector), options: _options);
         var compilingProcess = new CsharpCompilingProcess(input, options: _options);
         var semanticModels = compilingProcess.GetSemanticModels(projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree));
 
