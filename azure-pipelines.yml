@@ -227,7 +227,7 @@ stages:
         command: test
         projects: '**/Validation.csproj'
         arguments: --filter Category=SingleTestProject
-        
+
   - job: LinuxTests
     displayName: Run tests on Linux
     pool:
