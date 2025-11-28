@@ -84,10 +84,10 @@ public class MutationTestProcessTests : TestBase
 
         var executorMock = new Mock<IMutationTestExecutor>();
         var coverageAnalyzerMock = new Mock<ICoverageAnalyser>();
-        
+
         // Create a strict mock for the IMutationProcess and verify the calls on that instance.
         var mutationProcessMock = new Mock<IMutationProcess>(MockBehavior.Strict);
-        mutationProcessMock.Setup(x => x.Mutate(It.IsAny<MutationTestInput>()));
+        mutationProcessMock.Setup(x => x.Mutate(It.IsAny<MutationTestInput>(), It.IsAny<IStrykerOptions>()));
         mutationProcessMock.Setup(x => x.FilterMutants(It.IsAny<MutationTestInput>()));
 
         var target = new MutationTestProcess(executorMock.Object, coverageAnalyzerMock.Object, mutationProcessMock.Object, TestLoggerFactory.CreateLogger<MutationTestProcess>());
@@ -99,7 +99,7 @@ public class MutationTestProcessTests : TestBase
         target.FilterMutants();
 
         // Assert
-        mutationProcessMock.Verify(x => x.Mutate(It.IsAny<MutationTestInput>()), Times.Once);
+        mutationProcessMock.Verify(x => x.Mutate(It.IsAny<MutationTestInput>(), It.IsAny<IStrykerOptions>()), Times.Once);
         mutationProcessMock.Verify(x => x.FilterMutants(It.IsAny<MutationTestInput>()), Times.Once);
     }
 

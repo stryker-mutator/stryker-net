@@ -549,7 +549,7 @@ public class VsTestMockingHelper : TestBase
             InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500)),
             TestProjectsInfo = _testProjectsInfo
         };
-        var mutator = new CsharpMutationProcess(_fileSystem);
+        var mutator = new CsharpMutationProcess(_fileSystem, TestLoggerFactory.CreateLogger<CsharpMutationProcess>());
         var executor = new MutationTestExecutor(TestLoggerFactory.CreateLogger<MutationTestExecutor>());
         executor.TestRunner = runner;
         var coverageAnalyser = new CoverageAnalyser(TestLoggerFactory.CreateLogger<CoverageAnalyser>());
