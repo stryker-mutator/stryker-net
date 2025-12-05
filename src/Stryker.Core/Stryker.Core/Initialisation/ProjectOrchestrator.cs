@@ -2,8 +2,10 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using Stryker.Abstractions.Baseline;
@@ -14,7 +16,6 @@ using Stryker.Abstractions.Testing;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.TestRunner.VsTest;
-using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Initialisation;
 
@@ -28,27 +29,31 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
     private IInitialisationProcess _initializationProcess;
     private readonly ILogger _logger;
     private readonly IProjectMutator _projectMutator;
-    private readonly IInitialBuildProcess _initialBuildProcess;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly IMutationTestExecutor _mutationTestExecutor;
     private readonly IInputFileResolver _fileResolver;
     private ITestRunner _runner;
 
-    public ProjectOrchestrator(IProjectMutator projectMutator = null,
-        IInitialBuildProcess initialBuildProcess = null,
-        IInputFileResolver fileResolver = null,
-        IInitialisationProcess initializationProcess = null)
+    public ProjectOrchestrator(
+        IProjectMutator projectMutator,
+        IInitialisationProcess initializationProcess,
+        IInputFileResolver fileResolver,
+        IServiceProvider serviceProvider,
+        IMutationTestExecutor mutationTestExecutor,
+        ILogger<ProjectOrchestrator> logger)
     {
-        _projectMutator = projectMutator ?? new ProjectMutator();
-        _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
-        _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
-        _fileResolver = fileResolver ?? new InputFileResolver();
-        _initializationProcess = initializationProcess;
+        _projectMutator = projectMutator ?? throw new ArgumentNullException(nameof(projectMutator));
+        _initializationProcess = initializationProcess ?? throw new ArgumentNullException(nameof(initializationProcess));
+        _fileResolver = fileResolver ?? throw new ArgumentNullException(nameof(fileResolver));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        _mutationTestExecutor = mutationTestExecutor ?? throw new ArgumentNullException(nameof(mutationTestExecutor));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public IEnumerable<IMutationTestProcess> MutateProjects(IStrykerOptions options, IReporter reporters,
         ITestRunner runner = null)
     {
-
-        _initializationProcess ??= new InitialisationProcess(_fileResolver, _initialBuildProcess);
+        _initializationProcess ??= _serviceProvider.GetRequiredService<IInitialisationProcess>();
         var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
 
         if (!projectInfos.Any())
@@ -61,7 +66,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
 
         // create a test runner
         _runner = runner ?? new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem);
-
+        _mutationTestExecutor.TestRunner = _runner;
         InitializeDashboardProjectInformation(options, projectInfos.First());
         var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
 

@@ -1,9 +1,9 @@
+using System;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
-using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Initialisation;
 
@@ -16,7 +16,10 @@ public class InitialTestProcess : IInitialTestProcess
 {
     private readonly ILogger _logger;
 
-    public InitialTestProcess() => _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialTestProcess>();
+    public InitialTestProcess(ILogger<InitialTestProcess> logger)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
 
     public ITimeoutValueCalculator TimeoutValueCalculator { get; private set; }
 

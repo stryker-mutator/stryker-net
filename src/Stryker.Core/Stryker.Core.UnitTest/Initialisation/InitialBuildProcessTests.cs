@@ -28,7 +28,7 @@ public class InitialBuildProcessTests : TestBase
 
         processMock.SetupProcessMockToReturn("", 1);
 
-        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem);
+        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
         Should.Throw<InputException>(() => target.InitialBuild(false, _cProjectsExampleCsproj, null))
             .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"dotnet build Example.csproj\"");
@@ -42,7 +42,7 @@ public class InitialBuildProcessTests : TestBase
 
         processMock.SetupProcessMockToReturn("", 1);
 
-        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem);
+        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
         Should.Throw<InputException>(() => target.InitialBuild(true, null, _cProjectsExampleCsproj, null, targetFramework: null,
                 msbuildPath: @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
@@ -58,7 +58,7 @@ public class InitialBuildProcessTests : TestBase
 
         processMock.SetupProcessMockToReturn("", 2);
 
-        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem);
+        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
         Should.Throw<InputException>(() => target.InitialBuild(false, null, _cProjectsExampleCsproj, null, targetFramework: null, msbuildPath: @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
             .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
@@ -75,7 +75,7 @@ public class InitialBuildProcessTests : TestBase
 
         processMock.SetupProcessMockToReturn("");
 
-        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem);
+        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
         target.InitialBuild(false, "/", "/");
 
@@ -97,7 +97,7 @@ public class InitialBuildProcessTests : TestBase
         var mockFileSystem = new MockFileSystem();
         mockFileSystem.AddFile(msBuildLocation, new MockFileData("Mocked MsBuild Executable"));
 
-        var target = new InitialBuildProcess(processMock.Object, mockFileSystem);
+        var target = new InitialBuildProcess(processMock.Object, mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
         target.InitialBuild(true, "./ExampleProject.sln", "./ExampleProject.sln", "Debug");
 
@@ -121,7 +121,7 @@ public class InitialBuildProcessTests : TestBase
 
         processMock.SetupProcessMockToReturn("");
 
-        var target = new InitialBuildProcess(processMock.Object, mockFileSystem);
+        var target = new InitialBuildProcess(processMock.Object, mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
         target.InitialBuild(true, "/", "./ExampleProject.sln", null, targetFramework: null, msbuildPath: CustomMsBuildPath);
         processMock.Verify(x => x.Start(It.IsAny<string>(),
@@ -159,7 +159,7 @@ public class InitialBuildProcessTests : TestBase
 
         processMock.SetupProcessMockToReturn("");
 
-        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem);
+        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
         target.InitialBuild(false, "./ExampleProject.csproj", null);
 
@@ -178,7 +178,7 @@ public class InitialBuildProcessTests : TestBase
 
         processMock.SetupProcessMockToReturn("");
 
-        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem);
+        var target = new InitialBuildProcess(processMock.Object, _mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
         target.InitialBuild(false, "", "./ExampleProject.sln");
 

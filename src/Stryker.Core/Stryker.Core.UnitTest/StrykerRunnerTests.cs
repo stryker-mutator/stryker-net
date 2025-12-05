@@ -79,9 +79,12 @@ public class StrykerRunnerTests : TestBase
         mutationTestProcessMock.InSequence(seq).Setup(x => x.FilterMutants());
         reporterMock.InSequence(seq).Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()));
 
-        var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
+        // Setup Dispose for ProjectOrchestrator
+        projectOrchestratorMock.Setup(x => x.Dispose());
 
-        target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
+        var target = new StrykerRunner(reporterFactoryMock.Object, projectOrchestratorMock.Object, TestLoggerFactory.CreateLogger<StrykerRunner>());
+
+        target.RunMutationTest(inputsMock.Object);
 
         projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(x => x.ProjectPath == "C:/test"), It.IsAny<IReporter>(), It.IsAny<ITestRunner>()), Times.Once);
         mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Once);
@@ -133,9 +136,12 @@ public class StrykerRunnerTests : TestBase
         reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()));
         reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()));
 
-        var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
+        // Setup Dispose for ProjectOrchestrator
+        projectOrchestratorMock.Setup(x => x.Dispose());
 
-        var result = target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
+        var target = new StrykerRunner(reporterFactoryMock.Object, projectOrchestratorMock.Object, TestLoggerFactory.CreateLogger<StrykerRunner>());
+
+        var result = target.RunMutationTest(inputsMock.Object);
 
         result.MutationScore.ShouldBe(double.NaN);
 
@@ -178,9 +184,12 @@ public class StrykerRunnerTests : TestBase
 
         reporterFactoryMock.Setup(x => x.Create(It.IsAny<StrykerOptions>(), It.IsAny<IGitInfoProvider>())).Returns(reporterMock.Object);
 
-        var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
+        // Setup Dispose for ProjectOrchestrator (even though exception is thrown, Dispose may still be called in cleanup)
+        projectOrchestratorMock.Setup(x => x.Dispose());
 
-        Should.Throw<NoTestProjectsException>(() => target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object));
+        var target = new StrykerRunner(reporterFactoryMock.Object, projectOrchestratorMock.Object, TestLoggerFactory.CreateLogger<StrykerRunner>());
+
+        Should.Throw<NoTestProjectsException>(() => target.RunMutationTest(inputsMock.Object));
 
         reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<IMutant>>()), Times.Never);
         reporterMock.Verify(x => x.OnMutantTested(It.IsAny<IMutant>()), Times.Never);

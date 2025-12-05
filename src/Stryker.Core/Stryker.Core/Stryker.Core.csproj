@@ -4,6 +4,8 @@
     <AssemblyName>Stryker.Core</AssemblyName>
     <RootNamespace>Stryker.Core</RootNamespace>
     <OutputType>Library</OutputType>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   
   <PropertyGroup>
@@ -41,6 +43,7 @@
     <PackageReference Include="DotNet.Glob" />
     <PackageReference Include="Buildalyzer" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.TestPlatform" />
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
