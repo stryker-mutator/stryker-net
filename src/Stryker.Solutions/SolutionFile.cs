@@ -84,7 +84,7 @@ public class SolutionFile
     /// <param name="path">path to a sln or slnx file</param>
     /// <returns>a solution instance</returns>
     /// <exception cref="InvalidOperationException">if the solution file format is not supported</exception>
-    public static SolutionFile? LoadSolution(string path)
+    public static SolutionFile LoadSolution(string path)
     {
         // Implementation to load a solution file
         var serializer = SolutionSerializers.GetSerializerByMoniker(path);
