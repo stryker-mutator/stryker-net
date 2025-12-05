@@ -3,8 +3,12 @@ using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
 namespace Stryker.Solutions;
+public interface ISolutionProvider
+{
+    SolutionFile GetSolution(string solutionPath);
+}
 
-public class SolutionFile
+public class SolutionFile: ISolutionProvider
 {
     private readonly Dictionary<(string buildType, string platform), Dictionary<string, (string buildType, string platform)>> _configurations = [];
 
@@ -94,9 +98,7 @@ public class SolutionFile
             throw new InvalidOperationException($"No suitable solution serializer found for the given path ({path}).");
         }
 
-        var solution = serializer.OpenAsync(path, CancellationToken.None).
-            ConfigureAwait(false).GetAwaiter().GetResult();
-        return AnalyzeSolution(solution);
+        return AnalyzeSolution(serializer.OpenAsync(path, CancellationToken.None).Result);
     }
 
     private static SolutionFile AnalyzeSolution(SolutionModel solution)
@@ -129,4 +131,6 @@ public class SolutionFile
 
         return result;
     }
+
+    public SolutionFile GetSolution(string solutionPath) => LoadSolution(solutionPath);
 }

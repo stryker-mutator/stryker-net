@@ -151,6 +151,26 @@ public class InitialBuildProcessTests : TestBase
             Times.Once);
     }
 
+    [TestMethod]
+    public void InitialBuildProcess_ShouldUseProvidedPlatform()
+    {
+        var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+        var mockFileSystem = new MockFileSystem();
+
+        processMock.SetupProcessMockToReturn("");
+
+        var target = new InitialBuildProcess(processMock.Object, mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
+
+        target.InitialBuild(false, "/", "./ExampleProject.sln", "TheDebug", "AnyCPU");
+        processMock.Verify(x => x.Start(It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.Is<string>(argumentsParam => argumentsParam.Contains("-c TheDebug")
+                                                && argumentsParam.Contains("--property:Platform=AnyCPU")),
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()),
+            Times.Once);
+    }
+
 
     [TestMethod]
     public void InitialBuildProcess_ShouldRunDotnetBuildIfNotDotnetFramework()

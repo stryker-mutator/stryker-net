@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
@@ -13,11 +12,11 @@ using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 
-public class BuildAnalyzerTestsBase : TestBase
+public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
 {
-    protected internal const string DefaultFramework = "net6.0";
+    protected const string DefaultFramework = "net6.0";
     protected readonly MockFileSystem FileSystem = new();
-    protected string ProjectPath;
+    protected readonly string ProjectPath;
     private readonly Dictionary<string, Dictionary<string, IAnalyzerResult>> _projectCache = [];
     protected readonly Mock<IBuildalyzerProvider> BuildalyzerProviderMock = new(MockBehavior.Strict);
 
@@ -27,15 +26,6 @@ public class BuildAnalyzerTestsBase : TestBase
         var filesystemRoot = FileSystem.Path.GetPathRoot(currentDirectory);
 
         ProjectPath = FileSystem.Path.Combine(filesystemRoot, "sourceproject");
-    }
-
-    protected SolutionFile BuildSolution(IFileSystem fileSystem, string solutionName)
-    {
-        if (!fileSystem.File.Exists(solutionName))
-        {
-            throw new InvalidOperationException();
-        }
-        return SolutionFile.BuildFromProjectList(_projectCache.Keys.ToList());
     }
 
 
@@ -314,5 +304,14 @@ public class BuildAnalyzerTestsBase : TestBase
         BuildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<AnalyzerManagerOptions>()))
             .Returns(buildalyzerAnalyzerManagerMock.Object);
         return buildalyzerAnalyzerManagerMock;
+    }
+
+    public SolutionFile GetSolution(string solutionPath)
+    {
+        if (!FileSystem.FileExists(solutionPath))
+        {
+            throw new InvalidOperationException($"Solution file {solutionPath} does not exist in the file system.");
+        }
+        return SolutionFile.BuildFromProjectList(_projectCache.Keys.ToList());
     }
 }

@@ -26,6 +26,7 @@ using static NuGet.Frameworks.FrameworkConstants;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 
+
 [TestClass]
 public class InputFileResolverTests : BuildAnalyzerTestsBase
 {
@@ -82,9 +83,9 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
     }
 
     private InputFileResolver BuildTestResolver(IFileSystem fileSystem) => BuildTestResolverWithSolutionProvider(fileSystem,
-        solutionName =>BuildSolution(fileSystem, solutionName));
+        this);
 
-    private InputFileResolver BuildTestResolverWithSolutionProvider(IFileSystem fileSystem, Func<string, SolutionFile> solutionProvider)
+    private InputFileResolver BuildTestResolverWithSolutionProvider(IFileSystem fileSystem, ISolutionProvider solutionProvider)
         => new(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object, solutionProvider ,TestLoggerFactory.CreateLogger<InputFileResolver>());
 
     [TestMethod]
@@ -294,6 +295,11 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
         action.ShouldThrow<InvalidOperationException>();
     }
 
+    private class CustomSolutionProvider(Func<string, SolutionFile> loader) : ISolutionProvider
+    {
+        public SolutionFile GetSolution(string solutionPath) => loader(solutionPath);
+    }
+
     [TestMethod]
     public void ShouldFailIfSolutionLoadFails()
     {
@@ -314,10 +320,13 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
             ProjectPath = _sourcePath,
             SolutionPath = Path.Combine(_sourcePath, "solution.sln")
         };
-        var target =  BuildTestResolverWithSolutionProvider(fileSystem, _ => throw new IOException("Failed to read solution"));
+
+        var target =  BuildTestResolverWithSolutionProvider(fileSystem,
+            new CustomSolutionProvider(_ => throw new IOException("Failed to read solution")));
 
         target.ResolveSourceProjectInfos(options).ShouldBeEmpty();
     }
+
     [TestMethod]
     public void ShouldFailIfSolutionCantBeAccessed()
     {
@@ -338,7 +347,8 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
             ProjectPath = _sourcePath,
             SolutionPath = Path.Combine(_sourcePath, "solution.slnx")
         };
-        var target = BuildTestResolverWithSolutionProvider(fileSystem, _ => throw new UnauthorizedAccessException("Access forbidden"));
+        var target = BuildTestResolverWithSolutionProvider(fileSystem,
+            new CustomSolutionProvider(_ => throw new UnauthorizedAccessException("Access forbidden")));
 
         target.ResolveSourceProjectInfos(options).ShouldBeEmpty();
     }
@@ -1485,4 +1495,6 @@ Please specify a test project name filter that results in one project.
 
         result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectPath);
     }
+
+    public SolutionFile GetSolution(string solutionPath) => throw new NotImplementedException();
 }

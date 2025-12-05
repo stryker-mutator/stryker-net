@@ -16,7 +16,6 @@ using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Solutions;
 using Stryker.Utilities.Buildalyzer;
-using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Initialisation;
 
@@ -25,6 +24,7 @@ public interface IInputFileResolver
     IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(IStrykerOptions options);
     IFileSystem FileSystem { get; }
 }
+
 
 /// <summary>
 ///  - Reads .csproj to find project under test
@@ -36,7 +36,7 @@ public class InputFileResolver : IInputFileResolver
     private readonly string[] _foldersToExclude = ["obj", "bin", "node_modules", "StrykerOutput"];
     private readonly ILogger _logger;
     private readonly IBuildalyzerProvider _analyzerProvider;
-    private readonly Func<string, SolutionFile> _solutionProvider;
+    private readonly ISolutionProvider _solutionProvider;
     private static readonly HashSet<string> ImportantProperties =
         ["Configuration", "Platform", "AssemblyName", "Configurations"];
 
@@ -47,7 +47,7 @@ public class InputFileResolver : IInputFileResolver
     public InputFileResolver(IFileSystem fileSystem,
         IBuildalyzerProvider analyzerProvider,
         INugetRestoreProcess nugetRestoreProcess,
-        Func<string, SolutionFile> solutionProvider,
+        ISolutionProvider solutionProvider,
         ILogger<InputFileResolver> logger)
     {
         FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
@@ -70,7 +70,7 @@ public class InputFileResolver : IInputFileResolver
 
             try
             {
-                solution = _solutionProvider(options.SolutionPath);
+                solution = _solutionProvider.GetSolution(options.SolutionPath);
             }
             catch (IOException e)
             {

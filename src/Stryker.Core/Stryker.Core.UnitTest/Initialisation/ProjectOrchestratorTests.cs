@@ -134,7 +134,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
     }
 
     [TestMethod]
-    public void ShouldUsedDesiredConfigurationWhenDefined()
+    public void ShouldUseDesiredConfigurationWhenDefined()
     {
         // arrange
         // when a solutionPath is given, and it's inside the current directory (basePath)
@@ -217,7 +217,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>(), It.IsAny<SourceProjectInfo>(), It.IsAny<ITestRunner>()))
                 .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
             var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object,
-                nugetRestoreMock.Object, fileName => BuildSolution(FileSystem, fileName),
+                nugetRestoreMock.Object, this,
                 TestLoggerFactory.CreateLogger<InputFileResolver>());
             var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
 
@@ -479,7 +479,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
         var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object,
             new Mock<INugetRestoreProcess>().Object,
-            filename => BuildSolution(FileSystem, filename),
+            this,
             TestLoggerFactory.CreateLogger<InputFileResolver>());
         var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
 
