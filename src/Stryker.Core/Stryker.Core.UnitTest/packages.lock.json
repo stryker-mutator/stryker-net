@@ -859,7 +859,7 @@
           "Stryker.Solutions": "[1.0.0, )",
           "Stryker.TestRunner.VsTest": "[1.0.0, )",
           "Stryker.Utilities": "[1.0.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.00, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
         }
       },
       "stryker.abstractions": {

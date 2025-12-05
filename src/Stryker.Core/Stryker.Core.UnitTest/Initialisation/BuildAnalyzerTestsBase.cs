@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
@@ -28,7 +29,14 @@ public class BuildAnalyzerTestsBase : TestBase
         ProjectPath = FileSystem.Path.Combine(filesystemRoot, "sourceproject");
     }
 
-    protected SolutionFile BuildSolution() => SolutionFile.BuildFromProjectList(_projectCache.Keys.ToList());
+    protected SolutionFile BuildSolution(IFileSystem fileSystem, string solutionName)
+    {
+        if (!fileSystem.File.Exists(solutionName))
+        {
+            throw new InvalidOperationException();
+        }
+        return SolutionFile.BuildFromProjectList(_projectCache.Keys.ToList());
+    }
 
 
     /// <summary>

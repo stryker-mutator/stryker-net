@@ -140,7 +140,7 @@ public class InitialBuildProcessTests : TestBase
 
         processMock.SetupProcessMockToReturn("");
 
-        var target = new InitialBuildProcess(processMock.Object, mockFileSystem);
+        var target = new InitialBuildProcess(processMock.Object, mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
         target.InitialBuild(false, "/", "./ExampleProject.sln", "TheDebug");
         processMock.Verify(x => x.Start(It.IsAny<string>(),
