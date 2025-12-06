@@ -60,7 +60,7 @@ public class NugetRestoreProcessTests : TestBase
                 ExitCode = 0,
                 Output = "Msbuild executable path found at "
             });
-        var target = new NugetRestoreProcess(processExecutorMock.Object);
+        var target = new NugetRestoreProcess(processExecutorMock.Object, TestLoggerFactory.CreateLogger<NugetRestoreProcess>());
 
         target.RestorePackages(SolutionPath);
 
@@ -122,7 +122,7 @@ public class NugetRestoreProcessTests : TestBase
                 Output = "Packages restore failed."
             }).Verifiable(Times.Once);
 
-        var target = new NugetRestoreProcess(processExecutorMock.Object);
+        var target = new NugetRestoreProcess(processExecutorMock.Object, TestLoggerFactory.CreateLogger<NugetRestoreProcess>());
         
         target.RestorePackages(SolutionPath);
 
@@ -181,7 +181,7 @@ public class NugetRestoreProcessTests : TestBase
                 ExitCode = 0,
                 Output = "Msbuild executable path found at "
             });
-        var target = new NugetRestoreProcess(processExecutorMock.Object);
+        var target = new NugetRestoreProcess(processExecutorMock.Object, TestLoggerFactory.CreateLogger<NugetRestoreProcess>());
 
         target.RestorePackages(SolutionPath);
 
@@ -242,7 +242,7 @@ public class NugetRestoreProcessTests : TestBase
                 Output = "Msbuild executable path found at "
             });
 
-        var target = new NugetRestoreProcess(processExecutorMock.Object);
+        var target = new NugetRestoreProcess(processExecutorMock.Object, TestLoggerFactory.CreateLogger<NugetRestoreProcess>());
 
         target.RestorePackages(SolutionPath, msbuildPath);
         processExecutorMock.Verify(x => x.Start(CProgramFilesX86MicrosoftVisualStudio, It.Is<string>((p) => p.EndsWith("where.exe")),
@@ -289,7 +289,7 @@ public class NugetRestoreProcessTests : TestBase
                 Output = "INFO: Could not find files for the given pattern(s)."
             });
 
-        var target = new NugetRestoreProcess(processExecutorMock.Object);
+        var target = new NugetRestoreProcess(processExecutorMock.Object, TestLoggerFactory.CreateLogger<NugetRestoreProcess>());
         Should.Throw<InputException>(() => target.RestorePackages(SolutionPath));
     }
 
@@ -348,7 +348,7 @@ C:\Users\LEON\bin\NuGet.exe"
                 Output = "Msbuild executable path found at "
             });
 
-        var target = new NugetRestoreProcess(processExecutorMock.Object);
+        var target = new NugetRestoreProcess(processExecutorMock.Object, TestLoggerFactory.CreateLogger<NugetRestoreProcess>());
 
         target.RestorePackages(SolutionPath);
         processExecutorMock.Verify(p => p.Start(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
