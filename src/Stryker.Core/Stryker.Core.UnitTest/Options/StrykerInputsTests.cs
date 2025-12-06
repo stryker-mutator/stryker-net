@@ -64,6 +64,32 @@ public class StrykerInputsTests : TestBase
     }
 
     [TestMethod]
+    public void ShouldSetConfiguration()
+    {
+        _target.ConfigurationInput.SuppliedInput = "TheRelease";
+        var result = _target.ValidateAll();
+        result.Configuration.ShouldBe("TheRelease");
+    }
+
+    [TestMethod]
+    public void ShouldSetConfigurationAndPlatform()
+    {
+        _target.ConfigurationInput.SuppliedInput = "TheRelease|x64";
+        var result = _target.ValidateAll();
+        result.Configuration.ShouldBe("TheRelease");
+        result.Platform.ShouldBe("x64");
+    }
+
+    [TestMethod]
+    public void ShouldIgnoreExtraInfoInConfiguration()
+    {
+        _target.ConfigurationInput.SuppliedInput = "TheRelease|x64|Disregarded";
+        var result = _target.ValidateAll();
+        result.Configuration.ShouldBe("TheRelease");
+        result.Platform.ShouldBe("x64");
+    }
+
+    [TestMethod]
     public void DisableBailShouldSetOptimizationFlags()
     {
         _target.DisableMixMutantsInput.SuppliedInput = true;
