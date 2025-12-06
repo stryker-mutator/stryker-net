@@ -88,9 +88,9 @@ public class CSharpMutationTestProcessTests : TestBase
         orchestratorMock.SetupAllProperties();
         orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
 
-        var target = new CsharpMutationProcess(fileSystem, options, null, orchestratorMock.Object);
+        var target = new CsharpMutationProcess(fileSystem, TestLoggerFactory.CreateLogger<CsharpMutationProcess>());
 
-        target.Mutate(input);
+        target.Mutate(input, options);
 
         // Verify the created assembly is written to disk on the right location
         var expectedPath = Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0", "ProjectUnderTest.dll");

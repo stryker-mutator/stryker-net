@@ -6,7 +6,6 @@ using Stryker.Abstractions.Exceptions;
 using Stryker.Configuration;
 using Stryker.Core.Helpers;
 using Stryker.Core.Helpers.ProcessUtil;
-using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Initialisation;
 
@@ -22,11 +21,14 @@ public class InitialBuildProcess : IInitialBuildProcess
     private readonly IFileSystem _fileSystem;
     private readonly ILogger _logger;
 
-    public InitialBuildProcess(IProcessExecutor processExecutor = null, IFileSystem fileSystem = null)
+    public InitialBuildProcess(
+        IProcessExecutor processExecutor,
+        IFileSystem fileSystem,
+        ILogger<InitialBuildProcess> logger)
     {
-        _processExecutor = processExecutor ?? new ProcessExecutor();
-        _fileSystem = fileSystem ?? new FileSystem();
-        _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
+        _processExecutor = processExecutor ?? throw new ArgumentNullException(nameof(processExecutor));
+        _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration = null, string targetFramework = null,
