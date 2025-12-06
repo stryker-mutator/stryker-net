@@ -157,7 +157,7 @@ public class InputFileResolver : IInputFileResolver
         {
             _logger.LogWarning("""
                                No project found, check settings and ensure project file is not corrupted.
-                               Use --diag option to have the analysis' logs in the log file.
+                               Use --diag option to have the analysis's logs in the log file.
                                """);
             return;
         }
@@ -192,7 +192,7 @@ public class InputFileResolver : IInputFileResolver
             _logger.LogInformation("Test project {0} does not appear to test any mutable project, analysis {1}.", unusedTestProject.ProjectFilePath, IsValid(unusedTestProject) ? "succeeded" : "failed");
         }
 
-        _logger.LogWarning("Use --diag option to have the analysis' logs in the log file.");
+        _logger.LogWarning("Use --diag option to have the analysis's logs in the log file.");
     }
 
     private ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> AnalyzeAllNeededProjects(List<string> projectList, IStrykerOptions options, IAnalyzerManager manager, ScanMode mode)

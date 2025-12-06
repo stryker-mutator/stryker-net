@@ -126,7 +126,7 @@ public class StrykerInputs : IStrykerInputs
             ReportFileName = reportFileNameInput,
             Concurrency = ConcurrencyInput.Validate(),
             MutationLevel = MutationLevelInput.Validate(),
-            DiagMode = DiagModeInput.Validate() ,
+            DiagMode = DiagModeInput.Validate(),
             MsBuildPath = MsBuildPathInput.Validate(_fileSystem),
             SolutionPath = SolutionInput.Validate(basePath, _fileSystem),
             Configuration = ConfigurationInput.Validate(),
