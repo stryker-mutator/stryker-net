@@ -106,4 +106,5 @@ public static class Is
 {
     public static bool Windows() => Environment.OSVersion.Platform == PlatformID.Win32NT;
     public static bool Unix() => Environment.OSVersion.Platform == PlatformID.Unix;
+    public static bool NotWindows() => !Windows();
 }

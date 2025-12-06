@@ -30,13 +30,18 @@ public class InitialBuildProcess : IInitialBuildProcess
         _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
-    
+
     public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration = null, string targetFramework = null,
         string msbuildPath = null)
     {
         if (fullFramework && string.IsNullOrEmpty(solutionPath))
         {
             throw new InputException("Stryker could not build your project as no solution file was presented. Please pass the solution path to stryker.");
+        }
+
+        if (fullFramework && Environment.OSVersion.Platform != PlatformID.Win32NT)
+        {
+            throw new InputException("Stryker cannot build .NET Framework projects on non-Windows platforms.");
         }
 
         var msBuildHelper = new MsBuildHelper(fileSystem: _fileSystem, executor: _processExecutor, msBuildPath: msbuildPath);
