@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -69,33 +70,38 @@ internal static class CommentParser
 
     public static MutationContext ParseNodeLeadingComments(SyntaxNode node, MutationContext context)
     {
-        var processedComments = node.GetFirstToken(true).GetPreviousToken(true).TrailingTrivia
-            .Union(node.GetLeadingTrivia())
-            .Where(t => t.IsKind(SyntaxKind.MultiLineCommentTrivia) || t.IsKind(SyntaxKind.SingleLineCommentTrivia))
-            .Select(t => (ProcessComment(node, context, t.ToString()), t)).Where(t => t.Item1 != null).ToList();
+        var comments = node.GetFirstToken(true).GetPreviousToken(true)
+            .TrailingTrivia.Union(node.GetLeadingTrivia())
+            .Where(t => t.IsKind(SyntaxKind.MultiLineCommentTrivia) || t.IsKind(SyntaxKind.SingleLineCommentTrivia)).ToList();
+        var result = comments.Aggregate(context, (current, t) => ProcessComment(node, current, t.ToString()));
 
-        if (processedComments.Count == 0)
-        {
-            return context;
-        }
-        if (processedComments.Count > 1)
-        {
-            var errorMessage = new StringBuilder().Append(  
-                $"Multiple Stryker comments at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}. Only the first one will be used");
-            errorMessage.Append(string.Join(Environment.NewLine, processedComments.Select(c => c.Item2.ToString())));
-            Logger.LogWarning(errorMessage.ToString());
-
-        }
-        return processedComments[0].Item1;
+        return result;
     }
 
+    [ExcludeFromCodeCoverage(Justification = "Difficult to test timeouts")]
     private static MutationContext ProcessComment(SyntaxNode node, MutationContext context, string commentTrivia)
+    {
+        try
+        {
+            return InterpretStrykerComment(node, context, commentTrivia);
+        }
+        catch (RegexMatchTimeoutException exception)
+        {
+            Logger.LogWarning(exception,
+                "Parsing Stryker comments at {StartLinePosition}, {FilePath} took too long to parse and was ignored. Comment: {Comment}",
+                node.GetLocation().GetMappedLineSpan().StartLinePosition,
+                node.SyntaxTree.FilePath, commentTrivia);
+            return context;
+        }
+    }
+
+    private static MutationContext InterpretStrykerComment(SyntaxNode node, MutationContext context, string commentTrivia)
     {
         // perform a quick pattern check to see if it is a 'Stryker comment'
         var strykerCommentMatch = Pattern.Match(commentTrivia);
         if (!strykerCommentMatch.Success)
         {
-            return null;
+            return context;
         }
 
         // now we can extract actual command
@@ -113,6 +119,6 @@ internal static class CommentParser
             "Invalid Stryker comments at {Position}, {FilePath}.",
             node.GetLocation().GetMappedLineSpan().StartLinePosition,
             node.SyntaxTree.FilePath);
-        return null;
+        return context;
     }
 }

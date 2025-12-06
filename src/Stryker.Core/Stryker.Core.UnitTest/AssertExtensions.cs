@@ -38,6 +38,7 @@ public static class AssertionExtensions
 
             Console.WriteLine(string.Join(Environment.NewLine, diff));
 
+            throw new ShouldAssertException("The actual syntax tree is not equivalent to the expected syntax tree. See the differences above.");
         }
     }
 

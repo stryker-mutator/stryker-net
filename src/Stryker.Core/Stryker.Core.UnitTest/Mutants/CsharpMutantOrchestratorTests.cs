@@ -84,7 +84,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     [TestMethod]
     public void ShouldMutatePatterns()
     {
-        
+
         var source = @"public void Test()
     {
            Console.WriteLine(new[] { 1, 2, 3, 4 } is [>= 0, .., 2 or 4]);
@@ -94,10 +94,10 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
 {    if(StrykerNamespace.MutantControl.IsActive(0))    {}else{
            if(StrykerNamespace.MutantControl.IsActive(1)){;}else{Console.WriteLine((StrykerNamespace.MutantControl.IsActive(2)?new[] { 1, 2, 3, 4 } is not [>= 0, .., 2 or 4]:(StrykerNamespace.MutantControl.IsActive(5)?new[] { 1, 2, 3, 4 } is [>= 0, .., 2 and 4]:(StrykerNamespace.MutantControl.IsActive(4)?new[] { 1, 2, 3, 4 } is [< 0, .., 2 or 4]:(StrykerNamespace.MutantControl.IsActive(3)?new[] { 1, 2, 3, 4 } is [> 0, .., 2 or 4]:new[] { 1, 2, 3, 4 } is [>= 0, .., 2 or 4])))));}
     }
-}    
+}
     ";
        ShouldMutateSourceInClassToExpected(source, expected);
-        
+
     }
 
     [TestMethod]
@@ -955,7 +955,7 @@ if(StrykerNamespace.MutantControl.IsActive(0)){;}else{if(StrykerNamespace.Mutant
 ";
 
         ShouldMutateSourceToExpected(source, expected);
-            
+
     }
 
     [TestMethod]
@@ -1486,16 +1486,15 @@ string Value {get{if(StrykerNamespace.MutantControl.IsActive(1)){return(false?""
 			int mag = (int)Math.Log(value, 1024);
 			decimal adjustedSize = (decimal)value / (1L << (mag * 10));
 
-			return $""{ adjustedSize:n1} { SizeSuffixes[mag] }"";
+			return $""{adjustedSize:n1} {SizeSuffixes[mag]}"";
 
         }
 else		{
-			string[] SizeSuffixes = { (StrykerNamespace.MutantControl.IsActive(2) ? """" : ""bytes""), (StrykerNamespace.MutantControl.IsActive(3) ? """" : ""KB""), (StrykerNamespace.MutantControl.IsActive(4) ? """" : ""MB""), (StrykerNamespace.MutantControl.IsActive(5) ? """" : ""GB"") };
+			string[] SizeSuffixes = { (StrykerNamespace.MutantControl.IsActive(2)?"""":""bytes""), (StrykerNamespace.MutantControl.IsActive(3)?"""":""KB""), (StrykerNamespace.MutantControl.IsActive(4)?"""":""MB""), (StrykerNamespace.MutantControl.IsActive(5)?"""":""GB"" ) };
 
-        int mag = (int)(StrykerNamespace.MutantControl.IsActive(7) ? Math.Pow(value, 1024) : (StrykerNamespace.MutantControl.IsActive(6) ? Math.Exp(value, 1024) : Math.Log(value, 1024)));
-        decimal adjustedSize = (StrykerNamespace.MutantControl.IsActive(8) ? (decimal)value * (1L << (mag * 10)) : (decimal)value / ((StrykerNamespace.MutantControl.IsActive(9) ? 1L >> (mag * 10) : 1L << ((StrykerNamespace.MutantControl.IsActive(10) ? mag / 10 : mag * 10)))));
-
-			return (StrykerNamespace.MutantControl.IsActive(11)?$"""":$""{ adjustedSize:n1} {SizeSuffixes[mag]}"");
+        int mag = (int)Math.Log(value, 1024);
+        decimal adjustedSize = (StrykerNamespace.MutantControl.IsActive(6)?(decimal)value * (1L << (mag * 10)):(decimal)value / ((StrykerNamespace.MutantControl.IsActive(8)?1L >>> (mag * 10):(StrykerNamespace.MutantControl.IsActive(7)?1L >> (mag * 10):1L << ((StrykerNamespace.MutantControl.IsActive(9)?mag / 10:mag * 10))))));
+			return (StrykerNamespace.MutantControl.IsActive(10)?$"""":$""{ adjustedSize:n1} {SizeSuffixes[mag]}"");
 		}
 }
 return default(string);}";
