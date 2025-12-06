@@ -88,7 +88,7 @@ internal static class CommentParser
         catch (TimeoutException exception)
         {
             Logger.LogWarning(exception,
-                "Parsing Stryker comments at {0}, {1} took too long to parse and was ignored. Comment: {2}",
+                "Parsing Stryker comments at {StartLinePosition}, {FilePath} took too long to parse and was ignored. Comment: {Comment}",
                 node.GetLocation().GetMappedLineSpan().StartLinePosition,
                 node.SyntaxTree.FilePath, commentTrivia);
             return context;
