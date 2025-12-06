@@ -43,15 +43,13 @@ public class InputFileResolver : IInputFileResolver
     private readonly StringWriter _buildalyzerLog = new();
 
     public InputFileResolver(IFileSystem fileSystem,
-        IBuildalyzerProvider analyzerProvider = null, INugetRestoreProcess nugetRestoreProcess = null, ILogger<InputFileResolver> logger = null)
+        IBuildalyzerProvider analyzerProvider, INugetRestoreProcess nugetRestoreProcess, ILogger<InputFileResolver> logger)
     {
-        FileSystem = fileSystem;
-        _analyzerProvider = analyzerProvider ?? new BuildalyzerProvider();
-        _nugetRestoreProcess = nugetRestoreProcess ?? new NugetRestoreProcess();
-        _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<InputFileResolver>();
+        FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+        _analyzerProvider = analyzerProvider ?? throw new ArgumentNullException(nameof(analyzerProvider));
+        _nugetRestoreProcess = nugetRestoreProcess ?? throw new ArgumentNullException(nameof(nugetRestoreProcess));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
-
-    public InputFileResolver() : this(new FileSystem()) { }
 
     public IFileSystem FileSystem { get; }
 

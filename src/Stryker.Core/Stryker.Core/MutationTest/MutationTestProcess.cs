@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -12,13 +13,13 @@ using Stryker.Abstractions.Testing;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.TestRunner.Tests;
 using Stryker.Utilities.Buildalyzer;
-using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.MutationTest;
 
 public interface IMutationTestProcess
 {
     MutationTestInput Input { get; }
+    void Initialize(MutationTestInput input, IStrykerOptions options, IReporter reporter);
     void Mutate();
     StrykerRunResult Test(IEnumerable<IMutant> mutantsToTest);
     void Restore();
@@ -28,61 +29,40 @@ public interface IMutationTestProcess
 
 public class MutationTestProcess : IMutationTestProcess
 {
-    private static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-    private readonly IReadOnlyProjectComponent _projectContents;
+    public MutationTestInput Input { get; set; }
+
+    private IStrykerOptions _options;
+    private IReadOnlyProjectComponent _projectContents;
+    private IReporter _reporter;
+    private readonly ILogger _logger;
     private readonly IMutationTestExecutor _mutationTestExecutor;
-    private readonly IReporter _reporter;
     private readonly ICoverageAnalyser _coverageAnalyser;
-    private readonly IStrykerOptions _options;
     private readonly IMutationProcess _mutationProcess;
-    private static readonly Dictionary<Language, Func<IStrykerOptions, IMutationProcess>> LanguageMap = [];
 
-    static MutationTestProcess() => DeclareMutationProcessForLanguage<CsharpMutationProcess>(Language.Csharp);
-
-    public static void DeclareMutationProcessForLanguage<T>(Language language) where T : IMutationProcess
+    public MutationTestProcess(
+        IMutationTestExecutor executor,
+        ICoverageAnalyser coverageAnalyzer,
+        IMutationProcess mutationProcess,
+        ILogger<MutationTestProcess> logger)
     {
-        var constructor = typeof(T).GetConstructor([typeof(IStrykerOptions)]);
-        if (constructor == null)
-        {
-            throw new NotSupportedException(
-                $"Failed to find a constructor with the appropriate signature for type {typeof(T)}");
-        }
-
-        LanguageMap[language] = y => (IMutationProcess)constructor.Invoke([y]);
+        _mutationTestExecutor = executor ?? throw new ArgumentNullException(nameof(executor));
+        _mutationProcess = mutationProcess ?? throw new ArgumentNullException(nameof(mutationProcess));
+        _coverageAnalyser = coverageAnalyzer ?? throw new ArgumentNullException(nameof(coverageAnalyzer));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public MutationTestProcess(MutationTestInput input,
-        IStrykerOptions options,
-        IReporter reporter,
-        IMutationTestExecutor executor,
-        IMutationProcess mutationProcess = null,
-        ICoverageAnalyser coverageAnalyzer = null)
+    public void Initialize(MutationTestInput input, IStrykerOptions options, IReporter reporter)
     {
         Input = input;
-        _reporter = reporter;
         _options = options;
-        _mutationTestExecutor = executor;
-        _mutationProcess = mutationProcess ?? BuildMutationProcess();
-        _coverageAnalyser = coverageAnalyzer ?? new CoverageAnalyser(_options);
+        _reporter = reporter;
         _projectContents = input.SourceProjectInfo.ProjectContents;
-    }
-
-    public MutationTestInput Input { get; }
-
-    private IMutationProcess BuildMutationProcess()
-    {
-        if (LanguageMap.ContainsKey(Input.SourceProjectInfo.AnalyzerResult.GetLanguage()))
-        {
-            return LanguageMap[Input.SourceProjectInfo.AnalyzerResult.GetLanguage()](_options);
-        }
-
-        throw new GeneralStrykerException("no valid language detected || no valid csproj or fsproj was given.");
+        Input.TestProjectsInfo.BackupOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
     }
 
     public void Mutate()
     {
-        Input.TestProjectsInfo.BackupOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
-        _mutationProcess.Mutate(Input);
+        _mutationProcess.Mutate(Input, _options);
     }
 
     public void FilterMutants() => _mutationProcess.FilterMutants(Input);
@@ -154,7 +134,7 @@ public class MutationTestProcess : IMutationTestProcess
         {
             if (mutant.ResultStatus == MutantStatus.Pending)
             {
-                Logger.LogWarning("Mutation {Id} was not fully tested.", mutant.Id);
+                _logger.LogWarning("Mutation {Id} was not fully tested.", mutant.Id);
             }
 
             OnMutantTested(mutant, reportedMutants);
@@ -241,14 +221,14 @@ public class MutationTestProcess : IMutationTestProcess
 
         if (mutantsNotRun.Count > blocks.Count)
         {
-            Logger.LogDebug(
+            _logger.LogDebug(
                 "Mutations will be tested in {BlocksCount} test runs, instead of {MutantsNotRun}.",
                 blocks.Count,
                 mutantsNotRun.Count);
         }
         else
         {
-            Logger.LogDebug(
+            _logger.LogDebug(
                 "Mutations will be tested in {BlocksCount} test runs.",
                 blocks.Count);
         }
@@ -257,6 +237,6 @@ public class MutationTestProcess : IMutationTestProcess
         return blocks;
     }
 
-    public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(Input.SourceProjectInfo,
+    public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(_options, Input.SourceProjectInfo,
         _mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests);
 }

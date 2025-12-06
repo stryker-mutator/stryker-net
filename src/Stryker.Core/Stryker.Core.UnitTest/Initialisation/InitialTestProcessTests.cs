@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
@@ -11,6 +12,7 @@ using Stryker.Core.Initialisation;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.VsTest;
+using Stryker.Utilities;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 
@@ -22,7 +24,7 @@ public class InitialTestProcessTests : TestBase
 
     public InitialTestProcessTests()
     {
-        _target = new InitialTestProcess();
+        _target = new InitialTestProcess(TestLoggerFactory.CreateLogger<InitialTestProcess>());
         _options = new StrykerOptions
         {
             AdditionalTimeout = 0
