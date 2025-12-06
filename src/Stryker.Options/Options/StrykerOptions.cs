@@ -87,6 +87,9 @@ public class StrykerOptions : IStrykerOptions
     /// <summary>
     /// The desired platform.
     /// </summary>
+    /// <remarks>
+    /// Will be <c>null</c> if no platform is specified in <see cref="Configuration"/>.
+    /// </remarks>
     public string Platform { get; private set; }
 
     /// <summary>
@@ -254,5 +257,5 @@ public class StrykerOptions : IStrykerOptions
     public IProvideId MutantIdProvider {get; set;}
 
     private readonly string _workingDirectoryField;
-    private readonly string _configuration;
+    private string _configuration;
 }

@@ -82,25 +82,6 @@ public class SolutionFile: ISolutionProvider
         return result;
     }
 
-    /// <summary>
-    /// Loads a solution file from disk
-    /// </summary>
-    /// <param name="path">path to a sln or slnx file</param>
-    /// <returns>a solution instance</returns>
-    /// <exception cref="InvalidOperationException">if the solution file format is not supported</exception>
-    public static SolutionFile LoadSolution(string path)
-    {
-        // Implementation to load a solution file
-        var serializer = SolutionSerializers.GetSerializerByMoniker(path);
-
-        if (serializer == null)
-        {
-            throw new InvalidOperationException($"No suitable solution serializer found for the given path ({path}).");
-        }
-
-        return AnalyzeSolution(serializer.OpenAsync(path, CancellationToken.None).Result);
-    }
-
     private static SolutionFile AnalyzeSolution(SolutionModel solution)
     {
         // extract needed information
@@ -132,5 +113,22 @@ public class SolutionFile: ISolutionProvider
         return result;
     }
 
-    public SolutionFile GetSolution(string solutionPath) => LoadSolution(solutionPath);
+    /// <summary>
+    /// Loads a solution file from disk
+    /// </summary>
+    /// <param name="solutionPath">path to a sln or slnx file</param>
+    /// <returns>a solution instance</returns>
+    /// <exception cref="InvalidOperationException">if the solution file format is not supported</exception>
+    public SolutionFile GetSolution(string solutionPath)
+    {
+        // Implementation to load a solution file
+        var serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath);
+
+        if (serializer == null)
+        {
+            throw new InvalidOperationException($"No suitable solution serializer found for the given path ({solutionPath}).");
+        }
+
+        return AnalyzeSolution(serializer.OpenAsync(solutionPath, CancellationToken.None).GetAwaiter().GetResult());
+    }
 }
