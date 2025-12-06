@@ -70,7 +70,7 @@ internal static class CommentParser
 
     public static MutationContext ParseNodeLeadingComments(SyntaxNode node, MutationContext context)
     {
-        var comments = node.GetFirstToken(true).GetPreviousToken(false)
+        var comments = node.GetFirstToken(true).GetPreviousToken(true)
             .TrailingTrivia.Union(node.GetLeadingTrivia())
             .Where(t => t.IsKind(SyntaxKind.MultiLineCommentTrivia) || t.IsKind(SyntaxKind.SingleLineCommentTrivia)).ToList();
         var result = comments.Aggregate(context, (current, t) => ProcessComment(node, current, t.ToString()));
