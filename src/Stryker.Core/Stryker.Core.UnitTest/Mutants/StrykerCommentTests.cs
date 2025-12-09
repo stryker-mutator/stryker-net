@@ -5,7 +5,8 @@ using Stryker.Abstractions;
 
 namespace Stryker.Core.UnitTest.Mutants;
 
-internal class StrykerCommentTests : MutantOrchestratorTestsBase
+[TestClass]
+public class StrykerCommentTests : MutantOrchestratorTestsBase
 {
     [TestMethod]
     public void ShouldNotMutateIfDisabledByComment()
@@ -28,7 +29,7 @@ internal class StrykerCommentTests : MutantOrchestratorTestsBase
         source = @"public void SomeMethod() {
 	var x = 0;
 	{
-	// Stryker disable all 
+	// Stryker disable all
 	  x++;
 	}
 	x/=2;
@@ -50,7 +51,7 @@ internal class StrykerCommentTests : MutantOrchestratorTestsBase
     {
         var source = @"public void SomeMethod() {
 	var x = 0;
-    if (condition && other) /* Stryker disable once all */ {  
+    if (condition && other) /* Stryker disable once all */ {
 	  x++;
       x*=2;
 	}
@@ -58,7 +59,7 @@ internal class StrykerCommentTests : MutantOrchestratorTestsBase
 }";
         var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var x = 0;
-    if ((StrykerNamespace.MutantControl.IsActive(2)?!(condition && other):(StrykerNamespace.MutantControl.IsActive(1)?condition || other:condition && other))) /* Stryker disable once all */ {  
+    if ((StrykerNamespace.MutantControl.IsActive(2)?!(condition && other):(StrykerNamespace.MutantControl.IsActive(1)?condition || other:condition && other))) /* Stryker disable once all */ {
 	  x++;
       x*=2;
 	}
@@ -97,7 +98,7 @@ x++;",
         @"if ((StrykerNamespace.MutantControl.IsActive(1)?!(cond):cond)) // Stryker disable once all
 x++;")]
     [DataRow("if (/* Stryker disable once all*/cond) x++;", "if (/* Stryker disable once all*/cond) if(StrykerNamespace.MutantControl.IsActive(2)){;}else{if(StrykerNamespace.MutantControl.IsActive(3)){x--;}else{x++;}}")]
-    
+
     public void ShouldNotMutateDependingOnWhereMultilineCommentIs(string source, string expected)
     {
         // must call reset as MsTest reuse test instance on/datarow
@@ -146,17 +147,17 @@ x++;")]
     }
 
     [TestMethod]
-    public void ShouldOnlyUseFirstComment()
+    public void ShouldUseEveryComment()
     {
         // enabling Stryker comment should have no impact
         var source = @"public void SomeMethod() {
-    /* Stryker disable once all */
-    // Stryker restore all
+    /* Stryker restore all */
+    // Stryker disable all
         x++;
     }";
         var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
-    /* Stryker disable once all */
-    // Stryker restore all
+    /* Stryker restore all */
+    // Stryker disable all
         x++;
     }}";
 
