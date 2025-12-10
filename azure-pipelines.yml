@@ -84,7 +84,7 @@ stages:
       displayName: 'Run unit tests'
       workingDirectory: 'src'
     - task: SonarCloudAnalyze@3
-    - task: SonarCloudPublish@3
+    - task: SonarCloudPublish@4
       inputs:
         pollingTimeoutSec: '300'
   - job: RunStrykerCLI
