@@ -6,14 +6,16 @@ using Stryker.Core.UnitTest;
 namespace Stryker.Core.UnitTest.Options.Inputs;
 
 [TestClass]
-public class DevModeInputTests : TestBase
+public class DiagModeInputTests : TestBase
 {
     [TestMethod]
     public void ShouldHaveHelpText()
     {
-        var target = new DevModeInput();
-        target.HelpText.ShouldBe(@"Stryker automatically removes all mutations from a method if a failed mutation could not be rolled back
-    Setting this flag makes stryker not remove the mutations but rather crash on failed rollbacks | default: 'False'");
+        var target = new DiagModeInput();
+        target.HelpText.ShouldBe("""
+                                 Stryker enters diagnostic mode. Useful when encountering issues.
+                                 Setting this flag makes Stryker increase the debug level and log more information to help troubleshooting. | default: 'False'
+                                 """);
     }
 
     [TestMethod]
@@ -22,7 +24,7 @@ public class DevModeInputTests : TestBase
     [DataRow(null, false)]
     public void ShouldValidate(bool? input, bool expected)
     {
-        var target = new DevModeInput { SuppliedInput = input };
+        var target = new DiagModeInput { SuppliedInput = input };
 
         var result = target.Validate();
 

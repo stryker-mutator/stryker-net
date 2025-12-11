@@ -176,7 +176,7 @@ Generated source code may be missing.", analyzer);
             _ => Language.Undefined,
         };
 
-    private static readonly string[] knownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit"];
+    private static readonly string[] knownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit", "nunit"];
 
     public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
 
