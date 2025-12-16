@@ -1,6 +1,19 @@
 {
   "version": 2,
   "dependencies": {
-    "net8.0": {}
+    "net8.0": {
+      "DotNet.ReproducibleBuilds": {
+        "type": "Direct",
+        "requested": "[1.2.39, )",
+        "resolved": "1.2.39",
+        "contentHash": "fcFN01tDTIQqDuTwr1jUQK/geofiwjG5DycJQOnC72i1SsLAk1ELe+apBOuZ11UMQG8YKFZG1FgvjZPbqHyatg=="
+      },
+      "Stryker.Regex.Parser": {
+        "type": "Direct",
+        "requested": "[1.0.0, )",
+        "resolved": "1.0.0",
+        "contentHash": "39OYYkvF2KlMbhxLBM+GTJEzPLu0HfN1v4AOApDFt3+ivd5F8HXwV5yp2A2+i7a7F5Tv2zr/7faCIqZj9c7x4g=="
+      }
+    }
   }
 }
