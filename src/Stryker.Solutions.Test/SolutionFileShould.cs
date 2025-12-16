@@ -10,7 +10,7 @@ public sealed class SolutionFileShould
     {
         // Arrange
         // Act
-        var solution = new SolutionFile().GetSolution(Path.Combine("..","..","..","..","Stryker.sln"));
+        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","Stryker.sln"));
         // Assert
         Assert.IsNotNull(solution);
     }
@@ -20,7 +20,7 @@ public sealed class SolutionFileShould
     {
         // Arrange
         // Act
-        var solution = new SolutionFile().GetSolution(Path.Combine("..","..","..","..","Stryker.sln"));
+        var solution =SolutionFile.GetSolution(Path.Combine("..","..","..","..","Stryker.sln"));
         // Assert
         solution.GetBuildTypes().ShouldBe(["Debug", "Release"]);
     }
@@ -30,7 +30,7 @@ public sealed class SolutionFileShould
     {
         // Arrange
         // Act
-        var solution = new SolutionFile().GetSolution(Path.Combine("..","..","..","..","Stryker.sln"));
+        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","Stryker.sln"));
 
         // Assert
         solution.ConfigurationExists("Debug", "Any CPU").ShouldBeTrue();
@@ -42,7 +42,7 @@ public sealed class SolutionFileShould
     {
         // Arrange
         // Act
-        var solution = new SolutionFile().GetSolution(Path.Combine("..","..","..","..","Stryker.sln"));
+        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","Stryker.sln"));
         // Assert
         solution.ConfigurationExists("Debug", "Any CPU").ShouldBeTrue();
 

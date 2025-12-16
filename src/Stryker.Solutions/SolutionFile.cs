@@ -8,7 +8,12 @@ public interface ISolutionProvider
     SolutionFile GetSolution(string solutionPath);
 }
 
-public class SolutionFile: ISolutionProvider
+public class SolutionProvider: ISolutionProvider
+{
+    public SolutionFile GetSolution(string solutionPath) => SolutionFile.GetSolution(solutionPath);
+}
+
+public class SolutionFile
 {
     private readonly Dictionary<(string buildType, string platform), Dictionary<string, (string buildType, string platform)>> _configurations = [];
 
@@ -47,14 +52,14 @@ public class SolutionFile: ISolutionProvider
     /// <summary>
     /// Gets all projects for a given solution configuration (and optional platform) with project details
     /// </summary>
-    /// <param name="buildType">configuration name (Debug, Release...)</param>
+    /// <param name="effectiveBuildType">configuration name (Debug, Release...)</param>
     /// <param name="platform">platform (AnyCPU, x86, x64...)</param>
-    /// <returns>A collection of tuple with the projects' filename, project's configuration and project's platform for the provided criteria .</returns>
-    public IReadOnlyCollection<(string file, string buildType, string platform)> GetProjectsWithDetails(string buildType, string? platform = null)
+    /// <returns>A collection of tuples with the projects' filename, project's configuration and project's platform for the provided criteria .</returns>
+    public IReadOnlyCollection<(string file, string buildType, string platform)> GetProjectsWithDetails(string effectiveBuildType, string? platform = null)
     {
-        buildType = GetBuildType(buildType);
+        effectiveBuildType = GetBuildType(effectiveBuildType);
         return _configurations
-            .Where(entry => entry.Key.buildType == buildType && (platform == null || entry.Key.platform == platform))
+            .Where(entry => entry.Key.buildType == effectiveBuildType && (platform == null || entry.Key.platform == platform))
             .SelectMany(entry => entry.Value).Select(p => (p.Key, p.Value.buildType, p.Value.platform))
             .ToImmutableList();
     }
@@ -119,16 +124,12 @@ public class SolutionFile: ISolutionProvider
     /// <param name="solutionPath">path to a sln or slnx file</param>
     /// <returns>a solution instance</returns>
     /// <exception cref="InvalidOperationException">if the solution file format is not supported</exception>
-    public SolutionFile GetSolution(string solutionPath)
+    public static SolutionFile GetSolution(string solutionPath)
     {
         // Implementation to load a solution file
         var serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath);
 
-        if (serializer == null)
-        {
-            throw new InvalidOperationException($"No suitable solution serializer found for the given path ({solutionPath}).");
-        }
-
-        return AnalyzeSolution(serializer.OpenAsync(solutionPath, CancellationToken.None).GetAwaiter().GetResult());
+        return serializer == null ? throw new InvalidOperationException($"No suitable solution serializer found for the given path ({solutionPath}).")
+            : AnalyzeSolution(serializer.OpenAsync(solutionPath, CancellationToken.None).GetAwaiter().GetResult());
     }
 }

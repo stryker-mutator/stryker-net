@@ -35,7 +35,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IInitialBuildProcess, InitialBuildProcess>();
         services.AddTransient<IInitialTestProcess, InitialTestProcess>();
 
-        services.AddSingleton<ISolutionProvider, SolutionFile>();
+        services.AddSingleton<ISolutionProvider, SolutionProvider>();
         services.AddTransient<IInputFileResolver, InputFileResolver>();
         services.AddTransient<INugetRestoreProcess, NugetRestoreProcess>();
         services.AddTransient<ICoverageAnalyser, CoverageAnalyser>();
