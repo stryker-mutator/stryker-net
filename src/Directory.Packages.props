@@ -2,7 +2,7 @@
   <ItemGroup>
     <PackageVersion Include="Azure.Storage.Files.Shares" Version="12.24.0" />
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.2.39" />
-    <PackageVersion Include="LaunchDarkly.EventSource" Version="5.2.1" />
+    <PackageVersion Include="LaunchDarkly.EventSource" Version="5.3.0" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
     <PackageVersion Include="MSTest" Version="3.11.1" />
