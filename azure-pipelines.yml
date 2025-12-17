@@ -83,7 +83,7 @@ stages:
     - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage collect "dotnet test" -f xml -o "$(Agent.BuildDirectory)\TestResults\coverage.xml"'
       displayName: 'Run unit tests'
       workingDirectory: 'src'
-    - task: SonarCloudAnalyze@3
+    - task: SonarCloudAnalyze@4
     - task: SonarCloudPublish@3
       inputs:
         pollingTimeoutSec: '300'
