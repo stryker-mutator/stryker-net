@@ -10,9 +10,9 @@
       },
       "LaunchDarkly.EventSource": {
         "type": "Direct",
-        "requested": "[5.2.1, )",
-        "resolved": "5.2.1",
-        "contentHash": "BHsoKW3TE0g+2FZSe8jaIBp2/RgHbjHJCKjQ7zSiOBK0V4JJaVYlmeVmhU0kXb2ru8QzLQ9ftEDITZ/ZSac/Gg==",
+        "requested": "[5.3.0, )",
+        "resolved": "5.3.0",
+        "contentHash": "i++YvdrzvTc1tOxfVreU2yjo/E+iTFcVtwiB4PZ/3uTouNdhABLbJfz1jmGN3jmnvJKWhsMeEZLZM0dzkI+PXQ==",
         "dependencies": {
           "LaunchDarkly.Logging": "[2.0.0, 3.0.0)"
         }
