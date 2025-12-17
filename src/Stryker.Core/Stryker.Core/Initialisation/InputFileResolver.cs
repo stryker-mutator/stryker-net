@@ -61,7 +61,6 @@ public class InputFileResolver : IInputFileResolver
 
     public IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(IStrykerOptions options)
     {
-        var manager = _analyzerProvider.Provide(options.DevMode ? new AnalyzerManagerOptions { LogWriter = _buildalyzerLog } : null);
 
         Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults;
         if (options.IsSolutionContext)
@@ -94,7 +93,7 @@ public class InputFileResolver : IInputFileResolver
                 .Select(p => (p.file, options.TargetFramework, p.buildType)).ToList();
             _logger.LogDebug("Analyzing {0} projects.", projectsWithDetails.Count);
             // we match test projects to mutable projects
-            findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectsWithDetails, options, manager, ScanMode.NoScan));
+            findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectsWithDetails, options, ScanMode.NoScan));
 
             return findMutableAnalyzerResults.Count != 0 ? AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults)
                 : throw new InputException("No project references found. Please add a project reference to your test project and retry.");
@@ -108,7 +107,7 @@ public class InputFileResolver : IInputFileResolver
          List<(string projectFile, string framework, string configuration)> projectList =
              [..testProjectFileNames.Select(p => (p, options.TargetFramework, options.Configuration))];
         // we match test projects to mutable projects
-        findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectList, options, manager, ScanMode.ScanTestProjectReferences));
+        findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectList, options, ScanMode.ScanTestProjectReferences));
 
         if (findMutableAnalyzerResults.All(p => p.Value.All(r => !r.Succeeded)) )
         {
@@ -182,11 +181,12 @@ public class InputFileResolver : IInputFileResolver
 
     private ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> AnalyzeAllNeededProjects(
         List<(string projectFile, string framework, string configuration)> projects, IStrykerOptions options
-        , IAnalyzerManager manager, ScanMode mode)
+        , ScanMode mode)
     {
         var mutableProjectsAnalyzerResults = new ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)>();
         var list = new DynamicEnumerableQueue<(string projectFile, string framework, string configuration)>(projects);
         const string Configuration = "Configuration";
+        var analyzerManagerOptions = options.DevMode ? new AnalyzerManagerOptions { LogWriter = _buildalyzerLog } : null;
         try
         {
             var parallelOptions = new ParallelOptions
@@ -197,14 +197,12 @@ public class InputFileResolver : IInputFileResolver
                 Parallel.ForEach(list.Consume(),
                     parallelOptions, entry =>
                     {
+                        var manager = _analyzerProvider.Provide(analyzerManagerOptions);
+
                         // specify configuration if any provided
                         if (!string.IsNullOrEmpty(entry.configuration))
                         {
                             manager.SetGlobalProperty(Configuration, entry.configuration);
-                        }
-                        else
-                        {
-                            manager.RemoveGlobalProperty(Configuration);
                         }
                         var buildResult = AnalyzeThisProject(options,
                             manager.GetProject(entry.projectFile), entry.framework, normalizedProjectUnderTestNameFilter,
