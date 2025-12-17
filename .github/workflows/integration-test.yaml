@@ -1,11 +1,17 @@
-name: integration test macos m1
-run-name: e2e ${{ github.head_ref }} on macOS apple silicon ARM
+name: integration test
+run-name: e2e ${{ github.head_ref }}
 
 on: [pull_request]
 
 jobs:
   integration-test:
-    runs-on: macos-15
+    strategy:
+      matrix:
+        agent: [ubuntu-latest, windows-latest, macos-latest]
+        category: [InitCommand, SingleTestProject, MultipleTestProjects, Solution]
+    runs-on: ${{ matrix.agent }}
+    env:
+      CATEGORY: ${{ matrix.category }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-dotnet@v5
