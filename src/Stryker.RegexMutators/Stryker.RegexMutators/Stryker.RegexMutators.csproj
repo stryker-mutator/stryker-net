@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <ItemGroup>
 	  <PackageReference Include="Stryker.Regex.Parser" />
   </ItemGroup>
