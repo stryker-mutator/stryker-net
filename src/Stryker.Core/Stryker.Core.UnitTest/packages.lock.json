@@ -856,6 +856,7 @@
           "Stryker.DataCollector": "[4.8.1, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
           "Stryker.RegexMutators": "[4.8.1, )",
+          "Stryker.Solutions": "[4.8.1, )",
           "Stryker.TestRunner.VsTest": "[4.8.1, )",
           "Stryker.Utilities": "[4.8.1, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
@@ -895,6 +896,12 @@
         "type": "Project",
         "dependencies": {
           "Stryker.Regex.Parser": "[1.0.0, )"
+        }
+      },
+      "stryker.solutions": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.VisualStudio.SolutionPersistence": "[1.0.52, )"
         }
       },
       "stryker.testrunner": {
@@ -1067,6 +1074,12 @@
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }
+      },
+      "Microsoft.VisualStudio.SolutionPersistence": {
+        "type": "CentralTransitive",
+        "requested": "[1.0.52, )",
+        "resolved": "1.0.52",
+        "contentHash": "oNv2JtYXhpdJrX63nibx1JT3uCESOBQ1LAk7Dtz/sr0+laW0KRM6eKp4CZ3MHDR2siIkKsY8MmUkeP5DKkQQ5w=="
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "CentralTransitive",

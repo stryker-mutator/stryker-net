@@ -7,15 +7,16 @@ using Buildalyzer;
 using Buildalyzer.Construction;
 using Buildalyzer.Environment;
 using Moq;
+using Stryker.Solutions;
 using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 
-public class BuildAnalyzerTestsBase : TestBase
+public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
 {
-    protected internal const string DefaultFramework = "net6.0";
+    protected const string DefaultFramework = "net6.0";
     protected readonly MockFileSystem FileSystem = new();
-    protected string ProjectPath;
+    protected readonly string ProjectPath;
     private readonly Dictionary<string, Dictionary<string, IAnalyzerResult>> _projectCache = [];
     protected readonly Mock<IBuildalyzerProvider> BuildalyzerProviderMock = new(MockBehavior.Strict);
 
@@ -26,6 +27,7 @@ public class BuildAnalyzerTestsBase : TestBase
 
         ProjectPath = FileSystem.Path.Combine(filesystemRoot, "sourceproject");
     }
+
 
     /// <summary>
     /// Build a simple production project
@@ -288,6 +290,7 @@ public class BuildAnalyzerTestsBase : TestBase
         buildalyzerAnalyzerManagerMock.Setup(x => x.Projects)
             .Returns(analyzerResults);
         buildalyzerAnalyzerManagerMock.Setup(x => x.SetGlobalProperty(It.IsAny<string>(), It.IsAny<string>()));
+        buildalyzerAnalyzerManagerMock.Setup(x => x.RemoveGlobalProperty(It.IsAny<string>()));
         buildalyzerAnalyzerManagerMock.Setup(x => x.SolutionFilePath).Returns((string)null);
 
         foreach (var analyzerResult in analyzerResults)
@@ -296,10 +299,19 @@ public class BuildAnalyzerTestsBase : TestBase
             buildalyzerAnalyzerManagerMock.Setup(x => x.GetProject(filename)).Returns(analyzerResult.Value);
         }
 
-        BuildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerManagerOptions>()))
+        BuildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<AnalyzerManagerOptions>()))
             .Returns(buildalyzerAnalyzerManagerMock.Object);
         BuildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<AnalyzerManagerOptions>()))
             .Returns(buildalyzerAnalyzerManagerMock.Object);
         return buildalyzerAnalyzerManagerMock;
+    }
+
+    public SolutionFile GetSolution(string solutionPath)
+    {
+        if (!FileSystem.FileExists(solutionPath))
+        {
+            throw new InvalidOperationException($"Solution file {solutionPath} does not exist in the file system.");
+        }
+        return SolutionFile.BuildFromProjectList(_projectCache.Keys.ToList());
     }
 }
