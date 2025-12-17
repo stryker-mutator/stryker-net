@@ -10,11 +10,26 @@ namespace TargetProject.Constructs;
 public static class Enumerable
 {
     // Extension block
-    extension<T>(IEnumerable<T> source)
-        where T : IEquatable<T>
+    extension<TSource>(IEnumerable<TSource> source) // extension members for IEnumerable<TSource>
     {
-        public IEnumerable<T> ValuesEqualTo(T threshold)
-            => source.Where(x => x.Equals(threshold));
+        // Extension property:
+        public bool IsEmpty => !source.Any();
+
+        // Extension method:
+        public IEnumerable<TSource> Where(Func<TSource, bool> predicate) => [];
+    }
+
+    // extension block, with a receiver type only
+    extension<TSource>(IEnumerable<TSource>) // static extension members for IEnumerable<Source>
+    {
+        // static extension method:
+        public static IEnumerable<TSource> Combine(IEnumerable<TSource> first, IEnumerable<TSource> second) => [];
+
+        // static extension property:
+        public static IEnumerable<TSource> Identity => [];
+
+        // static user defined operator:
+        public static IEnumerable<TSource> operator +(IEnumerable<TSource> left, IEnumerable<TSource> right) => left.Concat(right);
     }
 }
 
