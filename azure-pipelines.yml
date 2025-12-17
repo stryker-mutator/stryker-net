@@ -64,7 +64,7 @@ stages:
         arguments: install dotnet-coverage --tool-path $(Agent.BuildDirectory)/tools
         includeNuGetOrg: true
     - template: pipeline-templates/populate-cache-steps.yml
-    - task: SonarCloudPrepare@3
+    - task: SonarCloudPrepare@4
       inputs:
         SonarCloud: 'SonarCloud stryker-net'
         organization: 'stryker-net'
