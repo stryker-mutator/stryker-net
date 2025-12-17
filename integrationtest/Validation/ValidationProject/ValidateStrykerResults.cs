@@ -102,7 +102,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
          
-        CheckReportMutants(report, total: 649, ignored: 113, survived: 5, killed: 11, timeout: 2, nocoverage: 481);
+        CheckReportMutants(report, total: 660, ignored: 115, survived: 5, killed: 11, timeout: 2, nocoverage: 489);
         CheckReportTestCounts(report, total: 21);
     }
 
