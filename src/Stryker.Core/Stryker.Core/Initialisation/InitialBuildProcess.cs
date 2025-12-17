@@ -11,8 +11,13 @@ namespace Stryker.Core.Initialisation;
 
 public interface IInitialBuildProcess
 {
-    void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration = null,
-        string targetFramework = null, string msbuildPath = null);
+    void InitialBuild(bool fullFramework,
+        string projectPath,
+        string solutionPath,
+        string configuration = null,
+        string platform = null,
+        string targetFramework = null,
+        string msbuildPath = null);
 }
 
 public class InitialBuildProcess : IInitialBuildProcess
@@ -30,8 +35,9 @@ public class InitialBuildProcess : IInitialBuildProcess
         _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
-    
-    public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration = null, string targetFramework = null,
+
+    public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration = null,
+        string platform = null, string targetFramework = null,
         string msbuildPath = null)
     {
         if (fullFramework && string.IsNullOrEmpty(solutionPath))
@@ -50,6 +56,7 @@ public class InitialBuildProcess : IInitialBuildProcess
             buildPath,
             fullFramework,
             configuration: configuration,
+            platform: platform,
             forcedFramework: targetFramework);
 
         if (result.ExitCode != ExitCodes.Success && !string.IsNullOrEmpty(solutionPath))
@@ -61,7 +68,7 @@ public class InitialBuildProcess : IInitialBuildProcess
                 buildPath,
                 true,
                 configuration,
-                "-t:restore -p:RestorePackagesConfig=true", forcedFramework: targetFramework);
+                options: "-t:restore -p:RestorePackagesConfig=true", forcedFramework: targetFramework);
 
             if (result.ExitCode != ExitCodes.Success)
             {
@@ -71,8 +78,8 @@ public class InitialBuildProcess : IInitialBuildProcess
             (result, exe, args) = msBuildHelper.BuildProject(directoryName,
                 buildPath,
                 true,
-                configuration
-                , forcedFramework: targetFramework);
+                configuration,
+                forcedFramework: targetFramework);
         }
 
         CheckBuildResult(result, target, exe, args);

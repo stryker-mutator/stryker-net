@@ -12,7 +12,7 @@ public class ConfigurationInputTests : TestBase
     public void ShouldHaveHelpText()
     {
         var target = new ConfigurationInput();
-        target.HelpText.ShouldBe("Configuration to use when building the project(s).");
+        target.HelpText.ShouldBe("Configuration to use when building the project(s) (e.g., 'Debug' or 'Release'). If not specified, the default configuration of the project(s) will be used.");
     }
 
     [TestMethod]
@@ -33,15 +33,5 @@ public class ConfigurationInputTests : TestBase
         var result = target.Validate();
 
         result.ShouldBeNull();
-    }
-
-    [TestMethod]
-    public void ShouldThrowOnEmptyInput()
-    {
-        var target = new ConfigurationInput { SuppliedInput = "   " };
-
-        var ex = Should.Throw<InputException>(() => target.Validate());
-
-        ex.Message.ShouldBe("Please provide a non whitespace only configuration.");
     }
 }

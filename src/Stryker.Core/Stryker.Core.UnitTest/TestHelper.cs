@@ -31,6 +31,7 @@ public static class TestHelper
             properties = new Dictionary<string, string>();
             analyzerResultMock.Setup(x => x.Properties).Returns(properties);
         }
+
         if (projectFilePath != null)
         {
             analyzerResultMock.Setup(x => x.ProjectFilePath).Returns(projectFilePath);
@@ -75,4 +76,5 @@ public static class TestHelper
 
         return analyzerResultMock;
     }
+
 }
