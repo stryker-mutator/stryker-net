@@ -9,7 +9,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <VersionPrefix>4.8.1</VersionPrefix>
+    <VersionPrefix>4.9.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <PackageId>stryker</PackageId>
     <Product>Mutation Testing</Product>

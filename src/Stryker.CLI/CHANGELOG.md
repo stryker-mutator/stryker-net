@@ -1,3 +1,12 @@
+# [4.9.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.8.1...dotnet-stryker@4.9.0) (2025-12-17)
+
+
+### Features
+
+* **analysis:** Support SLNX solution files, solution and platform configuration ([#3340](https://github.com/stryker-mutator/stryker-net/issues/3340)) ([6ed2d32](https://github.com/stryker-mutator/stryker-net/commit/6ed2d32d93e334707df08730dfeed7bba438e2a1))
+
+
+
 ## [4.8.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.8.0...dotnet-stryker@4.8.1) (2025-08-23)
 
 
