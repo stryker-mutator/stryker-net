@@ -36,7 +36,9 @@ public class SolutionFile
     public IReadOnlyCollection<string> GetProjects(string buildType, string? platform = null)
         => _configurations
             .Where(entry => entry.Key.buildType == buildType && (platform == null || entry.Key.platform == platform))
-            .SelectMany(entry => entry.Value.Keys).ToImmutableList();
+            .SelectMany(entry => entry.Value.Keys)
+            .Distinct()
+            .ToImmutableList();
 
     private const string DefaultBuildType = "Debug";
 
@@ -61,6 +63,7 @@ public class SolutionFile
         return _configurations
             .Where(entry => entry.Key.buildType == effectiveBuildType && (platform == null || entry.Key.platform == platform))
             .SelectMany(entry => entry.Value).Select(p => (p.Key, p.Value.buildType, p.Value.platform))
+            .Distinct()
             .ToImmutableList();
     }
 
