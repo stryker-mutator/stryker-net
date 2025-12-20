@@ -67,4 +67,23 @@ public sealed class SolutionFileShould
         };
         solution.GetProjects("Debug").ShouldBe(expectedProjects);
     }
+
+    [TestMethod]
+    [DataRow("ExampleLibrary.sln", "Any CPU")]
+    [DataRow("ExampleLibrary.slnx", "AnyCPU")]
+    public void ProvideProjectListForGivenConfigurationOnSolutionWithMultiplePlatforms(string solutionFile, string expectedPlatform)
+    {
+        // Arrange
+        // Act
+        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","..","fixtures","ExampleLibrary",solutionFile));
+
+        // Assert
+        var expectedProjectDetails = new List<(string file, string buildType, string platform)>
+        {
+            (Path.Combine("src", "ExampleLibrary.csproj"), "Debug", expectedPlatform),
+            (Path.Combine("tests", "ExampleLibrary.Tests.csproj"), "Debug", expectedPlatform),
+        };
+        solution.GetProjects("Debug").ShouldBe(expectedProjectDetails.Select(x => x.file));
+        solution.GetProjectsWithDetails("Debug").ShouldBe(expectedProjectDetails);
+    }
 }
