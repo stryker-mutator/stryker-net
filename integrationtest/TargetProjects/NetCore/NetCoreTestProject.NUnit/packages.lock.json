@@ -128,7 +128,7 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "[4.9.0, )",
+          "Library": "[4.9.1, )",
           "Microsoft.CodeAnalysis.Common": "[5.0.0, )",
           "Serilog": "[4.3.0, )"
         }
