@@ -39,7 +39,7 @@ public class SolutionInput : Input<string>
         }
 
         var sb = new StringBuilder();
-        sb.AppendLine($"Expected exactly one .sln? file, found more than one:");
+        sb.AppendLine($"Expected exactly one solution file (.sln or .slnx), found more than one:");
         foreach (var file in solutionFiles)
         {
             sb.AppendLine(file);

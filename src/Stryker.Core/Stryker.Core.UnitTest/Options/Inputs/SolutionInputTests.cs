@@ -79,7 +79,7 @@ public class SolutionInputTests : TestBase
         fileSystem.AddFile(solution2, new MockFileData(""));
         fileSystem.Directory.SetCurrentDirectory(dir);
         var errorMessage =
-$@"Expected exactly one .sln? file, found more than one:
+$@"Expected exactly one solution file (.sln or .slnx), found more than one:
 {solution1}
 {solution2}
 ";

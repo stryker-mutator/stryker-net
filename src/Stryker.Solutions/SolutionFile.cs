@@ -61,7 +61,7 @@ public class SolutionFile
     /// <returns>true if at least one project exists in this configuration (and platform if specified)</returns>
     public bool ConfigurationExists(string buildType, string? platform = null)
     {
-        platform??= DefaultPlatform;
+        platform ??= DefaultPlatform;
         return _configurations.Keys.Any(x => x.buildType == buildType && platform == x.platform);
     }
 
@@ -101,7 +101,7 @@ public class SolutionFile
     public IReadOnlyCollection<(string file, string buildType, string platform)> GetProjectsWithDetails(string effectiveBuildType, string? platform = null)
     {
         effectiveBuildType = GetBuildType(effectiveBuildType);
-        platform??= DefaultPlatform;
+        platform ??= DefaultPlatform;
         return _configurations
             .Where(entry => entry.Key.buildType == effectiveBuildType && entry.Key.platform == platform)
             .SelectMany(entry => entry.Value).Select(p => (p.Key, p.Value.buildType, p.Value.platform))
@@ -110,16 +110,16 @@ public class SolutionFile
     }
 
     /// <summary>
-    /// Create a solution file from a list of projects, assuming all projects are built in Debug|Any CPU
+    /// Create a solution file from a list of projects having two build types, Debug and Release, and the provided platforms.
     /// </summary>
     /// <param name="projects">list of csproj filenames</param>
-    /// <param name="platforms">list of declared platforms</param>
+    /// <param name="platforms">list of declared platforms. Default to AnyCpu and x86</param>
     /// <returns>a solution instance</returns>
     /// <remarks>this method is used for testing purposes, as the underlying solution parser do not support any form of mocking</remarks>
     public static SolutionFile BuildFromProjectList(List<string> projects, string[]? platforms = null)
     {
         var result = new SolutionFile();
-        platforms??=[ AnyCpu, "x86" ];
+        platforms ??= [ AnyCpu, "x86" ];
         // default to Debug|Any CPU
         string[] buildTypes = ["Debug", "Release"];
         foreach (var buildType in buildTypes)
