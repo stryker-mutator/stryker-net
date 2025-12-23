@@ -79,6 +79,9 @@ public class SolutionFile
             .Where(entry => entry.Key.buildType == buildType && entry.Key.platform == platform)
             .ToList();
 
+        // Defensive check: Since _configurations uses (buildType, platform) as the key,
+        // there should only ever be 0 or 1 matching entries. This check exists to catch
+        // potential bugs in the data structure or solution parsing logic.
         if (matchingConfigurations.Count > 1)
         {
             throw new InvalidOperationException(
@@ -117,6 +120,9 @@ public class SolutionFile
             .Where(entry => entry.Key.buildType == effectiveBuildType && entry.Key.platform == platform)
             .ToList();
 
+        // Defensive check: Since _configurations uses (buildType, platform) as the key,
+        // there should only ever be 0 or 1 matching entries. This check exists to catch
+        // potential bugs in the data structure or solution parsing logic.
         if (matchingConfigurations.Count > 1)
         {
             throw new InvalidOperationException(
