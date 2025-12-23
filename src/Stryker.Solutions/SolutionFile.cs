@@ -75,19 +75,7 @@ public class SolutionFile
     {
         platform ??= DefaultPlatform;
 
-        var matchingConfigurations = _configurations
-            .Where(entry => entry.Key.buildType == buildType && entry.Key.platform == platform)
-            .ToList();
-
-        // Defensive check: Since _configurations uses (buildType, platform) as the key,
-        // there should only ever be 0 or 1 matching entries. This check exists to catch
-        // potential bugs in the data structure or solution parsing logic.
-        if (matchingConfigurations.Count > 1)
-        {
-            throw new InvalidOperationException(
-                $"Multiple configurations found for buildType '{buildType}' and platform '{platform}'. " +
-                "This indicates a bug in solution parsing. Please report this issue.");
-        }
+        var matchingConfigurations = GetMatchingConfigurations(buildType, platform);
 
         return matchingConfigurations
             .SelectMany(entry => entry.Value.Keys)
@@ -106,18 +94,16 @@ public class SolutionFile
     }
 
     /// <summary>
-    /// Gets all projects for a given solution configuration (and optional platform) with project details
+    /// Gets matching configurations and validates that at most one configuration exists for the given criteria.
     /// </summary>
-    /// <param name="effectiveBuildType">configuration name (Debug, Release...)</param>
-    /// <param name="platform">platform (AnyCPU, x86, x64...)</param>
-    /// <returns>A collection of tuples with the projects' filename, project's configuration and project's platform for the provided criteria .</returns>
-    public IReadOnlyCollection<(string file, string buildType, string platform)> GetProjectsWithDetails(string effectiveBuildType, string? platform = null)
+    /// <param name="buildType">Build type to match</param>
+    /// <param name="platform">Platform to match</param>
+    /// <returns>List of matching configurations (should contain 0 or 1 entries)</returns>
+    /// <exception cref="InvalidOperationException">Thrown if multiple configurations match, indicating a bug in solution parsing</exception>
+    private List<KeyValuePair<(string buildType, string platform), Dictionary<string, (string buildType, string platform)>>> GetMatchingConfigurations(string buildType, string platform)
     {
-        effectiveBuildType = GetBuildType(effectiveBuildType);
-        platform??= DefaultPlatform;
-
         var matchingConfigurations = _configurations
-            .Where(entry => entry.Key.buildType == effectiveBuildType && entry.Key.platform == platform)
+            .Where(entry => entry.Key.buildType == buildType && entry.Key.platform == platform)
             .ToList();
 
         // Defensive check: Since _configurations uses (buildType, platform) as the key,
@@ -126,9 +112,25 @@ public class SolutionFile
         if (matchingConfigurations.Count > 1)
         {
             throw new InvalidOperationException(
-                $"Multiple configurations found for buildType '{effectiveBuildType}' and platform '{platform}'. " +
+                $"Multiple configurations found for buildType '{buildType}' and platform '{platform}'. " +
                 "This indicates a bug in solution parsing. Please report this issue.");
         }
+
+        return matchingConfigurations;
+    }
+
+    /// <summary>
+    /// Gets all projects for a given solution configuration (and optional platform) with project details
+    /// </summary>
+    /// <param name="effectiveBuildType">configuration name (Debug, Release...)</param>
+    /// <param name="platform">platform (AnyCPU, x86, x64...)</param>
+    /// <returns>A collection of tuples with the projects' filename, project's configuration and project's platform for the provided criteria .</returns>
+    public IReadOnlyCollection<(string file, string buildType, string platform)> GetProjectsWithDetails(string effectiveBuildType, string? platform = null)
+    {
+        effectiveBuildType = GetBuildType(effectiveBuildType);
+        platform ??= DefaultPlatform;
+
+        var matchingConfigurations = GetMatchingConfigurations(effectiveBuildType, platform);
 
         return matchingConfigurations
             .SelectMany(entry => entry.Value).Select(p => (p.Key, p.Value.buildType, p.Value.platform))
