@@ -19,11 +19,13 @@ public class SolutionInputTests : TestBase
     }
 
     [TestMethod]
-    public void ShouldReturnSolutionPathIfExists()
+    [DataRow("solution.sln")]
+    [DataRow("solution.slnx")]
+    public void ShouldReturnSolutionPathIfExists(string solutionFileName)
     {
         var dir = Directory.GetCurrentDirectory();
-        var path = Path.Combine(dir, "solution.sln");
         var fileSystem = new MockFileSystem();
+        var path = fileSystem.Path.Combine(dir, solutionFileName);
         fileSystem.AddDirectory(dir);
         fileSystem.AddFile(path, new MockFileData(""));
 

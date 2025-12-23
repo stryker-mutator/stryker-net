@@ -11,11 +11,14 @@ public class SolutionInput : Input<string>
 
     protected override string Description => "Full path to your solution file. Required on dotnet framework.";
 
+    private readonly string[] _validSuffixes = [".sln", ".slnx"];
+
     public string Validate(string basePath, IFileSystem fileSystem)
     {
         if (SuppliedInput is not null)
         {
-            if (!SuppliedInput.EndsWith(".sln"))
+            var lowerInvariant = SuppliedInput.ToLowerInvariant();
+            if (!_validSuffixes.Any(s => lowerInvariant.EndsWith(s)))
             {
                 throw new InputException($"Given path is not a solution file: {SuppliedInput}");
             }
