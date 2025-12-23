@@ -13,7 +13,7 @@ public class SolutionInput : Input<string>
 
     private readonly string[] _validSuffixes = [".sln", ".slnx"];
 
-    public string Validate(string basePath, IFileSystem fileSystem)
+    public string? Validate(string basePath, IFileSystem fileSystem)
     {
         if (SuppliedInput is not null)
         {
@@ -30,20 +30,20 @@ public class SolutionInput : Input<string>
 
             return fullPath;
         }
-        else
+
+        var solutionFiles = fileSystem.Directory.GetFiles(basePath, "*.*")
+            .Where(file => _validSuffixes.Any(s => file.ToLowerInvariant().EndsWith(s))).ToArray();
+        if (solutionFiles.Length <= 1)
         {
-            var solutionFiles = fileSystem.Directory.GetFiles(basePath, "*.*").Where(file => file.EndsWith("sln")).ToArray();
-            if (solutionFiles.Count() > 1)
-            {
-                var sb = new StringBuilder();
-                sb.AppendLine($"Expected exactly one .sln file, found more than one:");
-                foreach (var file in solutionFiles)
-                {
-                    sb.AppendLine(file);
-                }
-                throw new InputException(sb.ToString());
-            }
             return solutionFiles.FirstOrDefault();
         }
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"Expected exactly one .sln? file, found more than one:");
+        foreach (var file in solutionFiles)
+        {
+            sb.AppendLine(file);
+        }
+        throw new InputException(sb.ToString());
     }
 }
