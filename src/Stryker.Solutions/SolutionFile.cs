@@ -75,8 +75,18 @@ public class SolutionFile
     {
         platform ??= DefaultPlatform;
 
-        return _configurations
+        var matchingConfigurations = _configurations
             .Where(entry => entry.Key.buildType == buildType && entry.Key.platform == platform)
+            .ToList();
+
+        if (matchingConfigurations.Count > 1)
+        {
+            throw new InvalidOperationException(
+                $"Multiple configurations found for buildType '{buildType}' and platform '{platform}'. " +
+                "This indicates a bug in solution parsing. Please report this issue.");
+        }
+
+        return matchingConfigurations
             .SelectMany(entry => entry.Value.Keys)
             .ToImmutableList();
     }
@@ -102,10 +112,20 @@ public class SolutionFile
     {
         effectiveBuildType = GetBuildType(effectiveBuildType);
         platform??= DefaultPlatform;
-        return _configurations
+
+        var matchingConfigurations = _configurations
             .Where(entry => entry.Key.buildType == effectiveBuildType && entry.Key.platform == platform)
+            .ToList();
+
+        if (matchingConfigurations.Count > 1)
+        {
+            throw new InvalidOperationException(
+                $"Multiple configurations found for buildType '{effectiveBuildType}' and platform '{platform}'. " +
+                "This indicates a bug in solution parsing. Please report this issue.");
+        }
+
+        return matchingConfigurations
             .SelectMany(entry => entry.Value).Select(p => (p.Key, p.Value.buildType, p.Value.platform))
-            .Distinct()
             .ToImmutableList();
     }
 
