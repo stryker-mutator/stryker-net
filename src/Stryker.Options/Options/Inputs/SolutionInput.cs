@@ -11,11 +11,14 @@ public class SolutionInput : Input<string>
 
     protected override string Description => "Full path to your solution file. Required on dotnet framework.";
 
-    public string Validate(string basePath, IFileSystem fileSystem)
+    private readonly string[] _validSuffixes = [".sln", ".slnx"];
+
+    public string? Validate(string basePath, IFileSystem fileSystem)
     {
         if (SuppliedInput is not null)
         {
-            if (!SuppliedInput.EndsWith(".sln"))
+            var lowerInvariant = SuppliedInput.ToLowerInvariant();
+            if (!_validSuffixes.Any(s => lowerInvariant.EndsWith(s)))
             {
                 throw new InputException($"Given path is not a solution file: {SuppliedInput}");
             }
@@ -27,20 +30,20 @@ public class SolutionInput : Input<string>
 
             return fullPath;
         }
-        else
+
+        var solutionFiles = fileSystem.Directory.GetFiles(basePath, "*.*")
+            .Where(file => _validSuffixes.Any(s => file.ToLowerInvariant().EndsWith(s))).ToArray();
+        if (solutionFiles.Length <= 1)
         {
-            var solutionFiles = fileSystem.Directory.GetFiles(basePath, "*.*").Where(file => file.EndsWith("sln")).ToArray();
-            if (solutionFiles.Count() > 1)
-            {
-                var sb = new StringBuilder();
-                sb.AppendLine($"Expected exactly one .sln file, found more than one:");
-                foreach (var file in solutionFiles)
-                {
-                    sb.AppendLine(file);
-                }
-                throw new InputException(sb.ToString());
-            }
             return solutionFiles.FirstOrDefault();
         }
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"Expected exactly one solution file (.sln or .slnx), found more than one:");
+        foreach (var file in solutionFiles)
+        {
+            sb.AppendLine(file);
+        }
+        throw new InputException(sb.ToString());
     }
 }

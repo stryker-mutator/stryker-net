@@ -20,7 +20,8 @@ public static class Program
                 .AddStrykerCore()
                 .AddStrykerCli()
                 .BuildServiceProvider();
-
+            // ensure the logger Factory instance is shared
+            ApplicationLogging.LoggerFactory = services.GetRequiredService<ILoggerFactory>();
             var app = services.GetRequiredService<StrykerCli>();
             return app.Run(args);
         }

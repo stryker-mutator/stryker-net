@@ -34,7 +34,45 @@ public sealed class SolutionFileShould
 
         // Assert
         solution.ConfigurationExists("Debug", "Any CPU").ShouldBeTrue();
+    }
 
+    [TestMethod]
+    [DataRow("Any CPU")]
+    [DataRow("AnyCPU")]
+    [DataRow("Z80")]
+    public void DetectPlatformIfNotSpecified(string platform)
+    {
+        // Arrange
+        List<string> projects = ["Project.csproj", "Test.csproj"];
+        // Act
+        var solution = SolutionFile.BuildFromProjectList( projects, [platform]);
+
+        // Assert
+        solution.GetProjectsWithDetails("Debug").ShouldBe(projects.Select(p => (p, "Debug", platform)));
+    }
+
+    [TestMethod]
+    public void DefaultPlatformToAnyCpuIfNotSpecified()
+    {
+        // Arrange
+        List<string> projects = ["Project.csproj", "Test.csproj"];
+        // Act
+        var solution = SolutionFile.BuildFromProjectList( projects, ["Z80", "Any CPU"]);
+
+        // Assert
+        solution.GetProjectsWithDetails("Debug").ShouldBe(projects.Select(p => (p, "Debug", "Any CPU")));
+    }
+
+    [TestMethod]
+    public void DefaultPlatformToFirstIfAnyCpuNotProvided()
+    {
+        // Arrange
+        List<string> projects = ["Project.csproj", "Test.csproj"];
+        // Act
+        var solution = SolutionFile.BuildFromProjectList( projects, ["Z80", "6502"]);
+
+        // Assert
+        solution.GetProjectsWithDetails("Debug").ShouldBe(projects.Select(p => (p, "Debug", "Z80")));
     }
 
     [TestMethod]

@@ -19,11 +19,14 @@ public class SolutionInputTests : TestBase
     }
 
     [TestMethod]
-    public void ShouldReturnSolutionPathIfExists()
+    [DataRow("solution.sln")]
+    [DataRow("solution.slnx")]
+    [DataRow("solution.sLNx")]
+    public void ShouldReturnSolutionPathIfExists(string solutionFileName)
     {
         var dir = Directory.GetCurrentDirectory();
-        var path = Path.Combine(dir, "solution.sln");
         var fileSystem = new MockFileSystem();
+        var path = fileSystem.Path.Combine(dir, solutionFileName);
         fileSystem.AddDirectory(dir);
         fileSystem.AddFile(path, new MockFileData(""));
 
@@ -49,12 +52,14 @@ public class SolutionInputTests : TestBase
     }
 
     [TestMethod]
-    public void ShouldDiscoverSolutionFileIfSolutionPathIsNotSupplied()
+    [DataRow("solution.sln")]
+    [DataRow("solution.slnx")]
+    public void ShouldDiscoverSolutionFileIfSolutionPathIsNotSupplied(string solutionName)
     {
         var input = new SolutionInput { SuppliedInput = null };
         var dir = Directory.GetCurrentDirectory();
         var fileSystem = new MockFileSystem();
-        var fullPath = Path.Combine(dir, "solution.sln");
+        var fullPath = fileSystem.Path.Combine(dir, solutionName);
         fileSystem.AddDirectory(dir);
         fileSystem.AddFile(fullPath, new MockFileData(""));
         fileSystem.Directory.SetCurrentDirectory(dir);
@@ -69,13 +74,13 @@ public class SolutionInputTests : TestBase
         var dir = Directory.GetCurrentDirectory();
         var fileSystem = new MockFileSystem();
         var solution1 = Path.Combine(dir, "solution1.sln");
-        var solution2 = Path.Combine(dir, "solution2.sln");
+        var solution2 = Path.Combine(dir, "solution2.slnx");
         fileSystem.AddDirectory(dir);
         fileSystem.AddFile(solution1, new MockFileData(""));
         fileSystem.AddFile(solution2, new MockFileData(""));
         fileSystem.Directory.SetCurrentDirectory(dir);
         var errorMessage =
-$@"Expected exactly one .sln file, found more than one:
+$@"Expected exactly one solution file (.sln or .slnx), found more than one:
 {solution1}
 {solution2}
 ";
