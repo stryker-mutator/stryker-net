@@ -64,7 +64,7 @@ public sealed class SolutionFileShould
     }
 
     [TestMethod]
-    public void DefaultPlatformToFirstIfIfAnyCpuNotProvided()
+    public void DefaultPlatformToFirstIfAnyCpuNotProvided()
     {
         // Arrange
         List<string> projects = ["Project.csproj", "Test.csproj"];

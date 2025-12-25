@@ -41,14 +41,19 @@ public class SolutionFile
             {
                 _defaultPlatform = platforms.First();
             }
-            else if (platforms.Contains(AnyCpu) || platforms.Contains("AnyCPU"))
+            else if (platforms.Contains(AnyCpu))
             {
                 _defaultPlatform = AnyCpu;
+            }
+            else if (platforms.Contains("AnyCPU"))
+            {
+                _defaultPlatform = "AnyCPU";
             }
             else
             {
                 _defaultPlatform = platforms.First();
             }
+
             return _defaultPlatform;
         }
     }

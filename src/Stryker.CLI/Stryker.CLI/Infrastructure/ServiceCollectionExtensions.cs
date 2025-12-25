@@ -15,7 +15,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IConfigBuilder, ConfigBuilder>();
         services.AddSingleton<ILoggingInitializer, LoggingInitializer>();
         services.AddSingleton<IStrykerNugetFeedClient, StrykerNugetFeedClient>();
-        services.AddSingleton(AnsiConsole.Console);
+        services.AddSingleton(_ => AnsiConsole.Console);
         services.AddSingleton<IFileSystem, FileSystem>();
 
         return services;

@@ -21,6 +21,7 @@ public class SolutionInputTests : TestBase
     [TestMethod]
     [DataRow("solution.sln")]
     [DataRow("solution.slnx")]
+    [DataRow("solution.sLNx")]
     public void ShouldReturnSolutionPathIfExists(string solutionFileName)
     {
         var dir = Directory.GetCurrentDirectory();
