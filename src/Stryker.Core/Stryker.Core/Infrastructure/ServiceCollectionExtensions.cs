@@ -7,6 +7,7 @@ using Stryker.Core.Helpers.ProcessUtil;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Reporters;
+using Stryker.Solutions;
 using Stryker.TestRunner.VsTest;
 using Stryker.Utilities.Buildalyzer;
 
@@ -33,6 +34,8 @@ public static class ServiceCollectionExtensions
         // Initialisation services - Transient as they perform per-run operations
         services.AddTransient<IInitialBuildProcess, InitialBuildProcess>();
         services.AddTransient<IInitialTestProcess, InitialTestProcess>();
+
+        services.AddSingleton<ISolutionProvider, SolutionProvider>();
         services.AddTransient<IInputFileResolver, InputFileResolver>();
         services.AddTransient<INugetRestoreProcess, NugetRestoreProcess>();
         services.AddTransient<ICoverageAnalyser, CoverageAnalyser>();

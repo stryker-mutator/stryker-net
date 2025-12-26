@@ -44,8 +44,8 @@ public class InitialBuildProcessTests : TestBase
 
         var target = new InitialBuildProcess(processMock.Object, _mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
-        Should.Throw<InputException>(() => target.InitialBuild(true, null, _cProjectsExampleCsproj, null, null,
-                @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
+        Should.Throw<InputException>(() => target.InitialBuild(true, null, _cProjectsExampleCsproj, null, targetFramework: null,
+                msbuildPath: @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
             .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
                               @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" " + Path.GetFileName(_cProjectsExampleCsproj) + "\"");
     }
@@ -60,7 +60,7 @@ public class InitialBuildProcessTests : TestBase
 
         var target = new InitialBuildProcess(processMock.Object, _mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
-        Should.Throw<InputException>(() => target.InitialBuild(false, null, _cProjectsExampleCsproj, null, null, @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
+        Should.Throw<InputException>(() => target.InitialBuild(false, null, _cProjectsExampleCsproj, null, targetFramework: null, msbuildPath: @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
             .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
                               @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" " + _mockFileSystem.Path.GetFileName(_cProjectsExampleCsproj) + "\"");
 
@@ -124,7 +124,7 @@ public class InitialBuildProcessTests : TestBase
 
         var target = new InitialBuildProcess(processMock.Object, mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
-        target.InitialBuild(true, "/", "./ExampleProject.sln", null, null, CustomMsBuildPath);
+        target.InitialBuild(true, "/", "./ExampleProject.sln", null, targetFramework: null, msbuildPath: CustomMsBuildPath);
         processMock.Verify(x => x.Start(It.IsAny<string>(),
                 It.Is<string>(applicationParam => applicationParam == CustomMsBuildPath),
                 It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
@@ -132,6 +132,46 @@ public class InitialBuildProcessTests : TestBase
                 It.IsAny<int>()),
             Times.Once);
     }
+
+    [TestMethod]
+    public void InitialBuildProcess_ShouldUseProvidedConfiguration()
+    {
+        var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+        var mockFileSystem = new MockFileSystem();
+
+        processMock.SetupProcessMockToReturn("");
+
+        var target = new InitialBuildProcess(processMock.Object, mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
+
+        target.InitialBuild(false, "/", "./ExampleProject.sln", "TheDebug");
+        processMock.Verify(x => x.Start(It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.Is<string>(argumentsParam => argumentsParam.Contains("-c TheDebug")),
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()),
+            Times.Once);
+    }
+
+    [TestMethod]
+    public void InitialBuildProcess_ShouldUseProvidedPlatform()
+    {
+        var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+        var mockFileSystem = new MockFileSystem();
+
+        processMock.SetupProcessMockToReturn("");
+
+        var target = new InitialBuildProcess(processMock.Object, mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
+
+        target.InitialBuild(false, "/", "./ExampleProject.sln", "TheDebug", "AnyCPU");
+        processMock.Verify(x => x.Start(It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.Is<string>(argumentsParam => argumentsParam.Contains("-c TheDebug")
+                                                && argumentsParam.Contains("--property:Platform=AnyCPU")),
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()),
+            Times.Once);
+    }
+
 
     [TestMethod]
     public void InitialBuildProcess_ShouldRunDotnetBuildIfNotDotnetFramework()
