@@ -1495,6 +1495,4 @@ Please specify a test project name filter that results in one project.
 
         result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectPath);
     }
-
-    public SolutionFile GetSolution(string solutionPath) => throw new NotImplementedException();
 }

@@ -73,17 +73,17 @@ public class InputFileResolver : IInputFileResolver
             }
             catch (IOException e)
             {
-                _logger.LogError(e, "Failed to load solution file {0}.", options.SolutionPath);
+                _logger.LogError(e, "Failed to load solution file {solutionFile}.", options.SolutionPath);
                 return [];
             }
             catch (UnauthorizedAccessException e)
             {
-                _logger.LogError(e, "Failed to access solution file {0}.", options.SolutionPath);
+                _logger.LogError(e, "Failed to access solution file {solutionFile}.", options.SolutionPath);
                 return [];
             }
             catch (AggregateException e) // Handles exceptions from .Result on Task
             {
-                _logger.LogError(e, "Failed to load solution file {0}.", options.SolutionPath);
+                _logger.LogError(e, "Failed to load solution file {solutionFile}.", options.SolutionPath);
                 return [];
             }
             _logger.LogInformation("Identifying projects to mutate in {solution}. This can take a while.", options.SolutionPath);
@@ -93,9 +93,10 @@ public class InputFileResolver : IInputFileResolver
                 .Select(p => (p.file, options.TargetFramework, p.buildType)).ToList();
             _logger.LogDebug("Analyzing {0} projects.", projectsWithDetails.Count);
             // we match test projects to mutable projects
-            findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectsWithDetails, options, ScanMode.NoScan));
+            var mutableProjectsAnalyzerResults = AnalyzeAllNeededProjects(projectsWithDetails, options, ScanMode.NoScan);
+            (findMutableAnalyzerResults, var orphanedProjects) = FindMutableAnalyzerResults(mutableProjectsAnalyzerResults);
 
-            return findMutableAnalyzerResults.Count != 0 ? AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults)
+            return findMutableAnalyzerResults.Count != 0 ? AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphanedProjects)
                 : throw new InputException("No project references found. Please add a project reference to your test project and retry.");
         }
 
@@ -107,7 +108,7 @@ public class InputFileResolver : IInputFileResolver
          List<(string projectFile, string framework, string configuration)> projectList =
              [..testProjectFileNames.Select(p => (p, options.TargetFramework, options.Configuration))];
         // we match test projects to mutable projects
-        findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectList, options, ScanMode.ScanTestProjectReferences));
+        (findMutableAnalyzerResults, var orphans) = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectList, options, ScanMode.ScanTestProjectReferences));
 
         if (findMutableAnalyzerResults.All(p => p.Value.All(r => !r.Succeeded)) )
         {
@@ -119,7 +120,7 @@ public class InputFileResolver : IInputFileResolver
             // no mutable project found
             throw new InputException("No project references found. Please add a project reference to your test project and retry.");
         }
-        var result = AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults);
+        var result = AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphans);
         if (result.Count <= 1)
         {
             return result;
@@ -154,14 +155,12 @@ public class InputFileResolver : IInputFileResolver
     // analyze projects, do same for their upstream dependencies if activated, and identify which one(s)
     // to proceed with
     private List<SourceProjectInfo> AnalyzeAndIdentifyProjects(IStrykerOptions options,
-        Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults)
+        Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults, List<IAnalyzerResult> unusedTestProjects)
     {
         // build all projects
-        _logger.LogDebug("Analyzing {count} projects.", manager.Projects.Count);
+        _logger.LogDebug("Analyzing {count} projects.", findMutableAnalyzerResults.Count);
 
         // we match test projects to mutable projects
-        var (findMutableAnalyzerResults, unusedTestProjects) = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectList, options, manager, mode));
-
         if (findMutableAnalyzerResults.All(r => !IsValid(r.Key) || !r.Value.Any(IsValid)))
         {
             // no mutable project found
@@ -241,11 +240,11 @@ public class InputFileResolver : IInputFileResolver
         var mutableProjectsAnalyzerResults = new ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)>();
         var list = new DynamicEnumerableQueue<(string projectFile, string framework, string configuration)>(projects);
         const string Configuration = "Configuration";
-        var analyzerManagerOptions = options.DevMode ? new AnalyzerManagerOptions { LogWriter = _buildalyzerLog } : null;
+        var analyzerManagerOptions = options.DiagMode ? new AnalyzerManagerOptions { LogWriter = _buildalyzerLog } : null;
         try
         {
             var parallelOptions = new ParallelOptions
-                { MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency, 1) };
+                { MaxDegreeOfParallelism = options.DiagMode ? 1 : Math.Max(options.Concurrency, 1) };
             var normalizedProjectUnderTestNameFilter = !string.IsNullOrEmpty(options.SourceProjectName) ? options.SourceProjectName.Replace("\\", "/") : null;
             while (!list.Empty)
             {
