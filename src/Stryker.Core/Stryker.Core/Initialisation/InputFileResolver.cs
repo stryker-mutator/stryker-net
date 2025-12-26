@@ -41,8 +41,7 @@ public class InputFileResolver : IInputFileResolver
         ["Configuration", "Platform", "AssemblyName", "Configurations"];
 
     private readonly INugetRestoreProcess _nugetRestoreProcess;
-
-    private readonly StringWriter _buildalyzerLog = new();
+    private readonly Dictionary<string, string> _buildLogs = [];
 
     public InputFileResolver(IFileSystem fileSystem,
         IBuildalyzerProvider analyzerProvider,
@@ -73,20 +72,20 @@ public class InputFileResolver : IInputFileResolver
             }
             catch (IOException e)
             {
-                _logger.LogError(e, "Failed to load solution file {solutionFile}.", options.SolutionPath);
+                _logger.LogError(e, "Failed to load solution file {SolutionFile}.", options.SolutionPath);
                 return [];
             }
             catch (UnauthorizedAccessException e)
             {
-                _logger.LogError(e, "Failed to access solution file {solutionFile}.", options.SolutionPath);
+                _logger.LogError(e, "Failed to access solution file {SolutionFile}.", options.SolutionPath);
                 return [];
             }
             catch (AggregateException e) // Handles exceptions from .Result on Task
             {
-                _logger.LogError(e, "Failed to load solution file {solutionFile}.", options.SolutionPath);
+                _logger.LogError(e, "Failed to load solution file {SolutionFile}.", options.SolutionPath);
                 return [];
             }
-            _logger.LogInformation("Identifying projects to mutate in {solution}. This can take a while.", options.SolutionPath);
+            _logger.LogInformation("Identifying projects to mutate in {Solution}. This can take a while.", options.SolutionPath);
 
             // build all projects
             var projectsWithDetails = solution.GetProjectsWithDetails(options.Configuration, options.Platform)
@@ -158,7 +157,7 @@ public class InputFileResolver : IInputFileResolver
         Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults, List<IAnalyzerResult> unusedTestProjects)
     {
         // build all projects
-        _logger.LogDebug("Analyzing {count} projects.", findMutableAnalyzerResults.Count);
+        _logger.LogDebug("Analyzing {Count} projects.", findMutableAnalyzerResults.Count);
 
         // we match test projects to mutable projects
         if (findMutableAnalyzerResults.All(r => !IsValid(r.Key) || !r.Value.Any(IsValid)))
@@ -240,7 +239,6 @@ public class InputFileResolver : IInputFileResolver
         var mutableProjectsAnalyzerResults = new ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)>();
         var list = new DynamicEnumerableQueue<(string projectFile, string framework, string configuration)>(projects);
         const string Configuration = "Configuration";
-        var analyzerManagerOptions = options.DiagMode ? new AnalyzerManagerOptions { LogWriter = _buildalyzerLog } : null;
         try
         {
             var parallelOptions = new ParallelOptions
@@ -251,15 +249,19 @@ public class InputFileResolver : IInputFileResolver
                 Parallel.ForEach(list.Consume(),
                     parallelOptions, entry =>
                     {
-                        var manager = _analyzerProvider.Provide(analyzerManagerOptions);
+                        var logger = new StringWriter();
+                        var manager = _analyzerProvider.Provide(new AnalyzerManagerOptions { LogWriter = logger });
 
                         // specify configuration if any provided
                         if (!string.IsNullOrEmpty(entry.configuration))
                         {
                             manager.SetGlobalProperty(Configuration, entry.configuration);
                         }
-                        var buildResult = AnalyzeThisProject(options,
-                            manager.GetProject(entry.projectFile), entry.framework, normalizedProjectUnderTestNameFilter,
+                        var buildResult = AnalyzeThisProject(manager.GetProject(entry.projectFile),
+                            entry.framework,
+                            normalizedProjectUnderTestNameFilter,
+                            logger,
+                            options,
                             mutableProjectsAnalyzerResults);
                         // scan references if recursive scan is enabled
                         ScanReferences(mode, buildResult).ForEach(p => list.Add((p, entry.framework, options.Configuration)));
@@ -275,11 +277,14 @@ public class InputFileResolver : IInputFileResolver
         return mutableProjectsAnalyzerResults;
     }
 
-    private IEnumerable<IAnalyzerResult> AnalyzeThisProject(IStrykerOptions options, IProjectAnalyzer project,
-        string framework, string normalizedProjectUnderTestNameFilter,
+    private IEnumerable<IAnalyzerResult> AnalyzeThisProject(IProjectAnalyzer project,
+        string framework,
+        string normalizedProjectUnderTestNameFilter,
+        StringWriter logger,
+        IStrykerOptions options,
         ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> mutableProjectsAnalyzerResults)
     {
-        IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(project, options);
+        IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(project, logger, options);
         if (!buildResult.Any())
         {
             mutableProjectsAnalyzerResults.Add((buildResult, false));
@@ -328,16 +333,11 @@ public class InputFileResolver : IInputFileResolver
         return referencesToAdd;
     }
 
-    private IAnalyzerResults AnalyzeSingleProject(IProjectAnalyzer project, IStrykerOptions options)
+    private IAnalyzerResults AnalyzeSingleProject(IProjectAnalyzer project, StringWriter logger,
+        IStrykerOptions options)
     {
-        if (options.DiagMode)
-        {
-            // clear the logs for the next project
-            _buildalyzerLog.GetStringBuilder().Clear();
-        }
         var projectLogName = FileSystem.Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
         _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
-
 
         var env = new EnvironmentOptions();
 
@@ -348,6 +348,9 @@ public class InputFileResolver : IInputFileResolver
         }
 
         var buildResult = project.Build(env);
+        // store the build log
+        _buildLogs[projectLogName] = logger.ToString();
+
 
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
             TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
@@ -355,6 +358,11 @@ public class InputFileResolver : IInputFileResolver
 
         if (!buildResultOverallSuccess)
         {
+            if (options.DiagMode)
+            {
+                _logger.LogWarning("Project {ProjectFilePath} analysis failed. The MsBuild log is: {Log}", projectLogName, logger);
+            }
+
             // if this is a full framework project, we can retry after a nuget restore
             buildResult = RetryBuild(project, options, projectLogName, buildResult, out buildResultOverallSuccess);
         }
@@ -375,7 +383,7 @@ public class InputFileResolver : IInputFileResolver
 
         if (options.DiagMode)
         {
-            _logger.LogWarning("Project analysis failed. The MsBuild log: {0}",_buildalyzerLog.ToString());
+            _logger.LogWarning("Project analysis failed. The MsBuild log: {0}",_logger.ToString());
         }
 
         // if there is no valid result, drop it altogether
@@ -392,8 +400,7 @@ public class InputFileResolver : IInputFileResolver
             if (options.DiagMode)
             {
                 _logger.LogWarning("The MsBuild log is below.");
-                _logger.LogInformation(_buildalyzerLog.ToString());
-                _buildalyzerLog.GetStringBuilder().Clear();
+                _logger.LogInformation(_buildLogs[projectLogName]);
             }
 
             _nugetRestoreProcess.RestorePackages(options.SolutionPath, options.MsBuildPath ?? buildResult.First().MsBuildPath());
@@ -525,11 +532,10 @@ public class InputFileResolver : IInputFileResolver
 
     private (Dictionary<IAnalyzerResult, List<IAnalyzerResult>>, List<IAnalyzerResult>) FindMutableAnalyzerResults(ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> mutableProjectsAnalyzerResults)
     {
-        Dictionary<IAnalyzerResult, List<IAnalyzerResult>> mutableToTestMap;
         var analyzerTestProjects = mutableProjectsAnalyzerResults.Where(p => p.isTest).SelectMany(p => p.result).Where(p => p.BuildsAnAssembly());
         var mutableProjects = mutableProjectsAnalyzerResults.Where(p => !p.isTest).SelectMany(p => p.result).Where(p => p.BuildsAnAssembly()).ToArray();
 
-        mutableToTestMap = mutableProjects.ToDictionary(p => p, p => new List<IAnalyzerResult>());
+        var mutableToTestMap = mutableProjects.ToDictionary(p => p, _ => new List<IAnalyzerResult>());
         var unusedTestProjects = new List<IAnalyzerResult>();
         // for each test project
         foreach (var testProject in analyzerTestProjects)
