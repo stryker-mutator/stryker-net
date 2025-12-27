@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -96,7 +97,16 @@ public class MsBuildHelper
         return (_executor.Start(path, exe, arguments), exe, arguments);
     }
 
-    private (string executable, string command) GetMsBuildExeAndCommand() => GetMsBuildPath().EndsWith(".exe", System.StringComparison.InvariantCultureIgnoreCase) ? (_msBuildPath, string.Empty) : ("dotnet", QuotesIfNeeded(_msBuildPath) + ' ');
+    private (string executable, string command) GetMsBuildExeAndCommand()
+    {
+        if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+        {
+            return ("dotnet", "msbuild");
+        }
+        return GetMsBuildPath().EndsWith(".exe", System.StringComparison.InvariantCultureIgnoreCase)
+            ? (_msBuildPath, string.Empty)
+            : ("dotnet", QuotesIfNeeded(_msBuildPath) + ' ');
+    }
 
     private string SearchMsBuildVersion(string version)
     {

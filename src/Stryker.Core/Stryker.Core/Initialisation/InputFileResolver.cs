@@ -95,8 +95,7 @@ public class InputFileResolver : IInputFileResolver
             var mutableProjectsAnalyzerResults = AnalyzeAllNeededProjects(projectsWithDetails, options, ScanMode.NoScan);
             (findMutableAnalyzerResults, var orphanedProjects) = FindMutableAnalyzerResults(mutableProjectsAnalyzerResults);
 
-            return findMutableAnalyzerResults.Count != 0 ? AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphanedProjects)
-                : throw new InputException("No project references found. Please add a project reference to your test project and retry.");
+            return AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphanedProjects);
         }
 
         // we analyze the test project(s) and identify the project to be mutated
@@ -155,7 +154,7 @@ public class InputFileResolver : IInputFileResolver
         {
             // no mutable project found
             LogAnalysis(findMutableAnalyzerResults, unusedTestProjects);
-            throw new InputException("No project references found. Please add a project reference to your test project and retry.");
+            throw new InputException("Failed to analyze project builds. Stryker cannot continue.");
         }
 
         // keep only projects with one or more test projects
@@ -253,6 +252,7 @@ public class InputFileResolver : IInputFileResolver
                         {
                             manager.SetGlobalProperty(Configuration, entry.configuration);
                         }
+
                         var buildResult = AnalyzeThisProject(manager.GetProject(entry.projectFile),
                             entry.framework,
                             normalizedProjectUnderTestNameFilter,
@@ -345,6 +345,8 @@ public class InputFileResolver : IInputFileResolver
         var buildResult = project.Build(env);
         // store the build log
         _buildLogs[projectLogName] = buildLogger.ToString();
+        // clear the log
+        buildLogger.GetStringBuilder().Clear();
 
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
             TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
@@ -387,7 +389,7 @@ public class InputFileResolver : IInputFileResolver
     private IAnalyzerResults RetryBuild(IProjectAnalyzer project, IStrykerOptions options, string projectLogName,
         IAnalyzerResults buildResult, out bool buildResultOverallSuccess)
     {
-        if (buildResult.Any(r => !r.IsValid() && r.TargetsFullFramework()))
+        if (Environment.OSVersion.Platform == PlatformID.Win32NT && buildResult.Any(r => !r.IsValid() && r.TargetsFullFramework()))
         {
             _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
 
@@ -536,7 +538,7 @@ public class InputFileResolver : IInputFileResolver
                 continue;
             }
 
-            _logger.LogInformation("Could not find an assembly reference to a mutable assembly for project {0}. Will look into project references.", testProject.ProjectFilePath);
+            _logger.LogInformation("Could not find an assembly reference to a mutable assembly for project {ProjectName}. Will look into project references.", testProject.ProjectFilePath);
             // we try to find a project reference
             if (!ScanProjectReferences(mutableToTestMap, mutableProjects, testProject))
             {
