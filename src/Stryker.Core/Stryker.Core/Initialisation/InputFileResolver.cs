@@ -204,13 +204,13 @@ public class InputFileResolver : IInputFileResolver
             if (testProjects.Count == 0)
             {
                 _logger.LogWarning("  can't be mutated because no test project references it. If this is a test project, " +
-                                   "ensure it has the property <IsTestProject>true</IsTestProject> in its project file.");
+                                   "ensure it has the property: <IsTestProject>true</IsTestProject> in its project file.");
             }
             else
             {
                 foreach (var testProject in testProjects)
                 {
-                    _logger.LogInformation("  referenced by test project {0}, analysis {1}.", testProject.ProjectFilePath, IsValid(testProject) ? "succeeded" : "failed");
+                    _logger.LogInformation("  referenced by test project {ProjectName}, analysis {Result}.", testProject.ProjectFilePath, IsValid(testProject) ? "succeeded" : "failed");
                 }
 
                 if (testProjects.Any(IsValid))
@@ -226,7 +226,7 @@ public class InputFileResolver : IInputFileResolver
 
         foreach (var unusedTestProject in unusedTestProjects)
         {
-            _logger.LogInformation("Test project {0} does not appear to test any mutable project, analysis {1}.", unusedTestProject.ProjectFilePath, IsValid(unusedTestProject) ? "succeeded" : "failed");
+            _logger.LogInformation("Test project {ProjectName} does not appear to test any mutable project, analysis {Result}.", unusedTestProject.ProjectFilePath, IsValid(unusedTestProject) ? "succeeded" : "failed");
         }
 
         _logger.LogWarning("Use --diag option to have the analysis's logs in the log file.");
@@ -280,11 +280,11 @@ public class InputFileResolver : IInputFileResolver
     private IEnumerable<IAnalyzerResult> AnalyzeThisProject(IProjectAnalyzer project,
         string framework,
         string normalizedProjectUnderTestNameFilter,
-        StringWriter logger,
+        StringWriter buildLogger,
         IStrykerOptions options,
         ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> mutableProjectsAnalyzerResults)
     {
-        IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(project, logger, options);
+        IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(project, buildLogger, options);
         if (!buildResult.Any())
         {
             mutableProjectsAnalyzerResults.Add((buildResult, false));
@@ -333,7 +333,7 @@ public class InputFileResolver : IInputFileResolver
         return referencesToAdd;
     }
 
-    private IAnalyzerResults AnalyzeSingleProject(IProjectAnalyzer project, StringWriter logger,
+    private IAnalyzerResults AnalyzeSingleProject(IProjectAnalyzer project, StringWriter buildLogger,
         IStrykerOptions options)
     {
         var projectLogName = FileSystem.Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
@@ -349,7 +349,7 @@ public class InputFileResolver : IInputFileResolver
 
         var buildResult = project.Build(env);
         // store the build log
-        _buildLogs[projectLogName] = logger.ToString();
+        _buildLogs[projectLogName] = buildLogger.ToString();
 
 
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
@@ -360,7 +360,7 @@ public class InputFileResolver : IInputFileResolver
         {
             if (options.DiagMode)
             {
-                _logger.LogWarning("Project {ProjectFilePath} analysis failed. The MsBuild log is: {Log}", projectLogName, logger);
+                _logger.LogWarning("Project {ProjectFilePath} analysis failed. The MsBuild log is: {Log}", projectLogName, buildLogger);
             }
 
             // if this is a full framework project, we can retry after a nuget restore
@@ -378,12 +378,12 @@ public class InputFileResolver : IInputFileResolver
         var failedFrameworks = project.ProjectFile.TargetFrameworks.Where(tf =>
             !buildResult.Any(br => br.IsValidFor(tf))).ToList();
         _logger.LogWarning(
-            "Analysis of project {projectFilePath} failed for frameworks {frameworkList}.",
+            "Analysis of project {ProjectFilePath} failed for frameworks {FrameworkList}.",
             projectLogName, string.Join(',', failedFrameworks));
 
         if (options.DiagMode)
         {
-            _logger.LogWarning("Project analysis failed. The MsBuild log: {0}",_logger.ToString());
+            _logger.LogWarning("Project analysis failed. The MsBuild log: {BuildLog}",_logger.ToString());
         }
 
         // if there is no valid result, drop it altogether
