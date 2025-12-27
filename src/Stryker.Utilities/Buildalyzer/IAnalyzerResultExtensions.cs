@@ -151,7 +151,7 @@ public static class IAnalyzerResultExtensions
             _ => Language.Undefined,
         };
 
-    private static readonly string[] knownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit"];
+    private static readonly string[] knownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit", "nunit"];
 
     /// <summary>
     /// checks if an analyzer result is valid
