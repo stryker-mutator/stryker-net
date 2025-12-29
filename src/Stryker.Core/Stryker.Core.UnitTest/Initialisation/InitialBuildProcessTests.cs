@@ -110,7 +110,8 @@ public class InitialBuildProcessTests : TestBase
 
     }
 
-    [TestMethod]
+    [TestMethodWithIgnoreIfSupport]
+    [IgnoreIf(nameof(Is.NotWindows))] //DotnetFramework does not run on Unix
     public void InitialBuildProcess_ShouldUseCustomMsbuildIfNotNull()
     {
         var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);

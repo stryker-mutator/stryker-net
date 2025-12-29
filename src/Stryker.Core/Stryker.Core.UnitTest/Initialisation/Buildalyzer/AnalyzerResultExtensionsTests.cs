@@ -64,7 +64,7 @@ public class AnalyzerResultExtensionsTests
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0004", ReportDiagnostic.Warn));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("NoWarn", ReportDiagnostic.Suppress)]
     [DataRow("WarningsAsErrors", ReportDiagnostic.Error)]
     [DataRow("WarningsNotAsErrors", ReportDiagnostic.Warn)]
@@ -121,7 +121,7 @@ public class AnalyzerResultExtensionsTests
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0002", ReportDiagnostic.Warn));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("NoWarn", ReportDiagnostic.Suppress)]
     [DataRow("WarningsAsErrors", ReportDiagnostic.Error)]
     [DataRow("WarningsNotAsErrors", ReportDiagnostic.Warn)]

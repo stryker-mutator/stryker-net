@@ -34,10 +34,9 @@ public class MsBuildHelper
         _msBuildPath = msBuildPath;
     }
 
-
     public static string QuotesIfNeeded(string parameter)
     {
-        if (!parameter.Contains(' ') || parameter.Length < 3 || parameter[0] == '"' && parameter[^1] == '"')
+        if (!parameter.Contains(' ') || parameter.Length < 3 || (parameter[0] == '"' && parameter[^1] == '"'))
         {
             return parameter;
         }

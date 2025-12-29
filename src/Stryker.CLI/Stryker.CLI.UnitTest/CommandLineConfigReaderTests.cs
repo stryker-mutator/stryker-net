@@ -25,9 +25,9 @@ public class CommandLineConfigReaderTests
     [TestMethod]
     public void ShouldHandleNoValue()
     {
-        _target.ReadCommandLineConfig(new[] { "--dev-mode" }, _app, _inputs);
+        _target.ReadCommandLineConfig(new[] { "--diag" }, _app, _inputs);
 
-        _inputs.DevModeInput.SuppliedInput.ShouldBe(true);
+        _inputs.DiagModeInput.SuppliedInput.ShouldBe(true);
     }
 
     [TestMethod]

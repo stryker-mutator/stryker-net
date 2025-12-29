@@ -17,7 +17,7 @@ public interface IStrykerOptions
     string Configuration { get; init; }
     string DashboardApiKey { get; init; }
     string DashboardUrl { get; init; }
-    bool DevMode { get; init; }
+    bool DiagMode { get; init; }
     IEnumerable<IExclusionPattern> DiffIgnoreChanges { get; init; }
     IEnumerable<LinqExpression> ExcludedLinqExpressions { get; init; }
     IEnumerable<Mutator> ExcludedMutations { get; init; }
