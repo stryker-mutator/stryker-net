@@ -16,8 +16,47 @@ public class SolutionProvider: ISolutionProvider
 public class SolutionFile
 {
     private readonly Dictionary<(string buildType, string platform), Dictionary<string, (string buildType, string platform)>> _configurations = [];
+    private string? _defaultPlatform;
+    private const string AnyCpu = "Any CPU";
 
     public HashSet<string> GetBuildTypes() => _configurations.Keys.Select(x => x.buildType).ToHashSet();
+
+    private HashSet<string> GetPlatforms() => _configurations.Keys.Select(x => x.platform).ToHashSet();
+
+    private string DefaultPlatform
+    {
+        get
+        {
+            if (_defaultPlatform != null)
+            {
+                return _defaultPlatform;
+            }
+
+            var platforms = GetPlatforms();
+            if (platforms.Count == 0)
+            {
+                _defaultPlatform = AnyCpu;
+            }
+            else if (platforms.Count == 1)
+            {
+                _defaultPlatform = platforms.First();
+            }
+            else if (platforms.Contains(AnyCpu))
+            {
+                _defaultPlatform = AnyCpu;
+            }
+            else if (platforms.Contains("AnyCPU"))
+            {
+                _defaultPlatform = "AnyCPU";
+            }
+            else
+            {
+                _defaultPlatform = platforms.First();
+            }
+
+            return _defaultPlatform;
+        }
+    }
 
     /// <summary>
     /// Checks if a given configuration (and optional platform) is defined in the solution
@@ -25,7 +64,11 @@ public class SolutionFile
     /// <param name="buildType">solution configuration name (Debug, Release...)</param>
     /// <param name="platform">platform (AnyCPU, x86, x64...)</param>
     /// <returns>true if at least one project exists in this configuration (and platform if specified)</returns>
-    public bool ConfigurationExists(string buildType, string? platform = null) => _configurations.Keys.Any(x => x.buildType == buildType && (platform == null || platform == x.platform));
+    public bool ConfigurationExists(string buildType, string? platform = null)
+    {
+        platform ??= DefaultPlatform;
+        return _configurations.Keys.Any(x => x.buildType == buildType && platform == x.platform);
+    }
 
     /// <summary>
     /// Gets all projects for a given solution configuration (and optional platform)
@@ -34,15 +77,18 @@ public class SolutionFile
     /// <param name="platform">platform (AnyCPU, x86, x64...)</param>
     /// <returns>A collection of projects' filenames that are defined for this configuration.</returns>
     public IReadOnlyCollection<string> GetProjects(string buildType, string? platform = null)
-        => _configurations
-            .Where(entry => entry.Key.buildType == buildType && (platform == null || entry.Key.platform == platform))
+    {
+        platform ??= DefaultPlatform;
+
+        return _configurations
+            .Where(entry => entry.Key.buildType == buildType && entry.Key.platform == platform)
             .SelectMany(entry => entry.Value.Keys)
-            .Distinct()
             .ToImmutableList();
+    }
 
     private const string DefaultBuildType = "Debug";
 
-    private string? GetBuildType(string? buildType)
+    private string GetBuildType(string? buildType)
     {
         if (!string.IsNullOrWhiteSpace(buildType))
         {
@@ -60,32 +106,38 @@ public class SolutionFile
     public IReadOnlyCollection<(string file, string buildType, string platform)> GetProjectsWithDetails(string effectiveBuildType, string? platform = null)
     {
         effectiveBuildType = GetBuildType(effectiveBuildType);
+        platform ??= DefaultPlatform;
         return _configurations
-            .Where(entry => entry.Key.buildType == effectiveBuildType && (platform == null || entry.Key.platform == platform))
+            .Where(entry => entry.Key.buildType == effectiveBuildType && entry.Key.platform == platform)
             .SelectMany(entry => entry.Value).Select(p => (p.Key, p.Value.buildType, p.Value.platform))
             .Distinct()
             .ToImmutableList();
     }
 
     /// <summary>
-    /// Create a solution file from a list of projects, assuming all projects are built in Debug|Any CPU
+    /// Create a solution file from a list of projects having two build types, Debug and Release, and the provided platforms.
     /// </summary>
     /// <param name="projects">list of csproj filenames</param>
+    /// <param name="platforms">list of declared platforms. Default to AnyCpu and x86</param>
     /// <returns>a solution instance</returns>
     /// <remarks>this method is used for testing purposes, as the underlying solution parser do not support any form of mocking</remarks>
-    public static SolutionFile BuildFromProjectList(List<string> projects)
+    public static SolutionFile BuildFromProjectList(List<string> projects, string[]? platforms = null)
     {
         var result = new SolutionFile();
+        platforms ??= [ AnyCpu, "x86" ];
         // default to Debug|Any CPU
-        foreach (var buildType in (string[])["Debug", "Release"])
+        string[] buildTypes = ["Debug", "Release"];
+        foreach (var buildType in buildTypes)
         {
-            var platform = "Any CPU";
-            var projectDict = new Dictionary<string, (string buildType, string platform)>();
-            foreach (var project in projects)
+            foreach (var platform in platforms)
             {
-                projectDict[project] = (buildType, platform);
+                var projectDict = new Dictionary<string, (string buildType, string platform)>();
+                foreach (var project in projects)
+                {
+                    projectDict[project] = (buildType, platform);
+                }
+                result._configurations.Add((buildType, platform), projectDict);
             }
-            result._configurations.Add((buildType, platform), projectDict);
         }
         return result;
     }
