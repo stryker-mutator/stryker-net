@@ -1,3 +1,12 @@
+## [4.9.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.9.1...stryker@4.9.2) (2025-12-29)
+
+
+### Bug Fixes
+
+* Improve solution support ([#3383](https://github.com/stryker-mutator/stryker-net/issues/3383)) ([8106f97](https://github.com/stryker-mutator/stryker-net/commit/8106f97d1357c6e2f6431065cb1d264feea722b0)), closes [#3365](https://github.com/stryker-mutator/stryker-net/issues/3365)
+
+
+
 ## [4.9.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.9.0...stryker@4.9.1) (2025-12-21)
 
 
