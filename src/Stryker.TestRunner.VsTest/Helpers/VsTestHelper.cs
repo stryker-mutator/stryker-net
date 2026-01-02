@@ -22,8 +22,6 @@ public interface IVsTestHelper
 /// <summary>
 /// Locates VsTest folder. Installs one if none is found.
 /// </summary>
-/// This class is not unit tested currently, so proceed with caution
-// [ExcludeFromCodeCoverage(Justification = "Deeply dependent on current platform, need a lot of work for mocking.")]
 public abstract class VsTestHelper : IVsTestHelper
 {
     private readonly ILogger _logger;
@@ -31,10 +29,12 @@ public abstract class VsTestHelper : IVsTestHelper
     private string _platformVsTestToolPath;
     private readonly object _lck = new();
     private readonly List<string> _dirsToClean = [];
+    private string _osPlatformHint;
 
-    protected VsTestHelper(IFileSystem fileSystem, ILogger logger)
+    protected VsTestHelper(IFileSystem fileSystem, ILogger logger, string osPlatformHint)
     {
         _logger = logger;
+        _osPlatformHint = osPlatformHint;
         _fileSystem = fileSystem;
     }
 
@@ -74,9 +74,8 @@ public abstract class VsTestHelper : IVsTestHelper
             _platformVsTestToolPath = platformVsTestToolPath ?? throw new PlatformNotSupportedException(
                 "Could not find any VS test tool paths for this platform.");
 
-            var osPlatform = "Bla";
             _logger.LogDebug("Using vstest.console: {OsPlatform} for OS {TestToolPath}",
-                osPlatform, _platformVsTestToolPath);
+                _osPlatformHint, _platformVsTestToolPath);
         }
 
         return _platformVsTestToolPath;
@@ -254,7 +253,7 @@ public class NotSupportedTestHelper : IVsTestHelper
 
 public class UnixTestHelper : VsTestHelper
 {
-    protected internal UnixTestHelper(IFileSystem fileSystem, ILogger logger) : base(fileSystem, logger)
+    protected internal UnixTestHelper(IFileSystem fileSystem, ILogger logger) : base(fileSystem, logger, "UNIX")
     {
     }
 
@@ -267,7 +266,7 @@ public class UnixTestHelper : VsTestHelper
 
 public class WindowsTestHelper : VsTestHelper
 {
-    protected internal WindowsTestHelper(IFileSystem fileSystem, ILogger logger) : base(fileSystem, logger)
+    protected internal WindowsTestHelper(IFileSystem fileSystem, ILogger logger) : base(fileSystem, logger, "WINDOWS")
     {
     }
 

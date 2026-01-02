@@ -1,26 +1,22 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Shouldly;
 using Stryker.Core.UnitTest;
 using Stryker.TestRunner.VsTest.Helpers;
-using VerifyMSTest;
 using FileSystem = System.IO.Abstractions.FileSystem;
 
 namespace Stryker.TestRunner.VsTest.UnitTest;
 
-[UsesVerify]
 [TestClass]
-public partial class VsTestHelperTests : TestBase
+public class VsTestHelperTests : TestBase
 {
     [TestMethod]
     public void DeployEmbeddedVsTestBinaries()
     {
-        var vsTestHelper = (VsTestHelper.CreateInstance() as VsTestHelper);
+        var vsTestHelper = VsTestHelper.CreateInstance() as VsTestHelper;
         var deployPath = vsTestHelper!.DeployEmbeddedVsTestBinaries();
 
         var vsTestFiles = Directory.EnumerateFiles(deployPath, "*", SearchOption.AllDirectories)
@@ -69,30 +65,53 @@ public partial class VsTestHelperTests : TestBase
     }
 
     [TestMethod]
-    public async Task Combinations()
+    [DataRow("WINDOWS", "vstest.console.exe")]
+    [DataRow("OSX", "vstest.console.dll")]
+    public void GetVsTestToolPath_WithRealFileSystem_ReturnsExpectedPath(string platformName, string expectedFileName)
     {
+        var osPlatform = OSPlatform.Create(platformName);
+        var fileSystem = new FileSystem();
+        var vsTestHelper = VsTestHelper.CreateInstance(fileSystem: fileSystem,
+            isOsPlatform: platform => platform == osPlatform);
 
-        IEnumerable<OSPlatform> osPlatforms = [OSPlatform.Windows, OSPlatform.FreeBSD, OSPlatform.OSX];
+        var currentPlatformVsTestToolPath = vsTestHelper.GetCurrentPlatformVsTestToolPath();
 
-        IEnumerable<bool> trueFalse = [true, false];
-        await Verifier.Combination().Verify((repeat, osPlatform, exists) =>
-        {
-            var fileSystem = new FakeSystem();
-            var vsTestHelper = VsTestHelper.CreateInstance(fileSystem: exists ? new FileSystem(): fileSystem,
-                isOsPlatform: platform => platform == osPlatform);
-            try
-            {
-                var currentPlatformVsTestToolPath = vsTestHelper.GetCurrentPlatformVsTestToolPath();
-                if(repeat)
-                    return vsTestHelper.GetCurrentPlatformVsTestToolPath();
+        // Only take the last part of the path for CI compatibility
+        var actualFileName = Path.GetFileName(currentPlatformVsTestToolPath);
+        Assert.AreEqual(expectedFileName, actualFileName);
 
-                return currentPlatformVsTestToolPath;
-            }
-            catch ( PlatformNotSupportedException ex)
-            {
-                return ex.Message;
-            }
-        }, trueFalse, osPlatforms, trueFalse);
+        // Test that repeated calls return the same path
+        var secondCall = vsTestHelper.GetCurrentPlatformVsTestToolPath();
+        actualFileName = Path.GetFileName(secondCall);
+        Assert.AreEqual(expectedFileName, actualFileName);
+    }
+
+    [TestMethod]
+    [DataRow("WINDOWS")]
+    [DataRow("OSX")]
+    public void GetVsTestToolPath_WithFakeFileSystem_ThrowsPlatformNotSupportedException(string platformName)
+    {
+        var osPlatform = OSPlatform.Create(platformName);
+        var fileSystem = new FakeSystem();
+        var vsTestHelper = VsTestHelper.CreateInstance(fileSystem: fileSystem,
+            isOsPlatform: platform => platform == osPlatform);
+
+        var ex = Assert.Throws<PlatformNotSupportedException>(() => vsTestHelper.GetCurrentPlatformVsTestToolPath());
+        Assert.AreEqual("Could not find any VS test tool paths for this platform.", ex.Message);
+    }
+
+    [TestMethod]
+    [DataRow("FREEBSD", true)]
+    [DataRow("FREEBSD", false)]
+    public void GetVsTestToolPath_WithUnsupportedPlatform_ThrowsPlatformNotSupportedException(string platformName, bool fileSystemExists)
+    {
+        var osPlatform = OSPlatform.Create(platformName);
+        var fileSystem = fileSystemExists ? new FileSystem() : new FakeSystem();
+        var vsTestHelper = VsTestHelper.CreateInstance(fileSystem: fileSystem,
+            isOsPlatform: platform => platform == osPlatform);
+
+        var ex = Assert.Throws<PlatformNotSupportedException>(() => vsTestHelper.GetCurrentPlatformVsTestToolPath());
+        Assert.AreEqual("The current OS is not any of the following currently supported: WINDOWS, LINUX, OSX", ex.Message);
     }
 }
 
