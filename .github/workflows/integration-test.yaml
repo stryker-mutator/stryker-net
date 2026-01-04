@@ -1,18 +1,36 @@
-name: integration test macos m1
-run-name: e2e ${{ github.head_ref }} on macOS apple silicon ARM
+name: integration test
+run-name: e2e ${{ github.head_ref }}
 
 on: [pull_request]
 
 jobs:
   integration-test:
-    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: [ubuntu-latest, windows-latest, macos-latest]
+        category: [InitCommand, SingleTestProject, MultipleTestProjects, Solution]
+        runtime: [netcore, netframework]
+        exclude:
+          - runtime: netframework
+            agent: ubuntu-latest
+          - runtime: netframework
+            agent: macos-latest
+          - runtime: netframework
+            category: InitCommand
+          - runtime: netframework
+            category: MultipleTestProjects
+    runs-on: ${{ matrix.agent }}
+    env:
+      CATEGORY: ${{ matrix.category }}
+      RUNTIME: ${{ matrix.runtime }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
             8.x
-            9.x
+            10.x
       - name: Run integration tests
         shell: pwsh
-        run: .\integration-tests.ps1
+        run: ./integration-tests.ps1
