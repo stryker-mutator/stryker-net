@@ -12,6 +12,7 @@ public class StrykerInit
 
     [Fact]
     [Trait("Category", "InitCommand")]
+    [Trait("Runtime", "netcore")]
     public void InitCommandDefaults()
     {
         var directory = new DirectoryInfo("../../../../../TargetProjects/InitCommand");

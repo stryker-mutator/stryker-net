@@ -83,18 +83,13 @@ function Run-ValidationTests {
 function Run-Category {
   param(
     [string]$Category,
+    [string]$Runtime,
     [string]$RepoRoot
   )
 
   # Log chosen category and any OS-specific behavior here
   Write-Info "Selected category: $Category"
-  if ($Category -eq 'Solution') {
-    if ($IsWindows) {
-      Write-Info "Solution category will run the .NET Framework test suite on Windows"
-    } else {
-      Write-Info "Solution category will run the .NET Core solution on non-Windows"
-    }
-  }
+  Write-Info "Selected runtime: $Runtime"
 
   switch ($Category) {
     'InitCommand' {
@@ -109,31 +104,32 @@ function Run-Category {
       break
     }
     'SingleTestProject' {
-      Run-Stryker -WorkingDirectory (Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore\NetCoreTestProject.XUnit')
-
-      if ($IsWindows) {
+      if ($Runtime -eq 'netcore') {
+        Run-Stryker -WorkingDirectory (Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore\NetCoreTestProject.XUnit')
+      } elseif ($Runtime -eq 'netframework') {
         $netFrameworkTestProject = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetFramework\FullFrameworkApp.Test'
         Run-Stryker -WorkingDirectory $netFrameworkTestProject -Arguments @('--dev-mode')
+      } else {
+        throw "Unknown runtime: $Runtime"
       }
       break
     }
     'MultipleTestProjects' {
+      if ($Runtime -ne 'netcore') { throw "MultipleTestProjects only supports runtime 'netcore'." }
       $multiWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore\TargetProject'
       if (Test-Path $multiWd) { Run-Stryker -WorkingDirectory $multiWd } else { Write-Warn "Multi test project not found at $multiWd" }
       break
     }
     'Solution' {
-      if ($IsWindows) {
-        $wd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetFramework\FullFrameworkApp.Test'
-        pushd $wd
-        try {
-          & $stryker --dev-mode
-          if ($LASTEXITCODE -ne 0) { throw "dotnet-stryker failed for .NET Framework with exit code ${LASTEXITCODE}" }
-        } finally { popd }
-      } else {
+      if ($Runtime -eq 'netcore') {
         $netcoreWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore'
         $solutionPath = Join-Path $netcoreWd 'IntegrationTestApp.sln'
         if (Test-Path $solutionPath) { Run-Stryker -WorkingDirectory $netcoreWd -Arguments @('--solution', $solutionPath) } else { Write-Warn "Solution not found at $solutionPath" }
+      } elseif ($Runtime -eq 'netframework') {
+        $wd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetFramework\FullFrameworkApp.Test'
+        Run-Stryker -WorkingDirectory $wd -Arguments @('--dev-mode')
+      } else {
+        throw "Unknown runtime: $Runtime"
       }
       break
     }
@@ -165,15 +161,16 @@ Pack-And-Install-Tool -ToolProject $toolProject -ToolVersion $toolVersion -Publi
 
 if (${env:GITHUB_ACTIONS} -eq "true") {
   $category = ${env:CATEGORY}
-  if (-not $category) {
-    throw "In GitHub Actions the CATEGORY environment variable must be set."
-  }
+  $runtime = ${env:RUNTIME}
+  if (-not $category) { throw "In GitHub Actions the CATEGORY environment variable must be set." }
+  if (-not $runtime) { throw "In GitHub Actions the RUNTIME environment variable must be set." }
 } else {
-  Write-Info "Not running in GitHub Actions; defaulting category to 'Solution'"
+  Write-Info "Not running in GitHub Actions; defaulting to category 'Solution' and runtime 'netcore'"
   $category = 'Solution'
+  $runtime = 'netcore'
 }
 
-$testFilter = "Category=$category"
+$testFilter = "Category=$category&Runtime=$runtime"
 
-Run-Category -Category $category -RepoRoot $repoRoot
+Run-Category -Category $category -Runtime $runtime -RepoRoot $repoRoot
 Run-ValidationTests -TestPath $testPath -Filter $testFilter

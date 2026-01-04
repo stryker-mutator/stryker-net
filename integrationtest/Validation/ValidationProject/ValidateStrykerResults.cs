@@ -2,7 +2,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -49,27 +48,26 @@ public class ValidateStrykerResults
 
     [Fact]
     [Trait("Category", "SingleTestProject")]
+    [Trait("Runtime", "netframework")]
     public async Task CSharp_NetFramework_SingleTestProject()
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            var directory = new DirectoryInfo("../../../../../TargetProjects/NetFramework/FullFrameworkApp.Test/StrykerOutput");
-            directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+        var directory = new DirectoryInfo("../../../../../TargetProjects/NetFramework/FullFrameworkApp.Test/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
 
-            var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
-                .OrderByDescending(f => f.LastWriteTime)
-                .First();
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
 
-            using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
 
-            var report = await strykerRunOutput.DeserializeJsonReportAsync();
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-            CheckReportMutants(report, total: 29, ignored: 7, survived: 3, killed: 7, timeout: 0, nocoverage: 11);
-        }
+        CheckReportMutants(report, total: 29, ignored: 7, survived: 3, killed: 7, timeout: 0, nocoverage: 11);
     }
 
     [Fact]
     [Trait("Category", "SingleTestProject")]
+    [Trait("Runtime", "netcore")]
     public async Task CSharp_NetCore_SingleTestProject()
     {
         var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/NetCoreTestProject.XUnit/StrykerOutput");
@@ -89,6 +87,7 @@ public class ValidateStrykerResults
 
     [Fact]
     [Trait("Category", "MultipleTestProjects")]
+    [Trait("Runtime", "netcore")]
     public async Task CSharp_NetCore_WithTwoTestProjects()
     {
         var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/TargetProject/StrykerOutput");
@@ -108,6 +107,7 @@ public class ValidateStrykerResults
 
     [Fact]
     [Trait("Category", "Solution")]
+    [Trait("Runtime", "netcore")]
     public async Task CSharp_NetCore_SolutionRun()
     {
         var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/StrykerOutput");
@@ -123,6 +123,25 @@ public class ValidateStrykerResults
 
         CheckReportMutants(report, total: 660, ignored: 269, survived: 4, killed: 9, timeout: 2, nocoverage: 338);
         CheckReportTestCounts(report, total: 23);
+    }
+
+    [Fact]
+    [Trait("Category", "Solution")]
+    [Trait("Runtime", "netframework")]
+    public async Task CSharp_NetFramework_SolutionRun()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/NetFramework/FullFrameworkApp.Test/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        CheckReportMutants(report, total: 29, ignored: 7, survived: 3, killed: 7, timeout: 0, nocoverage: 11);
     }
 
     private void CheckMutationKindsValidity(IJsonReport report)
