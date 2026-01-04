@@ -25,6 +25,11 @@ function Pack-And-Install-Tool {
   dotnet pack $ToolProject "-p:PackageVersion=${ToolVersion}" --output $PublishPath
   if ($LASTEXITCODE -ne 0) { throw "dotnet pack failed with exit code ${LASTEXITCODE}" }
 
+  # Ensure we always use the freshly packed tool version in the local tool-path.
+  # `dotnet tool install` does not overwrite an existing local tool installation.
+  dotnet tool uninstall dotnet-stryker --tool-path $ToolPath 2>$null
+  if ($LASTEXITCODE -ne 0) { Write-Info "dotnet-stryker was not previously installed in '$ToolPath' (continuing)" }
+
   dotnet tool install dotnet-stryker --add-source $PublishPath --allow-downgrade --tool-path $ToolPath --version $ToolVersion
   if ($LASTEXITCODE -ne 0) { throw "dotnet tool install failed with exit code ${LASTEXITCODE}" }
 }
@@ -32,14 +37,24 @@ function Pack-And-Install-Tool {
 function Run-Stryker {
   param(
     [string]$WorkingDirectory,
-    [string]$Arguments = "",
+    [string[]]$Arguments = @(),
     [bool]$ContinueOnError = $false
   )
 
-  Write-Info "Running dotnet-stryker in '$WorkingDirectory' with args: $Arguments"
+  $effectiveArguments = @(
+    $Arguments |
+      Where-Object { $_ -is [string] -and $_.Trim().Length -gt 0 }
+  )
+
+  $argumentText = ($effectiveArguments | ForEach-Object { $_ }) -join ' '
+  Write-Info "Running dotnet-stryker in '$WorkingDirectory' with args: $argumentText"
   pushd $WorkingDirectory
   try {
-    & $stryker $Arguments
+    if ($effectiveArguments.Count -gt 0) {
+      & $stryker @effectiveArguments
+    } else {
+      & $stryker
+    }
   } finally {
     popd
   }
@@ -84,7 +99,13 @@ function Run-Category {
   switch ($Category) {
     'InitCommand' {
       $wd = Join-Path $RepoRoot 'integrationtest\TargetProjects'
-      Run-Stryker -WorkingDirectory $wd -Arguments 'init --config-file "InitCommand/test-config.json" -p "TestProject.csproj"'
+      Run-Stryker -WorkingDirectory $wd -Arguments @(
+        'init'
+        '--config-file'
+        'InitCommand/test-config.json'
+        '-p'
+        'TestProject.csproj'
+      )
       break
     }
     'SingleTestProject' {
@@ -110,7 +131,7 @@ function Run-Category {
       } else {
         $netcoreWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore'
         $solutionPath = Join-Path $netcoreWd 'IntegrationTestApp.sln'
-        if (Test-Path $solutionPath) { Run-Stryker -WorkingDirectory $netcoreWd -Arguments "--solution `"$solutionPath`"" } else { Write-Warn "Solution not found at $solutionPath" }
+        if (Test-Path $solutionPath) { Run-Stryker -WorkingDirectory $netcoreWd -Arguments @('--solution', $solutionPath) } else { Write-Warn "Solution not found at $solutionPath" }
       }
       break
     }
