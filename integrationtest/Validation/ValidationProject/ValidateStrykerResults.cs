@@ -91,7 +91,7 @@ public class ValidateStrykerResults
     [Trait("Category", "MultipleTestProjects")]
     public async Task CSharp_NetCore_WithTwoTestProjects()
     {
-        var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/Targetproject/StrykerOutput");
+        var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/TargetProject/StrykerOutput");
         directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
 
         var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
