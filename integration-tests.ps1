@@ -110,6 +110,11 @@ function Run-Category {
     }
     'SingleTestProject' {
       Run-Stryker -WorkingDirectory (Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore\NetCoreTestProject.XUnit')
+
+      if ($IsWindows) {
+        $netFrameworkTestProject = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetFramework\FullFrameworkApp.Test'
+        Run-Stryker -WorkingDirectory $netFrameworkTestProject -Arguments @('--dev-mode')
+      }
       break
     }
     'MultipleTestProjects' {
@@ -122,9 +127,6 @@ function Run-Category {
         $wd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetFramework\FullFrameworkApp.Test'
         pushd $wd
         try {
-          dotnet msbuild -t:restore
-          if ($LASTEXITCODE -ne 0) { throw "dotnet msbuild restore failed with exit code $LASTEXITCODE" }
-
           & $stryker --dev-mode
           if ($LASTEXITCODE -ne 0) { throw "dotnet-stryker failed for .NET Framework with exit code ${LASTEXITCODE}" }
         } finally { popd }
