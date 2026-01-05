@@ -13,6 +13,51 @@ $ErrorActionPreference = 'Stop'
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" }
 function Write-Warn([string]$Message) { Write-Warning "[WARN] $Message" }
 
+function Protect-SecretInGitHubActionsLog {
+  param(
+    [string]$Secret
+  )
+
+  if ([string]::IsNullOrWhiteSpace($Secret)) {
+    return
+  }
+
+  if (${env:GITHUB_ACTIONS} -eq 'true') {
+    Write-Host "::add-mask::$Secret"
+  }
+}
+
+function Format-ToolParametersForLog {
+  param(
+    [string[]]$ToolParameters
+  )
+
+  $redactedParameters = New-Object System.Collections.Generic.List[string]
+  for ($i = 0; $i -lt $ToolParameters.Count; $i++) {
+    $parameter = $ToolParameters[$i]
+
+    if ($parameter -eq '--dashboard-api-key') {
+      $redactedParameters.Add($parameter)
+
+      if ($i + 1 -lt $ToolParameters.Count) {
+        $redactedParameters.Add('<redacted>')
+        $i++
+      }
+
+      continue
+    }
+
+    if ($parameter -like '--dashboard-api-key=*') {
+      $redactedParameters.Add('--dashboard-api-key=<redacted>')
+      continue
+    }
+
+    $redactedParameters.Add($parameter)
+  }
+
+  return $redactedParameters.ToArray()
+}
+
 function Restore-DotNetTools {
   param(
     [string]$RepoRoot
@@ -44,7 +89,8 @@ function Invoke-Stryker {
     $dotnetInvocation = @('tool', 'run', 'dotnet-stryker', '--') + $effectiveToolParameters
 
     Write-Info "Running dotnet-stryker in '$RunDirectory'"
-    Write-Info ("Parameters: " + (($effectiveToolParameters | ForEach-Object { $_ }) -join ' '))
+    $parametersForLog = Format-ToolParametersForLog -ToolParameters $effectiveToolParameters
+    Write-Info ("Parameters: " + (($parametersForLog | ForEach-Object { $_ }) -join ' '))
 
     & dotnet @dotnetInvocation
   } finally {
@@ -68,6 +114,7 @@ Restore-DotNetTools -RepoRoot $repoRoot
 $isGitHubActions = ${env:GITHUB_ACTIONS} -eq 'true'
 $isScheduledRun = ${env:GITHUB_EVENT_NAME} -eq 'schedule'
 $dashboardApiKey = ${env:STRYKER_DASHBOARD_API_KEY}
+Protect-SecretInGitHubActionsLog -Secret $dashboardApiKey
 
 $publishToDashboard = $isGitHubActions -and $isScheduledRun -and -not [string]::IsNullOrWhiteSpace($dashboardApiKey)
 if (-not $publishToDashboard -and -not [string]::IsNullOrWhiteSpace($dashboardApiKey)) {
