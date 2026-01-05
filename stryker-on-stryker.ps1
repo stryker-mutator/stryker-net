@@ -79,10 +79,11 @@ function Invoke-Stryker {
     [string[]]$ToolParameters
   )
 
-  $effectiveToolParameters = @('-V trace',
+  $effectiveToolParameters = @(
     $ToolParameters |
       Where-Object { $_ -is [string] -and $_.Trim().Length -gt 0 }
   )
+  $effectiveToolParameters += '-V trace'
 
   Push-Location $RunDirectory
   try {
