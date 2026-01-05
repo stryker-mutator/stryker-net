@@ -1,0 +1,7 @@
+{
+  "stryker-config": {
+    "test-projects": [
+      "../Stryker.TestRunner.VsTest.UnitTest/Stryker.TestRunner.VsTest.UnitTest.csproj"
+    ]
+  }
+}

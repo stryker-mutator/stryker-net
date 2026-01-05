@@ -1,0 +1,7 @@
+{
+  "stryker-config": {
+    "test-projects": [
+      "../Stryker.Solutions.Test/Stryker.Solutions.Test.csproj"
+    ]
+  }
+}

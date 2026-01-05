@@ -1,0 +1,56 @@
+name: Stryker on Stryker (nightly)
+
+on:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stryker-on-stryker-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  run-stryker:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Stryker.Abstractions
+            workingDirectory: src/Stryker.Abstractions
+          - name: Stryker.CLI
+            workingDirectory: src/Stryker.CLI/Stryker.CLI
+          - name: Stryker.Core
+            workingDirectory: src/Stryker.Core/Stryker.Core
+          - name: Stryker.DataCollector
+            workingDirectory: src/Stryker.DataCollector/Stryker.DataCollector
+          - name: Stryker.Options
+            workingDirectory: src/Stryker.Options
+          - name: Stryker.RegexMutators
+            workingDirectory: src/Stryker.RegexMutators/Stryker.RegexMutators
+          - name: Stryker.TestRunner.VsTest
+            workingDirectory: src/Stryker.TestRunner.VsTest
+          - name: Stryker.TestRunner
+            workingDirectory: src/Stryker.TestRunner
+          - name: Stryker.Solutions
+            workingDirectory: src/Stryker.Solutions
+          - name: Stryker.Utilities
+            workingDirectory: src/Stryker.Utilities
+
+    steps:
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            8.x
+            10.x
+
+      - name: Run Stryker
+        shell: pwsh
+        env:
+          STRYKER_DASHBOARD_API_KEY: ${{ github.event_name == 'schedule' && secrets.STRYKER_DASHBOARD_API_KEY || '' }}
+        run: ./stryker-on-stryker.ps1 -WorkingDirectory "${{ matrix.workingDirectory }}"
