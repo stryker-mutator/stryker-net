@@ -1,16 +1,13 @@
-name: Stryker on Stryker (nightly)
+name: Stryker on Stryker
 
 on:
   schedule:
     - cron: '0 1 * * *'
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 concurrency:
   group: stryker-on-stryker-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   run-stryker:
