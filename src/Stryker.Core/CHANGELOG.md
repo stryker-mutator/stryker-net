@@ -1,3 +1,7 @@
+# [4.10.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.9.2...stryker@4.10.0) (2026-01-04)
+
+
+
 ## [4.9.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.9.1...stryker@4.9.2) (2025-12-29)
 
 

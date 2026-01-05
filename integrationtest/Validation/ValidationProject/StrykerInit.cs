@@ -1,6 +1,6 @@
 using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json;
 using Shouldly;
 using Stryker.CLI;
 using Xunit;
@@ -12,6 +12,7 @@ public class StrykerInit
 
     [Fact]
     [Trait("Category", "InitCommand")]
+    [Trait("Runtime", "netcore")]
     public void InitCommandDefaults()
     {
         var directory = new DirectoryInfo("../../../../../TargetProjects/InitCommand");
@@ -19,7 +20,8 @@ public class StrykerInit
         jsonFile.ShouldNotBeNull("Json file missing");
 
         var configOutput = File.ReadAllText(jsonFile.FullName);
-        var parsedConfigOuptut = JsonConvert.DeserializeObject<FileBasedInputOuter>(configOutput);
+        var parsedConfigOuptut = JsonSerializer.Deserialize<FileBasedInputOuter>(configOutput);
+        parsedConfigOuptut.ShouldNotBeNull();
 
         parsedConfigOuptut.Input.Project.ShouldBe("TestProject.csproj");
     }

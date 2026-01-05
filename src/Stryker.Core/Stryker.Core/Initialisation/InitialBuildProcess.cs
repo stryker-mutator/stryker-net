@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Configuration;
@@ -64,7 +65,7 @@ public class InitialBuildProcess : IInitialBuildProcess
             platform: platform,
             forcedFramework: targetFramework);
 
-        if (result.ExitCode != ExitCodes.Success && !string.IsNullOrEmpty(solutionPath))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && result.ExitCode != ExitCodes.Success && !string.IsNullOrEmpty(solutionPath))
         {
             // dump previous build result
             _logger.LogTrace("Initial build output: {0}", result.Output);
