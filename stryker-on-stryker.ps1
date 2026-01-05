@@ -86,7 +86,7 @@ function Invoke-Stryker {
 
   Push-Location $RunDirectory
   try {
-    $dotnetInvocation = @('tool', 'run', 'dotnet-stryker', '--') + $effectiveToolParameters
+    $dotnetInvocation = @('tool', 'run', 'dotnet-stryker', '-V trace') + $effectiveToolParameters
 
     Write-Info "Running dotnet-stryker in '$RunDirectory'"
     $parametersForLog = Format-ToolParametersForLog -ToolParameters $effectiveToolParameters
