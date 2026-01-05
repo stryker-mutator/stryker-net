@@ -91,7 +91,7 @@ function Invoke-Stryker {
 
     Write-Info "Running dotnet-stryker in '$RunDirectory'"
     $parametersForLog = Format-ToolParametersForLog -ToolParameters $effectiveToolParameters
-    Write-Info ("Parameters: " + (($parametersForLog | ForEach-Object { $_ }) -join ' '))
+    Write-Info ("Run command: " + (((@('tool', 'run', 'dotnet-stryker') + $parametersForLog) | ForEach-Object { $_ }) -join ' '))
 
     & dotnet @dotnetInvocation
   } finally {
