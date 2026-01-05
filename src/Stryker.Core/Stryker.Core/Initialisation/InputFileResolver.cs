@@ -379,10 +379,9 @@ public class InputFileResolver : IInputFileResolver
 
         if (options.DiagMode)
         {
-            _logger.LogWarning("Project analysis failed. The MsBuild log: {BuildLog}",_logger.ToString());
+            _logger.LogWarning("Project analysis failed. The MsBuild log: {BuildLog}",buildLogger.ToString());
         }
 
-        // if there is no valid result, drop it altogether
         return buildResult;
     }
 

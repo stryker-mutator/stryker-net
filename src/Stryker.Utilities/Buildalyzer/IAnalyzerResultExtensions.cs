@@ -194,6 +194,9 @@ public static class IAnalyzerResultExtensions
             _ => OutputKind.DynamicallyLinkedLibrary
         };
 
+    public static string GetCompilerApiVersion(this IAnalyzerResult analyzerResult) =>
+        analyzerResult.GetPropertyOrDefault("CompilerAPIVersion", "Unknown");
+
     public static bool IsSignedAssembly(this IAnalyzerResult analyzerResult) =>
         analyzerResult.GetPropertyOrDefault("SignAssembly", false);
 
