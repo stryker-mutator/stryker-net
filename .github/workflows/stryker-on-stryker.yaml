@@ -39,6 +39,7 @@ jobs:
             workingDirectory: src/Stryker.Utilities
 
     steps:
+      - uses: actions/checkout@v6
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
