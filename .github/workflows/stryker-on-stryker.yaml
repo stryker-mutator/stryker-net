@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '0 1 * * *'
   workflow_dispatch:
+  # TODO: Remove before merging
+  pull_request:
 
 concurrency:
   group: stryker-on-stryker-${{ github.ref }}
@@ -11,6 +13,7 @@ concurrency:
 
 jobs:
   run-stryker:
+    if: github.event.pull_request.draft == false
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
     strategy:
