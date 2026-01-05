@@ -1,5 +1,8 @@
 {
   "stryker-config": {
+    "project-info": {
+      "module": "testrunner-vstest"
+    },
     "test-projects": [
       "../Stryker.TestRunner.VsTest.UnitTest/Stryker.TestRunner.VsTest.UnitTest.csproj"
     ]

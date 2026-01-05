@@ -1,5 +1,8 @@
 {
   "stryker-config": {
+    "project-info": {
+      "module": "regexmutators"
+    },
     "test-projects": [
       "../Stryker.RegexMutators.UnitTest/Stryker.RegexMutators.UnitTest.csproj"
     ]

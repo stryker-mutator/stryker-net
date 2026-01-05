@@ -1,5 +1,8 @@
 {
   "stryker-config": {
+    "project-info": {
+      "module": "options"
+    },
     "test-projects": [
       "../Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj"
     ]

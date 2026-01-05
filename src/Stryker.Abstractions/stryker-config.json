@@ -1,5 +1,8 @@
 {
   "stryker-config": {
+    "project-info": {
+      "module": "abstractions"
+    },
     "test-projects": [
       "../Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj"
     ]

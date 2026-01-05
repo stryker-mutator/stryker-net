@@ -1,5 +1,8 @@
 {
   "stryker-config": {
+    "project-info": {
+      "module": "solutions"
+    },
     "test-projects": [
       "../Stryker.Solutions.Test/Stryker.Solutions.Test.csproj"
     ]
