@@ -34,3 +34,19 @@ jobs:
       - name: Run integration tests
         shell: pwsh
         run: ./integration-tests.ps1
+
+  # Fan-in job that depends on all matrix combinations
+  # This job can be used as a single required check in PR rules
+  integration-test-complete:
+    name: Integration Tests Complete
+    runs-on: ubuntu-latest
+    needs: integration-test
+    if: always()
+    steps:
+      - name: Check integration test results
+        run: |
+          if [ "${{ needs.integration-test.result }}" != "success" ]; then
+            echo "Integration tests failed or were cancelled"
+            exit 1
+          fi
+          echo "All integration tests passed successfully"
