@@ -117,7 +117,7 @@ public class InputFileResolver : IInputFileResolver
                 .ToList();
             _logger.LogError("Aborting, analysis failed for all projects: {FailedProjects}", string.Join(", ", failedProjects));
             // no mutable project found
-            throw new InputException("No project references found. Please add a project reference to your test project and retry.");
+            throw new InputException($"Analysis failed for all projects: {string.Join(", ", failedProjects)}");
         }
         var result = AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults);
         if (result.Count <= 1)
