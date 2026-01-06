@@ -267,7 +267,7 @@ public class InputFileResolver : IInputFileResolver
 
         // Stryker will recursively scan projects
         // add any project reference for progressive discovery (when not using solution file)
-        referencesToAdd.AddRange(buildResult.SelectMany(p => p.ProjectReferences).Where(projectReference => FileSystem.File.Exists(projectReference)));
+        referencesToAdd.AddRange(buildResult.SelectMany(p => p.ProjectReferences).Where(FileSystem.File.Exists));
 
         return referencesToAdd;
     }
