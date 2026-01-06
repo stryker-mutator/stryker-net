@@ -236,7 +236,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 
 
     [TestMethod]
-    public void ShouldHandleFailedAnalysis()
+    public void ShouldSucceedWhenTestProjectFailsButSourceProjectSucceeds()
     {
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
@@ -259,6 +259,36 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 
         var target = BuildTestResolver(fileSystem);
 
+        // Should not throw when test project fails but source project succeeds
+        var result = target.ResolveSourceProjectInfos(_options).First();
+        result.ShouldNotBeNull();
+    }
+
+    [TestMethod]
+    public void ShouldThrowWhenSourceProjectFailsAnalysis()
+    {
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectPath, new MockFileData(_defaultTestProjectFileContents) },
+            { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+            { Path.Combine(_sourcePath, "Recursive.cs"), new MockFileData(_sourceFile) },
+            { Path.Combine(_sourcePath, "Plain.cs"), new MockFileData(_sourceFile) },
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath,
+            fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray(), success: () => false);
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, _sourceProjectPath, ["netcoreapp2.1"]);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+
+        var target = BuildTestResolver(fileSystem);
+
+        // Should throw when source project fails
         var action = () => target.ResolveSourceProjectInfos(_options).First();
         action.ShouldThrow<InputException>();
     }
