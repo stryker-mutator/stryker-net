@@ -183,7 +183,7 @@ public class InputFileResolver : IInputFileResolver
         {
             _logger.LogWarning("""
                                No project found, check settings and ensure project file is not corrupted.
-                               Use --diag option to have the analysis's logs in the log file.
+                               Use --diag option to have the analysis logs in the log file.
                                """);
             return;
         }
@@ -224,7 +224,7 @@ public class InputFileResolver : IInputFileResolver
                 unusedTestProject.IsValid() ? "succeeded" : "failed");
         }
 
-        _logger.LogWarning("Use --diag option to have the analysis's logs in the log file.");
+        _logger.LogWarning("Use --diag option to have the analysis logs in the log file.");
     }
 
     private ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> AnalyzeAllNeededProjects(
@@ -356,7 +356,7 @@ public class InputFileResolver : IInputFileResolver
         {
             if (options.DiagMode)
             {
-                _logger.LogWarning("Project {ProjectFilePath} analysis failed. The MsBuild log is: {Log}", projectLogName, buildLogger);
+                _logger.LogWarning("Project {ProjectFilePath} analysis failed. The MsBuild log is: {Log}", projectLogName, _buildLogs[projectLogName]);
             }
 
             // if this is a full framework project, we can retry after a nuget restore
@@ -379,7 +379,7 @@ public class InputFileResolver : IInputFileResolver
 
         if (options.DiagMode)
         {
-            _logger.LogWarning("Project analysis failed. The MsBuild log: {BuildLog}",buildLogger.ToString());
+            _logger.LogWarning("Project analysis failed. The MsBuild log: {BuildLog}", buildLogger.ToString());
         }
 
         return buildResult;
