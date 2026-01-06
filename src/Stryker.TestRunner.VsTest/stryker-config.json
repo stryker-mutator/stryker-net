@@ -3,6 +3,7 @@
     "project-info": {
       "module": "testrunner-vstest"
     },
+    "project": "Stryker.TestRunner.VsTest",
     "test-projects": [
       "../Stryker.TestRunner.VsTest.UnitTest/Stryker.TestRunner.VsTest.UnitTest.csproj"
     ]

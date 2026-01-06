@@ -3,6 +3,7 @@
     "project-info": {
       "module": "core"
     },
+    "project": "Stryker.Core",
     "test-projects": [
       "../Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj"
     ]

@@ -3,6 +3,7 @@
     "project-info": {
       "module": "regexmutators"
     },
+    "project": "Stryker.RegexMutators",
     "test-projects": [
       "../Stryker.RegexMutators.UnitTest/Stryker.RegexMutators.UnitTest.csproj"
     ]

@@ -3,6 +3,7 @@
     "project-info": {
       "module": "cli"
     },
+    "project": "Stryker.CLI",
     "test-projects": [
       "../Stryker.CLI.UnitTest/Stryker.CLI.UnitTest.csproj"
     ]

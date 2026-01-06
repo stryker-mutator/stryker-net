@@ -3,6 +3,7 @@
     "project-info": {
       "module": "solutions"
     },
+    "project": "Stryker.Solutions",
     "test-projects": [
       "../Stryker.Solutions.Test/Stryker.Solutions.Test.csproj"
     ]
