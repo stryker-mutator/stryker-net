@@ -109,7 +109,7 @@ public class InputFileResolver : IInputFileResolver
         // we match test projects to mutable projects
         findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectList, options, ScanMode.ScanTestProjectReferences));
 
-        if (findMutableAnalyzerResults.Count > 0 && findMutableAnalyzerResults.All(p => p.Value.All(r => !r.Succeeded)))
+        if (findMutableAnalyzerResults.Any() && findMutableAnalyzerResults.All(p => p.Value.All(r => !r.Succeeded)))
         {
             var failedProjects = findMutableAnalyzerResults
                 .Select(p => p.Key.ProjectFilePath)

@@ -1450,6 +1450,7 @@ Please specify a test project name filter that results in one project.
         });
 
         // Create test project that fails analysis (source project succeeds)
+        // This simulates the scenario where test project analysis fails but source project is found
         var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath,  fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
         var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, _sourceProjectPath, ["netcoreapp2.1"], success: false);
 
