@@ -25,6 +25,18 @@ Stryker.NET is a mutation testing framework for .NET projects. It allows you to 
 - Create or edit unit tests or integration tests for all changes
 - Update documentation when adding features
 
+### Pull Request Title Convention
+When creating or updating pull requests, **always** use Angular-style conventional commit format for PR titles:
+- Format: `<type>(<scope>): <subject>`
+- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
+- Scope: The file or group of files affected (optional but recommended)
+- Subject: A short, imperative description (present tense)
+- Example: `feat(mutators): add string mutator support`
+- Example: `fix(cli): resolve configuration parsing issue`
+- Example: `docs: update contributor guidelines`
+
+**Why**: The project uses squash merging, so the PR title becomes the commit message in the main branch history.
+
 ### Running Tests
 - **Unit tests**: Run `dotnet test` in the `/src` directory
 - **Integration tests**: 
