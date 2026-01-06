@@ -109,14 +109,18 @@ public class InputFileResolver : IInputFileResolver
         // we match test projects to mutable projects
         findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectList, options, ScanMode.ScanTestProjectReferences));
 
-        if (findMutableAnalyzerResults.All(p => p.Value.All(r => !r.Succeeded)) )
+        if (findMutableAnalyzerResults.Count > 0 && findMutableAnalyzerResults.All(p => p.Value.All(r => !r.Succeeded)))
         {
             var failedProjects = findMutableAnalyzerResults
                 .Select(p => p.Key.ProjectFilePath)
                 .Distinct()
                 .ToList();
             _logger.LogError("Aborting, analysis failed for all projects: {FailedProjects}", string.Join(", ", failedProjects));
-            // no mutable project found
+            throw new InputException("Project analysis failed for all projects. Please check the logs above for more information.");
+        }
+        
+        if (findMutableAnalyzerResults.Count == 0)
+        {
             throw new InputException("No project references found. Please add a project reference to your test project and retry.");
         }
         var result = AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults);

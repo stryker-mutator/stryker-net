@@ -260,7 +260,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
         var target = BuildTestResolver(fileSystem);
 
         var action = () => target.ResolveSourceProjectInfos(_options).First();
-        action.ShouldThrow<InputException>();
+        action.ShouldThrow<InputException>().Message.ShouldContain("Project analysis failed");
     }
 
     [TestMethod]
@@ -1437,6 +1437,33 @@ Please specify a test project name filter that results in one project.
         var result = () => target.ResolveSourceProjectInfos(options);
         result.ShouldThrow<InputException>().Message.ShouldContain("No project references found.");
 
+    }
+
+    [TestMethod]
+    public void ShouldThrowWithClearMessageWhenAllProjectAnalysisFails()
+    {
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+            { Path.Combine(_sourcePath, "source.cs"), new MockFileData(_sourceFile)},
+            { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+        });
+
+        // Create test project that fails analysis (source project succeeds)
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath,  fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, _sourceProjectPath, ["netcoreapp2.1"], success: false);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+
+        var target = BuildTestResolver(fileSystem);
+
+        var result = () => target.ResolveSourceProjectInfos(_options);
+        result.ShouldThrow<InputException>().Message.ShouldContain("Project analysis failed for all projects");
     }
 
     [TestMethod]
