@@ -206,7 +206,7 @@ public static class IAnalyzerResultExtensions
     public static string? GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult)
     {
         var assemblyKeyFileProp = analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile");
-        return Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath) ?? ".", assemblyKeyFileProp);
+        return string.IsNullOrEmpty(assemblyKeyFileProp) ? null : Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath) ?? ".", assemblyKeyFileProp);
     }
 
     public static ImmutableDictionary<string, ReportDiagnostic> GetDiagnosticOptions(

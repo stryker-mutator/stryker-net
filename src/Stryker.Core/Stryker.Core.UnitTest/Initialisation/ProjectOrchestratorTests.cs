@@ -165,7 +165,8 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         buildalyzerAnalyzerManagerMock.Verify(x => x.SetGlobalProperty("Configuration", "Release"), Times.AtLeastOnce);
     }
 
-    [TestMethod]
+    [TestMethodWithIgnoreIfSupport]
+    [IgnoreIf(nameof(Is.NotWindows))]
     public void ShouldRestoreWhenAnalysisFails()
     {
         // activate log in order to smoke test logging.

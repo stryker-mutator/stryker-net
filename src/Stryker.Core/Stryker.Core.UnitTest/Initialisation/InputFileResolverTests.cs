@@ -1256,7 +1256,7 @@ Please specify a test project name filter that results in one project.
 
         var action = () => target.ResolveSourceProjectInfos(_options);
 
-        action.ShouldThrow<InputException>().Message.ShouldContain("no project");
+        action.ShouldThrow<InputException>().Message.ShouldContain("Failed to analyze project builds. Stryker cannot continue.");
     }
 
     [TestMethod]
@@ -1435,8 +1435,7 @@ Please specify a test project name filter that results in one project.
 
         var options = new StrykerOptions { SourceProjectName = "wrong.csprj", ProjectPath = _testPath };
         var result = () => target.ResolveSourceProjectInfos(options);
-        result.ShouldThrow<InputException>().Message.ShouldContain("No project references found.");
-
+        result.ShouldThrow<InputException>().Message.ShouldContain("Failed to analyze project builds. Stryker cannot continue.");
     }
 
     [TestMethod]
