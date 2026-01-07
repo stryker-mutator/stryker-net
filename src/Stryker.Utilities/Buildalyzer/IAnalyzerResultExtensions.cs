@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -151,7 +150,7 @@ public static class IAnalyzerResultExtensions
             _ => Language.Undefined,
         };
 
-    private static readonly string[] knownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit"];
+    private static readonly string[] KnownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit", "nunit"];
 
     /// <summary>
     /// checks if an analyzer result is valid
@@ -174,7 +173,7 @@ public static class IAnalyzerResultExtensions
     {
         if (!bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestProject"), out var isTestProject))
         {
-            isTestProject = Array.Exists(knownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n));
+            isTestProject = Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n));
         }
 
         var hasTestProjectTypeGuid = analyzerResult
@@ -195,6 +194,9 @@ public static class IAnalyzerResultExtensions
             _ => OutputKind.DynamicallyLinkedLibrary
         };
 
+    public static string GetCompilerApiVersion(this IAnalyzerResult analyzerResult) =>
+        analyzerResult.GetPropertyOrDefault("CompilerAPIVersion", "Unknown");
+
     public static bool IsSignedAssembly(this IAnalyzerResult analyzerResult) =>
         analyzerResult.GetPropertyOrDefault("SignAssembly", false);
 
@@ -204,14 +206,7 @@ public static class IAnalyzerResultExtensions
     public static string? GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult)
     {
         var assemblyKeyFileProp = analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile");
-        if (assemblyKeyFileProp is not null)
-        {
-            return Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath) ?? ".", assemblyKeyFileProp);
-        }
-        else
-        {
-            return null;
-        }
+        return string.IsNullOrEmpty(assemblyKeyFileProp) ? null : Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath) ?? ".", assemblyKeyFileProp);
     }
 
     public static ImmutableDictionary<string, ReportDiagnostic> GetDiagnosticOptions(

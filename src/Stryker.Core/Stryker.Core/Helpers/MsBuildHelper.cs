@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -12,7 +13,7 @@ public class MsBuildHelper
 {
     private readonly IFileSystem _fileSystem;
     private readonly ILogger _logger;
-    private static readonly List<string> fallbackLocations =
+    private static readonly List<string> FallbackLocations =
     [
         @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe",
         @"C:\Windows\Microsoft.Net\Framework64\v4.0.30319\MSBuild.exe",
@@ -34,10 +35,9 @@ public class MsBuildHelper
         _msBuildPath = msBuildPath;
     }
 
-
-    public static string QuotesIfNeeded(string parameter)
+    private static string QuotesIfNeeded(string parameter)
     {
-        if (!parameter.Contains(' ') || parameter.Length < 3 || parameter[0] == '"' && parameter[^1] == '"')
+        if (!parameter.Contains(' ') || parameter.Length < 3 || (parameter[0] == '"' && parameter[^1] == '"'))
         {
             return parameter;
         }
@@ -57,7 +57,7 @@ public class MsBuildHelper
         {
             return _msBuildPath;
         }
-        // See if any MSBuild.exe can be found in visual studio installation folder
+        // See if any MSBuild.exe can be found in Visual Studio installation folder
         _msBuildPath = SearchMsBuildVersion("latest") ?? SearchMsBuildVersion("prerelease");
         if (!string.IsNullOrWhiteSpace(_msBuildPath))
         {
@@ -66,7 +66,7 @@ public class MsBuildHelper
         // Else, find in default locations
         _logger.LogInformation("Unable to find msbuild using vswhere, using fallback locations");
 
-        _msBuildPath = fallbackLocations.Find(s => _fileSystem.File.Exists(s)) ?? throw new FileNotFoundException("MsBuild.exe could not be located. If you have MsBuild.exe available but still see this error please create an issue.");
+        _msBuildPath = FallbackLocations.Find(s => _fileSystem.File.Exists(s)) ?? throw new FileNotFoundException("MsBuild.exe could not be located. If you have MsBuild.exe available but still see this error please create an issue.");
 
         return _msBuildPath;
     }
@@ -97,7 +97,16 @@ public class MsBuildHelper
         return (_executor.Start(path, exe, arguments), exe, arguments);
     }
 
-    private (string executable, string command) GetMsBuildExeAndCommand() => GetMsBuildPath().EndsWith(".exe", System.StringComparison.InvariantCultureIgnoreCase) ? (_msBuildPath, string.Empty) : ("dotnet", QuotesIfNeeded(_msBuildPath) + ' ');
+    private (string executable, string command) GetMsBuildExeAndCommand()
+    {
+        if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+        {
+            return ("dotnet", "msbuild");
+        }
+        return GetMsBuildPath().EndsWith(".exe", StringComparison.InvariantCultureIgnoreCase)
+            ? (_msBuildPath, string.Empty)
+            : ("dotnet", QuotesIfNeeded(_msBuildPath) + ' ');
+    }
 
     private string SearchMsBuildVersion(string version)
     {
@@ -105,7 +114,10 @@ public class MsBuildHelper
         {
             var visualStudioPath = _fileSystem.Path.Combine(drive, "Program Files (x86)", "Microsoft Visual Studio");
             if (!_fileSystem.Directory.Exists(visualStudioPath))
+            {
                 continue;
+            }
+
             _logger.LogDebug("Using vswhere.exe to locate msbuild");
 
             var vsWherePath = _fileSystem.Path.Combine(visualStudioPath, "Installer", "vswhere.exe");
@@ -114,10 +126,16 @@ public class MsBuildHelper
             var vsWhereResult = _executor.Start(visualStudioPath, vsWherePath, vsWhereCommand);
 
             if (vsWhereResult.ExitCode != ExitCodes.Success)
+            {
                 continue;
+            }
+
             var msBuildPath = vsWhereResult.Output.Trim();
             if (!_fileSystem.File.Exists(msBuildPath))
+            {
                 continue;
+            }
+
             _logger.LogDebug("Msbuild executable path found at {MsBuildPath}", msBuildPath);
 
             return msBuildPath;

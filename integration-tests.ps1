@@ -108,7 +108,7 @@ function Run-Category {
         Run-Stryker -WorkingDirectory (Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore\NetCoreTestProject.XUnit')
       } elseif ($Runtime -eq 'netframework') {
         $netFrameworkTestProject = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetFramework\FullFrameworkApp.Test'
-        Run-Stryker -WorkingDirectory $netFrameworkTestProject -Arguments @('--dev-mode')
+        Run-Stryker -WorkingDirectory $netFrameworkTestProject -Arguments @('--diag')
       } else {
         throw "Unknown runtime: $Runtime"
       }
@@ -127,7 +127,7 @@ function Run-Category {
         if (Test-Path $solutionPath) { Run-Stryker -WorkingDirectory $netcoreWd -Arguments @('--solution', $solutionPath) } else { Write-Warn "Solution not found at $solutionPath" }
       } elseif ($Runtime -eq 'netframework') {
         $wd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetFramework\FullFrameworkApp.Test'
-        Run-Stryker -WorkingDirectory $wd -Arguments @('--dev-mode')
+        Run-Stryker -WorkingDirectory $wd -Arguments @('--diag')
       } else {
         throw "Unknown runtime: $Runtime"
       }

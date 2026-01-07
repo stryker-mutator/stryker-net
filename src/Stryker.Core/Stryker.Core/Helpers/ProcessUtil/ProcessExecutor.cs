@@ -9,12 +9,12 @@ using Stryker.Utilities;
 namespace Stryker.Core.Helpers.ProcessUtil;
 
 /// <summary>
-/// Used for mocking System.Process 
+/// Used for mocking System.Process
 /// </summary>
 public interface IProcessExecutor
 {
     /// <summary>
-    /// Starts an process and returns the result when done. Takes an environment variable for active mutation
+    /// Starts a process and returns the result when done. Takes an environment variable for active mutation
     /// </summary>
     /// <param name="path">The path the process will use as base path</param>
     /// <param name="application">example: dotnet</param>
@@ -56,8 +56,8 @@ public class ProcessExecutor(bool redirectOutput = true) : IProcessExecutor
     }
 
     /// <summary>
-    /// Starts a process with the given info. 
-    /// Checks for timeout after <paramref name="timeoutMs"/> milliseconds if the process is still running. 
+    /// Starts a process with the given info.
+    /// Checks for timeout after <paramref name="timeoutMs"/> milliseconds if the process is still running.
     /// </summary>
     /// <param name="info">The start info for the process</param>
     /// <param name="timeoutMs">The milliseconds to check for a timeout</param>

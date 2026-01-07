@@ -72,7 +72,7 @@ public sealed class VsTestContextInformation : IDisposable
         _fileSystem = fileSystem ?? new FileSystem();
         _vsTestHelper = helper ?? new VsTestHelper(_fileSystem, logger);
         _wrapperBuilder = builder ?? BuildActualVsTestWrapper;
-        var devMode = options.DevMode;
+        var devMode = options.DiagMode;
         _hostBuilder = hostBuilder ?? (name => new StrykerVsTestHostLauncher(name, devMode));
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestContextInformation>();
     }
@@ -151,7 +151,7 @@ public sealed class VsTestContextInformation : IDisposable
             return determineConsoleParameters;
         }
 
-        determineConsoleParameters.TraceLevel = Options.DevMode ? TraceLevel.Verbose : TraceLevel.Info;
+        determineConsoleParameters.TraceLevel = Options.DiagMode ? TraceLevel.Verbose : TraceLevel.Info;
         var vsTestLogPath = _fileSystem.Path.Combine(LogPath, $"{runnerId}-log.txt");
         _fileSystem.Directory.CreateDirectory(LogPath);
         determineConsoleParameters.LogFilePath = vsTestLogPath;

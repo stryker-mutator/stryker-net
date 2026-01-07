@@ -165,7 +165,8 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         buildalyzerAnalyzerManagerMock.Verify(x => x.SetGlobalProperty("Configuration", "Release"), Times.AtLeastOnce);
     }
 
-    [TestMethod]
+    [TestMethodWithIgnoreIfSupport]
+    [IgnoreIf(nameof(Is.NotWindows))]
     public void ShouldRestoreWhenAnalysisFails()
     {
         // activate log in order to smoke test logging.
@@ -182,7 +183,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
                 ProjectPath = FileSystem.Path.GetFullPath(testCsprojPathName),
                 SourceProjectName = csprojPathName,
                 SolutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln"),
-                DevMode = true
+                DiagMode = true
             };
 
             var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
