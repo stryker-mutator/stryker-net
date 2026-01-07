@@ -60,8 +60,9 @@ public class InputFileResolver : IInputFileResolver
 
     public IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(IStrykerOptions options)
     {
-
         Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults;
+        var normalizedProjectUnderTestNameFilter = !string.IsNullOrEmpty(options.SourceProjectName) ? options.SourceProjectName.Replace("\\", "/") : null;
+
         if (options.IsSolutionContext)
         {
             SolutionFile solution;
@@ -92,7 +93,10 @@ public class InputFileResolver : IInputFileResolver
                 .Select(p => (p.file, options.TargetFramework, p.buildType)).ToList();
             _logger.LogDebug("Analyzing {0} projects.", projectsWithDetails.Count);
             // we match test projects to mutable projects
-            var mutableProjectsAnalyzerResults = AnalyzeAllNeededProjects(projectsWithDetails, options, ScanMode.NoScan);
+            var mutableProjectsAnalyzerResults = AnalyzeAllNeededProjects(projectsWithDetails,
+                normalizedProjectUnderTestNameFilter,
+                options,
+                ScanMode.NoScan);
             (findMutableAnalyzerResults, var orphanedProjects) = FindMutableAnalyzerResults(mutableProjectsAnalyzerResults);
 
             return AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphanedProjects);
@@ -105,8 +109,20 @@ public class InputFileResolver : IInputFileResolver
         _logger.LogInformation("Analyzing {ProjectCount} test project(s).", testProjectFileNames.Count);
          List<(string projectFile, string framework, string configuration)> projectList =
              [..testProjectFileNames.Select(p => (p, options.TargetFramework, options.Configuration))];
+         // if test project is provided but no source project
+         if (options.TestProjects.Any() && string.IsNullOrEmpty(options.SourceProjectName))
+         {
+             _logger.LogDebug("Assume working directory contains target project to be mutated.");
+             normalizedProjectUnderTestNameFilter = FindProjectFile(options.WorkingDirectory);
+             if (options.TestProjects.Contains(normalizedProjectUnderTestNameFilter))
+             {
+                 // we detected a test project, discard it
+                 normalizedProjectUnderTestNameFilter = null;
+             }
+         }
         // we match test projects to mutable projects
-        (findMutableAnalyzerResults, var orphans) = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectList, options, ScanMode.ScanTestProjectReferences));
+        var analyzeAllNeededProjects = AnalyzeAllNeededProjects(projectList, normalizedProjectUnderTestNameFilter, options, ScanMode.ScanTestProjectReferences);
+        (findMutableAnalyzerResults, var orphans) = FindMutableAnalyzerResults(analyzeAllNeededProjects);
 
         var result = AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphans);
         if (result.Count <= 1)
@@ -228,8 +244,8 @@ public class InputFileResolver : IInputFileResolver
     }
 
     private ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> AnalyzeAllNeededProjects(
-        List<(string projectFile, string framework, string configuration)> projects, IStrykerOptions options
-        , ScanMode mode)
+        List<(string projectFile, string framework, string configuration)> projects, string normalizedProjectUnderTestNameFilter,
+        IStrykerOptions options, ScanMode mode)
     {
         var mutableProjectsAnalyzerResults = new ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)>();
         var list = new DynamicEnumerableQueue<(string projectFile, string framework, string configuration)>(projects);
@@ -238,7 +254,6 @@ public class InputFileResolver : IInputFileResolver
         {
             var parallelOptions = new ParallelOptions
                 { MaxDegreeOfParallelism = options.DiagMode ? 1 : Math.Max(options.Concurrency, 1) };
-            var normalizedProjectUnderTestNameFilter = !string.IsNullOrEmpty(options.SourceProjectName) ? options.SourceProjectName.Replace("\\", "/") : null;
             while (!list.Empty)
             {
                 Parallel.ForEach(list.Consume(),
