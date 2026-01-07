@@ -5,7 +5,8 @@
 
 param(
   [Parameter(Mandatory = $true)]
-  [string]$WorkingDirectory
+  [string]$WorkingDirectory,
+  [switch]$UseLocalTool
 )
 
 $ErrorActionPreference = 'Stop'
@@ -76,7 +77,8 @@ function Restore-DotNetTools {
 function Invoke-Stryker {
   param(
     [string]$RunDirectory,
-    [string[]]$ToolParameters
+    [string[]]$ToolParameters,
+    [string]$StrykerPath
   )
 
   $effectiveToolParameters = @(
@@ -88,18 +90,43 @@ function Invoke-Stryker {
   Push-Location $RunDirectory
   Write-Info ("Current working directory: " + (Get-Location))
   try {
-    $dotnetInvocation = @('tool', 'run', 'dotnet-stryker') + $effectiveToolParameters
-
-    Write-Info "Running dotnet-stryker in '$RunDirectory'"
     $parametersForLog = Format-ToolParametersForLog -ToolParameters $effectiveToolParameters
-    Write-Info ("Run command: " + (((@('tool', 'run', 'dotnet-stryker') + $parametersForLog) | ForEach-Object { $_ }) -join ' '))
 
-    & dotnet @dotnetInvocation
+    if (-not [string]::IsNullOrWhiteSpace($StrykerPath)) {
+      Write-Info "Running local dotnet-stryker in '$RunDirectory'"
+      Write-Info ("Run command: " + (($StrykerPath + ' ' + (($parametersForLog | ForEach-Object { $_ }) -join ' ')).Trim()))
+      & $StrykerPath @effectiveToolParameters
+    } else {
+      $dotnetInvocation = @('tool', 'run', 'dotnet-stryker') + $effectiveToolParameters
+      Write-Info "Running dotnet-stryker (from tool manifest) in '$RunDirectory'"
+      Write-Info ("Run command: " + (((@('tool', 'run', 'dotnet-stryker') + $parametersForLog) | ForEach-Object { $_ }) -join ' '))
+      & dotnet @dotnetInvocation
+    }
   } finally {
     Pop-Location
   }
 
   if ($LASTEXITCODE -ne 0) { throw "dotnet-stryker failed with exit code ${LASTEXITCODE}" }
+}
+
+function Pack-And-Install-Tool {
+  param(
+    [string]$ToolProject,
+    [string]$ToolVersion,
+    [string]$PublishPath,
+    [string]$ToolPath
+  )
+
+  dotnet pack $ToolProject "-p:PackageVersion=${ToolVersion}" --output $PublishPath
+  if ($LASTEXITCODE -ne 0) { throw "dotnet pack failed with exit code ${LASTEXITCODE}" }
+
+  # Ensure we always use the freshly packed tool version in the local tool-path.
+  # `dotnet tool install` does not overwrite an existing local tool installation.
+  dotnet tool uninstall dotnet-stryker --tool-path $ToolPath 2>$null
+  if ($LASTEXITCODE -ne 0) { Write-Info "dotnet-stryker was not previously installed in '$ToolPath' (continuing)" }
+
+  dotnet tool install dotnet-stryker --add-source $PublishPath --allow-downgrade --tool-path $ToolPath --version $ToolVersion
+  if ($LASTEXITCODE -ne 0) { throw "dotnet tool install failed with exit code ${LASTEXITCODE}" }
 }
 
 $repoRoot = if (-not [string]::IsNullOrWhiteSpace(${env:GITHUB_WORKSPACE})) {
@@ -108,10 +135,35 @@ $repoRoot = if (-not [string]::IsNullOrWhiteSpace(${env:GITHUB_WORKSPACE})) {
   (Resolve-Path (Join-Path $PSScriptRoot '.')).Path
 }
 $absoluteWorkingDirectory = (Resolve-Path (Join-Path $repoRoot $WorkingDirectory)).Path
-$toolManifestPath = Join-Path $repoRoot 'dotnet-tools.json'
-if (-not (Test-Path $toolManifestPath)) { throw "Expected repo root dotnet tool manifest not found: $toolManifestPath" }
 
-Restore-DotNetTools -RepoRoot $repoRoot
+# Detect tool manifest in standard locations
+$toolManifestCandidates = @(
+  (Join-Path $repoRoot '.config' 'dotnet-tools.json'),
+  (Join-Path $repoRoot 'dotnet-tools.json')
+)
+if (-not ($toolManifestCandidates | Where-Object { Test-Path $_ })) {
+  throw "Expected dotnet tool manifest not found in '.config/dotnet-tools.json' or 'dotnet-tools.json' at repo root."
+}
+
+# Decide whether to use local tool install mode
+$useLocalTool = $UseLocalTool.IsPresent -or (${env:USE_LOCAL_TOOL} -eq 'true')
+if (-not $useLocalTool) {
+  Restore-DotNetTools -RepoRoot $repoRoot
+}
+
+# If using local tool, pack and install just like the integration tests
+$strykerPath = $null
+if ($useLocalTool) {
+  $publishPath = Join-Path $repoRoot 'publish'
+  $toolPath = Join-Path $repoRoot '.nuget' 'tools'
+  $toolProject = Join-Path $repoRoot 'src' 'Stryker.CLI' 'Stryker.CLI' 'Stryker.CLI.csproj'
+
+  $toolVersion = '0.0.0-'
+  if (${env:GITHUB_ACTIONS} -eq 'true') { $toolVersion += "github-${env:GITHUB_RUN_NUMBER}" } else { $toolVersion += 'localdev' }
+
+  Pack-And-Install-Tool -ToolProject $toolProject -ToolVersion $toolVersion -PublishPath $publishPath -ToolPath $toolPath
+  $strykerPath = Join-Path $toolPath 'dotnet-stryker'
+}
 
 $isGitHubActions = ${env:GITHUB_ACTIONS} -eq 'true'
 $isScheduledRun = ${env:GITHUB_EVENT_NAME} -eq 'schedule'
@@ -133,10 +185,10 @@ if ($publishToDashboard) {
     'master',
     '--dashboard-api-key',
     $dashboardApiKey
-  )
+  ) -StrykerPath $strykerPath
 } else {
   Invoke-Stryker -RunDirectory $absoluteWorkingDirectory -ToolParameters @(
     '--reporter',
     'html'
-  )
+  ) -StrykerPath $strykerPath
 }

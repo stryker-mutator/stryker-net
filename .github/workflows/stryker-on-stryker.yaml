@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: '0 1 * * *'
   workflow_dispatch:
+    inputs:
+      useLocalTool:
+        description: 'Pack and use local Stryker CLI (instead of nuget tool)'
+        type: boolean
+        required: false
+        default: false
   # TODO: Remove before merging
   pull_request:
 
@@ -53,4 +59,5 @@ jobs:
         shell: pwsh
         env:
           STRYKER_DASHBOARD_API_KEY: ${{ github.event_name == 'schedule' && secrets.STRYKER_DASHBOARD_API_KEY || '' }}
+          USE_LOCAL_TOOL: ${{ inputs.useLocalTool }}
         run: ./stryker-on-stryker.ps1 -WorkingDirectory "${{ matrix.workingDirectory }}"
