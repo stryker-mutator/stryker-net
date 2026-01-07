@@ -16,6 +16,7 @@ using Stryker.Abstractions.Testing;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.TestRunner.VsTest;
+using Stryker.TestRunner.MicrosoftTestPlatform;
 
 namespace Stryker.Core.Initialisation;
 
@@ -64,8 +65,8 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
 
         _initializationProcess.BuildProjects(options, projectInfos);
 
-        // create a test runner
-        _runner = runner ?? new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem);
+        // create a test runner based on the selected option
+        _runner = runner ?? CreateTestRunner(options);
         _mutationTestExecutor.TestRunner = _runner;
         InitializeDashboardProjectInformation(options, projectInfos.First());
         var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
@@ -76,6 +77,36 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
             mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
         });
         return mutationTestProcesses;
+    }
+
+    private ITestRunner CreateTestRunner(IStrykerOptions options)
+    {
+        return options.TestRunner switch
+        {
+            Stryker.Abstractions.Options.TestRunner.VsTest => new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem),
+            Stryker.Abstractions.Options.TestRunner.MicrosoftTestPlatform => CreateMicrosoftTestPlatformRunner(options),
+            _ => throw new InputException($"Unknown test runner: {options.TestRunner}")
+        };
+    }
+
+    private ITestRunner CreateMicrosoftTestPlatformRunner(IStrykerOptions options)
+    {
+        var testAssemblies = options.TestProjects;
+
+        if (testAssemblies == null || !testAssemblies.Any())
+        {
+            throw new InputException("MicrosoftTestPlatform runner requires test projects to be specified. Please use the --test-project option.");
+        }
+
+        var testAssembly = testAssemblies.First();
+
+        if (!_fileResolver.FileSystem.File.Exists(testAssembly))
+        {
+            throw new InputException($"Test assembly not found: {testAssembly}");
+        }
+
+        _logger.LogDebug("Creating MicrosoftTestPlatform runner with assembly: {TestAssembly}", testAssembly);
+        return new MicrosoftTestPlatformRunner(testAssembly);
     }
 
     private void InitializeDashboardProjectInformation(IStrykerOptions options, SourceProjectInfo projectInfo)

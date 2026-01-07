@@ -20,6 +20,7 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.TestRunner.Results;
+using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.VsTest;
 using Stryker.Utilities.Logging;
 
@@ -216,7 +217,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
                 .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
             var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, nugetRestoreMock.Object, TestLoggerFactory.CreateLogger<InputFileResolver>());
             var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
-            
+
             var serviceProviderMock = new Mock<IServiceProvider>();
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>();
             var target = new ProjectOrchestrator(_projectMutatorMock.Object,
@@ -466,7 +467,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
         var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, new Mock<INugetRestoreProcess>().Object, TestLoggerFactory.CreateLogger<InputFileResolver>());
         var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
-        
+
         var serviceProviderMock = new Mock<IServiceProvider>();
         var mutationTestExecutorMock = new Mock<IMutationTestExecutor>();
         return new ProjectOrchestrator(_projectMutatorMock.Object,
