@@ -74,6 +74,36 @@ function Restore-DotNetTools {
   }
 }
 
+function Get-DashboardVersion {
+  param(
+    [string]$RepoRoot
+  )
+
+  $isGh = ${env:GITHUB_ACTIONS} -eq 'true'
+  if ($isGh) {
+    $event = ${env:GITHUB_EVENT_NAME}
+    $refName = ${env:GITHUB_REF_NAME}
+    $ref = ${env:GITHUB_REF}
+    $headRef = ${env:GITHUB_HEAD_REF}
+
+    if ($event -eq 'pull_request' -and -not [string]::IsNullOrWhiteSpace($ref)) {
+      return $ref
+    }
+    if (-not [string]::IsNullOrWhiteSpace($refName)) { return $refName }
+    if (-not [string]::IsNullOrWhiteSpace($ref)) { return $ref }
+    return 'unknown'
+  }
+
+  # Local fallback: try to read current git branch
+  Push-Location $RepoRoot
+  try {
+    $branch = (git rev-parse --abbrev-ref HEAD 2>$null).Trim()
+    if (-not [string]::IsNullOrWhiteSpace($branch)) { return $branch }
+  } catch { }
+  finally { Pop-Location }
+  return 'local'
+}
+
 function Invoke-Stryker {
   param(
     [string]$RunDirectory,
@@ -176,13 +206,14 @@ if (-not $publishToDashboard -and -not [string]::IsNullOrWhiteSpace($dashboardAp
 }
 
 if ($publishToDashboard) {
+  $dashboardVersion = Get-DashboardVersion -RepoRoot $repoRoot
   Invoke-Stryker -RunDirectory $absoluteWorkingDirectory -ToolParameters @(
     '--reporter',
     'dots',
     '--reporter',
     'dashboard',
     '--version',
-    'master',
+    $dashboardVersion,
     '--dashboard-api-key',
     $dashboardApiKey
   ) -StrykerPath $strykerPath
