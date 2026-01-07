@@ -13,6 +13,7 @@
     <ItemGroup>
       <PackageReference Include="CliWrap" />
       <PackageReference Include="StreamJsonRpc" />
+      <PackageReference Include="Microsoft.Testing.Platform" />
     </ItemGroup>
 
 </Project>

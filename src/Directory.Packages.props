@@ -35,6 +35,7 @@
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.0.1" />
     <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="18.0.1" />
     <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="18.0.1" />
+    <PackageVersion Include="Microsoft.Testing.Platform" Version="1.5.2" />
     <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.1.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />

@@ -14,6 +14,12 @@
         "resolved": "1.2.39",
         "contentHash": "fcFN01tDTIQqDuTwr1jUQK/geofiwjG5DycJQOnC72i1SsLAk1ELe+apBOuZ11UMQG8YKFZG1FgvjZPbqHyatg=="
       },
+      "Microsoft.Testing.Platform": {
+        "type": "Direct",
+        "requested": "[1.5.2, )",
+        "resolved": "1.5.2",
+        "contentHash": "IcBrO3WAs+TK622oGSuaHJAn2Ru8b7o4kWjAbaiy2v4302x5qhYphwQ3BvKMK7e7P0fcSyQwq1IfYmrlplgq0w=="
+      },
       "StreamJsonRpc": {
         "type": "Direct",
         "requested": "[2.23.32-alpha, )",
