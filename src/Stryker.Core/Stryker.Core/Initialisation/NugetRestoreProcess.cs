@@ -46,20 +46,20 @@ public class NugetRestoreProcess : INugetRestoreProcess
 
         // Validate nuget.exe is installed and included in path
         var nugetWhereExeResult = ProcessExecutor.Start(solutionDir, "where.exe", "nuget.exe");
-        if (!nugetWhereExeResult.Output.ToLowerInvariant().Contains("nuget.exe"))
+        if (!nugetWhereExeResult.Output.Contains("nuget.exe", StringComparison.InvariantCultureIgnoreCase))
         {
             // try to extend the search
             nugetWhereExeResult = ProcessExecutor.Start(solutionDir, "where.exe",
                 $"/R {Path.GetPathRoot(msbuildPath)} nuget.exe");
 
-            if (!nugetWhereExeResult.Output.ToLowerInvariant().Contains("nuget.exe"))
+            if (!nugetWhereExeResult.Output.Contains("nuget.exe", StringComparison.InvariantCultureIgnoreCase))
                 throw new InputException(
                     "Nuget.exe should be installed to restore .net framework nuget packages. Install nuget.exe and make sure it's included in your path.");
         }
 
         // Get the first nuget.exe path from the where.exe output
         var nugetPath = nugetWhereExeResult.Output
-            .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).First().Trim();
+            .Split([Environment.NewLine], StringSplitOptions.RemoveEmptyEntries).First().Trim();
 
         if (!InternalRestore(solutionPath, msBuildVersion, nugetPath) && !string.IsNullOrEmpty(msBuildVersion))
         {

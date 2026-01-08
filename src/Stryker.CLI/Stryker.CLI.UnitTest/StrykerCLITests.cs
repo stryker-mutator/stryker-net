@@ -310,14 +310,14 @@ Options:";
     }
 
     [TestMethod]
-    [DataRow("--dev-mode")]
+    [DataRow("--diag")]
     public void WithDevModeArgument_ShouldPassDevModeArgumentsToStryker(string argName)
     {
         _target.Run(new string[] { argName });
 
         _strykerRunnerMock.VerifyAll();
 
-        _inputs.DevModeInput.SuppliedInput.Value.ShouldBeTrue();
+        _inputs.DiagModeInput.SuppliedInput.Value.ShouldBeTrue();
     }
 
     [TestMethod]
