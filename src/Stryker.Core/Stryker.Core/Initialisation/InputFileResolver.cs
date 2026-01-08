@@ -61,7 +61,7 @@ public class InputFileResolver : IInputFileResolver
     public IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(IStrykerOptions options)
     {
         Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults;
-        var normalizedProjectUnderTestNameFilter = !string.IsNullOrEmpty(options.SourceProjectName) ? options.SourceProjectName.Replace("\\", "/") : null;
+        var normalizedProjectUnderTestNameFilter = NormalizePath(options.SourceProjectName);
 
         if (options.IsSolutionContext)
         {
@@ -113,8 +113,8 @@ public class InputFileResolver : IInputFileResolver
          if (options.TestProjects.Any() && string.IsNullOrEmpty(options.SourceProjectName))
          {
              _logger.LogDebug("Assume working directory contains target project to be mutated.");
-             normalizedProjectUnderTestNameFilter = FindProjectFile(options.WorkingDirectory);
-             if (options.TestProjects.Contains(normalizedProjectUnderTestNameFilter))
+             normalizedProjectUnderTestNameFilter = NormalizePath(FindProjectFile(options.WorkingDirectory));
+             if (options.TestProjects.Any(tp => NormalizePath(tp) == normalizedProjectUnderTestNameFilter))
              {
                  // we detected a test project, discard it
                  normalizedProjectUnderTestNameFilter = null;
@@ -131,7 +131,7 @@ public class InputFileResolver : IInputFileResolver
         }
         // Too many references found
         // look for one project that references all provided test projects
-        result = result.Where(p => testProjectFileNames.TrueForAll(n => p.TestProjectsInfo.TestProjects.Any(t => t.ProjectFilePath == n))).ToList();
+        result = [.. result.Where(p => testProjectFileNames.TrueForAll(n => p.TestProjectsInfo.TestProjects.Any(t => t.ProjectFilePath == n)))];
         if (result.Count == 1)
         {
             return result;
@@ -705,10 +705,12 @@ public class InputFileResolver : IInputFileResolver
 
         foreach (var projectReference in projectReferences)
         {
-            builder.Append("  ").AppendLine(projectReference.Replace("\\", "/"));
+            builder.Append("  ").AppendLine(NormalizePath(projectReference));
         }
         return builder;
     }
+
+    private static string NormalizePath(string path) => path?.Replace('\\', '/');
 
     private sealed class DynamicEnumerableQueue<T>
     {
