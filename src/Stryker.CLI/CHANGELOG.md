@@ -1,3 +1,12 @@
+# [4.11.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.10.0...dotnet-stryker@4.11.0) (2026-01-09)
+
+
+### Features
+
+* Analyze and log project analysis failure ([#3332](https://github.com/stryker-mutator/stryker-net/issues/3332)) ([557aa7d](https://github.com/stryker-mutator/stryker-net/commit/557aa7d0a04c64531e232b305a55049c67dcf4fd))
+
+
+
 # [4.10.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.9.2...dotnet-stryker@4.10.0) (2026-01-04)
 
 
