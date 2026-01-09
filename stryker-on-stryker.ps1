@@ -12,52 +12,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" }
-function Write-Warn([string]$Message) { Write-Warning "[WARN] $Message" }
-
-function Protect-SecretInGitHubActionsLog {
-  param(
-    [string]$Secret
-  )
-
-  if ([string]::IsNullOrWhiteSpace($Secret)) {
-    return
-  }
-
-  if (${env:GITHUB_ACTIONS} -eq 'true') {
-    Write-Host "::add-mask::$Secret"
-  }
-}
-
-function Format-ToolParametersForLog {
-  param(
-    [string[]]$ToolParameters
-  )
-
-  $redactedParameters = New-Object System.Collections.Generic.List[string]
-  for ($i = 0; $i -lt $ToolParameters.Count; $i++) {
-    $parameter = $ToolParameters[$i]
-
-    if ($parameter -eq '--dashboard-api-key') {
-      $redactedParameters.Add($parameter)
-
-      if ($i + 1 -lt $ToolParameters.Count) {
-        $redactedParameters.Add('<redacted>')
-        $i++
-      }
-
-      continue
-    }
-
-    if ($parameter -like '--dashboard-api-key=*') {
-      $redactedParameters.Add('--dashboard-api-key=<redacted>')
-      continue
-    }
-
-    $redactedParameters.Add($parameter)
-  }
-
-  return $redactedParameters.ToArray()
-}
+function Write-Warn([string]$Message) { Write-Host "[WARN] $Message" }
 
 function Restore-DotNetTools {
   param(
@@ -120,16 +75,14 @@ function Invoke-Stryker {
   Push-Location $RunDirectory
   Write-Info ("Current working directory: " + (Get-Location))
   try {
-    $parametersForLog = Format-ToolParametersForLog -ToolParameters $effectiveToolParameters
-
     if (-not [string]::IsNullOrWhiteSpace($StrykerPath)) {
       Write-Info "Running local dotnet-stryker in '$RunDirectory'"
-      Write-Info ("Run command: " + (($StrykerPath + ' ' + (($parametersForLog | ForEach-Object { $_ }) -join ' ')).Trim()))
+      Write-Info ("Run command: " + (($StrykerPath + ' ' + (($effectiveToolParameters | ForEach-Object { $_ }) -join ' ')).Trim()))
       & $StrykerPath @effectiveToolParameters
     } else {
       $dotnetInvocation = @('tool', 'run', 'dotnet-stryker') + $effectiveToolParameters
       Write-Info "Running dotnet-stryker (from tool manifest) in '$RunDirectory'"
-      Write-Info ("Run command: " + (((@('tool', 'run', 'dotnet-stryker') + $parametersForLog) | ForEach-Object { $_ }) -join ' '))
+      Write-Info ("Run command: " + (((@('tool', 'run', 'dotnet-stryker') + $effectiveToolParameters) | ForEach-Object { $_ }) -join ' '))
       & dotnet @dotnetInvocation
     }
   } finally {
@@ -197,7 +150,6 @@ if ($useLocalTool) {
 
 $isGitHubActions = ${env:GITHUB_ACTIONS} -eq 'true'
 $dashboardApiKey = ${env:STRYKER_DASHBOARD_API_KEY}
-Protect-SecretInGitHubActionsLog -Secret $dashboardApiKey
 
 $publishToDashboard = $isGitHubActions -and -not [string]::IsNullOrWhiteSpace($dashboardApiKey)
 if (-not $publishToDashboard -and -not [string]::IsNullOrWhiteSpace($dashboardApiKey)) {
@@ -212,9 +164,7 @@ if ($publishToDashboard) {
     '--reporter',
     'dashboard',
     '--version',
-    $dashboardVersion,
-    '--dashboard-api-key',
-    $dashboardApiKey
+    $dashboardVersion
   ) -StrykerPath $strykerPath
 } else {
   Invoke-Stryker -RunDirectory $absoluteWorkingDirectory -ToolParameters @(

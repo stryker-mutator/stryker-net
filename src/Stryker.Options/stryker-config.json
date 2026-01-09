@@ -1,6 +1,7 @@
 {
   "stryker-config": {
     "project-info": {
+      "name": "github.com/stryker-mutator/stryker-net",
       "module": "options"
     },
     "project": "Stryker.Configuration",
