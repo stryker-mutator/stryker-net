@@ -196,11 +196,10 @@ if ($useLocalTool) {
 }
 
 $isGitHubActions = ${env:GITHUB_ACTIONS} -eq 'true'
-$isScheduledRun = ${env:GITHUB_EVENT_NAME} -eq 'schedule'
 $dashboardApiKey = ${env:STRYKER_DASHBOARD_API_KEY}
 Protect-SecretInGitHubActionsLog -Secret $dashboardApiKey
 
-$publishToDashboard = $isGitHubActions -and $isScheduledRun -and -not [string]::IsNullOrWhiteSpace($dashboardApiKey)
+$publishToDashboard = $isGitHubActions -and -not [string]::IsNullOrWhiteSpace($dashboardApiKey)
 if (-not $publishToDashboard -and -not [string]::IsNullOrWhiteSpace($dashboardApiKey)) {
   Write-Warn 'STRYKER_DASHBOARD_API_KEY is set but dashboard publishing is disabled for this run.'
 }
