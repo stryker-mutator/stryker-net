@@ -58,6 +58,6 @@ jobs:
       - name: Run Stryker
         shell: pwsh
         env:
-          STRYKER_DASHBOARD_API_KEY: ${{ github.event_name == 'schedule' && secrets.STRYKER_DASHBOARD_API_KEY || '' }}
+          STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY || '' }}
           USE_LOCAL_TOOL: ${{ inputs.useLocalTool }}
         run: ./stryker-on-stryker.ps1 -WorkingDirectory "${{ matrix.workingDirectory }}"
