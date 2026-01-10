@@ -14,12 +14,8 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 public sealed class MicrosoftTestPlatformRunner : ITestRunner
 {
     private readonly TestSet _testSet = new();
-    private readonly Dictionary<string, TestNode> _discoveredTests = new();
     private readonly Dictionary<string, List<TestNode>> _testsByAssembly = new();
-
-    public MicrosoftTestPlatformRunner()
-    {
-    }
+    private readonly Dictionary<string, MtpTestDescription> _testDescriptions = new();
 
     public bool DiscoverTests(string assembly)
     {
@@ -35,7 +31,8 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
 
         var discoveryTask = DiscoverTestsInternalAsync(assembly);
         discoveryTask.Wait();
-        return discoveryTask.Result;
+        var result = discoveryTask.Result;
+        return result;
     }
 
     public ITestSet GetTests(IProjectAndTests project)
@@ -144,9 +141,9 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
 
             foreach (var test in tests)
             {
-                _discoveredTests[test.Uid] = test;
-                var testDescription = new TestDescription(test.Uid, test.DisplayName, string.Empty);
-                _testSet.RegisterTest(testDescription);
+                var mtpTestDescription = new MtpTestDescription(test);
+                _testDescriptions[test.Uid] = mtpTestDescription;
+                _testSet.RegisterTest(mtpTestDescription.Description);
             }
 
             await client.ExitAsync();
@@ -166,7 +163,9 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
         {
             var allExecutedTests = new List<string>();
             var allFailedTests = new List<string>();
+            var allMessages = new List<string>();
             var totalDuration = TimeSpan.Zero;
+            var errorMessages = new List<string>();
 
             foreach (var assembly in assemblies)
             {
@@ -182,6 +181,11 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
                     allExecutedTests.AddRange(result.ExecutedTests.GetIdentifiers());
                     allFailedTests.AddRange(result.FailingTests.GetIdentifiers());
                     totalDuration += result.Duration;
+                    allMessages.AddRange(result.Messages);
+                    if (!string.IsNullOrWhiteSpace(result.ResultMessage))
+                    {
+                        errorMessages.Add(result.ResultMessage);
+                    }
                 }
             }
 
@@ -191,12 +195,12 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
                 : TestIdentifierList.NoTest();
 
             return new TestRunResult(
-                Enumerable.Empty<IFrameworkTestDescription>(),
+                _testDescriptions.Values,
                 executedTests,
                 failedTestIds,
                 TestIdentifierList.NoTest(),
-                string.Empty,
-                Enumerable.Empty<string>(),
+                string.Join(Environment.NewLine, errorMessages),
+                allMessages,
                 totalDuration);
         }
         catch (Exception ex)
@@ -261,11 +265,15 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
         var runId = Guid.NewGuid();
         List<TestNodeUpdate> testResults = [];
 
+        var testsToRun = _testsByAssembly.TryGetValue(assembly, out var tests)
+            ? tests.Where(t => testUidFilter == null || testUidFilter(t)).ToArray()
+            : null;
+
         var executeTestsResponse = await client.RunTestsAsync(runId, updates =>
         {
             testResults.AddRange(updates);
             return Task.CompletedTask;
-        }, null);
+        }, testsToRun);
 
         await executeTestsResponse.WaitCompletionAsync();
         await client.ExitAsync();
@@ -275,18 +283,33 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
         var finishedTests = testResults.Where(x => x.Node.ExecutionState is not "in-progress").ToList();
         var failedTests = finishedTests.Where(x => x.Node.ExecutionState is "failed").Select(x => x.Node.Uid).ToList();
 
+        foreach (var testResult in finishedTests)
+        {
+            if (_testDescriptions.TryGetValue(testResult.Node.Uid, out var testDescription))
+            {
+                testDescription.RegisterInitialTestResult(new MtpTestResult(duration));
+            }
+        }
+
+        var errorMessages = string.Join(Environment.NewLine,
+            finishedTests.Where(x => x.Node.ExecutionState is "failed")
+                .Select(x => $"{x.Node.DisplayName}{Environment.NewLine}{Environment.NewLine}Test failed"));
+
+        var messages = finishedTests.Select(x =>
+            $"{x.Node.DisplayName}{Environment.NewLine}{Environment.NewLine}State: {x.Node.ExecutionState}");
+
         var executedTests = new TestIdentifierList(finishedTests.Select(x => x.Node.Uid));
         var failedTestIds = failedTests.Any()
             ? new TestIdentifierList(failedTests)
             : TestIdentifierList.NoTest();
 
         return new TestRunResult(
-            Enumerable.Empty<IFrameworkTestDescription>(),
+            _testDescriptions.Values,
             executedTests,
             failedTestIds,
             TestIdentifierList.NoTest(),
-            string.Empty,
-            Enumerable.Empty<string>(),
+            errorMessages,
+            messages,
             duration);
     }
 }
