@@ -13,23 +13,22 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 
 public sealed class MicrosoftTestPlatformRunner : ITestRunner
 {
-    private readonly string _testAssemblyPath;
     private readonly TestSet _testSet = new();
     private readonly Dictionary<string, TestNode> _discoveredTests = new();
+    private readonly Dictionary<string, List<TestNode>> _testsByAssembly = new();
 
-    public MicrosoftTestPlatformRunner(string testAssemblyPath)
+    public MicrosoftTestPlatformRunner()
     {
-        _testAssemblyPath = testAssemblyPath ?? throw new ArgumentNullException(nameof(testAssemblyPath));
-
-        if (!File.Exists(_testAssemblyPath))
-        {
-            throw new FileNotFoundException($"Test assembly not found at path: {_testAssemblyPath}");
-        }
     }
 
     public bool DiscoverTests(string assembly)
     {
         if (string.IsNullOrEmpty(assembly))
+        {
+            return false;
+        }
+
+        if (!File.Exists(assembly))
         {
             return false;
         }
@@ -46,7 +45,13 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
 
     public ITestRunResult InitialTest(IProjectAndTests project)
     {
-        var runTask = RunAllTestsAsync(project);
+        var assemblies = project.GetTestAssemblies();
+        if (!assemblies.Any())
+        {
+            return new TestRunResult(false, "No test assemblies found");
+        }
+
+        var runTask = RunAllTestsAsync(assemblies);
         runTask.Wait();
         return runTask.Result;
     }
@@ -59,7 +64,13 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
     public ITestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc,
         IReadOnlyList<IMutant> mutants, ITestRunner.TestUpdateHandler update)
     {
-        var runTask = RunAllTestsAsync(project);
+        var assemblies = project.GetTestAssemblies();
+        if (!assemblies.Any())
+        {
+            return new TestRunResult(false, "No test assemblies found");
+        }
+
+        var runTask = RunAllTestsAsync(assemblies);
         runTask.Wait();
         return runTask.Result;
     }
@@ -129,6 +140,8 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
                 .Select(x => x.Node)
                 .ToList();
 
+            _testsByAssembly[assembly] = tests;
+
             foreach (var test in tests)
             {
                 _discoveredTests[test.Uid] = test;
@@ -147,12 +160,44 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
         }
     }
 
-    private async Task<ITestRunResult> RunAllTestsAsync(IProjectAndTests project)
+    private async Task<ITestRunResult> RunAllTestsAsync(IReadOnlyList<string> assemblies)
     {
         try
         {
-            var testResults = await RunTestsInternalAsync(CancellationToken.None, null);
-            return testResults;
+            var allExecutedTests = new List<string>();
+            var allFailedTests = new List<string>();
+            var totalDuration = TimeSpan.Zero;
+
+            foreach (var assembly in assemblies)
+            {
+                if (!File.Exists(assembly))
+                {
+                    continue;
+                }
+
+                var testResults = await RunTestsInternalAsync(assembly, CancellationToken.None, null);
+
+                if (testResults is TestRunResult result)
+                {
+                    allExecutedTests.AddRange(result.ExecutedTests.GetIdentifiers());
+                    allFailedTests.AddRange(result.FailingTests.GetIdentifiers());
+                    totalDuration += result.Duration;
+                }
+            }
+
+            var executedTests = new TestIdentifierList(allExecutedTests);
+            var failedTestIds = allFailedTests.Any()
+                ? new TestIdentifierList(allFailedTests)
+                : TestIdentifierList.NoTest();
+
+            return new TestRunResult(
+                Enumerable.Empty<IFrameworkTestDescription>(),
+                executedTests,
+                failedTestIds,
+                TestIdentifierList.NoTest(),
+                string.Empty,
+                Enumerable.Empty<string>(),
+                totalDuration);
         }
         catch (Exception ex)
         {
@@ -160,7 +205,7 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
         }
     }
 
-    private async Task<ITestRunResult> RunTestsInternalAsync(CancellationToken cancellationToken,
+    private async Task<ITestRunResult> RunTestsInternalAsync(string assembly, CancellationToken cancellationToken,
         Func<TestNode, bool>? testUidFilter)
     {
         var startTime = DateTime.UtcNow;
@@ -173,9 +218,9 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
         var outputPipe = PipeTarget.ToStream(output);
 
         var cliProcess = Cli.Wrap("dotnet")
-            .WithWorkingDirectory(Path.GetDirectoryName(_testAssemblyPath) ?? string.Empty)
+            .WithWorkingDirectory(Path.GetDirectoryName(assembly) ?? string.Empty)
             .WithArguments([
-                _testAssemblyPath,
+                assembly,
                 "--server",
                 "--client-port",
                 port.ToString()

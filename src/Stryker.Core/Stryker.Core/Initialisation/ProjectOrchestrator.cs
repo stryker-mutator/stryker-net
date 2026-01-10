@@ -91,22 +91,8 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
 
     private ITestRunner CreateMicrosoftTestPlatformRunner(IStrykerOptions options)
     {
-        var testAssemblies = options.TestProjects;
-
-        if (testAssemblies == null || !testAssemblies.Any())
-        {
-            throw new InputException("MicrosoftTestPlatform runner requires test projects to be specified. Please use the --test-project option.");
-        }
-
-        var testAssembly = testAssemblies.First();
-
-        if (!_fileResolver.FileSystem.File.Exists(testAssembly))
-        {
-            throw new InputException($"Test assembly not found: {testAssembly}");
-        }
-
-        _logger.LogDebug("Creating MicrosoftTestPlatform runner with assembly: {TestAssembly}", testAssembly);
-        return new MicrosoftTestPlatformRunner(testAssembly);
+        _logger.LogDebug("Creating MicrosoftTestPlatform runner");
+        return new MicrosoftTestPlatformRunner();
     }
 
     private void InitializeDashboardProjectInformation(IStrykerOptions options, SourceProjectInfo projectInfo)
