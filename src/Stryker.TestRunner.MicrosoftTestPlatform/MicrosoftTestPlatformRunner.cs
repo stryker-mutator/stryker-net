@@ -67,7 +67,7 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
             return new TestRunResult(false, "No test assemblies found");
         }
 
-        var runTask = RunAllTestsAsync(assemblies);
+        var runTask = RunAllTestsAsync(assemblies, mutants, update);
         runTask.Wait();
         return runTask.Result;
     }
@@ -157,7 +157,7 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
         }
     }
 
-    private async Task<ITestRunResult> RunAllTestsAsync(IReadOnlyList<string> assemblies)
+    private async Task<ITestRunResult> RunAllTestsAsync(IReadOnlyList<string> assemblies, IReadOnlyList<IMutant>? mutants = null, ITestRunner.TestUpdateHandler? update = null)
     {
         try
         {
@@ -174,7 +174,7 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
                     continue;
                 }
 
-                var testResults = await RunTestsInternalAsync(assembly, CancellationToken.None, null);
+                var testResults = await RunTestsInternalAsync(assembly, CancellationToken.None, null, mutants, update);
 
                 if (testResults is TestRunResult result)
                 {
@@ -210,7 +210,7 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
     }
 
     private async Task<ITestRunResult> RunTestsInternalAsync(string assembly, CancellationToken cancellationToken,
-        Func<TestNode, bool>? testUidFilter)
+        Func<TestNode, bool>? testUidFilter, IReadOnlyList<IMutant>? mutants = null, ITestRunner.TestUpdateHandler? update = null)
     {
         var startTime = DateTime.UtcNow;
         var listener = new TcpListener(new IPEndPoint(IPAddress.Any, 0));
@@ -302,6 +302,11 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
         var failedTestIds = failedTests.Any()
             ? new TestIdentifierList(failedTests)
             : TestIdentifierList.NoTest();
+
+        if (update != null && mutants != null)
+        {
+            update.Invoke(mutants, failedTestIds, executedTests, TestIdentifierList.NoTest());
+        }
 
         return new TestRunResult(
             _testDescriptions.Values,
