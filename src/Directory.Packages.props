@@ -4,7 +4,7 @@
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.2.39" />
     <PackageVersion Include="LaunchDarkly.EventSource" Version="5.3.0" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
     <PackageVersion Include="MSTest" Version="3.11.1" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.11.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0" />
@@ -28,15 +28,15 @@
     <PackageVersion Include="ShellProgressBar" Version="5.2.0" />
     <PackageVersion Include="Spectre.Console" Version="0.54.0" />
     <PackageVersion Include="Spectre.Console.Analyzer" Version="1.0.0" />
-    <PackageVersion Include="System.Net.Http.Json" Version="10.0.1" />
+    <PackageVersion Include="System.Net.Http.Json" Version="10.0.2" />
     <PackageVersion Include="Microsoft.TestPlatform" Version="18.0.1" />
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.0.1" />
     <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="18.0.1" />
     <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="18.0.1" />
     <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.1.0" />
     <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52"/>
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
