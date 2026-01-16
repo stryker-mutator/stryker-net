@@ -55,7 +55,26 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
 
     public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project)
     {
-        return Enumerable.Empty<ICoverageRunResult>();
+        // MicrosoftTestPlatform doesn't have built-in coverage collection infrastructure yet.
+        // Return dubious coverage for all tests, meaning they should be tested against all mutants.
+        // This is similar to VsTest behavior when coverage data collection fails.
+        var coverageResults = new List<ICoverageRunResult>();
+
+        foreach (var testDescription in _testDescriptions.Values)
+        {
+            // Create coverage result with dubious confidence and no specific mutant coverage
+            // This ensures all mutants will be tested but without specific coverage optimization
+            var coverageResult = CoverageRunResult.Create(
+                testDescription.Id,
+                CoverageConfidence.Dubious,
+                [],
+                [],
+                []);
+
+            coverageResults.Add(coverageResult);
+        }
+
+        return coverageResults;
     }
 
     public ITestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc,
@@ -166,6 +185,8 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
             var allMessages = new List<string>();
             var totalDuration = TimeSpan.Zero;
             var errorMessages = new List<string>();
+            var totalDiscoveredTests = 0;
+            var totalExecutedTests = 0;
 
             foreach (var assembly in assemblies)
             {
@@ -174,11 +195,29 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
                     continue;
                 }
 
+                // Track total discovered tests for EveryTest() optimization
+                if (_testsByAssembly.TryGetValue(assembly, out var discoveredTests))
+                {
+                    totalDiscoveredTests += discoveredTests.Count;
+                }
+
                 var testResults = await RunTestsInternalAsync(assembly, CancellationToken.None, null, mutants, update);
 
                 if (testResults is TestRunResult result)
                 {
-                    allExecutedTests.AddRange(result.ExecutedTests.GetIdentifiers());
+                    // Track if we got EveryTest() back from the assembly run
+                    if (result.ExecutedTests.IsEveryTest)
+                    {
+                        // Assembly returned EveryTest, count all its discovered tests as executed
+                        totalExecutedTests += discoveredTests?.Count ?? 0;
+                    }
+                    else
+                    {
+                        var executedIds = result.ExecutedTests.GetIdentifiers().ToList();
+                        allExecutedTests.AddRange(executedIds);
+                        totalExecutedTests += executedIds.Count;
+                    }
+
                     allFailedTests.AddRange(result.FailingTests.GetIdentifiers());
                     totalDuration += result.Duration;
                     allMessages.AddRange(result.Messages);
@@ -189,7 +228,11 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
                 }
             }
 
-            var executedTests = new TestIdentifierList(allExecutedTests);
+            // Return EveryTest() if all discovered tests were executed
+            var executedTests = totalDiscoveredTests > 0 && totalExecutedTests >= totalDiscoveredTests
+                ? TestIdentifierList.EveryTest()
+                : new TestIdentifierList(allExecutedTests);
+
             var failedTestIds = allFailedTests.Any()
                 ? new TestIdentifierList(allFailedTests)
                 : TestIdentifierList.NoTest();
@@ -298,7 +341,14 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
         var messages = finishedTests.Select(x =>
             $"{x.Node.DisplayName}{Environment.NewLine}{Environment.NewLine}State: {x.Node.ExecutionState}");
 
-        var executedTests = new TestIdentifierList(finishedTests.Select(x => x.Node.Uid));
+        // Optimize by returning EveryTest() when all tests were executed
+        // This is critical for AnalyzeTestRun to correctly identify survived mutants
+        var totalDiscoveredTests = tests?.Count ?? 0;
+        var executedTestCount = finishedTests.Count;
+        var executedTests = totalDiscoveredTests > 0 && executedTestCount >= totalDiscoveredTests
+            ? TestIdentifierList.EveryTest()
+            : new TestIdentifierList(finishedTests.Select(x => x.Node.Uid));
+
         var failedTestIds = failedTests.Any()
             ? new TestIdentifierList(failedTests)
             : TestIdentifierList.NoTest();
