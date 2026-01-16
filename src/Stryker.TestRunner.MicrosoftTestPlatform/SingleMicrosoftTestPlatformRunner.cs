@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using CliWrap;
+using Microsoft.Extensions.Logging;
 using MsTestRunnerDemo;
 using MsTestRunnerDemo.Models;
 using StreamJsonRpc;
@@ -8,91 +9,80 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
+using static Stryker.Abstractions.Testing.ITestRunner;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform;
 
-public sealed class MicrosoftTestPlatformRunner : ITestRunner
+/// <summary>
+/// Individual test runner instance that handles test execution with mutation-specific
+/// environment variables. Used by MicrosoftTestPlatformRunnerPool.
+/// </summary>
+internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
 {
-    private readonly TestSet _testSet = new();
-    private readonly Dictionary<string, List<TestNode>> _testsByAssembly = new();
-    private readonly Dictionary<string, MtpTestDescription> _testDescriptions = new();
+    private readonly int _id;
+    private readonly Dictionary<string, List<TestNode>> _testsByAssembly;
+    private readonly Dictionary<string, MtpTestDescription> _testDescriptions;
+    private readonly TestSet _testSet;
+    private readonly object _discoveryLock;
+    private readonly ILogger _logger;
+
+    private string RunnerId => $"MtpRunner-{_id}";
+    private string ControlVariableName => $"ACTIVE_MUTATION_{_id}";
+
+    public SingleMicrosoftTestPlatformRunner(
+        int id,
+        Dictionary<string, List<TestNode>> testsByAssembly,
+        Dictionary<string, MtpTestDescription> testDescriptions,
+        TestSet testSet,
+        object discoveryLock,
+        ILogger logger)
+    {
+        _id = id;
+        _testsByAssembly = testsByAssembly;
+        _testDescriptions = testDescriptions;
+        _testSet = testSet;
+        _discoveryLock = discoveryLock;
+        _logger = logger;
+    }
 
     public bool DiscoverTests(string assembly)
     {
-        if (string.IsNullOrEmpty(assembly))
-        {
-            return false;
-        }
-
-        if (!File.Exists(assembly))
-        {
-            return false;
-        }
-
         var discoveryTask = DiscoverTestsInternalAsync(assembly);
         discoveryTask.Wait();
-        var result = discoveryTask.Result;
-        return result;
-    }
-
-    public ITestSet GetTests(IProjectAndTests project)
-    {
-        return _testSet;
+        return discoveryTask.Result;
     }
 
     public ITestRunResult InitialTest(IProjectAndTests project)
     {
         var assemblies = project.GetTestAssemblies();
-        if (!assemblies.Any())
-        {
-            return new TestRunResult(false, "No test assemblies found");
-        }
-
-        var runTask = RunAllTestsAsync(assemblies);
+        var runTask = RunAllTestsAsync(assemblies, mutantId: null, mutants: null, update: null);
         runTask.Wait();
         return runTask.Result;
     }
 
-    public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project)
-    {
-        // MicrosoftTestPlatform doesn't have built-in coverage collection infrastructure yet.
-        // Return dubious coverage for all tests, meaning they should be tested against all mutants.
-        // This is similar to VsTest behavior when coverage data collection fails.
-        var coverageResults = new List<ICoverageRunResult>();
-
-        foreach (var testDescription in _testDescriptions.Values)
-        {
-            // Create coverage result with dubious confidence and no specific mutant coverage
-            // This ensures all mutants will be tested but without specific coverage optimization
-            var coverageResult = CoverageRunResult.Create(
-                testDescription.Id,
-                CoverageConfidence.Dubious,
-                [],
-                [],
-                []);
-
-            coverageResults.Add(coverageResult);
-        }
-
-        return coverageResults;
-    }
-
-    public ITestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc,
-        IReadOnlyList<IMutant> mutants, ITestRunner.TestUpdateHandler update)
+    public ITestRunResult TestMultipleMutants(
+        IProjectAndTests project,
+        ITimeoutValueCalculator? timeoutCalc,
+        IReadOnlyList<IMutant> mutants,
+        TestUpdateHandler? update)
     {
         var assemblies = project.GetTestAssemblies();
-        if (!assemblies.Any())
-        {
-            return new TestRunResult(false, "No test assemblies found");
-        }
 
-        var runTask = RunAllTestsAsync(assemblies, mutants, update);
+        // Determine which mutant to activate
+        // When testing a single mutant, activate it; otherwise use -1 (no mutation)
+        var mutantId = mutants.Count == 1 ? mutants[0].Id : -1;
+
+        _logger.LogDebug("{RunnerId}: Testing mutant(s) [{Mutants}] with active mutation ID: {MutantId}",
+            RunnerId, string.Join(",", mutants.Select(m => m.Id)), mutantId);
+
+        var runTask = RunAllTestsAsync(assemblies, mutantId, mutants, update);
         runTask.Wait();
         return runTask.Result;
     }
 
     public void Dispose()
     {
+        // Nothing to dispose for now
     }
 
     private async Task<bool> DiscoverTestsInternalAsync(string assembly)
@@ -107,12 +97,7 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
 
             var cliProcess = Cli.Wrap("dotnet")
                 .WithWorkingDirectory(Path.GetDirectoryName(assembly) ?? string.Empty)
-                .WithArguments([
-                    assembly,
-                    "--server",
-                    "--client-port",
-                    port.ToString()
-                ])
+                .WithArguments([assembly, "--server", "--client-port", port.ToString()])
                 .WithStandardOutputPipe(PipeTarget.ToDelegate(_ => { }))
                 .WithStandardErrorPipe(PipeTarget.ToDelegate(_ => { }))
                 .ExecuteAsync(cancellationToken: cancellationToken);
@@ -156,13 +141,19 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
                 .Select(x => x.Node)
                 .ToList();
 
-            _testsByAssembly[assembly] = tests;
-
-            foreach (var test in tests)
+            lock (_discoveryLock)
             {
-                var mtpTestDescription = new MtpTestDescription(test);
-                _testDescriptions[test.Uid] = mtpTestDescription;
-                _testSet.RegisterTest(mtpTestDescription.Description);
+                _testsByAssembly[assembly] = tests;
+
+                foreach (var test in tests)
+                {
+                    if (!_testDescriptions.ContainsKey(test.Uid))
+                    {
+                        var mtpTestDescription = new MtpTestDescription(test);
+                        _testDescriptions[test.Uid] = mtpTestDescription;
+                        _testSet.RegisterTest(mtpTestDescription.Description);
+                    }
+                }
             }
 
             await client.ExitAsync();
@@ -170,13 +161,18 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
 
             return tests.Count > 0;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogDebug(ex, "{RunnerId}: Failed to discover tests in {Assembly}", RunnerId, assembly);
             return false;
         }
     }
 
-    private async Task<ITestRunResult> RunAllTestsAsync(IReadOnlyList<string> assemblies, IReadOnlyList<IMutant>? mutants = null, ITestRunner.TestUpdateHandler? update = null)
+    private async Task<ITestRunResult> RunAllTestsAsync(
+        IReadOnlyList<string> assemblies,
+        int? mutantId,
+        IReadOnlyList<IMutant>? mutants,
+        TestUpdateHandler? update)
     {
         try
         {
@@ -195,20 +191,22 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
                     continue;
                 }
 
-                // Track total discovered tests for EveryTest() optimization
-                if (_testsByAssembly.TryGetValue(assembly, out var discoveredTests))
+                List<TestNode>? discoveredTests = null;
+                lock (_discoveryLock)
                 {
-                    totalDiscoveredTests += discoveredTests.Count;
+                    if (_testsByAssembly.TryGetValue(assembly, out var tests))
+                    {
+                        discoveredTests = tests;
+                        totalDiscoveredTests += tests.Count;
+                    }
                 }
 
-                var testResults = await RunTestsInternalAsync(assembly, CancellationToken.None, null, mutants, update);
+                var testResults = await RunTestsInternalAsync(assembly, CancellationToken.None, null, mutantId, mutants, update);
 
                 if (testResults is TestRunResult result)
                 {
-                    // Track if we got EveryTest() back from the assembly run
                     if (result.ExecutedTests.IsEveryTest)
                     {
-                        // Assembly returned EveryTest, count all its discovered tests as executed
                         totalExecutedTests += discoveredTests?.Count ?? 0;
                     }
                     else
@@ -228,7 +226,6 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
                 }
             }
 
-            // Return EveryTest() if all discovered tests were executed
             var executedTests = totalDiscoveredTests > 0 && totalExecutedTests >= totalDiscoveredTests
                 ? TestIdentifierList.EveryTest()
                 : new TestIdentifierList(allExecutedTests);
@@ -237,8 +234,14 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
                 ? new TestIdentifierList(allFailedTests)
                 : TestIdentifierList.NoTest();
 
+            IEnumerable<MtpTestDescription> testDescriptionValues;
+            lock (_discoveryLock)
+            {
+                testDescriptionValues = _testDescriptions.Values.ToList();
+            }
+
             return new TestRunResult(
-                _testDescriptions.Values,
+                testDescriptionValues,
                 executedTests,
                 failedTestIds,
                 TestIdentifierList.NoTest(),
@@ -252,8 +255,13 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
         }
     }
 
-    private async Task<ITestRunResult> RunTestsInternalAsync(string assembly, CancellationToken cancellationToken,
-        Func<TestNode, bool>? testUidFilter, IReadOnlyList<IMutant>? mutants = null, ITestRunner.TestUpdateHandler? update = null)
+    private async Task<ITestRunResult> RunTestsInternalAsync(
+        string assembly,
+        CancellationToken cancellationToken,
+        Func<TestNode, bool>? testUidFilter,
+        int? mutantId,
+        IReadOnlyList<IMutant>? mutants,
+        TestUpdateHandler? update)
     {
         var startTime = DateTime.UtcNow;
         var listener = new TcpListener(new IPEndPoint(IPAddress.Any, 0));
@@ -264,14 +272,29 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
         await using var output = new MemoryStream();
         var outputPipe = PipeTarget.ToStream(output);
 
+        // Build environment variables for mutation control
+        var environmentVariables = new Dictionary<string, string?>
+        {
+            ["STRYKER_MUTANT_ID_CONTROL_VAR"] = ControlVariableName
+        };
+
+        // Set the active mutation ID if testing a mutant
+        if (mutantId.HasValue)
+        {
+            environmentVariables[ControlVariableName] = mutantId.Value.ToString();
+            _logger.LogDebug("{RunnerId}: Setting {ControlVar}={MutantId} for mutation testing",
+                RunnerId, ControlVariableName, mutantId.Value);
+        }
+        else
+        {
+            // No active mutation for initial test run
+            environmentVariables[ControlVariableName] = "-1";
+        }
+
         var cliProcess = Cli.Wrap("dotnet")
             .WithWorkingDirectory(Path.GetDirectoryName(assembly) ?? string.Empty)
-            .WithArguments([
-                assembly,
-                "--server",
-                "--client-port",
-                port.ToString()
-            ])
+            .WithArguments([assembly, "--server", "--client-port", port.ToString()])
+            .WithEnvironmentVariables(environmentVariables)
             .WithStandardOutputPipe(outputPipe)
             .WithStandardErrorPipe(outputPipe)
             .ExecuteAsync(cancellationToken: cancellationToken);
@@ -308,9 +331,16 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
         var runId = Guid.NewGuid();
         List<TestNodeUpdate> testResults = [];
 
-        var testsToRun = _testsByAssembly.TryGetValue(assembly, out var tests)
-            ? tests.Where(t => testUidFilter == null || testUidFilter(t)).ToArray()
-            : null;
+        List<TestNode>? tests = null;
+        lock (_discoveryLock)
+        {
+            if (_testsByAssembly.TryGetValue(assembly, out var assemblyTests))
+            {
+                tests = assemblyTests;
+            }
+        }
+
+        var testsToRun = tests?.Where(t => testUidFilter == null || testUidFilter(t)).ToArray();
 
         var executeTestsResponse = await client.RunTestsAsync(runId, updates =>
         {
@@ -326,11 +356,14 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
         var finishedTests = testResults.Where(x => x.Node.ExecutionState is not "in-progress").ToList();
         var failedTests = finishedTests.Where(x => x.Node.ExecutionState is "failed").Select(x => x.Node.Uid).ToList();
 
-        foreach (var testResult in finishedTests)
+        lock (_discoveryLock)
         {
-            if (_testDescriptions.TryGetValue(testResult.Node.Uid, out var testDescription))
+            foreach (var testResult in finishedTests)
             {
-                testDescription.RegisterInitialTestResult(new MtpTestResult(duration));
+                if (_testDescriptions.TryGetValue(testResult.Node.Uid, out var testDescription))
+                {
+                    testDescription.RegisterInitialTestResult(new MtpTestResult(duration));
+                }
             }
         }
 
@@ -341,8 +374,6 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
         var messages = finishedTests.Select(x =>
             $"{x.Node.DisplayName}{Environment.NewLine}{Environment.NewLine}State: {x.Node.ExecutionState}");
 
-        // Optimize by returning EveryTest() when all tests were executed
-        // This is critical for AnalyzeTestRun to correctly identify survived mutants
         var totalDiscoveredTests = tests?.Count ?? 0;
         var executedTestCount = finishedTests.Count;
         var executedTests = totalDiscoveredTests > 0 && executedTestCount >= totalDiscoveredTests
@@ -358,8 +389,14 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
             update.Invoke(mutants, failedTestIds, executedTests, TestIdentifierList.NoTest());
         }
 
+        IEnumerable<MtpTestDescription> testDescriptionValues;
+        lock (_discoveryLock)
+        {
+            testDescriptionValues = _testDescriptions.Values.ToList();
+        }
+
         return new TestRunResult(
-            _testDescriptions.Values,
+            testDescriptionValues,
             executedTests,
             failedTestIds,
             TestIdentifierList.NoTest(),
@@ -368,3 +405,4 @@ public sealed class MicrosoftTestPlatformRunner : ITestRunner
             duration);
     }
 }
+

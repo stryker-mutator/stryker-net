@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Stryker.TestRunner\Stryker.TestRunner.csproj" />
+      <ProjectReference Include="..\Stryker.Utilities\Stryker.Utilities.csproj" />
     </ItemGroup>
 
     <ItemGroup>

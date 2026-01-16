@@ -970,7 +970,8 @@
           "CliWrap": "[3.10.0, )",
           "Microsoft.Testing.Platform": "[1.5.2, )",
           "StreamJsonRpc": "[2.23.32-alpha, )",
-          "Stryker.TestRunner": "[1.0.0, )"
+          "Stryker.TestRunner": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )"
         }
       },
       "stryker.testrunner.vstest": {

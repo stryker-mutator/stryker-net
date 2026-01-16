@@ -84,7 +84,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         return options.TestRunner switch
         {
             Stryker.Abstractions.Options.TestRunner.VsTest => new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem),
-            Stryker.Abstractions.Options.TestRunner.MicrosoftTestPlatform => new MicrosoftTestPlatformRunner(),
+            Stryker.Abstractions.Options.TestRunner.MicrosoftTestPlatform => new MicrosoftTestPlatformRunnerPool(options),
             _ => throw new InputException($"Unknown test runner: {options.TestRunner}")
         };
     }
