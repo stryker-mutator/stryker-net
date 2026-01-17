@@ -8,6 +8,8 @@ namespace Stryker
         private static string envName = string.Empty;
         private static System.Object _coverageLock = new System.Object();
         private static long _lastMutantFileVersion = -1;
+        private static string _cachedMutantFilePath;
+        private static bool _mutantFilePathCached;
 
         // this attribute will be set by the Stryker Data Collector before each test
         public static bool CaptureCoverage;
@@ -43,21 +45,28 @@ namespace Stryker
         private static bool TryReadMutantFromFile(out int mutantId)
         {
             mutantId = -1;
-            string mutantFilePath = System.Environment.GetEnvironmentVariable("STRYKER_MUTANT_FILE");
-            if (string.IsNullOrEmpty(mutantFilePath) || !System.IO.File.Exists(mutantFilePath))
+
+            // Cache the mutant file path to avoid repeated environment variable lookups
+            if (!_mutantFilePathCached)
+            {
+                _cachedMutantFilePath = System.Environment.GetEnvironmentVariable("STRYKER_MUTANT_FILE");
+                _mutantFilePathCached = true;
+            }
+
+            if (string.IsNullOrEmpty(_cachedMutantFilePath) || !System.IO.File.Exists(_cachedMutantFilePath))
             {
                 return false;
             }
 
             try
             {
-                var fileInfo = new System.IO.FileInfo(mutantFilePath);
+                var fileInfo = new System.IO.FileInfo(_cachedMutantFilePath);
                 long currentVersion = fileInfo.LastWriteTimeUtc.Ticks;
 
                 // Only re-read if file has changed or we haven't read it yet
                 if (currentVersion != _lastMutantFileVersion || ActiveMutant == ActiveMutantNotInitValue)
                 {
-                    string content = System.IO.File.ReadAllText(mutantFilePath).Trim();
+                    string content = System.IO.File.ReadAllText(_cachedMutantFilePath).Trim();
                     if (int.TryParse(content, out mutantId))
                     {
                         _lastMutantFileVersion = currentVersion;
@@ -95,21 +104,26 @@ namespace Stryker
             }
 
             // Check for file-based mutant control (used by MTP runner for process reuse)
-            string mutantFilePath = System.Environment.GetEnvironmentVariable("STRYKER_MUTANT_FILE");
-            if (!string.IsNullOrEmpty(mutantFilePath))
+            // Cache check: only call TryReadMutantFromFile if we might be using file-based control
+            if (!_mutantFilePathCached || !string.IsNullOrEmpty(_cachedMutantFilePath))
             {
                 if (TryReadMutantFromFile(out int fileMutantId))
                 {
                     ActiveMutant = fileMutantId;
                 }
-                return id == ActiveMutant;
+
+                // If we cached the file path and it's set, always use file-based control
+                if (_mutantFilePathCached && !string.IsNullOrEmpty(_cachedMutantFilePath))
+                {
+                    return id == ActiveMutant;
+                }
             }
 
             // lazy load the active mutant id from the environment variable (used by VSTest runner)
             if (ActiveMutant == ActiveMutantNotInitValue)
             {
+                // ...existing code...
 #pragma warning disable CS8600
-                // get the environment variable storing the mutation id
                 string environmentVariableName = System.Environment.GetEnvironmentVariable("STRYKER_MUTANT_ID_CONTROL_VAR");
                 if (environmentVariableName != null)
                 {
