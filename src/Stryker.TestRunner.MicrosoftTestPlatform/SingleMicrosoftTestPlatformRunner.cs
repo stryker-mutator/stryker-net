@@ -137,6 +137,12 @@ internal sealed class AssemblyTestServer : IDisposable
 
     public async Task<List<TestNodeUpdate>> RunTestsAsync(TestNode[]? testsToRun)
     {
+        var (results, _) = await RunTestsAsync(testsToRun, timeout: null).ConfigureAwait(false);
+        return results;
+    }
+
+    public async Task<(List<TestNodeUpdate> Results, bool TimedOut)> RunTestsAsync(TestNode[]? testsToRun, TimeSpan? timeout)
+    {
         if (!_isInitialized || _client is null)
         {
             throw new InvalidOperationException("Server not initialized. Call StartAsync first.");
@@ -151,9 +157,20 @@ internal sealed class AssemblyTestServer : IDisposable
             return Task.CompletedTask;
         }, testsToRun).ConfigureAwait(false);
 
-        await executeTestsResponse.WaitCompletionAsync().ConfigureAwait(false);
+        if (timeout.HasValue)
+        {
+            var completed = await executeTestsResponse.WaitCompletionAsync(timeout.Value).ConfigureAwait(false);
+            return (testResults, !completed);
+        }
 
-        return testResults;
+        await executeTestsResponse.WaitCompletionAsync().ConfigureAwait(false);
+        return (testResults, false);
+    }
+
+    public async Task RestartAsync()
+    {
+        await StopAsync().ConfigureAwait(false);
+        await StartAsync().ConfigureAwait(false);
     }
 
     public async Task StopAsync()
@@ -268,7 +285,7 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
         _logger.LogDebug("{RunnerId}: Testing mutant(s) [{Mutants}] with active mutation ID: {MutantId}",
             RunnerId, string.Join(",", mutants.Select(m => m.Id)), mutantId);
 
-        return RunAllTestsAsync(assemblies, mutantId, mutants, update);
+        return RunAllTestsAsync(assemblies, mutantId, mutants, update, timeoutCalc);
     }
 
     public void Dispose()
@@ -391,7 +408,8 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
         IReadOnlyList<string> assemblies,
         int mutantId,
         IReadOnlyList<IMutant>? mutants,
-        TestUpdateHandler? update)
+        TestUpdateHandler? update,
+        ITimeoutValueCalculator? timeoutCalc = null)
     {
         try
         {
@@ -400,6 +418,7 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
 
             var allExecutedTests = new List<string>();
             var allFailedTests = new List<string>();
+            var allTimedOutTests = new List<string>();
             var allMessages = new List<string>();
             var totalDuration = TimeSpan.Zero;
             var errorMessages = new List<string>();
@@ -423,7 +442,43 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
                     }
                 }
 
-                var testResults = await RunTestsInternalAsync(assembly, null, mutants, update).ConfigureAwait(false);
+                // Calculate timeout based on expected test duration
+                TimeSpan? timeout = null;
+                if (timeoutCalc is not null && discoveredTests is not null)
+                {
+                    var estimatedTimeMs = (int)discoveredTests
+                        .Where(t => _testDescriptions.TryGetValue(t.Uid, out _))
+                        .Sum(t => _testDescriptions[t.Uid].InitialRunTime.TotalMilliseconds);
+                    var timeoutMs = timeoutCalc.CalculateTimeoutValue(estimatedTimeMs);
+                    timeout = TimeSpan.FromMilliseconds(timeoutMs);
+                    _logger.LogDebug("{RunnerId}: Using {TimeoutMs} ms as test run timeout for {Assembly}",
+                        RunnerId, timeoutMs, Path.GetFileName(assembly));
+                }
+
+                var (testResults, timedOut) = await RunTestsInternalAsync(assembly, null, mutants, update, timeout).ConfigureAwait(false);
+
+                if (timedOut)
+                {
+                    _logger.LogDebug("{RunnerId}: Test run timed out for {Assembly}", RunnerId, Path.GetFileName(assembly));
+
+                    // Mark all tests from this assembly as timed out
+                    if (discoveredTests is not null)
+                    {
+                        allTimedOutTests.AddRange(discoveredTests.Select(t => t.Uid));
+                    }
+
+                    // Restart the server since the test process is likely stuck
+                    AssemblyTestServer? server;
+                    lock (_serverLock)
+                    {
+                        _assemblyServers.TryGetValue(assembly, out server);
+                    }
+                    if (server is not null)
+                    {
+                        _logger.LogDebug("{RunnerId}: Restarting test server for {Assembly} after timeout", RunnerId, Path.GetFileName(assembly));
+                        await server.RestartAsync().ConfigureAwait(false);
+                    }
+                }
 
                 if (testResults is TestRunResult result)
                 {
@@ -456,6 +511,10 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
                 ? new TestIdentifierList(allFailedTests)
                 : TestIdentifierList.NoTest();
 
+            var timedOutTestIds = allTimedOutTests.Count > 0
+                ? new TestIdentifierList(allTimedOutTests)
+                : TestIdentifierList.NoTest();
+
             IEnumerable<MtpTestDescription> testDescriptionValues;
             lock (_discoveryLock)
             {
@@ -466,7 +525,7 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
                 testDescriptionValues,
                 executedTests,
                 failedTestIds,
-                TestIdentifierList.NoTest(),
+                timedOutTestIds,
                 string.Join(Environment.NewLine, errorMessages),
                 allMessages,
                 totalDuration);
@@ -477,11 +536,12 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    private async Task<ITestRunResult> RunTestsInternalAsync(
+    private async Task<(ITestRunResult Result, bool TimedOut)> RunTestsInternalAsync(
         string assembly,
         Func<TestNode, bool>? testUidFilter,
         IReadOnlyList<IMutant>? mutants,
-        TestUpdateHandler? update)
+        TestUpdateHandler? update,
+        TimeSpan? timeout = null)
     {
         var startTime = DateTime.UtcNow;
 
@@ -501,7 +561,7 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
 
             var testsToRun = tests?.Where(t => testUidFilter is null || testUidFilter(t)).ToArray();
 
-            var testResults = await server.RunTestsAsync(testsToRun).ConfigureAwait(false);
+            var (testResults, timedOut) = await server.RunTestsAsync(testsToRun, timeout).ConfigureAwait(false);
 
             var duration = DateTime.UtcNow - startTime;
             var finishedTests = testResults.Where(x => x.Node.ExecutionState is not "in-progress").ToList();
@@ -537,7 +597,8 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
 
             if (update is not null && mutants is not null)
             {
-                update.Invoke(mutants, failedTestIds, executedTests, TestIdentifierList.NoTest());
+                var timedOutTests = timedOut ? new TestIdentifierList(tests?.Select(t => t.Uid) ?? []) : TestIdentifierList.NoTest();
+                update.Invoke(mutants, failedTestIds, executedTests, timedOutTests);
             }
 
             IEnumerable<MtpTestDescription> testDescriptionValues;
@@ -546,7 +607,7 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
                 testDescriptionValues = _testDescriptions.Values.ToList();
             }
 
-            return new TestRunResult(
+            var result = new TestRunResult(
                 testDescriptionValues,
                 executedTests,
                 failedTestIds,
@@ -554,10 +615,12 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
                 errorMessagesStr,
                 messages,
                 duration);
+
+            return (result, timedOut);
         }
         catch (Exception ex)
         {
-            return new TestRunResult(false, ex.Message);
+            return (new TestRunResult(false, ex.Message), false);
         }
     }
 }

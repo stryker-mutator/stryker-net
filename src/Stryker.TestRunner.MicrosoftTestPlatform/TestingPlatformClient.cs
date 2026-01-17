@@ -226,6 +226,22 @@ public abstract class ResponseListener(Guid requestId)
 
 #pragma warning disable VSTHRD003
     public Task WaitCompletionAsync() => _allMessageReceived.Task;
+
+    public async Task<bool> WaitCompletionAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
+    {
+        using var timeoutCts = new CancellationTokenSource(timeout);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, cancellationToken);
+
+        try
+        {
+            var completedTask = await Task.WhenAny(_allMessageReceived.Task, Task.Delay(Timeout.Infinite, linkedCts.Token)).ConfigureAwait(false);
+            return completedTask == _allMessageReceived.Task;
+        }
+        catch (OperationCanceledException)
+        {
+            return _allMessageReceived.Task.IsCompleted;
+        }
+    }
 #pragma warning restore VSTHRD003
 }
 
