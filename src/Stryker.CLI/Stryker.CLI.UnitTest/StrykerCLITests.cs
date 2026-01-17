@@ -37,7 +37,7 @@ public class StrykerCLITests
     {
         _options = new StrykerOptions() { Thresholds = new Thresholds { Break = 0 } };
         _runResults = new StrykerRunResult(_options, 0.3);
-        _strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
+        _strykerRunnerMock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
             .Callback<IStrykerInputs>(c => _inputs = c)
             .Returns(_runResults)
             .Verifiable();
@@ -73,7 +73,7 @@ Options:";
         var strykerRunnerMock = new Mock<IStrykerRunner>(MockBehavior.Strict);
         var strykerRunResult = new StrykerRunResult(_options, 0.3);
 
-        strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
+        strykerRunnerMock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
             .Returns(strykerRunResult)
             .Verifiable();
 
@@ -126,7 +126,7 @@ Options:";
         };
         var strykerRunResult = new StrykerRunResult(options, 0.3);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
+            mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
                 .Returns(strykerRunResult)
                 .Verifiable();
 
@@ -150,7 +150,7 @@ Options:";
             }
         };
         var strykerRunResult = new StrykerRunResult(options, double.NaN);
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
+        mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
             .Returns(strykerRunResult)
             .Verifiable();
 
@@ -174,7 +174,7 @@ Options:";
             }
         };
         var strykerRunResult = new StrykerRunResult(options, double.NaN);
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
+        mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
             .Returns(strykerRunResult)
             .Verifiable();
 
@@ -199,7 +199,7 @@ Options:";
         };
         var strykerRunResult = new StrykerRunResult(options, 0.1);
 
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>())).Returns(strykerRunResult).Verifiable();
+        mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>())).Returns(strykerRunResult).Verifiable();
 
         var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
         var result = target.Run(new string[] { });
@@ -227,7 +227,7 @@ Options:";
     public void ShouldThrow_OnException()
     {
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
+        mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
             .Throws(new Exception("Initial testrun failed"))
             .Verifiable();
 

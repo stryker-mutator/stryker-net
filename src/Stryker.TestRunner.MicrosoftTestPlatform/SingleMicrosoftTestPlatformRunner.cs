@@ -45,22 +45,18 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
         _logger = logger;
     }
 
-    public bool DiscoverTests(string assembly)
+    public Task<bool> DiscoverTestsAsync(string assembly)
     {
-        var discoveryTask = DiscoverTestsInternalAsync(assembly);
-        discoveryTask.Wait();
-        return discoveryTask.Result;
+        return DiscoverTestsInternalAsync(assembly);
     }
 
-    public ITestRunResult InitialTest(IProjectAndTests project)
+    public Task<ITestRunResult> InitialTestAsync(IProjectAndTests project)
     {
         var assemblies = project.GetTestAssemblies();
-        var runTask = RunAllTestsAsync(assemblies, mutantId: null, mutants: null, update: null);
-        runTask.Wait();
-        return runTask.Result;
+        return RunAllTestsAsync(assemblies, mutantId: null, mutants: null, update: null);
     }
 
-    public ITestRunResult TestMultipleMutants(
+    public Task<ITestRunResult> TestMultipleMutantsAsync(
         IProjectAndTests project,
         ITimeoutValueCalculator? timeoutCalc,
         IReadOnlyList<IMutant> mutants,
@@ -75,9 +71,7 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
         _logger.LogDebug("{RunnerId}: Testing mutant(s) [{Mutants}] with active mutation ID: {MutantId}",
             RunnerId, string.Join(",", mutants.Select(m => m.Id)), mutantId);
 
-        var runTask = RunAllTestsAsync(assemblies, mutantId, mutants, update);
-        runTask.Wait();
-        return runTask.Result;
+        return RunAllTestsAsync(assemblies, mutantId, mutants, update);
     }
 
     public void Dispose()
@@ -104,7 +98,7 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
 
             var tcpClientTask = listener.AcceptTcpClientAsync(cancellationToken).AsTask();
             var connectionTimeout = Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
-            var completedTask = await Task.WhenAny(cliProcess.Task, tcpClientTask, connectionTimeout);
+            var completedTask = await Task.WhenAny(cliProcess.Task, tcpClientTask, connectionTimeout).ConfigureAwait(false);
 
             if (completedTask == connectionTimeout || completedTask == cliProcess.Task)
             {
@@ -112,7 +106,7 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
                 return false;
             }
 
-            using var tcpClient = await tcpClientTask;
+            using var tcpClient = await tcpClientTask.ConfigureAwait(false);
             await using var stream = tcpClient.GetStream();
 
             using var rpc = new JsonRpc(new HeaderDelimitedMessageHandler(stream, stream, new SystemTextJsonFormatter
@@ -123,7 +117,7 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
             using var output = new MemoryStream();
             using var client = new TestingPlatformClient(rpc, tcpClient, new ProcessHandle(cliProcess, output), enableDiagnostic: false);
 
-            await client.InitializeAsync();
+            await client.InitializeAsync().ConfigureAwait(false);
 
             var discoveryId = Guid.NewGuid();
             List<TestNodeUpdate> discoveredResults = [];
@@ -132,9 +126,9 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
             {
                 discoveredResults.AddRange(updates);
                 return Task.CompletedTask;
-            });
+            }).ConfigureAwait(false);
 
-            await discoverTestsResponse.WaitCompletionAsync();
+            await discoverTestsResponse.WaitCompletionAsync().ConfigureAwait(false);
 
             var tests = discoveredResults
                 .Where(x => x.Node.ExecutionState is "discovered")
@@ -156,7 +150,7 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
                 }
             }
 
-            await client.ExitAsync();
+            await client.ExitAsync().ConfigureAwait(false);
             listener.Stop();
 
             return tests.Count > 0;
@@ -201,7 +195,7 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
                     }
                 }
 
-                var testResults = await RunTestsInternalAsync(assembly, CancellationToken.None, null, mutantId, mutants, update);
+                var testResults = await RunTestsInternalAsync(assembly, CancellationToken.None, null, mutantId, mutants, update).ConfigureAwait(false);
 
                 if (testResults is TestRunResult result)
                 {
@@ -301,7 +295,7 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
 
         var tcpClientTask = listener.AcceptTcpClientAsync(cancellationToken).AsTask();
         var connectionTimeout = Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
-        var completedTask = await Task.WhenAny(cliProcess.Task, tcpClientTask, connectionTimeout);
+        var completedTask = await Task.WhenAny(cliProcess.Task, tcpClientTask, connectionTimeout).ConfigureAwait(false);
 
         if (completedTask == connectionTimeout)
         {
@@ -312,11 +306,11 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
         if (completedTask == cliProcess.Task)
         {
             listener.Stop();
-            var result = await cliProcess.Task;
+            var result = await cliProcess.Task.ConfigureAwait(false);
             return new TestRunResult(false, $"Test process exited with code {result.ExitCode}");
         }
 
-        using var tcpClient = await tcpClientTask;
+        using var tcpClient = await tcpClientTask.ConfigureAwait(false);
         await using var stream = tcpClient.GetStream();
 
         using var rpc = new JsonRpc(new HeaderDelimitedMessageHandler(stream, stream, new SystemTextJsonFormatter
@@ -326,7 +320,7 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
 
         using var client = new TestingPlatformClient(rpc, tcpClient, new ProcessHandle(cliProcess, output), enableDiagnostic: false);
 
-        await client.InitializeAsync();
+        await client.InitializeAsync().ConfigureAwait(false);
 
         var runId = Guid.NewGuid();
         List<TestNodeUpdate> testResults = [];
@@ -346,10 +340,10 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
         {
             testResults.AddRange(updates);
             return Task.CompletedTask;
-        }, testsToRun);
+        }, testsToRun).ConfigureAwait(false);
 
-        await executeTestsResponse.WaitCompletionAsync();
-        await client.ExitAsync();
+        await executeTestsResponse.WaitCompletionAsync().ConfigureAwait(false);
+        await client.ExitAsync().ConfigureAwait(false);
         listener.Stop();
 
         var duration = DateTime.UtcNow - startTime;

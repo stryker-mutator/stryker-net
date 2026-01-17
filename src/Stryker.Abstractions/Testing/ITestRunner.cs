@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Stryker.Abstractions.Testing;
 
@@ -10,13 +11,13 @@ public interface ITestRunner : IDisposable
        ITestIdentifiers ranTests,
        ITestIdentifiers timedOutTests);
 
-    bool DiscoverTests(string assembly);
+    Task<bool> DiscoverTestsAsync(string assembly);
 
     ITestSet GetTests(IProjectAndTests project);
 
-    ITestRunResult InitialTest(IProjectAndTests project);
+    Task<ITestRunResult> InitialTestAsync(IProjectAndTests project);
 
     IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project);
 
-    ITestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler update);
+    Task<ITestRunResult> TestMultipleMutantsAsync(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler update);
 }

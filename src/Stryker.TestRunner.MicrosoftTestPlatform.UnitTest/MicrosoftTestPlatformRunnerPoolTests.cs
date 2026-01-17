@@ -50,7 +50,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         using var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
 
         // Act
-        var result = pool.DiscoverTests(string.Empty);
+        var result = pool.DiscoverTestsAsync(string.Empty);
 
         // Assert
         result.ShouldBeFalse();
@@ -65,7 +65,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         using var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
 
         // Act
-        var result = pool.DiscoverTests(null!);
+        var result = pool.DiscoverTestsAsync(null!);
 
         // Assert
         result.ShouldBeFalse();
@@ -80,7 +80,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         using var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
 
         // Act
-        var result = pool.DiscoverTests("/nonexistent/path/assembly.dll");
+        var result = pool.DiscoverTestsAsync("/nonexistent/path/assembly.dll");
 
         // Assert
         result.ShouldBeFalse();
@@ -113,7 +113,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         project.Setup(x => x.GetTestAssemblies()).Returns(Array.Empty<string>());
 
         // Act
-        var result = pool.InitialTest(project.Object);
+        var result = pool.InitialTestAsync(project.Object);
 
         // Assert
         result.ResultMessage.ShouldContain("No test assemblies found");
@@ -131,7 +131,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         var mutants = new List<IMutant> { new Mock<IMutant>().Object };
 
         // Act
-        var result = pool.TestMultipleMutants(project.Object, null, mutants, null);
+        var result = pool.TestMultipleMutantsAsync(project.Object, null, mutants, null);
 
         // Assert
         result.ResultMessage.ShouldContain("No test assemblies found");

@@ -137,7 +137,7 @@ public class MutationTestProcessTests : TestBase
 
         target.Initialize(_input, options, null);
         target.GetCoverage();
-        target.Test(_testScenario.GetCoveredMutants());
+        target.TestAsync(_testScenario.GetCoveredMutants());
 
         _testScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
         _testScenario.GetMutantStatus(2).ShouldBe(MutantStatus.NoCoverage);
@@ -182,7 +182,7 @@ public class MutationTestProcessTests : TestBase
 
         target.Initialize(_input, options, null);
         target.GetCoverage();
-        target.Test(_testScenario.GetMutants());
+        target.TestAsync(_testScenario.GetMutants());
 
         _testScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
         _testScenario.GetMutantStatus(2).ShouldBe(MutantStatus.Survived);
@@ -233,7 +233,7 @@ public class MutationTestProcessTests : TestBase
         var mutantsToTest = _input.SourceProjectInfo.ProjectContents.Mutants
             .Where(m => m.ResultStatus == MutantStatus.Pending)
             .ToList();
-        target.Test(mutantsToTest);
+        target.TestAsync(mutantsToTest);
         // first mutant should be killed by test 2
         _testScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Killed);
         // other mutant survives
@@ -285,7 +285,7 @@ public class MutationTestProcessTests : TestBase
         target.Initialize(_input, options, null);
         target.GetCoverage();
 
-        target.Test(_input.SourceProjectInfo.ProjectContents.Mutants);
+        target.TestAsync(_input.SourceProjectInfo.ProjectContents.Mutants);
         // first mutant should be marked as survived
         _testScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
     }
@@ -378,7 +378,7 @@ public class MutationTestProcessTests : TestBase
         target.Initialize(_input, options, null);
         target.GetCoverage();
 
-        target.Test(_input.SourceProjectInfo.ProjectContents.Mutants);
+        target.TestAsync(_input.SourceProjectInfo.ProjectContents.Mutants);
         // first mutant should be killed by test 2
         _testScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Killed);
     }
@@ -395,7 +395,7 @@ public class MutationTestProcessTests : TestBase
         var mutationProcessMock = Mock.Of<IMutationProcess>();
         var target = new MutationTestProcess(mutationTestExecutor, coverageAnalyzer, mutationProcessMock, TestLoggerFactory.CreateLogger<MutationTestProcess>());
         target.Initialize(_input, new StrykerOptions(), null);
-        Should.Throw<GeneralStrykerException>(() => target.Test(mutants));
+        Should.Throw<GeneralStrykerException>(() => target.TestAsync(mutants));
     }
 
     [TestMethod]
@@ -407,7 +407,7 @@ public class MutationTestProcessTests : TestBase
         var mutationProcessMock = Mock.Of<IMutationProcess>();
         var target = new MutationTestProcess(mutationTestExecutor, coverageAnalyzer, mutationProcessMock, TestLoggerFactory.CreateLogger<MutationTestProcess>());
         target.Initialize(_input, new StrykerOptions(), reporter);
-        var result = target.Test(Enumerable.Empty<Mutant>());
+        var result = target.TestAsync(Enumerable.Empty<Mutant>());
 
         Mock.Get(reporter).VerifyNoOtherCalls();
         Mock.Get(mutationTestExecutor).VerifyNoOtherCalls();

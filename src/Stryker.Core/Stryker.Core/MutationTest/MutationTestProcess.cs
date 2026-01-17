@@ -21,7 +21,7 @@ public interface IMutationTestProcess
     MutationTestInput Input { get; }
     void Initialize(MutationTestInput input, IStrykerOptions options, IReporter reporter);
     void Mutate();
-    StrykerRunResult Test(IEnumerable<IMutant> mutantsToTest);
+    Task<StrykerRunResult> TestAsync(IEnumerable<IMutant> mutantsToTest);
     void Restore();
     void GetCoverage();
     void FilterMutants();
@@ -67,37 +67,37 @@ public class MutationTestProcess : IMutationTestProcess
 
     public void FilterMutants() => _mutationProcess.FilterMutants(Input);
 
-    public StrykerRunResult Test(IEnumerable<IMutant> mutantsToTest)
+    public async Task<StrykerRunResult> TestAsync(IEnumerable<IMutant> mutantsToTest)
     {
         if (!MutantsToTest(mutantsToTest))
         {
             return new StrykerRunResult(_options, double.NaN);
         }
 
-        TestMutants(mutantsToTest);
+        await TestMutantsAsync(mutantsToTest).ConfigureAwait(false);
 
         return new StrykerRunResult(_options, _projectContents.GetMutationScore());
     }
 
     public void Restore() => Input.TestProjectsInfo.RestoreOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
 
-    private void TestMutants(IEnumerable<IMutant> mutantsToTest)
+    private async Task TestMutantsAsync(IEnumerable<IMutant> mutantsToTest)
     {
         var mutantGroups = BuildMutantGroupsForTest(mutantsToTest.ToList());
 
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.Concurrency };
 
-        Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
+        await Parallel.ForEachAsync(mutantGroups, parallelOptions, async (mutants, cancellationToken) =>
         {
             var reportedMutants = new HashSet<IMutant>();
 
-            _mutationTestExecutor.Test(Input.SourceProjectInfo, mutants,
+            await _mutationTestExecutor.TestAsync(Input.SourceProjectInfo, mutants,
                 Input.InitialTestRun.TimeoutValueCalculator,
                 (testedMutants, tests, ranTests, outTests) =>
-                    TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
+                    TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants)).ConfigureAwait(false);
 
             OnMutantsTested(mutants, reportedMutants);
-        });
+        }).ConfigureAwait(false);
     }
 
     private bool TestUpdateHandler(IEnumerable<IMutant> testedMutants, ITestIdentifiers failedTests, ITestIdentifiers ranTests,

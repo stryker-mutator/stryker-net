@@ -47,7 +47,7 @@ public sealed class VsTestRunner : IDisposable
         _vsTestConsole = _context.BuildVsTestWrapper(RunnerId, ControlVariableName);
     }
 
-    public TestRunResult InitialTest(IProjectAndTests project)
+    public ITestRunResult InitialTest(IProjectAndTests project)
     {
         var testResults = RunTestSession(TestIdentifierList.EveryTest(), project);
         foreach (var test in _context.VsTests.Keys)
@@ -76,7 +76,7 @@ public sealed class VsTestRunner : IDisposable
         return BuildTestRunResult(testResults, totalCountOfTests, totalCountOfTests, false);
     }
 
-    public TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler update)
+    public ITestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler update)
     {
         var mutantTestsMap = new Dictionary<int, ITestIdentifiers>();
 

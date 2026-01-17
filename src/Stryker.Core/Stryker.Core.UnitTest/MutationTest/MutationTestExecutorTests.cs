@@ -24,16 +24,16 @@ public class MutationTestExecutorTests : TestBase
     {
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
         var mutant = new Mutant { Id = 1 };
-        testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<IMutant>>(), null)).Returns(new TestRunResult(true));
+        testRunnerMock.Setup(x => x.TestMultipleMutantsAsync(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<IMutant>>(), null)).Returns(new TestRunResult(true));
 
         var loggerMock = new Mock<ILogger<MutationTestExecutor>>();
         var target = new MutationTestExecutor(loggerMock.Object);
         target.TestRunner = testRunnerMock.Object;
 
-        target.Test(null, new List<IMutant> { mutant }, null, null);
+        target.TestAsync(null, new List<IMutant> { mutant }, null, null);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
-        testRunnerMock.Verify(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<IMutant>>(), null), Times.Once);
+        testRunnerMock.Verify(x => x.TestMultipleMutantsAsync(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<IMutant>>(), null), Times.Once);
     }
 
     [TestMethod]
@@ -41,16 +41,16 @@ public class MutationTestExecutorTests : TestBase
     {
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
         var mutant = new Mutant { Id = 1, CoveringTests = TestIdentifierList.EveryTest() };
-        testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), null, It.IsAny<IReadOnlyList<IMutant>>(), null)).Returns(new TestRunResult(false));
+        testRunnerMock.Setup(x => x.TestMultipleMutantsAsync(It.IsAny<IProjectAndTests>(), null, It.IsAny<IReadOnlyList<IMutant>>(), null)).Returns(new TestRunResult(false));
 
         var loggerMock = new Mock<ILogger<MutationTestExecutor>>();
         var target = new MutationTestExecutor(loggerMock.Object);
         target.TestRunner = testRunnerMock.Object;
 
-        target.Test(null, new List<IMutant> { mutant }, null, null);
+        target.TestAsync(null, new List<IMutant> { mutant }, null, null);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Killed);
-        testRunnerMock.Verify(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), null, It.IsAny<IReadOnlyList<IMutant>>(), null), Times.Once);
+        testRunnerMock.Verify(x => x.TestMultipleMutantsAsync(It.IsAny<IProjectAndTests>(), null, It.IsAny<IReadOnlyList<IMutant>>(), null), Times.Once);
     }
 
     [TestMethod]
@@ -58,7 +58,7 @@ public class MutationTestExecutorTests : TestBase
     {
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
         var mutant = new Mutant { Id = 1, CoveringTests = TestIdentifierList.EveryTest() };
-        testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<IMutant>>(), null)).
+        testRunnerMock.Setup(x => x.TestMultipleMutantsAsync(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<IMutant>>(), null)).
             Returns(TestRunResult.TimedOut(new List<VsTestDescription>(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), TestIdentifierList.EveryTest(), "", Enumerable.Empty<string>(), TimeSpan.Zero));
 
         var loggerMock = new Mock<ILogger<MutationTestExecutor>>();
@@ -66,10 +66,10 @@ public class MutationTestExecutorTests : TestBase
         target.TestRunner = testRunnerMock.Object;
 
         var timeoutValueCalculator = new TimeoutValueCalculator(500);
-        target.Test(null, new List<IMutant> { mutant }, timeoutValueCalculator, null);
+        target.TestAsync(null, new List<IMutant> { mutant }, timeoutValueCalculator, null);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
-        testRunnerMock.Verify(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), timeoutValueCalculator, It.IsAny<IReadOnlyList<IMutant>>(), null), Times.Once);
+        testRunnerMock.Verify(x => x.TestMultipleMutantsAsync(It.IsAny<IProjectAndTests>(), timeoutValueCalculator, It.IsAny<IReadOnlyList<IMutant>>(), null), Times.Once);
     }
 
     [TestMethod]
@@ -78,7 +78,7 @@ public class MutationTestExecutorTests : TestBase
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
         var mutant1 = new Mutant { Id = 1, CoveringTests = TestIdentifierList.EveryTest() };
         var mutant2 = new Mutant { Id = 2, CoveringTests = TestIdentifierList.EveryTest() };
-        testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<IMutant>>(), null)).
+        testRunnerMock.Setup(x => x.TestMultipleMutantsAsync(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<IMutant>>(), null)).
             Returns(TestRunResult.TimedOut(new List<VsTestDescription>(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), "", Enumerable.Empty<string>(), TimeSpan.Zero));
 
         var loggerMock = new Mock<ILogger<MutationTestExecutor>>();
@@ -86,11 +86,11 @@ public class MutationTestExecutorTests : TestBase
         target.TestRunner = testRunnerMock.Object;
 
         var timeoutValueCalculator = new TimeoutValueCalculator(500);
-        target.Test(null, new List<IMutant> { mutant1, mutant2 }, timeoutValueCalculator, null);
+        target.TestAsync(null, new List<IMutant> { mutant1, mutant2 }, timeoutValueCalculator, null);
 
         mutant1.ResultStatus.ShouldBe(MutantStatus.Timeout);
         mutant2.ResultStatus.ShouldBe(MutantStatus.Timeout);
-        testRunnerMock.Verify(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), timeoutValueCalculator, It.IsAny<IReadOnlyList<IMutant>>(), null), Times.Exactly(3));
+        testRunnerMock.Verify(x => x.TestMultipleMutantsAsync(It.IsAny<IProjectAndTests>(), timeoutValueCalculator, It.IsAny<IReadOnlyList<IMutant>>(), null), Times.Exactly(3));
     }
 
     [TestMethod]
@@ -100,7 +100,7 @@ public class MutationTestExecutorTests : TestBase
         var mutant = new Mutant { Id = 1, CoveringTests = TestIdentifierList.EveryTest() };
         var updateHandlerCalled = false;
 
-        testRunnerMock.Setup(x => x.TestMultipleMutants(
+        testRunnerMock.Setup(x => x.TestMultipleMutantsAsync(
             It.IsAny<IProjectAndTests>(),
             It.IsAny<ITimeoutValueCalculator>(),
             It.IsAny<IReadOnlyList<IMutant>>(),
@@ -121,7 +121,7 @@ public class MutationTestExecutorTests : TestBase
         target.TestRunner = testRunnerMock.Object;
 
         ITestRunner.TestUpdateHandler handler = (_, _, _, _) => true;
-        target.Test(null, new List<IMutant> { mutant }, null, handler);
+        target.TestAsync(null, new List<IMutant> { mutant }, null, handler);
 
         updateHandlerCalled.ShouldBeTrue("The update handler should have been called");
         mutant.ResultStatus.ShouldBe(MutantStatus.Survived);

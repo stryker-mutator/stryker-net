@@ -34,7 +34,7 @@ public class FileConfigReaderTests
         var currentDirectory = Directory.GetCurrentDirectory();
         Directory.SetCurrentDirectory($"..{Path.DirectorySeparatorChar}");
         var runResults = new StrykerRunResult(options, 0.3);
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>())).Returns(runResults).Verifiable();
+        mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>())).Returns(runResults).Verifiable();
         var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
 
         target.Run(new string[] { });
@@ -62,7 +62,7 @@ public class FileConfigReaderTests
         var runResults = new StrykerRunResult(options, 0.3);
 
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
+        mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
             .Callback<IStrykerInputs>(c => actualInputs = c)
             .Returns(runResults)
             .Verifiable();
@@ -109,7 +109,7 @@ public class FileConfigReaderTests
         var runResults = new StrykerRunResult(options, 0.3);
 
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
+        mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
             .Callback<IStrykerInputs>(c => actualInputs = c)
             .Returns(runResults)
             .Verifiable();
