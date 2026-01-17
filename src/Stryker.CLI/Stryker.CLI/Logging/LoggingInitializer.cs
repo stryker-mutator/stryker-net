@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
+using Serilog.Events;
 using Spectre.Console;
 using Stryker.Abstractions.Options;
 using Stryker.Utilities;
@@ -26,7 +27,7 @@ public class LoggingInitializer : ILoggingInitializer
         inputs.OutputPathInput.SuppliedInput = outputPath;
 
         var diagnoseMode = inputs.DiagModeInput.Validate();
-        var logLevel = inputs.VerbosityInput.Validate();
+        var logLevel = diagnoseMode ? LogEventLevel.Verbose: inputs.VerbosityInput.Validate();
         var logToFile = inputs.LogToFileInput.Validate(outputPath) || diagnoseMode;
 
         ApplicationLogging.ConfigureLogger(logLevel, logToFile, diagnoseMode, outputPath);

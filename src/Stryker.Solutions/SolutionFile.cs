@@ -17,11 +17,16 @@ public class SolutionFile
 {
     private readonly Dictionary<(string buildType, string platform), Dictionary<string, (string buildType, string platform)>> _configurations = [];
     private string? _defaultPlatform;
-    private const string AnyCpu = "Any CPU";
+    private const string DefaultSolutionType = "Any CPU";
+    private const string DefaultProjectBuildType = "AnyCPU";
+    private const string DefaultBuildType = "Debug";
 
     public HashSet<string> GetBuildTypes() => _configurations.Keys.Select(x => x.buildType).ToHashSet();
 
+    public string FileName { get; init; } = string.Empty;
+
     private HashSet<string> GetPlatforms() => _configurations.Keys.Select(x => x.platform).ToHashSet();
+
 
     private string DefaultPlatform
     {
@@ -33,21 +38,13 @@ public class SolutionFile
             }
 
             var platforms = GetPlatforms();
-            if (platforms.Count == 0)
+            if (platforms.Count == 0 || platforms.Contains(DefaultSolutionType))
             {
-                _defaultPlatform = AnyCpu;
+                _defaultPlatform = DefaultSolutionType;
             }
-            else if (platforms.Count == 1)
+            else if (platforms.Contains(DefaultProjectBuildType))
             {
-                _defaultPlatform = platforms.First();
-            }
-            else if (platforms.Contains(AnyCpu))
-            {
-                _defaultPlatform = AnyCpu;
-            }
-            else if (platforms.Contains("AnyCPU"))
-            {
-                _defaultPlatform = "AnyCPU";
+                _defaultPlatform = DefaultProjectBuildType;
             }
             else
             {
@@ -71,6 +68,59 @@ public class SolutionFile
     }
 
     /// <summary>
+    /// Gets the matching configuration and platform defined in the solution
+    /// </summary>
+    /// <param name="buildType">expected solution build type</param>
+    /// <param name="platform">expected solution platform</param>
+    /// <returns>The best matching solution build type & platform</returns>
+    /// <remarks>if no match is found for solution settings it will look into project</remarks>
+    public (string buildType, string platform) GetMatching(string? buildType, string? platform = null)
+    {
+        var currentScore = -1;
+        (string buildType, string platform) bestMatch = (string.Empty, string.Empty);
+        foreach (var (currentBuildType, currentPlatform)  in _configurations.Keys)
+        {
+            if (buildType == currentBuildType && currentPlatform == platform)
+            {
+                // perfect match
+                return (currentBuildType, currentPlatform);
+            }
+
+            var thisScore = -1;
+            // evaluate the buildType match
+            if (buildType!= null && buildType == currentBuildType)
+            {
+                // better match
+                thisScore = 8;
+            }
+            else if (currentBuildType == DefaultBuildType)
+            {
+                thisScore = 4;
+            }
+            else
+            {
+                thisScore = 0;
+            }
+            if (platform != null && platform == currentPlatform)
+            {
+                // better match
+                thisScore += 2;
+            }
+            else if (currentPlatform == DefaultPlatform)
+            {
+                thisScore += 1;
+            }
+            if (thisScore> currentScore)
+            {
+                currentScore = thisScore;
+                bestMatch = (currentBuildType, currentPlatform);
+            }
+        }
+
+        return bestMatch;
+    }
+
+    /// <summary>
     /// Gets all projects for a given solution configuration (and optional platform)
     /// </summary>
     /// <param name="buildType">solution configuration name (Debug, Release...)</param>
@@ -86,9 +136,7 @@ public class SolutionFile
             .ToImmutableList();
     }
 
-    private const string DefaultBuildType = "Debug";
-
-    private string GetBuildType(string? buildType)
+    private string GetEffectiveBuildType(string? buildType)
     {
         if (!string.IsNullOrWhiteSpace(buildType))
         {
@@ -100,15 +148,15 @@ public class SolutionFile
     /// <summary>
     /// Gets all projects for a given solution configuration (and optional platform) with project details
     /// </summary>
-    /// <param name="effectiveBuildType">configuration name (Debug, Release...)</param>
+    /// <param name="buildType">configuration name (Debug, Release...)</param>
     /// <param name="platform">platform (AnyCPU, x86, x64...)</param>
     /// <returns>A collection of tuples with the projects' filename, project's configuration and project's platform for the provided criteria .</returns>
-    public IReadOnlyCollection<(string file, string buildType, string platform)> GetProjectsWithDetails(string effectiveBuildType, string? platform = null)
+    public IReadOnlyCollection<(string file, string buildType, string platform)> GetProjectsWithDetails(string buildType, string? platform = null)
     {
-        effectiveBuildType = GetBuildType(effectiveBuildType);
+        buildType = GetEffectiveBuildType(buildType);
         platform ??= DefaultPlatform;
         return _configurations
-            .Where(entry => entry.Key.buildType == effectiveBuildType && entry.Key.platform == platform)
+            .Where(entry => entry.Key.buildType == buildType && entry.Key.platform == platform)
             .SelectMany(entry => entry.Value).Select(p => (p.Key, p.Value.buildType, p.Value.platform))
             .Distinct()
             .ToImmutableList();
@@ -120,11 +168,11 @@ public class SolutionFile
     /// <param name="projects">list of csproj filenames</param>
     /// <param name="platforms">list of declared platforms. Default to AnyCpu and x86</param>
     /// <returns>a solution instance</returns>
-    /// <remarks>this method is used for testing purposes, as the underlying solution parser do not support any form of mocking</remarks>
+    /// <remarks>This method is used for testing purposes. It is mandatory as the underlying solution parser does not support any form of mocking</remarks>
     public static SolutionFile BuildFromProjectList(List<string> projects, string[]? platforms = null)
     {
         var result = new SolutionFile();
-        platforms ??= [ AnyCpu, "x86" ];
+        platforms ??= [ DefaultSolutionType, "x86" ];
         // default to Debug|Any CPU
         string[] buildTypes = ["Debug", "Release"];
         foreach (var buildType in buildTypes)
@@ -142,10 +190,10 @@ public class SolutionFile
         return result;
     }
 
-    private static SolutionFile AnalyzeSolution(SolutionModel solution)
+    private static SolutionFile AnalyzeSolution(string solutionPath, SolutionModel solution)
     {
         // extract needed information
-        var result = new SolutionFile();
+        var result = new SolutionFile{ FileName = solutionPath };
         foreach (var buildType in solution.BuildTypes)
         {
             foreach (var solutionPlatform in solution.Platforms)
@@ -185,6 +233,6 @@ public class SolutionFile
         var serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath);
 
         return serializer == null ? throw new InvalidOperationException($"No suitable solution serializer found for the given path ({solutionPath}).")
-            : AnalyzeSolution(serializer.OpenAsync(solutionPath, CancellationToken.None).GetAwaiter().GetResult());
+            : AnalyzeSolution(solutionPath, serializer.OpenAsync(solutionPath, CancellationToken.None).GetAwaiter().GetResult());
     }
 }

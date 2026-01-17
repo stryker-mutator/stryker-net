@@ -60,15 +60,20 @@ public class InputFileResolver : IInputFileResolver
 
     public IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(IStrykerOptions options)
     {
-        Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults;
         var normalizedProjectUnderTestNameFilter = NormalizePath(options.SourceProjectName);
 
-        if (options.IsSolutionContext)
+        SolutionFile solution;
+        SolutionInfo solutionInfo = null;
+        if (string.IsNullOrEmpty(options.SolutionPath))
         {
-            SolutionFile solution;
-
+            solution = null;
+        }
+        else
+        {
+            // load the solution file whzn provided
             try
             {
+                _logger.LogDebug("Loading solution file {SolutionFile}.", options.SolutionPath);
                 solution = _solutionProvider.GetSolution(options.SolutionPath);
             }
             catch (IOException e)
@@ -86,20 +91,17 @@ public class InputFileResolver : IInputFileResolver
                 _logger.LogError(e, "Failed to load solution file {SolutionFile}.", options.SolutionPath);
                 return [];
             }
-            _logger.LogInformation("Identifying projects to mutate in {Solution}. This can take a while.", options.SolutionPath);
+        }
 
-            // build all projects
-            var projectsWithDetails = solution.GetProjectsWithDetails(options.Configuration, options.Platform)
-                .Select(p => (p.file, options.TargetFramework, p.buildType)).ToList();
-            _logger.LogDebug("Analyzing {0} projects.", projectsWithDetails.Count);
-            // we match test projects to mutable projects
-            var mutableProjectsAnalyzerResults = AnalyzeAllNeededProjects(projectsWithDetails,
-                normalizedProjectUnderTestNameFilter,
-                options,
-                ScanMode.NoScan);
-            (findMutableAnalyzerResults, var orphanedProjects) = FindMutableAnalyzerResults(mutableProjectsAnalyzerResults);
+        if (options.IsSolutionContext)
+        {
+            return ScanInSolutionMode(options, solution, normalizedProjectUnderTestNameFilter);
+        }
 
-            return AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphanedProjects);
+        // identify the target configuration and platform
+        if (solution!=null)
+        {
+            var (actualBuildType, actualPlatform) = solution.GetMatching(options.Configuration, options.Platform);
         }
 
         // we analyze the test project(s) and identify the project to be mutated
@@ -122,9 +124,9 @@ public class InputFileResolver : IInputFileResolver
          }
         // we match test projects to mutable projects
         var analyzeAllNeededProjects = AnalyzeAllNeededProjects(projectList, normalizedProjectUnderTestNameFilter, options, ScanMode.ScanTestProjectReferences);
-        (findMutableAnalyzerResults, var orphans) = FindMutableAnalyzerResults(analyzeAllNeededProjects);
+        var (findMutableAnalyzerResults, orphans) = FindMutableAnalyzerResults(analyzeAllNeededProjects);
 
-        var result = AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphans);
+        var result = AnalyzeAndIdentifyProjects(options, solutionInfo, findMutableAnalyzerResults, orphans);
         if (result.Count <= 1)
         {
             return result;
@@ -143,6 +145,41 @@ public class InputFileResolver : IInputFileResolver
         throw new InputException(stringBuilder.ToString());
     }
 
+    private IReadOnlyCollection<SourceProjectInfo> ScanInSolutionMode(IStrykerOptions options, SolutionFile solution,
+        string normalizedProjectUnderTestNameFilter)
+    {
+        _logger.LogInformation("Stryker will mutate solution {Solution}.", FileSystem.Path.GetFileNameWithoutExtension(options.SolutionPath));
+        // identify actual configuration/platform to use
+        var (actualBuildType, actualPlatform) = solution!.GetMatching(options.Configuration, options.Platform);
+        if ((!string.IsNullOrEmpty(options.Configuration) && options.Configuration != actualBuildType) ||
+            (!string.IsNullOrEmpty(options.Platform) && options.Platform != actualPlatform))
+        {
+            _logger.LogWarning("Using configuration/platform '{Configuration}|{Platform}' instead of requested '{ActualBuildType}|{ActualPlatform}'.",
+                actualBuildType, actualPlatform, options.Configuration, options.Platform);
+        }
+        else
+        {
+            _logger.LogInformation("Using configuration/platform '{Configuration}|{Platform}'.", actualBuildType, actualPlatform);
+        }
+
+        _logger.LogInformation("Identifying projects to mutate in {Solution}. This can take a while.", options.SolutionPath);
+
+        var solutionInfo = new SolutionInfo(solution.FileName, actualBuildType, actualPlatform);
+        // analyze all projects
+        var projectsWithDetails = solution.GetProjectsWithDetails(actualBuildType, actualPlatform)
+            .Select(p => (p.file, options.TargetFramework, p.buildType)).ToList();
+
+        _logger.LogDebug("Analyzing {0} projects.", projectsWithDetails.Count);
+        // we match test projects to mutable projects
+        var mutableProjectsAnalyzerResults = AnalyzeAllNeededProjects(projectsWithDetails,
+            normalizedProjectUnderTestNameFilter,
+            options,
+            ScanMode.NoScan);
+        var (findMutableAnalyzerResults, orphanedProjects) = FindMutableAnalyzerResults(mutableProjectsAnalyzerResults);
+
+        return AnalyzeAndIdentifyProjects(options, solutionInfo, findMutableAnalyzerResults, orphanedProjects);
+    }
+
     public string FindTestProject(string path)
     {
         var projectFile = FindProjectFile(path);
@@ -159,7 +196,9 @@ public class InputFileResolver : IInputFileResolver
     // analyze projects, do same for their upstream dependencies if activated, and identify which one(s)
     // to proceed with
     private List<SourceProjectInfo> AnalyzeAndIdentifyProjects(IStrykerOptions options,
-        Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults, List<IAnalyzerResult> unusedTestProjects)
+        SolutionInfo solutionInfo,
+        Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults,
+        List<IAnalyzerResult> unusedTestProjects)
     {
         // build all projects
         _logger.LogDebug("Analyzing {Count} projects.", findMutableAnalyzerResults.Count);
@@ -180,7 +219,7 @@ public class InputFileResolver : IInputFileResolver
         // we must select projects according to framework settings if any
         var projectInfos = analyzerResults
             .Select(g => SelectAnalyzerResult(g, options.TargetFramework))
-            .Select(analyzerResult => BuildSourceProjectInfo(options, analyzerResult, findMutableAnalyzerResults[analyzerResult]))
+            .Select(analyzerResult => BuildSourceProjectInfo(options, solutionInfo, analyzerResult, findMutableAnalyzerResults[analyzerResult]))
             .ToList();
 
         if (projectInfos.Count != 0)
@@ -608,10 +647,12 @@ public class InputFileResolver : IInputFileResolver
     /// Builds a <see cref="SourceProjectInfo"/> instance describing a project its associated test project(s)
     /// </summary>
     /// <param name="options">Stryker options</param>
+    /// <param name="solutionInfo"></param>
     /// <param name="analyzerResult">project buildalyzer result</param>
     /// <param name="analyzerResults">test project(s) buildalyzer result(s)</param>
     /// <returns></returns>
     private SourceProjectInfo BuildSourceProjectInfo(IStrykerOptions options,
+        SolutionInfo solutionInfo,
         IAnalyzerResult analyzerResult,
         IEnumerable<IAnalyzerResult> analyzerResults)
     {
@@ -644,8 +685,8 @@ public class InputFileResolver : IInputFileResolver
         builder.InjectHelpers(inputFiles);
         targetProjectInfo.OnProjectBuilt = builder.PostBuildAction();
         targetProjectInfo.ProjectContents = inputFiles;
-
-        _logger.LogInformation("Found project {0} to mutate.", analyzerResult.ProjectFilePath);
+        targetProjectInfo.SolutionInfo = solutionInfo;
+        _logger.LogInformation("Found project {ProjectFileName} to mutate.", analyzerResult.ProjectFilePath);
         targetProjectInfo.TestProjectsInfo = new TestProjectsInfo(FileSystem)
         {
             TestProjects = analyzerResults.Select(testProjectAnalyzerResult => new TestProject(FileSystem, testProjectAnalyzerResult)).ToList()

@@ -124,4 +124,48 @@ public sealed class SolutionFileShould
         solution.GetProjects("Debug").ShouldBe(expectedProjectDetails.Select(x => x.file));
         solution.GetProjectsWithDetails("Debug").ShouldBe(expectedProjectDetails);
     }
+
+    [TestMethod]
+    public void PickExactMatch()
+    {
+        // Arrange
+        var solution = SolutionFile.BuildFromProjectList(["Project.csproj", "Test.csproj"], ["x86", "x64"]);
+
+        var match = solution.GetMatching("Debug", "x64");
+        // Assert
+        match.ShouldBe(("Debug", "x64"));
+    }
+
+    [TestMethod]
+    public void FallBackOnDebug()
+    {
+        // Arrange
+        var solution = SolutionFile.BuildFromProjectList(["Project.csproj", "Test.csproj"], ["x86", "x64"]);
+
+        var match = solution.GetMatching("Stryker", "x64");
+        // Assert
+        match.ShouldBe(("Debug", "x64"));
+    }
+
+    [TestMethod]
+    public void FallBackOnAnyCPU()
+    {
+        // Arrange
+        var solution = SolutionFile.BuildFromProjectList(["Project.csproj", "Test.csproj"], ["AnyCPU"]);
+
+        var match = solution.GetMatching("Debug", "x64");
+        // Assert
+        match.ShouldBe(("Debug", "AnyCPU"));
+    }
+
+    [TestMethod]
+    public void PickFirstIfNoMatch()
+    {
+        // Arrange
+        var solution = SolutionFile.BuildFromProjectList(["Project.csproj", "Test.csproj"], ["AnyCPU"]);
+
+        var match = solution.GetMatching("Stryker", "x64");
+        // Assert
+        match.ShouldBe(("Debug", "AnyCPU"));
+    }
 }

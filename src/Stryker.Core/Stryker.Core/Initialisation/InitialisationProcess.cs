@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
@@ -64,16 +65,19 @@ public class InitialisationProcess : IInitialisationProcess
     /// <inheritdoc/>
     public void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects)
     {
+        var solutionInfo = projects.First().SolutionInfo;
+        var configuration = solutionInfo?.Configuration ?? options.Configuration;
+        var platform = solutionInfo?.Platform ?? options.Platform;
         if (options.IsSolutionContext)
         {
             var framework = projects.Any(p => p.IsFullFramework);
             // Build the complete solution
-            _logger.LogInformation("Building solution {0}",
-                    Path.GetRelativePath(options.WorkingDirectory, options.SolutionPath));
+            _logger.LogInformation("Building solution {solutionPathName}.", FileSystem.Path.GetRelativePath(options.WorkingDirectory, options.SolutionPath));
+
             _initialBuildProcess.InitialBuild(
                 framework,
                 _inputFileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
-                options.SolutionPath, options.Configuration, options.Platform,
+                options.SolutionPath, configuration, platform,
                 options.TargetFramework, options.MsBuildPath);
         }
         else
@@ -103,6 +107,8 @@ public class InitialisationProcess : IInitialisationProcess
             project.OnProjectBuilt?.Invoke();
         }
     }
+
+    private IFileSystem FileSystem => _inputFileResolver.FileSystem;
 
     public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(IStrykerOptions options,
         IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner) =>

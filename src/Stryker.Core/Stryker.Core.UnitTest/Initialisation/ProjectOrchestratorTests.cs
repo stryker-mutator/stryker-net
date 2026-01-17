@@ -54,14 +54,16 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         // when a solutionPath is given, and it's inside the current directory (basePath)
         var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
         var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.csproj");
+        var solutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln");
+        FileSystem.AddFile(solutionPath, new MockFileData("empty"));
         var options = new StrykerOptions
         {
             ProjectPath = FileSystem.Path.GetFullPath(testCsprojPathName),
-            SolutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln")
+            SolutionPath = solutionPath
         };
 
         var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
-        var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, new[] { csPathName }).Object;
+        var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, [csPathName]).Object;
         var target = BuildProjectOrchestratorForSimpleProject(sourceProjectAnalyzerMock,
             TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object, out var mockRunner);
 
@@ -81,11 +83,13 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         // when a solutionPath is given, and it's inside the current directory (basePath)
         var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
         var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.csproj");
+        var solutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln");
         var options = new StrykerOptions
         {
             ProjectPath = FileSystem.Path.GetFullPath(testCsprojPathName),
-            SolutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln")
+            SolutionPath = solutionPath
         };
+        FileSystem.AddFile(solutionPath, new MockFileData("empty"));
         var contentFolder = FileSystem.Path.Combine(ProjectPath, "Contents");
         FileSystem.AddDirectory(contentFolder);
         var contentFile = FileSystem.Path.Combine(contentFolder, "SomeStuff.cs");
@@ -408,21 +412,23 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         // arrange
         var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
         var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.csproj");
+        var solutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln");
+        FileSystem.AddFile(solutionPath, new MockFileData("empty"));
         var options = new StrykerOptions
         {
             ProjectPath = FileSystem.Path.GetFullPath(testCsprojPathName),
-            SolutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln")
+            SolutionPath = solutionPath
         };
         var libraryProject = FileSystem.Path.Combine(ProjectPath, "libraryproject.csproj");
 
         // The analyzer finds two projects
-        var projectAnalyzer = SourceProjectAnalyzerMock(csprojPathName, new[]
-            { FileSystem.Path.Combine(ProjectPath, "someFile.cs")}).Object;
+        var projectAnalyzer = SourceProjectAnalyzerMock(csprojPathName, [FileSystem.Path.Combine(ProjectPath, "someFile.cs")
+        ]).Object;
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
             { "MyProject", projectAnalyzer },
             { "MyLibrary", SourceProjectAnalyzerMock(libraryProject,
-                new[] { FileSystem.Path.Combine(ProjectPath, "mylib.cs") }).Object },
+                [FileSystem.Path.Combine(ProjectPath, "mylib.cs")]).Object },
             { "MyProject.UnitTests", TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object }
         };
         var target = BuildProjectOrchestrator(analyzerResults, out var mockRunner);
