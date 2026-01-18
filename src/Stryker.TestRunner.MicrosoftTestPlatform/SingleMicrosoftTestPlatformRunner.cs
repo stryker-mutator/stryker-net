@@ -149,22 +149,25 @@ internal sealed class AssemblyTestServer : IDisposable
         }
 
         var runId = Guid.NewGuid();
-        List<TestNodeUpdate> testResults = [];
+        var testResults = new System.Collections.Concurrent.ConcurrentBag<TestNodeUpdate>();
 
         var executeTestsResponse = await _client.RunTestsAsync(runId, updates =>
         {
-            testResults.AddRange(updates);
+            foreach (var update in updates)
+            {
+                testResults.Add(update);
+            }
             return Task.CompletedTask;
         }, testsToRun).ConfigureAwait(false);
 
         if (timeout.HasValue)
         {
             var completed = await executeTestsResponse.WaitCompletionAsync(timeout.Value).ConfigureAwait(false);
-            return (testResults, !completed);
+            return (testResults.ToList(), !completed);
         }
 
         await executeTestsResponse.WaitCompletionAsync().ConfigureAwait(false);
-        return (testResults, false);
+        return (testResults.ToList(), false);
     }
 
     public async Task RestartAsync()
@@ -448,14 +451,22 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
                 {
                     var estimatedTimeMs = (int)discoveredTests
                         .Where(t => _testDescriptions.TryGetValue(t.Uid, out _))
-                        .Sum(t => _testDescriptions[t.Uid].InitialRunTime.TotalMilliseconds);
+                        .Sum(t =>
+                        {
+                            lock (_discoveryLock) // prevent InvalidOperationException by concurrent dictionary access
+                            {
+                                return _testDescriptions.TryGetValue(t.Uid, out var desc)
+                                    ? desc.InitialRunTime.TotalMilliseconds
+                                    : 0;
+                            }
+                        });
                     var timeoutMs = timeoutCalc.CalculateTimeoutValue(estimatedTimeMs);
                     timeout = TimeSpan.FromMilliseconds(timeoutMs);
                     _logger.LogDebug("{RunnerId}: Using {TimeoutMs} ms as test run timeout for {Assembly}",
                         RunnerId, timeoutMs, Path.GetFileName(assembly));
                 }
 
-                var (testResults, timedOut) = await RunTestsInternalAsync(assembly, null, mutants, update, timeout).ConfigureAwait(false);
+                var (testResults, timedOut) = await RunTestsInternalAsync(assembly, null, timeout).ConfigureAwait(false);
 
                 if (timedOut)
                 {
@@ -521,6 +532,12 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
                 testDescriptionValues = _testDescriptions.Values.ToList();
             }
 
+            // Report combined results to Stryker for mutant status determination
+            if (update is not null && mutants is not null)
+            {
+                update.Invoke(mutants, failedTestIds, executedTests, timedOutTestIds);
+            }
+
             return new TestRunResult(
                 testDescriptionValues,
                 executedTests,
@@ -532,6 +549,7 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
         }
         catch (Exception ex)
         {
+            _logger.LogDebug(ex, "{RunnerId}: Failed to run tests for mutant ID {MutantId}", RunnerId, mutantId);
             return new TestRunResult(false, ex.Message);
         }
     }
@@ -539,8 +557,6 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
     private async Task<(ITestRunResult Result, bool TimedOut)> RunTestsInternalAsync(
         string assembly,
         Func<TestNode, bool>? testUidFilter,
-        IReadOnlyList<IMutant>? mutants,
-        TestUpdateHandler? update,
         TimeSpan? timeout = null)
     {
         var startTime = DateTime.UtcNow;
@@ -595,11 +611,6 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
                 ? new TestIdentifierList(failedTests)
                 : TestIdentifierList.NoTest();
 
-            if (update is not null && mutants is not null)
-            {
-                var timedOutTests = timedOut ? new TestIdentifierList(tests?.Select(t => t.Uid) ?? []) : TestIdentifierList.NoTest();
-                update.Invoke(mutants, failedTestIds, executedTests, timedOutTests);
-            }
 
             IEnumerable<MtpTestDescription> testDescriptionValues;
             lock (_discoveryLock)
