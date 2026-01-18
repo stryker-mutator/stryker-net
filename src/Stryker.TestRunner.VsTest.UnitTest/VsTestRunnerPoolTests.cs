@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Moq;
 using Shouldly;
@@ -13,7 +14,6 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.UnitTest;
 using Stryker.TestRunner.Tests;
-using Stryker.Utilities;
 using VsTestObjModel = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Stryker.TestRunner.VsTest.UnitTest;
@@ -326,7 +326,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     }
 
     [TestMethod]
-    public void RunTestsSimultaneouslyWhenPossible()
+    public async Task RunTestsSimultaneouslyWhenPossible()
     {
         var options = new StrykerOptions()
         {
@@ -345,7 +345,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "1;" });
         tester.GetCoverage();
         SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["0,1"] = "T0=S,T1=F" });
-        _ = tester.TestAsync(project.ProjectContents.Mutants.Where(x => !x.CoveringTests.IsEmpty));
+        _ = await tester.TestAsync(project.ProjectContents.Mutants.Where(x => !x.CoveringTests.IsEmpty));
 
         Mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
         OtherMutant.ResultStatus.ShouldBe(MutantStatus.Killed);
@@ -592,7 +592,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
 
         var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
 
-        SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "1;", ["T1"] = null });
+        SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "1;", ["T1"] = null! });
 
         var analyzer = new CoverageAnalyser(TestLoggerFactory.CreateLogger<CoverageAnalyser>());
         analyzer.DetermineTestCoverage(options, SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());

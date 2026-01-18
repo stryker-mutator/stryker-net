@@ -76,7 +76,7 @@ public sealed class VsTestRunner : IDisposable
         return BuildTestRunResult(testResults, totalCountOfTests, totalCountOfTests, false);
     }
 
-    public ITestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler update)
+    public ITestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler? update)
     {
         var mutantTestsMap = new Dictionary<int, ITestIdentifiers>();
 
