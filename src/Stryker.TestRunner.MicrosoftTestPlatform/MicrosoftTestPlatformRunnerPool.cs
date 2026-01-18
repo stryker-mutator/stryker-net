@@ -29,6 +29,9 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     {
         _logger = ApplicationLogging.LoggerFactory.CreateLogger<MicrosoftTestPlatformRunnerPool>();
         _countOfRunners = Math.Max(1, options.Concurrency);
+
+        _logger.LogWarning("The Microsoft Test Platform testrunner is currently in preview. Coverage analysis is currently unsupported and results should be verified since this feature is still being tested.");
+
         Initialize();
     }
 

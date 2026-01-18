@@ -261,11 +261,21 @@ stages:
         testName: 'macos-netcore-multi-test-project'
         workingDirectory: 'integrationtest/TargetProjects/NetCore/TargetProject'
     - task: DotNetCoreCLI@2
-      displayName: 'Assert integration test results Solution'
+      displayName: 'Assert integration test results MultipleTestProjects'
       inputs:
         command: test
         projects: '**/Validation.csproj'
         arguments: --filter "Category=MultipleTestProjects&Runtime=netcore"
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'macos-netcore-mstest-mtp'
+        workingDirectory: 'integrationtest/TargetProjects/NetCore/NetCoreTestProject.MSTest.MTP'
+    - task: DotNetCoreCLI@2
+      displayName: 'Assert integration test results MSTest MTP'
+      inputs:
+        command: test
+        projects: '**/Validation.csproj'
+        arguments: --filter "Category=MSTestMTP&Runtime=netcore"
 
 - stage: PublishMasterReleaseArtifact
   displayName: Publish Release Artifact

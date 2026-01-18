@@ -100,9 +100,31 @@ public class ValidateStrykerResults
         using var strykerRunOutput = File.OpenRead(latestReport.FullName);
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
-         
+
         CheckReportMutants(report, total: 660, ignored: 115, survived: 5, killed: 11, timeout: 2, nocoverage: 489);
         CheckReportTestCounts(report, total: 21);
+    }
+
+    [Fact]
+    [Trait("Category", "MSTestMTP")]
+    [Trait("Runtime", "netcore")]
+    public async Task CSharp_NetCore_MSTestMTP()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/NetCoreTestProject.MSTest.MTP/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        // Expected results based on KilledMutants class with Age >= 30 logic
+        // Should have similar results to MSTest (when coverage analysis is working)
+        // For now with coverage-analysis off, we expect nocoverage mutants
+        CheckReportMutants(report, total: 5, ignored: 0, survived: 1, killed: 1, timeout: 0, nocoverage: 3);
     }
 
     [Fact]

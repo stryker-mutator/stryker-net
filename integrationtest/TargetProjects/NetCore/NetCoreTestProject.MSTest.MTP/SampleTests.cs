@@ -3,7 +3,7 @@ using TargetProject.Constructs;
 using TargetProject.Defects;
 using TargetProject.StrykerFeatures;
 
-namespace TargetProject.MTP;
+namespace NetCoreTestProject.MSTest.MTP;
 
 [TestClass]
 public class SampleTests

@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreTestProject.MSTest",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGenerator", "Generator\SourceGenerator.csproj", "{FD7B63C8-B52E-4356-973B-28ED7C9FEC0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TargetProject.MTP", "TargetProject.MTP\TargetProject.MTP.csproj", "{707DCFA3-AC3E-4D7C-8621-9E90F620FDF4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCoreTestProject.MSTest.MTP", "NetCoreTestProject.MSTest.MTP\NetCoreTestProject.MSTest.MTP.csproj", "{707DCFA3-AC3E-4D7C-8621-9E90F620FDF4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,5 +1,0 @@
-{
-  "stryker-config": {
-    "coverage-analysis": "off"
-  }
-}
