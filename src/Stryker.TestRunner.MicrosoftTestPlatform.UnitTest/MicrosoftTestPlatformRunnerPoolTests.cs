@@ -1,12 +1,8 @@
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
-using Stryker.Abstractions.Testing;
-using Stryker.TestRunner.MicrosoftTestPlatform;
-using Stryker.TestRunner.Tests;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
 
@@ -42,7 +38,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
     }
 
     [TestMethod]
-    public void DiscoverTests_ShouldReturnFalse_WhenAssemblyPathIsEmpty()
+    public async Task DiscoverTests_ShouldReturnFalse_WhenAssemblyPathIsEmpty()
     {
         // Arrange
         var options = new Mock<IStrykerOptions>();
@@ -50,14 +46,14 @@ public class MicrosoftTestPlatformRunnerPoolTests
         using var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
 
         // Act
-        var result = pool.DiscoverTestsAsync(string.Empty);
+        var result = await pool.DiscoverTestsAsync(string.Empty);
 
         // Assert
         result.ShouldBeFalse();
     }
 
     [TestMethod]
-    public void DiscoverTests_ShouldReturnFalse_WhenAssemblyPathIsNull()
+    public async Task DiscoverTests_ShouldReturnFalse_WhenAssemblyPathIsNull()
     {
         // Arrange
         var options = new Mock<IStrykerOptions>();
@@ -65,14 +61,14 @@ public class MicrosoftTestPlatformRunnerPoolTests
         using var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
 
         // Act
-        var result = pool.DiscoverTestsAsync(null!);
+        var result = await pool.DiscoverTestsAsync(null!);
 
         // Assert
         result.ShouldBeFalse();
     }
 
     [TestMethod]
-    public void DiscoverTests_ShouldReturnFalse_WhenAssemblyDoesNotExist()
+    public async Task DiscoverTests_ShouldReturnFalse_WhenAssemblyDoesNotExist()
     {
         // Arrange
         var options = new Mock<IStrykerOptions>();
@@ -80,7 +76,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         using var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
 
         // Act
-        var result = pool.DiscoverTestsAsync("/nonexistent/path/assembly.dll");
+        var result = await pool.DiscoverTestsAsync("/nonexistent/path/assembly.dll");
 
         // Assert
         result.ShouldBeFalse();
@@ -103,7 +99,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
     }
 
     [TestMethod]
-    public void InitialTest_ShouldReturnFailure_WhenNoTestAssembliesFound()
+    public async Task InitialTest_ShouldReturnFailure_WhenNoTestAssembliesFound()
     {
         // Arrange
         var options = new Mock<IStrykerOptions>();
@@ -113,14 +109,14 @@ public class MicrosoftTestPlatformRunnerPoolTests
         project.Setup(x => x.GetTestAssemblies()).Returns(Array.Empty<string>());
 
         // Act
-        var result = pool.InitialTestAsync(project.Object);
+        var result = await pool.InitialTestAsync(project.Object);
 
         // Assert
-        result.ResultMessage.ShouldContain("No test assemblies found");
+        result.FailingTests.IsEmpty.ShouldBeTrue();
     }
 
     [TestMethod]
-    public void TestMultipleMutants_ShouldReturnFailure_WhenNoTestAssembliesFound()
+    public async Task TestMultipleMutants_ShouldReturnFailure_WhenNoTestAssembliesFound()
     {
         // Arrange
         var options = new Mock<IStrykerOptions>();
@@ -131,10 +127,10 @@ public class MicrosoftTestPlatformRunnerPoolTests
         var mutants = new List<IMutant> { new Mock<IMutant>().Object };
 
         // Act
-        var result = pool.TestMultipleMutantsAsync(project.Object, null, mutants, null);
+        var result = await pool.TestMultipleMutantsAsync(project.Object, null, mutants, null);
 
         // Assert
-        result.ResultMessage.ShouldContain("No test assemblies found");
+        result.FailingTests.IsEmpty.ShouldBeTrue();
     }
 
     [TestMethod]

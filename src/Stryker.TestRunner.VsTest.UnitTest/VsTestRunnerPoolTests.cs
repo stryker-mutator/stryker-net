@@ -37,7 +37,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     {
         var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
         SetupMockTestRun(mockVsTest, new[] { ("T0", false), ("T1", true) });
-        var result = runner.InitialTestAsync(SourceProjectInfo);
+        var result = runner.InitialTestAsync(SourceProjectInfo).Result;
         // one test is failing
         result.FailingTests.Count.ShouldBe(1);
     }
@@ -52,7 +52,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
             ErrorMessage = "Test"
         };
         SetupMockTestRun(mockVsTest, new[] { testResult });
-        var result = runner.InitialTestAsync(SourceProjectInfo);
+        var result = runner.InitialTestAsync(SourceProjectInfo).Result;
         result.ResultMessage.ShouldEndWith("Test");
     }
 
@@ -107,7 +107,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
         SetupFailingTestRun(mockVsTest);
 
-        var result = runner.InitialTestAsync(SourceProjectInfo);
+        var result = runner.InitialTestAsync(SourceProjectInfo).Result;
         // legacy behavior was to crash on VsTest crash as an fail fast strategy
         // now We have fixed Stryker issues related to VsTest and issues are rare, so this should be a minor event
 
@@ -119,7 +119,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     {
         var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
         SetupMockTestRun(mockVsTest, true, TestCases);
-        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null);
+        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null).Result;
         // tests are successful => run should be successful
         result.FailingTests.IsEmpty.ShouldBeTrue();
     }
@@ -129,7 +129,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     {
         var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner, testCases: []);
         SetupMockTestRun(mockVsTest, true, []);
-        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null);
+        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null).Result;
         // tests are successful => run should be successful
         result.ExecutedTests.IsEmpty.ShouldBeTrue();
     }
@@ -141,7 +141,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     {
         var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner, TestCases);
         SetupMockTestRun(mockVsTest, true, []);
-        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, Mock.Of<ITimeoutValueCalculator>(c => c.DefaultTimeout == -10000), new[] { Mutant }, null);
+        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, Mock.Of<ITimeoutValueCalculator>(c => c.DefaultTimeout == -10000), new[] { Mutant }, null).Result;
         // tests are successful => run should be successful
         result.ExecutedTests.IsEmpty.ShouldBeTrue();
     }
@@ -165,7 +165,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         var options = new StrykerOptions();
         var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
         SetupMockTestRun(mockVsTest, false, TestCases);
-        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null);
+        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null).Result;
         // run is failed
         result.FailingTests.IsEmpty.ShouldBeFalse();
     }
@@ -185,7 +185,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         analyzer.DetermineTestCoverage(options, SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
         SetupMockTimeOutTestRun(mockVsTest, new Dictionary<string, string> { ["0"] = "T0=S;T1=S" }, "T0");
 
-        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null);
+        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null).Result;
         result.TimedOutTests.IsEmpty.ShouldBeFalse();
     }
 
@@ -229,7 +229,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         mockVsTest.Setup(x => x.CancelTestRun()).Verifiable();
         SetupMockTestRun(mockVsTest, false, TestCases);
 
-        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, (_, _, _, _) => false);
+        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, (_, _, _, _) => false).Result;
         // verify Abort has been called
         Mock.Verify(mockVsTest);
         // and test run is failed
@@ -291,7 +291,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["0"] = "T0=S" });
 
         // process coverage information
-        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null);
+        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null).Result;
         // verify Abort has been called
         Mock.Verify(mockVsTest);
         // verify only one test has been run
@@ -316,11 +316,11 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         SetupMockTestRun(mockVsTest, false, TestCases);
         // mutant 0 is covered
         Mutant.IsStaticValue.ShouldBeTrue();
-        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null);
+        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null).Result;
         // mutant is killed
         result.FailingTests.IsEmpty.ShouldBeFalse();
         // mutant 1 is not covered
-        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { OtherMutant }, null);
+        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { OtherMutant }, null).Result;
         // tests are ok
         result.ExecutedTests.IsEmpty.ShouldBeTrue();
     }
@@ -388,9 +388,9 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         analyzer.DetermineTestCoverage(options, SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
 
         SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["0"] = "T0=F", ["1"] = "T0=S" });
-        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { OtherMutant }, null);
+        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { OtherMutant }, null).Result;
         result.FailingTests.IsEmpty.ShouldBeTrue();
-        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null);
+        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null).Result;
         result.FailingTests.IsEmpty.ShouldBeFalse();
     }
 
@@ -401,12 +401,12 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
         // assume 2 results for T0
         SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T1", true), ("T0", true) });
-        var result = runner.InitialTestAsync(SourceProjectInfo);
+        var result = runner.InitialTestAsync(SourceProjectInfo).Result;
         // initial test is fine
         result.FailingTests.IsEmpty.ShouldBeTrue();
         // test session will fail
         SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T0", true), ("T1", true) });
-        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null);
+        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null).Result;
         result.FailingTests.IsEmpty.ShouldBeTrue();
         result.ExecutedTests.IsEveryTest.ShouldBeTrue();
     }
@@ -423,7 +423,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         var mockVsTest = BuildVsTestRunnerPool(options, out var runner, tests);
         // assume 3 results for X0
         SetupMockTestRun(mockVsTest, new[] { ("X0", true), ("X1", true), ("X0", true), ("X0", true) }, tests);
-        var result = runner.InitialTestAsync(SourceProjectInfo);
+        var result = runner.InitialTestAsync(SourceProjectInfo).Result;
         // the duration should be less than 3 times the (test) default duration
         result.Duration.ShouldBeLessThan(TestDefaultDuration.Duration() * 3);
     }
@@ -435,19 +435,19 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
         // assume 2 results for T0
         SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T1", true), ("T0", true) });
-        var result = runner.InitialTestAsync(SourceProjectInfo);
+        var result = runner.InitialTestAsync(SourceProjectInfo).Result;
         // initial test is fine
         result.FailingTests.IsEmpty.ShouldBeTrue();
         // test session will fail on test 1
         SetupMockTestRun(mockVsTest, new[] { ("T0", false), ("T0", true), ("T1", true) });
 
-        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null);
+        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null).Result;
         result.ExecutedTests.IsEveryTest.ShouldBeTrue();
         result.FailingTests.IsEmpty.ShouldBeFalse();
         result.FailingTests.GetIdentifiers().Select(Guid.Parse).ShouldContain(TestCases[0].Id);
         // test session will fail on the other test result
         SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T0", false), ("T1", true) });
-        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null);
+        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null).Result;
         result.ExecutedTests.IsEveryTest.ShouldBeTrue();
         result.FailingTests.IsEmpty.ShouldBeFalse();
         result.FailingTests.GetIdentifiers().Select(Guid.Parse).ShouldContain(TestCases[0].Id);
@@ -460,12 +460,12 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
         // assume 2 results for T0
         SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T1", true), ("T0", true) });
-        var result = runner.InitialTestAsync(SourceProjectInfo);
+        var result = runner.InitialTestAsync(SourceProjectInfo).Result;
         // initial test is fine
         result.FailingTests.IsEmpty.ShouldBeTrue();
         // test session will fail
         SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T1", true) });
-        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null);
+        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null).Result;
 
         result.FailingTests.IsEmpty.ShouldBeTrue();
         result.TimedOutTests.Count.ShouldBe(1);
@@ -480,12 +480,12 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
         // assume 2 results for T0
         SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T1", true), ("T0", true) });
-        var result = runner.InitialTestAsync(SourceProjectInfo);
+        var result = runner.InitialTestAsync(SourceProjectInfo).Result;
         // initial test is fine
         result.FailingTests.IsEmpty.ShouldBeTrue();
         // test session will fail
         SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T0", true), ("T0", false), ("T1", true) });
-        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null);
+        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null).Result;
         result.ExecutedTests.IsEveryTest.ShouldBeTrue();
         result.FailingTests.IsEmpty.ShouldBeFalse();
         result.FailingTests.GetIdentifiers().Select(Guid.Parse).ShouldContain(TestCases[0].Id);
@@ -498,12 +498,12 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
         // assume 2 results for T0
         SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T1", true), ("T0", true) });
-        var result = runner.InitialTestAsync(SourceProjectInfo);
+        var result = runner.InitialTestAsync(SourceProjectInfo).Result;
         // initial test is fine
         result.FailingTests.IsEmpty.ShouldBeTrue();
         // test session will fail
         SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T2", true), ("T1", true), ("T0", true) });
-        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null);
+        result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null).Result;
         result.ExecutedTests.IsEveryTest.ShouldBeTrue();
         result.FailingTests.IsEmpty.ShouldBeTrue();
     }

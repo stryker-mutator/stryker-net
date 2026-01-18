@@ -1,3 +1,47 @@
+# [4.11.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.10.0...stryker@4.11.0) (2026-01-09)
+
+
+### Features
+
+* Analyze and log project analysis failure ([#3332](https://github.com/stryker-mutator/stryker-net/issues/3332)) ([557aa7d](https://github.com/stryker-mutator/stryker-net/commit/557aa7d0a04c64531e232b305a55049c67dcf4fd))
+
+
+
+# [4.10.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.9.2...stryker@4.10.0) (2026-01-04)
+
+
+
+## [4.9.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.9.1...stryker@4.9.2) (2025-12-29)
+
+
+### Bug Fixes
+
+* Improve solution support ([#3383](https://github.com/stryker-mutator/stryker-net/issues/3383)) ([8106f97](https://github.com/stryker-mutator/stryker-net/commit/8106f97d1357c6e2f6431065cb1d264feea722b0)), closes [#3365](https://github.com/stryker-mutator/stryker-net/issues/3365)
+
+
+
+## [4.9.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.9.0...stryker@4.9.1) (2025-12-21)
+
+
+
+# [4.9.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.8.1...stryker@4.9.0) (2025-12-17)
+
+
+### Bug Fixes
+
+* Allow multi-line diagnostic suppression msbuild options (NoWarn, WarningsNotAsErrors, etc..) ([#3292](https://github.com/stryker-mutator/stryker-net/issues/3292)) ([fbe23a3](https://github.com/stryker-mutator/stryker-net/commit/fbe23a370bca41ffa8be6a20295be7f9ab28c756))
+* Handle regex parsing timeout on comments ([#3350](https://github.com/stryker-mutator/stryker-net/issues/3350)) ([147793a](https://github.com/stryker-mutator/stryker-net/commit/147793adbdb8b4cc77c745c4b653ae6bb3bd30c6))
+* Set default nullable compilation option to disable ([#3289](https://github.com/stryker-mutator/stryker-net/issues/3289)) ([0ac7efb](https://github.com/stryker-mutator/stryker-net/commit/0ac7efbaa4b4aa9bf0713158a4cb69130046a4f6))
+
+
+### Features
+
+* **analysis:** Support SLNX solution files, solution and platform configuration ([#3340](https://github.com/stryker-mutator/stryker-net/issues/3340)) ([6ed2d32](https://github.com/stryker-mutator/stryker-net/commit/6ed2d32d93e334707df08730dfeed7bba438e2a1))
+* Remove excluded files from json/html reports ([#3281](https://github.com/stryker-mutator/stryker-net/issues/3281)) ([a8c31c5](https://github.com/stryker-mutator/stryker-net/commit/a8c31c579d390f2040a3a81e6364c4eef8c16d02))
+* **reporter:** Skip --open-report hint in CI ([#3301](https://github.com/stryker-mutator/stryker-net/issues/3301)) ([9805bea](https://github.com/stryker-mutator/stryker-net/commit/9805bea7285f05f0f4e5d08350d1bc5e951e7c27))
+
+
+
 ## [4.8.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.8.0...stryker@4.8.1) (2025-08-23)
 
 

@@ -17,7 +17,7 @@ public interface IStrykerOptions
     string Configuration { get; init; }
     string DashboardApiKey { get; init; }
     string DashboardUrl { get; init; }
-    bool DevMode { get; init; }
+    bool DiagMode { get; init; }
     IEnumerable<IExclusionPattern> DiffIgnoreChanges { get; init; }
     IEnumerable<LinqExpression> ExcludedLinqExpressions { get; init; }
     IEnumerable<Mutator> ExcludedMutations { get; init; }
@@ -32,6 +32,7 @@ public interface IStrykerOptions
     MutationLevel MutationLevel { get; init; }
     OptimizationModes OptimizationMode { get; init; }
     string OutputPath { get; init; }
+    string Platform { get; }
     string ProjectName { get; set; }
     string ProjectPath { get; init; }
     string ProjectVersion { get; set; }

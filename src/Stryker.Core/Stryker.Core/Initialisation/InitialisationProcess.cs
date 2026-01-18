@@ -73,7 +73,8 @@ public class InitialisationProcess : IInitialisationProcess
             _initialBuildProcess.InitialBuild(
                 framework,
                 _inputFileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
-                options.SolutionPath, options.Configuration, options.MsBuildPath);
+                options.SolutionPath, options.Configuration, options.Platform,
+                options.TargetFramework, options.MsBuildPath);
         }
         else
         {
@@ -90,8 +91,9 @@ public class InitialisationProcess : IInitialisationProcess
                     testProjects[i].TargetsFullFramework(),
                     testProjects[i].ProjectFilePath,
                     options.SolutionPath,
-                    options.Configuration,
-                    options.MsBuildPath ?? testProjects[i].MsBuildPath());
+                    testProjects[i].GetProperty("Configuration"),
+                    testProjects[i].GetProperty("Platform"),
+                    msbuildPath: options.MsBuildPath ?? testProjects[i].MsBuildPath());
             }
         }
 
@@ -103,22 +105,8 @@ public class InitialisationProcess : IInitialisationProcess
     }
 
     public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(IStrykerOptions options,
-        IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner)
-    {
-        var result = new List<MutationTestInput>();
-        foreach (var info in projects)
-        {
-            result.Add(new MutationTestInput
-            {
-                SourceProjectInfo = info,
-                TestProjectsInfo = info.TestProjectsInfo,
-                TestRunner = runner,
-                InitialTestRun = InitialTest(options, info, runner, projects.Count == 1)
-            });
-        }
-
-        return result;
-    }
+        IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner) =>
+        projects.Select(info => new MutationTestInput { SourceProjectInfo = info, TestProjectsInfo = info.TestProjectsInfo, TestRunner = runner, InitialTestRun = InitialTest(options, info, runner, projects.Count == 1) }).ToList();
 
     private InitialTestRun InitialTest(IStrykerOptions options, SourceProjectInfo projectInfo,
         ITestRunner testRunner, bool throwIfFails)

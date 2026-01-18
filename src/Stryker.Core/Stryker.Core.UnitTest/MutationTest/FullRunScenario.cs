@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Moq;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
@@ -170,9 +171,9 @@ internal class FullRunScenario
             string.Empty,
             Enumerable.Empty<string>(),
             TimeSpan.Zero);
-        runnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).Returns(true);
+        runnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
         runnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(TestSet);
-        runnerMock.Setup(x => x.InitialTestAsync(It.IsAny<IProjectAndTests>())).Returns(GetRunResult(InitialRunId));
+        runnerMock.Setup(x => x.InitialTestAsync(It.IsAny<IProjectAndTests>())).Returns(Task.FromResult(GetRunResult(InitialRunId) as ITestRunResult));
         runnerMock.Setup(x => x.CaptureCoverage(It.IsAny<IProjectAndTests>()))
             .Returns(() =>
             {
@@ -196,7 +197,7 @@ internal class FullRunScenario
                     update(list, GetFailedTests(m.Id), GetCoveringTests(m.Id), TestIdentifierList.NoTest());
                 }
             }))
-            .Returns(successResult);
+            .Returns(Task.FromResult(successResult as ITestRunResult));
         return runnerMock;
     }
 }

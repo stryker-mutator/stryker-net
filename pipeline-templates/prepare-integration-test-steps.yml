@@ -6,7 +6,7 @@ steps:
 - task: UseDotNet@2
   displayName: 'Use dotnet'
   inputs:
-    version: 9.x
+    version: 10.x
 
 - task: DotNetCoreCLI@2
   displayName: 'Run unit tests'

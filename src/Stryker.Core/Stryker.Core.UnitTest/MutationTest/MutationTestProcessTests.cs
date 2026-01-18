@@ -411,6 +411,6 @@ public class MutationTestProcessTests : TestBase
 
         Mock.Get(reporter).VerifyNoOtherCalls();
         Mock.Get(mutationTestExecutor).VerifyNoOtherCalls();
-        result.MutationScore.ShouldBe(double.NaN);
+        result.Result.MutationScore.ShouldBe(double.NaN);
     }
 }

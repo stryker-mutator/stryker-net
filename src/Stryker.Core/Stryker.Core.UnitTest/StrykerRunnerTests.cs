@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -70,7 +71,7 @@ public class StrykerRunnerTests : TestBase
         mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
         mutationTestProcessMock.Setup(x => x.GetCoverage());
         mutationTestProcessMock.Setup(x => x.TestAsync(It.IsAny<IEnumerable<IMutant>>()))
-            .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<double>()));
+            .Returns(Task.FromResult(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<double>())));
         mutationTestProcessMock.Setup(x => x.Restore());
 
         // Set up sequence-critical methods:
@@ -143,7 +144,7 @@ public class StrykerRunnerTests : TestBase
 
         var result = target.RunMutationTestAsync(inputsMock.Object);
 
-        result.MutationScore.ShouldBe(double.NaN);
+        result.Result.MutationScore.ShouldBe(double.NaN);
 
         reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<IMutant>>()), Times.Never);
         reporterMock.Verify(x => x.OnMutantTested(It.IsAny<IMutant>()), Times.Never);

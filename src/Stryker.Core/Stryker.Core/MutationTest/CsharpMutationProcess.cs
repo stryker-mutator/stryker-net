@@ -48,7 +48,7 @@ public class CsharpMutationProcess : IMutationProcess
             var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree, semanticModels.First(x => x.SyntaxTree == file.SyntaxTree));
             // Add the mutated syntax tree for compilation
             file.MutatedSyntaxTree = mutatedSyntaxTree;
-            if (_options.DevMode)
+            if (_options.DiagMode)
             {
                 _logger.LogTrace("Mutated {FullPath}:{NewLine}{MutatedSyntaxTree}",
                     file.FullPath, Environment.NewLine, mutatedSyntaxTree.GetText());
@@ -67,7 +67,7 @@ public class CsharpMutationProcess : IMutationProcess
         var info = input.SourceProjectInfo;
         var projectInfo = (ProjectComponent<SyntaxTree>)info.ProjectContents;
         using var ms = new MemoryStream();
-        using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
+        using var msForSymbols = _options.DiagMode ? new MemoryStream() : null;
         // compile the mutated syntax trees
         var compileResult = compilingProcess.Compile(projectInfo.CompilationSyntaxTrees, ms, msForSymbols);
 

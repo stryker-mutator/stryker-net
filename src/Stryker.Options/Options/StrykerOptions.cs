@@ -20,7 +20,7 @@ public class StrykerOptions : IStrykerOptions
     /// <summary>
     /// when true: adjust Stryker logic to make it easier to analyse/debug
     /// </summary>
-    public bool DevMode { get; init; }
+    public bool DiagMode { get; init; }
 
     /// <summary>
     /// The path of the project currently being tested. In the context of solution runs this is custom for each project
@@ -64,7 +64,33 @@ public class StrykerOptions : IStrykerOptions
     /// <summary>
     /// The configuration (in the VS sense) that should be used when building the project under test.
     /// </summary>
-    public string Configuration { get; init; }
+    /// <remarks>it may also contain the platform in the form of <configuration>|<platform></remarks>
+    public string Configuration
+    {
+        get => _configuration;
+        init
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                _configuration = null;
+                return;
+            }
+            var blocks = value.Split('|');
+            _configuration = blocks[0];
+            if (blocks.Length > 1)
+            {
+                Platform = blocks[1];
+            }
+        }
+    }
+
+    /// <summary>
+    /// The desired platform.
+    /// </summary>
+    /// <remarks>
+    /// Will be <c>null</c> if no platform is specified in <see cref="Configuration"/>.
+    /// </remarks>
+    public string Platform { get; private set; }
 
     /// <summary>
     /// The detected target framework for the current project under test.
@@ -87,7 +113,7 @@ public class StrykerOptions : IStrykerOptions
     public IThresholds Thresholds { get; init; } = new Thresholds() { Break = 0, Low = 60, High = 80 };
 
     /// <summary>
-    /// The ammount of milliseconds that should be added to the timeout period when testing mutants.
+    /// How many milliseconds should be added to the timeout period when testing mutants.
     /// </summary>
     public int AdditionalTimeout { get; init; }
 
@@ -225,17 +251,16 @@ public class StrykerOptions : IStrykerOptions
     /// </summary>
     public bool BreakOnInitialTestFailure { get; set; }
 
-    public TestRunner TestRunner { get; init; }
     /// </summary>
     /// The test runner to use for executing tests
     /// <summary>
+    public TestRunner TestRunner { get; init; }
 
     /// <summary>
     /// Get/set the mutation id provider
     /// </summary>
     public IProvideId MutantIdProvider {get; set;}
 
-
     private readonly string _workingDirectoryField;
-
+    private string _configuration;
 }

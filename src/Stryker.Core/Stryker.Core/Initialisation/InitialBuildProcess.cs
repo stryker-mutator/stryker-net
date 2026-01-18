@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Configuration;
@@ -11,8 +12,13 @@ namespace Stryker.Core.Initialisation;
 
 public interface IInitialBuildProcess
 {
-    void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration = null,
-        string targetFramework = null, string msbuildPath = null);
+    void InitialBuild(bool fullFramework,
+        string projectPath,
+        string solutionPath,
+        string configuration = null,
+        string platform = null,
+        string targetFramework = null,
+        string msbuildPath = null);
 }
 
 public class InitialBuildProcess : IInitialBuildProcess
@@ -30,13 +36,19 @@ public class InitialBuildProcess : IInitialBuildProcess
         _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
-    
-    public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration = null, string targetFramework = null,
+
+    public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration = null,
+        string platform = null, string targetFramework = null,
         string msbuildPath = null)
     {
         if (fullFramework && string.IsNullOrEmpty(solutionPath))
         {
             throw new InputException("Stryker could not build your project as no solution file was presented. Please pass the solution path to stryker.");
+        }
+
+        if (fullFramework && Environment.OSVersion.Platform != PlatformID.Win32NT)
+        {
+            throw new InputException("Stryker cannot build .NET Framework projects on non-Windows platforms.");
         }
 
         var msBuildHelper = new MsBuildHelper(fileSystem: _fileSystem, executor: _processExecutor, msBuildPath: msbuildPath);
@@ -50,9 +62,10 @@ public class InitialBuildProcess : IInitialBuildProcess
             buildPath,
             fullFramework,
             configuration: configuration,
+            platform: platform,
             forcedFramework: targetFramework);
 
-        if (result.ExitCode != ExitCodes.Success && !string.IsNullOrEmpty(solutionPath))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && result.ExitCode != ExitCodes.Success && !string.IsNullOrEmpty(solutionPath))
         {
             // dump previous build result
             _logger.LogTrace("Initial build output: {0}", result.Output);
@@ -61,7 +74,7 @@ public class InitialBuildProcess : IInitialBuildProcess
                 buildPath,
                 true,
                 configuration,
-                "-t:restore -p:RestorePackagesConfig=true", forcedFramework: targetFramework);
+                options: "-t:restore -p:RestorePackagesConfig=true", forcedFramework: targetFramework);
 
             if (result.ExitCode != ExitCodes.Success)
             {
@@ -71,8 +84,8 @@ public class InitialBuildProcess : IInitialBuildProcess
             (result, exe, args) = msBuildHelper.BuildProject(directoryName,
                 buildPath,
                 true,
-                configuration
-                , forcedFramework: targetFramework);
+                configuration,
+                forcedFramework: targetFramework);
         }
 
         CheckBuildResult(result, target, exe, args);

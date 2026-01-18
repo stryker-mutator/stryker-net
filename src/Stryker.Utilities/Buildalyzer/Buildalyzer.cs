@@ -9,13 +9,10 @@ namespace Stryker.Utilities.Buildalyzer;
 public interface IBuildalyzerProvider
 {
     IAnalyzerManager Provide(AnalyzerManagerOptions options = null);
-    IAnalyzerManager Provide(string solutionFilePath, AnalyzerManagerOptions options = null);
 }
 
 [ExcludeFromCodeCoverage]
 public class BuildalyzerProvider : IBuildalyzerProvider
 {
     public IAnalyzerManager Provide(AnalyzerManagerOptions options = null) => new AnalyzerManager(options);
-
-    public IAnalyzerManager Provide(string solutionFilePath, AnalyzerManagerOptions options = null) => new AnalyzerManager(solutionFilePath, options);
 }

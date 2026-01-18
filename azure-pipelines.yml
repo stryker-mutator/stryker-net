@@ -23,8 +23,8 @@ pr:
     - '.github/*'
 
 variables:
-  PackageVersion: '4.8.1'
-  VersionBuildNumber: $[counter('4.8.1', 1)]
+  PackageVersion: '4.11.0'
+  VersionBuildNumber: $[counter('4.11.0', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   ForkIntegrationNugetFeedUri: https://f.feedz.io/stryker/stryker-net/nuget/index.json
@@ -55,7 +55,7 @@ stages:
     - task: UseDotNet@2
       displayName: 'Install dotnet 9'
       inputs:
-        version: 9.x
+        version: 10.x
     - task: DotNetCoreCLI@2
       displayName: 'Install dotnet-coverage'
       inputs:
@@ -64,7 +64,7 @@ stages:
         arguments: install dotnet-coverage --tool-path $(Agent.BuildDirectory)/tools
         includeNuGetOrg: true
     - template: pipeline-templates/populate-cache-steps.yml
-    - task: SonarCloudPrepare@3
+    - task: SonarCloudPrepare@4
       inputs:
         SonarCloud: 'SonarCloud stryker-net'
         organization: 'stryker-net'
@@ -83,8 +83,8 @@ stages:
     - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage collect "dotnet test" -f xml -o "$(Agent.BuildDirectory)\TestResults\coverage.xml"'
       displayName: 'Run unit tests'
       workingDirectory: 'src'
-    - task: SonarCloudAnalyze@3
-    - task: SonarCloudPublish@3
+    - task: SonarCloudAnalyze@4
+    - task: SonarCloudPublish@4
       inputs:
         pollingTimeoutSec: '300'
   - job: RunStrykerCLI
@@ -100,7 +100,7 @@ stages:
     - task: UseDotNet@2
       displayName: 'Use dotnet'
       inputs:
-        version: 9.x
+        version: 10.x
     - task: DotNetCoreCLI@2
       displayName: 'Install dotnet-stryker'
       inputs:
@@ -124,7 +124,7 @@ stages:
     - task: UseDotNet@2
       displayName: 'Use dotnet'
       inputs:
-        version: 9.x
+        version: 10.x
     - task: DotNetCoreCLI@2
       displayName: 'Install dotnet-stryker'
       inputs:
@@ -160,7 +160,7 @@ stages:
           - task: UseDotNet@2
             displayName: 'Use dotnet'
             inputs:
-              version: 9.x
+              version: 10.x
           - task: DotNetCoreCLI@2
             displayName: 'Pack integrationtest packages'
             inputs:
@@ -209,24 +209,14 @@ stages:
     - template: pipeline-templates/prepare-integration-test-steps.yml
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
-        testName: 'windows-netcore'
-        workingDirectory: 'integrationtest/TargetProjects/NetCore/NetCoreTestProject.XUnit'
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
         testName: 'windows-netframework'
         workingDirectory: 'integrationtest/TargetProjects/NetFramework/FullFrameworkApp.Test'
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
-        testName: 'windows-initcommand'
-        workingDirectory: 'integrationtest/TargetProjects'
-        strykerCommands: init --config-file "InitCommand/test-config.json" -p "TestProject.csproj"
-
     - task: DotNetCoreCLI@2
-      displayName: 'Assert integration test results'
+      displayName: 'Assert integration test results (SingleTestProject netframework)'
       inputs:
         command: test
         projects: '**/Validation.csproj'
-        arguments: --filter Category=SingleTestProject
+        arguments: --filter "Category=SingleTestProject&Runtime=netframework"
 
   - job: LinuxTests
     displayName: Run tests on Linux
@@ -244,7 +234,7 @@ stages:
       inputs:
         command: test
         projects: '**/Validation.csproj'
-        arguments: --filter Category=Solution
+        arguments: --filter "Category=Solution&Runtime=netcore"
     - script: $(Agent.BuildDirectory)/tools/dotnet-stryker
       workingDirectory: 'integrationtest/TargetProjects/NetCore/EmptyTestProject'
       failOnStderr: false
@@ -260,27 +250,22 @@ stages:
       parameters:
         testName: 'macos-netcore'
         workingDirectory: 'integrationtest/TargetProjects/NetCore/NetCoreTestProject.XUnit'
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
-        testName: 'macos-init-command'
-        workingDirectory: 'integrationtest/TargetProjects'
-        strykerCommands: init --config-file "InitCommand/test-config.json" -p "TestProject.csproj"
     - task: DotNetCoreCLI@2
-      displayName: 'Assert integration test results'
+      displayName: 'Assert integration test results SingleTestProject'
       inputs:
         command: test
         projects: '**/Validation.csproj'
-        arguments: --filter Category=SingleTestProject
+        arguments: --filter "Category=SingleTestProject&Runtime=netcore"
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'macos-netcore-multi-test-project'
         workingDirectory: 'integrationtest/TargetProjects/NetCore/TargetProject'
     - task: DotNetCoreCLI@2
-      displayName: 'Assert integration test results'
+      displayName: 'Assert integration test results Solution'
       inputs:
         command: test
         projects: '**/Validation.csproj'
-        arguments: --filter Category=MultipleTestProjects
+        arguments: --filter "Category=MultipleTestProjects&Runtime=netcore"
 
 - stage: PublishMasterReleaseArtifact
   displayName: Publish Release Artifact
@@ -300,7 +285,7 @@ stages:
     - task: UseDotNet@2
       displayName: 'Use dotnet'
       inputs:
-        version: 9.x
+        version: 10.x
     - task: DotNetCoreCLI@2
       displayName: 'Pack Stryker.CLI'
       inputs:

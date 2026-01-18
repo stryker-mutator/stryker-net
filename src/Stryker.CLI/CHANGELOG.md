@@ -1,3 +1,38 @@
+# [4.11.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.10.0...dotnet-stryker@4.11.0) (2026-01-09)
+
+
+### Features
+
+* Analyze and log project analysis failure ([#3332](https://github.com/stryker-mutator/stryker-net/issues/3332)) ([557aa7d](https://github.com/stryker-mutator/stryker-net/commit/557aa7d0a04c64531e232b305a55049c67dcf4fd))
+
+
+
+# [4.10.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.9.2...dotnet-stryker@4.10.0) (2026-01-04)
+
+
+
+## [4.9.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.9.1...dotnet-stryker@4.9.2) (2025-12-29)
+
+
+### Bug Fixes
+
+* Improve solution support ([#3383](https://github.com/stryker-mutator/stryker-net/issues/3383)) ([8106f97](https://github.com/stryker-mutator/stryker-net/commit/8106f97d1357c6e2f6431065cb1d264feea722b0)), closes [#3365](https://github.com/stryker-mutator/stryker-net/issues/3365)
+
+
+
+## [4.9.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.9.0...dotnet-stryker@4.9.1) (2025-12-21)
+
+
+
+# [4.9.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.8.1...dotnet-stryker@4.9.0) (2025-12-17)
+
+
+### Features
+
+* **analysis:** Support SLNX solution files, solution and platform configuration ([#3340](https://github.com/stryker-mutator/stryker-net/issues/3340)) ([6ed2d32](https://github.com/stryker-mutator/stryker-net/commit/6ed2d32d93e334707df08730dfeed7bba438e2a1))
+
+
+
 ## [4.8.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.8.0...dotnet-stryker@4.8.1) (2025-08-23)
 
 
