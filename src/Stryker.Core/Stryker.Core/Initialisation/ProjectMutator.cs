@@ -20,7 +20,6 @@ public class ProjectMutator : IProjectMutator
 {
     private readonly ILogger _logger;
     private readonly IServiceProvider _serviceProvider;
-    private readonly IMutationTestProcess _injectedMutationTestProcess;
 
     public ProjectMutator(ILogger<ProjectMutator> logger, IServiceProvider serviceProvider)
     {
