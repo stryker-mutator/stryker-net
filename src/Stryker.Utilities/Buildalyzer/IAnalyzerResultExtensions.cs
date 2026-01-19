@@ -52,7 +52,7 @@ public static class IAnalyzerResultExtensions
             .ToLowerInvariant());
 
     public static string GetSymbolFileName(this IAnalyzerResult analyzerResult) =>
-        Path.ChangeExtension(analyzerResult.GetAssemblyName(), ".pdb");
+        analyzerResult.GetAssemblyName()+ ".pdb";
 
     public static string TargetPlatform(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("TargetPlatform", "AnyCPU");
 
