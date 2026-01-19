@@ -4,10 +4,8 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.MutationTest;
-using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 
@@ -15,7 +13,7 @@ namespace Stryker.Core.Initialisation;
 
 public interface IProjectMutator
 {
-    IMutationTestProcess MutateProject(IStrykerOptions options, MutationTestInput input, IReporter reporters);
+    IMutationTestProcess MutateProject(IStrykerOptions options, MutationTestInput input, IReporter reporters, IMutationTestProcess mutationTestProcess = null);
 }
 
 public class ProjectMutator : IProjectMutator
@@ -24,16 +22,15 @@ public class ProjectMutator : IProjectMutator
     private readonly IServiceProvider _serviceProvider;
     private readonly IMutationTestProcess _injectedMutationTestProcess;
 
-    public ProjectMutator(ILogger<ProjectMutator> logger, IServiceProvider serviceProvider, IMutationTestProcess mutationTestProcess = null)
+    public ProjectMutator(ILogger<ProjectMutator> logger, IServiceProvider serviceProvider)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        _injectedMutationTestProcess = mutationTestProcess;
     }
 
-    public IMutationTestProcess MutateProject(IStrykerOptions options, MutationTestInput input, IReporter reporters)
+    public IMutationTestProcess MutateProject(IStrykerOptions options, MutationTestInput input, IReporter reporters, IMutationTestProcess mutationTestProcess = null)
     {
-        var process = _injectedMutationTestProcess ?? _serviceProvider.GetRequiredService<IMutationTestProcess>();
+        var process = mutationTestProcess ?? _serviceProvider.GetRequiredService<IMutationTestProcess>();
         process.Initialize(input, options, reporters);
 
         // Enrich test projects info with unit tests
