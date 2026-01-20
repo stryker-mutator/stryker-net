@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Stryker.Core.CoverageAnalysis;
@@ -12,6 +13,8 @@ namespace Stryker.Core.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
+    // Cannot be tested directly
+    [ExcludeFromCodeCoverage]
     public static IServiceCollection AddStrykerCore(this IServiceCollection services)
     {
         // Add logging support (providers configured by caller)
