@@ -286,7 +286,7 @@ public static class IAnalyzerResultExtensions
         {
             if (!_cache.ContainsKey(fullPath))
             {
-                _cache[fullPath] = SafeLoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
+                _cache[fullPath] = SafeLoadFrom(fullPath);
             }
         }
 
@@ -294,7 +294,7 @@ public static class IAnalyzerResultExtensions
         {
             if (!_cache.TryGetValue(fullPath, out var assembly))
             {
-                _cache[fullPath] = assembly = SafeLoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
+                _cache[fullPath] = assembly = SafeLoadFrom(fullPath);
             }
             return assembly;
         }
@@ -304,11 +304,13 @@ public static class IAnalyzerResultExtensions
         {
             try
             {
-                return Assembly.LoadFrom(fullPath);
+                return Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
             }
-            catch (FileLoadException e)
+            catch (FileLoadException)
             {
-                // This can happen if the assembly has already been loaded.
+                // This can happen if the assembly has already been loaded: CLR refuses to load the same
+                // assembly from two different paths. In that case, we try to find the already loaded assembly.
+                // if we fail, we simply rethrow the original exception
                 var assemblyName = AssemblyName.GetAssemblyName(fullPath);
                 // find already loaded assembly
                 var loadedAssembly = AppDomain.CurrentDomain.GetAssemblies()
