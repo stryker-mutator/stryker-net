@@ -286,7 +286,7 @@ public static class IAnalyzerResultExtensions
         {
             if (!_cache.ContainsKey(fullPath))
             {
-                _cache[fullPath] = Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
+                _cache[fullPath] = SafeLoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
             }
         }
 
@@ -294,9 +294,32 @@ public static class IAnalyzerResultExtensions
         {
             if (!_cache.TryGetValue(fullPath, out var assembly))
             {
-                _cache[fullPath] = assembly = Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
+                _cache[fullPath] = assembly = SafeLoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
             }
             return assembly;
+        }
+
+        [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]
+        private static Assembly SafeLoadFrom(string fullPath)
+        {
+            try
+            {
+                return Assembly.LoadFrom(fullPath);
+            }
+            catch (FileLoadException e)
+            {
+                // This can happen if the assembly has already been loaded.
+                var assemblyName = AssemblyName.GetAssemblyName(fullPath);
+                // find already loaded assembly
+                var loadedAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                    .FirstOrDefault(a => AssemblyName.ReferenceMatchesDefinition(a.GetName(), assemblyName));
+                if (loadedAssembly != null)
+                {
+                    return loadedAssembly;
+                }
+
+                throw;
+            }
         }
     }
 }
