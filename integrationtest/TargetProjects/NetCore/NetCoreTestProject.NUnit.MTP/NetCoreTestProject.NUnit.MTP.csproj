@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Enable Microsoft.Testing.Platform for NUnit -->
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="4.3.1" />
+    <PackageReference Include="NUnit.Analyzers" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Testing.Platform.MSBuild" Version="1.5.2" />
+    <PackageReference Include="NUnit.MSTestPlatformAdapter" Version="1.0.0-beta.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TargetProject\TargetProject.csproj" />
+  </ItemGroup>
+
+</Project>
+

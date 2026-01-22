@@ -276,6 +276,36 @@ stages:
         command: test
         projects: '**/Validation.csproj'
         arguments: --filter "Category=MSTestMTP&Runtime=netcore"
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'macos-netcore-xunit-mtp'
+        workingDirectory: 'integrationtest/TargetProjects/NetCore/NetCoreTestProject.XUnit.MTP'
+    - task: DotNetCoreCLI@2
+      displayName: 'Assert integration test results XUnit MTP'
+      inputs:
+        command: test
+        projects: '**/Validation.csproj'
+        arguments: --filter "Category=XUnitMTP&Runtime=netcore"
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'macos-netcore-nunit-mtp'
+        workingDirectory: 'integrationtest/TargetProjects/NetCore/NetCoreTestProject.NUnit.MTP'
+    - task: DotNetCoreCLI@2
+      displayName: 'Assert integration test results NUnit MTP'
+      inputs:
+        command: test
+        projects: '**/Validation.csproj'
+        arguments: --filter "Category=NUnitMTP&Runtime=netcore"
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'macos-netcore-tunit'
+        workingDirectory: 'integrationtest/TargetProjects/NetCore/NetCoreTestProject.TUnit'
+    - task: DotNetCoreCLI@2
+      displayName: 'Assert integration test results TUnit'
+      inputs:
+        command: test
+        projects: '**/Validation.csproj'
+        arguments: --filter "Category=TUnit&Runtime=netcore"
 
 - stage: PublishMasterReleaseArtifact
   displayName: Publish Release Artifact

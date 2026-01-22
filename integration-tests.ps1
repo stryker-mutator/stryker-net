@@ -126,6 +126,24 @@ function Run-Category {
       if (Test-Path $mtpWd) { Run-Stryker -WorkingDirectory $mtpWd } else { Write-Warn "MTP test project not found at $mtpWd" }
       break
     }
+    'XUnitMTP' {
+      if ($Runtime -ne 'netcore') { throw "XUnitMTP only supports runtime 'netcore'." }
+      $xunitMtpWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore\NetCoreTestProject.XUnit.MTP'
+      if (Test-Path $xunitMtpWd) { Run-Stryker -WorkingDirectory $xunitMtpWd } else { Write-Warn "XUnit MTP test project not found at $xunitMtpWd" }
+      break
+    }
+    'NUnitMTP' {
+      if ($Runtime -ne 'netcore') { throw "NUnitMTP only supports runtime 'netcore'." }
+      $nunitMtpWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore\NetCoreTestProject.NUnit.MTP'
+      if (Test-Path $nunitMtpWd) { Run-Stryker -WorkingDirectory $nunitMtpWd } else { Write-Warn "NUnit MTP test project not found at $nunitMtpWd" }
+      break
+    }
+    'TUnit' {
+      if ($Runtime -ne 'netcore') { throw "TUnit only supports runtime 'netcore'." }
+      $tunitWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore\NetCoreTestProject.TUnit'
+      if (Test-Path $tunitWd) { Run-Stryker -WorkingDirectory $tunitWd } else { Write-Warn "TUnit test project not found at $tunitWd" }
+      break
+    }
     'Solution' {
       if ($Runtime -eq 'netcore') {
         $netcoreWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore'
