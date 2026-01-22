@@ -207,7 +207,6 @@ public class MutationTestProcessTests : TestBase
         // mutant 3 as no coverage
         // test 1 succeeds, test 2 fails
         TestScenario.DeclareTestsFailingWhenTestingMutant(1, 2);
-        var runnerMock = TestScenario.GetTestRunnerMock();
 
         // setup coverage
         var loggerMock3 = new Mock<ILogger<MutationTestExecutor>>();
@@ -260,7 +259,6 @@ public class MutationTestProcessTests : TestBase
         TestScenario.DeclareTestsFailingAtInit(1);
         // test 1 succeeds, test 2 fails
         TestScenario.DeclareTestsFailingWhenTestingMutant(1, 1);
-        var runnerMock = TestScenario.GetTestRunnerMock();
 
         // setup coverage
         var loggerMock4 = new Mock<ILogger<MutationTestExecutor>>();
@@ -308,7 +306,6 @@ public class MutationTestProcessTests : TestBase
         TestScenario.DeclareTestsFailingAtInit(1, 2);
         // test 1 succeeds, test 2 fails
         TestScenario.DeclareTestsFailingWhenTestingMutant(1, 1, 2);
-        var runnerMock = TestScenario.GetTestRunnerMock();
 
         // setup coverage
         var loggerMock5 = new Mock<ILogger<MutationTestExecutor>>();
@@ -353,7 +350,6 @@ public class MutationTestProcessTests : TestBase
         TestScenario.DeclareTestsFailingAtInit(1);
         // test 1 succeeds, test 2 fails
         TestScenario.DeclareTestsFailingWhenTestingMutant(1, 1, 2);
-        var runnerMock = TestScenario.GetTestRunnerMock();
 
         // setup coverage
         var loggerMock6 = new Mock<ILogger<MutationTestExecutor>>();

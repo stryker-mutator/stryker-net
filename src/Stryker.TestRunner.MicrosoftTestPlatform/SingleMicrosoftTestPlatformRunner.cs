@@ -386,14 +386,11 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
             {
                 _testsByAssembly[assembly] = tests;
 
-                foreach (var test in tests)
+                foreach (var test in tests.Where(t => !_testDescriptions.ContainsKey(t.Uid)))
                 {
-                    if (!_testDescriptions.ContainsKey(test.Uid))
-                    {
-                        var mtpTestDescription = new MtpTestDescription(test);
-                        _testDescriptions[test.Uid] = mtpTestDescription;
-                        _testSet.RegisterTest(mtpTestDescription.Description);
-                    }
+                    var mtpTestDescription = new MtpTestDescription(test);
+                    _testDescriptions[test.Uid] = mtpTestDescription;
+                    _testSet.RegisterTest(mtpTestDescription.Description);
                 }
             }
 
@@ -585,12 +582,10 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
 
             lock (_discoveryLock)
             {
-                foreach (var testResult in finishedTests)
+                foreach (var testResult in finishedTests.Where(tr => _testDescriptions.ContainsKey(tr.Node.Uid)))
                 {
-                    if (_testDescriptions.TryGetValue(testResult.Node.Uid, out var testDescription))
-                    {
-                        testDescription.RegisterInitialTestResult(new MtpTestResult(duration));
-                    }
+                    var testDescription = _testDescriptions[testResult.Node.Uid];
+                    testDescription.RegisterInitialTestResult(new MtpTestResult(duration));
                 }
             }
 

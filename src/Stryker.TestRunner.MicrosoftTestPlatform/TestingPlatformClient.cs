@@ -40,9 +40,9 @@ public sealed class TestingPlatformClient : IDisposable
     private void JsonRpcClient_Disconnected(object? sender, JsonRpcDisconnectedEventArgs e)
     {
         _disconnectionReason.AppendLine("Disconnected reason:");
-        _disconnectionReason.AppendLine(e.Reason.ToString());
+        _disconnectionReason.AppendLine($"{e.Reason}");
         _disconnectionReason.AppendLine(e.Description);
-        _disconnectionReason.AppendLine(e.Exception?.ToString());
+        _disconnectionReason.AppendLine($"{e.Exception}");
     }
 
     public int ExitCode => _processHandler.ExitCode;

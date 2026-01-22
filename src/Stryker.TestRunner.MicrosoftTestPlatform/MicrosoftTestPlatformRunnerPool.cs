@@ -84,21 +84,13 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project)
     {
-        var coverageResults = new List<ICoverageRunResult>();
-
-        foreach (var testDescription in _testDescriptions.Values)
-        {
-            var coverageResult = CoverageRunResult.Create(
+        return _testDescriptions.Values.Select(testDescription => 
+            CoverageRunResult.Create(
                 testDescription.Id,
                 CoverageConfidence.Dubious,
                 [],
                 [],
-                []);
-
-            coverageResults.Add(coverageResult);
-        }
-
-        return coverageResults;
+                []));
     }
 
     public async Task<ITestRunResult> TestMultipleMutantsAsync(
