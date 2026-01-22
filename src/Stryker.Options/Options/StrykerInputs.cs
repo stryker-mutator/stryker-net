@@ -49,6 +49,7 @@ public interface IStrykerInputs
     OpenReportInput OpenReportInput { get; init; }
     OpenReportEnabledInput OpenReportEnabledInput { get; init; }
     BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; }
+    TestRunnerInput TestRunnerInput { get; init; }
 
     IStrykerOptions ValidateAll();
 }
@@ -106,6 +107,7 @@ public class StrykerInputs : IStrykerInputs
     public OpenReportInput OpenReportInput { get; init; } = new();
     public OpenReportEnabledInput OpenReportEnabledInput { get; init; } = new();
     public BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; } = new();
+    public TestRunnerInput TestRunnerInput { get; init; } = new();
 
     public IStrykerOptions ValidateAll()
     {
@@ -168,6 +170,7 @@ public class StrykerInputs : IStrykerInputs
             SinceTarget = sinceTarget,
             ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate()),
             BreakOnInitialTestFailure = BreakOnInitialTestFailureInput.Validate(),
+            TestRunner = TestRunnerInput.Validate(),
             MutantIdProvider = new BasicIdProvider()
         };
         return _strykerOptionsCache;

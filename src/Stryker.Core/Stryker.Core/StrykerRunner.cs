@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
@@ -17,7 +18,7 @@ namespace Stryker.Core;
 
 public interface IStrykerRunner
 {
-    StrykerRunResult RunMutationTest(IStrykerInputs inputs);
+    Task<StrykerRunResult> RunMutationTestAsync(IStrykerInputs inputs);
 }
 
 public class StrykerRunner : IStrykerRunner
@@ -43,7 +44,7 @@ public class StrykerRunner : IStrykerRunner
     /// </summary>
     /// <param name="inputs">user options</param>
     /// <exception cref="InputException">For managed exceptions</exception>
-    public StrykerRunResult RunMutationTest(IStrykerInputs inputs)
+    public async Task<StrykerRunResult> RunMutationTestAsync(IStrykerInputs inputs)
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
@@ -107,11 +108,11 @@ public class StrykerRunner : IStrykerRunner
             // Test
             foreach (var project in _mutationTestProcesses)
             {
-                project.Test(project.Input.SourceProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.Pending).ToList());
+                await project.TestAsync(project.Input.SourceProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.Pending).ToList()).ConfigureAwait(false);
             }
             // dispose and stop runners
             _projectOrchestrator.Dispose();
-            
+
             // Restore assemblies
             foreach (var project in _mutationTestProcesses)
             {

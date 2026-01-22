@@ -120,6 +120,12 @@ function Run-Category {
       if (Test-Path $multiWd) { Run-Stryker -WorkingDirectory $multiWd } else { Write-Warn "Multi test project not found at $multiWd" }
       break
     }
+    'MSTestMTP' {
+      if ($Runtime -ne 'netcore') { throw "MSTestMTP only supports runtime 'netcore'." }
+      $mtpWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore\NetCoreTestProject.MSTest.MTP'
+      if (Test-Path $mtpWd) { Run-Stryker -WorkingDirectory $mtpWd -Arguments @('--test-runner', 'mtp') } else { Write-Warn "MTP test project not found at $mtpWd" }
+      break
+    }
     'Solution' {
       if ($Runtime -eq 'netcore') {
         $netcoreWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore'

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using System.Threading.Tasks;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,7 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.TestRunner.Results;
+using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.VsTest;
 using Stryker.Utilities.Logging;
 
@@ -202,9 +204,9 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             });
 
             var mockRunner = new Mock<ITestRunner>();
-            mockRunner.Setup(r => r.DiscoverTests(It.IsAny<string>())).Returns(true);
+            mockRunner.Setup(r => r.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
             mockRunner.Setup(r => r.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
-            mockRunner.Setup(r => r.InitialTest(It.IsAny<IProjectAndTests>())).Returns(new TestRunResult(true));
+            mockRunner.Setup(r => r.InitialTestAsync(It.IsAny<IProjectAndTests>())).Returns(Task.FromResult(new TestRunResult(true) as ITestRunResult));
             var nugetRestoreMock = new Mock<INugetRestoreProcess>();
             nugetRestoreMock.Setup(x => x.RestorePackages(options.SolutionPath, It.IsAny<string>()))
                 .Callback(() =>
@@ -470,9 +472,9 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         buildalyzerAnalyzerManagerMock = BuildBuildAnalyzerMock(analyzerResults);
 
         mockRunner = new Mock<ITestRunner>();
-        mockRunner.Setup(r => r.DiscoverTests(It.IsAny<string>())).Returns(true);
+        mockRunner.Setup(r => r.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
         mockRunner.Setup(r => r.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
-        mockRunner.Setup(r => r.InitialTest(It.IsAny<IProjectAndTests>())).Returns(new TestRunResult(true));
+        mockRunner.Setup(r => r.InitialTestAsync(It.IsAny<IProjectAndTests>())).Returns(Task.FromResult(new TestRunResult(true) as ITestRunResult));
 
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
         var initialTestProcessMock = new Mock<IInitialTestProcess>();

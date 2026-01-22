@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -69,8 +70,8 @@ public class StrykerRunnerTests : TestBase
 
         mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
         mutationTestProcessMock.Setup(x => x.GetCoverage());
-        mutationTestProcessMock.Setup(x => x.Test(It.IsAny<IEnumerable<IMutant>>()))
-            .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<double>()));
+        mutationTestProcessMock.Setup(x => x.TestAsync(It.IsAny<IEnumerable<IMutant>>()))
+            .Returns(Task.FromResult(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<double>())));
         mutationTestProcessMock.Setup(x => x.Restore());
 
         // Set up sequence-critical methods:
@@ -84,11 +85,11 @@ public class StrykerRunnerTests : TestBase
 
         var target = new StrykerRunner(reporterFactoryMock.Object, projectOrchestratorMock.Object, TestLoggerFactory.CreateLogger<StrykerRunner>());
 
-        target.RunMutationTest(inputsMock.Object);
+        target.RunMutationTestAsync(inputsMock.Object);
 
         projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(x => x.ProjectPath == "C:/test"), It.IsAny<IReporter>(), It.IsAny<ITestRunner>()), Times.Once);
         mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Once);
-        mutationTestProcessMock.Verify(x => x.Test(It.IsAny<IEnumerable<IMutant>>()), Times.Once);
+        mutationTestProcessMock.Verify(x => x.TestAsync(It.IsAny<IEnumerable<IMutant>>()), Times.Once);
         reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()), Times.Once);
         reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()), Times.Once);
         reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()), Times.Once);
@@ -141,9 +142,9 @@ public class StrykerRunnerTests : TestBase
 
         var target = new StrykerRunner(reporterFactoryMock.Object, projectOrchestratorMock.Object, TestLoggerFactory.CreateLogger<StrykerRunner>());
 
-        var result = target.RunMutationTest(inputsMock.Object);
+        var result = target.RunMutationTestAsync(inputsMock.Object);
 
-        result.MutationScore.ShouldBe(double.NaN);
+        result.Result.MutationScore.ShouldBe(double.NaN);
 
         reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<IMutant>>()), Times.Never);
         reporterMock.Verify(x => x.OnMutantTested(It.IsAny<IMutant>()), Times.Never);
@@ -189,7 +190,7 @@ public class StrykerRunnerTests : TestBase
 
         var target = new StrykerRunner(reporterFactoryMock.Object, projectOrchestratorMock.Object, TestLoggerFactory.CreateLogger<StrykerRunner>());
 
-        Should.Throw<NoTestProjectsException>(() => target.RunMutationTest(inputsMock.Object));
+        Should.Throw<NoTestProjectsException>(() => target.RunMutationTestAsync(inputsMock.Object));
 
         reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<IMutant>>()), Times.Never);
         reporterMock.Verify(x => x.OnMutantTested(It.IsAny<IMutant>()), Times.Never);

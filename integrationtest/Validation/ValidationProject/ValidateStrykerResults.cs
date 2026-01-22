@@ -100,9 +100,35 @@ public class ValidateStrykerResults
         using var strykerRunOutput = File.OpenRead(latestReport.FullName);
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
-         
+
         CheckReportMutants(report, total: 660, ignored: 115, survived: 5, killed: 11, timeout: 2, nocoverage: 489);
         CheckReportTestCounts(report, total: 21);
+    }
+
+    [Fact]
+    [Trait("Category", "MSTestMTP")]
+    [Trait("Runtime", "netcore")]
+    public async Task CSharp_NetCore_MSTestMTP()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/NetCoreTestProject.MSTest.MTP/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        // Expected results for KilledMutants.cs with MTP test runner
+        // KilledMutants.cs has 2 methods: IsExpired() and IsExpiredBool(), each with Age >= 30
+        // The test only covers IsExpiredBool() - so mutations in IsExpired() have no coverage
+        // Without coverage analysis (MTP doesn't support it): tests run but can't kill uncovered mutations
+        // Total 10 mutations: 2 block removal (ignored) + 6 in IsExpired() + 2 in IsExpiredBool()
+        // Only 1 mutation killed: the >= 30 → < 30 mutation in IsExpiredBool() which the test catches
+        // The >= 30 → > 30 mutation survives because test values (29, 31) don't catch boundary at exactly 30
+        CheckReportMutants(report, total: 10, ignored: 2, survived: 7, killed: 1, timeout: 0, nocoverage: 0);
     }
 
     [Fact]
@@ -122,7 +148,7 @@ public class ValidateStrykerResults
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
         CheckReportMutants(report, total: 660, ignored: 269, survived: 4, killed: 9, timeout: 2, nocoverage: 338);
-        CheckReportTestCounts(report, total: 23);
+        CheckReportTestCounts(report, total: 25); // Increased from 23: MSTest.MTP adds 2 tests (1 method with 2 DataRows)
     }
 
     [Fact]

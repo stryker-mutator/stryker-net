@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Stryker.TestRunner\Stryker.TestRunner.csproj" />
+      <ProjectReference Include="..\Stryker.Utilities\Stryker.Utilities.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CliWrap" />
+      <PackageReference Include="StreamJsonRpc" />
+      <PackageReference Include="Microsoft.Testing.Platform" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,15 @@
+{
+  "stryker-config": {
+    "reporters": [
+      "Json",
+      "Html"
+    ],
+    "project": "TargetProject.csproj",
+    "test-projects": [
+      "NetCoreTestProject.MSTest.MTP.csproj"
+    ],
+    "mutate": [
+      "StrykerFeatures/KilledMutants.cs"
+    ]
+  }
+}

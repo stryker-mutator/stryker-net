@@ -12,6 +12,7 @@ using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.DataCollector;
+using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.VsTest.Helpers;
 using Stryker.Utilities.Logging;
 
@@ -273,7 +274,7 @@ public sealed class VsTestContextInformation : IDisposable
         return
             $@"
 <MaxCpuCount>{Math.Max(0, maxCpu)}</MaxCpuCount>
-{frameworkConfig}{platformConfig}{testCaseFilter} 
+{frameworkConfig}{platformConfig}{testCaseFilter}
 <DisableAppDomain>true</DisableAppDomain>";
     }
 
