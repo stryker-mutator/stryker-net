@@ -101,7 +101,9 @@ public sealed class SolutionFileShould
             Path.Combine("Stryker.TestRunner.VsTest", "Stryker.TestRunner.VsTest.csproj"),
             Path.Combine("Stryker.TestRunner.VsTest.UnitTest", "Stryker.TestRunner.VsTest.UnitTest.csproj"),
             Path.Combine("Stryker.Solutions", "Stryker.Solutions.csproj"),
-            Path.Combine("Stryker.Solutions.Test", "Stryker.Solutions.Test.csproj")
+            Path.Combine("Stryker.Solutions.Test", "Stryker.Solutions.Test.csproj"),
+            Path.Combine("Stryker.TestRunner.MicrosoftTestPlatform", "Stryker.TestRunner.MicrosoftTestPlatform.csproj"),
+            Path.Combine("Stryker.TestRunner.MicrosoftTestPlatform.UnitTest", "Stryker.TestRunner.MicrosoftTestPlatform.UnitTest.csproj"),
         };
         solution.GetProjects("Debug").ShouldBe(expectedProjects);
     }

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
@@ -17,7 +18,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         options.Setup(x => x.Concurrency).Returns(2);
 
         // Act
-        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
 
         // Assert - pool should be created without exceptions
         pool.ShouldNotBeNull();
@@ -31,7 +32,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         options.Setup(x => x.Concurrency).Returns(0);
 
         // Act
-        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
 
         // Assert - pool should be created with at least 1 runner
         pool.ShouldNotBeNull();
@@ -43,7 +44,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         // Arrange
         var options = new Mock<IStrykerOptions>();
         options.Setup(x => x.Concurrency).Returns(1);
-        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
 
         // Act
         var result = await pool.DiscoverTestsAsync(string.Empty);
@@ -58,7 +59,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         // Arrange
         var options = new Mock<IStrykerOptions>();
         options.Setup(x => x.Concurrency).Returns(1);
-        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
 
         // Act
         var result = await pool.DiscoverTestsAsync(null!);
@@ -73,7 +74,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         // Arrange
         var options = new Mock<IStrykerOptions>();
         options.Setup(x => x.Concurrency).Returns(1);
-        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
 
         // Act
         var result = await pool.DiscoverTestsAsync("/nonexistent/path/assembly.dll");
@@ -88,7 +89,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         // Arrange
         var options = new Mock<IStrykerOptions>();
         options.Setup(x => x.Concurrency).Returns(1);
-        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
         var project = new Mock<IProjectAndTests>();
 
         // Act
@@ -104,7 +105,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         // Arrange
         var options = new Mock<IStrykerOptions>();
         options.Setup(x => x.Concurrency).Returns(1);
-        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
         var project = new Mock<IProjectAndTests>();
         project.Setup(x => x.GetTestAssemblies()).Returns(Array.Empty<string>());
 
@@ -112,7 +113,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         var result = await pool.InitialTestAsync(project.Object);
 
         // Assert
-        result.FailingTests.IsEmpty.ShouldBeTrue();
+        result.FailingTests.IsEveryTest.ShouldBeTrue();
     }
 
     [TestMethod]
@@ -121,7 +122,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         // Arrange
         var options = new Mock<IStrykerOptions>();
         options.Setup(x => x.Concurrency).Returns(1);
-        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
         var project = new Mock<IProjectAndTests>();
         project.Setup(x => x.GetTestAssemblies()).Returns(Array.Empty<string>());
         var mutants = new List<IMutant> { new Mock<IMutant>().Object };
@@ -130,7 +131,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         var result = await pool.TestMultipleMutantsAsync(project.Object, null, mutants, null);
 
         // Assert
-        result.FailingTests.IsEmpty.ShouldBeTrue();
+        result.FailingTests.IsEveryTest.ShouldBeTrue();
     }
 
     [TestMethod]
@@ -139,7 +140,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         // Arrange
         var options = new Mock<IStrykerOptions>();
         options.Setup(x => x.Concurrency).Returns(1);
-        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
         var project = new Mock<IProjectAndTests>();
 
         // Act
@@ -155,7 +156,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
         // Arrange
         var options = new Mock<IStrykerOptions>();
         options.Setup(x => x.Concurrency).Returns(1);
-        var pool = new MicrosoftTestPlatformRunnerPool(options.Object);
+        var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
 
         // Act & Assert - should not throw
         pool.Dispose();

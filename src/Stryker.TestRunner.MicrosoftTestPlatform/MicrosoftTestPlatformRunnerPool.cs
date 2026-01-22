@@ -25,20 +25,13 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     private readonly Dictionary<string, MtpTestDescription> _testDescriptions = new();
     private readonly object _discoveryLock = new();
 
-    public MicrosoftTestPlatformRunnerPool(IStrykerOptions options)
+    public MicrosoftTestPlatformRunnerPool(IStrykerOptions options, ILogger? logger = null)
     {
-        _logger = ApplicationLogging.LoggerFactory.CreateLogger<MicrosoftTestPlatformRunnerPool>();
+        _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<MicrosoftTestPlatformRunnerPool>();
         _countOfRunners = Math.Max(1, options.Concurrency);
 
         _logger.LogWarning("The Microsoft Test Platform testrunner is currently in preview. Coverage analysis is currently unsupported and results should be verified since this feature is still being tested.");
 
-        Initialize();
-    }
-
-    internal MicrosoftTestPlatformRunnerPool(int concurrency, ILogger? logger = null)
-    {
-        _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<MicrosoftTestPlatformRunnerPool>();
-        _countOfRunners = Math.Max(1, concurrency);
         Initialize();
     }
 
@@ -84,7 +77,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project)
     {
-        return _testDescriptions.Values.Select(testDescription => 
+        return _testDescriptions.Values.Select(testDescription =>
             CoverageRunResult.Create(
                 testDescription.Id,
                 CoverageConfidence.Dubious,
