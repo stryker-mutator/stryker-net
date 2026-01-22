@@ -9,6 +9,7 @@ public sealed class MtpJsonRpcConnection : IAsyncDisposable
     readonly TcpListener _listener;
     TcpClient? _client;
     Stream? _io;
+    StreamReader? _reader;
     int _nextId = 1;
 
     public int Port { get; }
@@ -78,17 +79,17 @@ public sealed class MtpJsonRpcConnection : IAsyncDisposable
     async Task PumpNotificationsAsync(CancellationToken ct)
     {
         // Parse streaming notifications like testing/testUpdates/tests and client/log.
-        var reader = new StreamReader(_io!, Encoding.UTF8, leaveOpen: true);
+        _reader = new StreamReader(_io!, Encoding.UTF8, leaveOpen: true);
         while (!ct.IsCancellationRequested)
         {
-            var line = await reader.ReadLineAsync(ct);
+            var line = await _reader.ReadLineAsync(ct);
             if (line is null) break;
             if (line.StartsWith("Content-Length:", StringComparison.OrdinalIgnoreCase))
             {
                 var len = int.Parse(line.Split(':')[1].Trim());
-                await reader.ReadLineAsync(ct); // empty line
+                await _reader.ReadLineAsync(ct); // empty line
                 var buf = new char[len];
-                await reader.ReadBlockAsync(buf.AsMemory(), ct);
+                await _reader.ReadBlockAsync(buf.AsMemory(), ct);
                 var json = new string(buf);
                 HandleNotification(json);
             }
@@ -124,9 +125,10 @@ public sealed class MtpJsonRpcConnection : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        try { _io?.Dispose(); } catch { }
-        try { _client?.Dispose(); } catch { }
-        try { _listener.Stop(); } catch { }
+        try { _reader?.Dispose(); } catch { /* Ignore disposal errors */ }
+        try { _io?.Dispose(); } catch { /* Ignore disposal errors */ }
+        try { _client?.Dispose(); } catch { /* Ignore disposal errors */ }
+        try { _listener.Stop(); } catch { /* Ignore disposal errors */ }
         await Task.CompletedTask;
     }
 }
