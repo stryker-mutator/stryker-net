@@ -182,14 +182,16 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             // when a solutionPath is given, and it's inside the current directory (basePath)
             var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.csproj");
             var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "test", "testproject.csproj");
+            var solutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln");
             var options = new StrykerOptions
             {
                 ProjectPath = FileSystem.Path.GetFullPath(testCsprojPathName),
                 SourceProjectName = csprojPathName,
-                SolutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln"),
+                SolutionPath = solutionPath,
                 DiagMode = true
             };
 
+            FileSystem.AddFile(solutionPath, new MockFileData("empty"));
             var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
             string[] sourceFiles = [csPathName];
             var success = false;

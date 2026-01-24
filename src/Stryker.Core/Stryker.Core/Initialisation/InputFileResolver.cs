@@ -100,7 +100,7 @@ public class InputFileResolver : IInputFileResolver
         SolutionInfo solutionInfo = null;
 
         // identify the target configuration and platform
-        if (solution!=null)
+        if (solution != null)
         {
             var (actualBuildType, actualPlatform) = solution.GetMatching(options.Configuration, options.Platform);
             _logger.LogDebug("Using solution configuration/platform '{Configuration}|{Platform}'.", actualBuildType, actualPlatform);
@@ -180,7 +180,7 @@ public class InputFileResolver : IInputFileResolver
         if ((!string.IsNullOrEmpty(options.Configuration) && options.Configuration != actualBuildType) ||
             (!string.IsNullOrEmpty(options.Platform) && options.Platform != actualPlatform))
         {
-            _logger.LogWarning("Using configuration/platform '{Configuration}|{Platform}' instead of requested '{ActualBuildType}|{ActualPlatform}'.",
+            _logger.LogWarning("Using configuration/platform '{ActualBuildType}|{ActualPlatform}' instead of requested '{Configuration}|{Platform}'.",
                 actualBuildType, actualPlatform, options.Configuration, options.Platform);
         }
         else

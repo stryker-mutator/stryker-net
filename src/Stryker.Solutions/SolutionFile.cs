@@ -88,7 +88,7 @@ public class SolutionFile
 
             var thisScore = -1;
             // evaluate the buildType match
-            if (buildType!= null && buildType == currentBuildType)
+            if (buildType != null && buildType == currentBuildType)
             {
                 // better match
                 thisScore = 8;
@@ -110,7 +110,7 @@ public class SolutionFile
             {
                 thisScore += 1;
             }
-            if (thisScore> currentScore)
+            if (thisScore > currentScore)
             {
                 currentScore = thisScore;
                 bestMatch = (currentBuildType, currentPlatform);

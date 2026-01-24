@@ -75,7 +75,7 @@ public class InitialisationProcess : IInitialisationProcess
         {
             var framework = projects.Any(p => p.IsFullFramework);
             // Build the complete solution
-            _logger.LogInformation("Building solution {solutionPathName}.", FileSystem.Path.GetRelativePath(options.WorkingDirectory, options.SolutionPath));
+            _logger.LogInformation("Building solution {solutionPathName}.", FileSystem.Path.GetRelativePath(options.WorkingDirectory, solutionFilePath));
 
             _initialBuildProcess.InitialBuild(
                 framework,
