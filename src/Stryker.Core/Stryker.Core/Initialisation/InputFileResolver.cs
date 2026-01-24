@@ -63,14 +63,13 @@ public class InputFileResolver : IInputFileResolver
         var normalizedProjectUnderTestNameFilter = NormalizePath(options.SourceProjectName);
 
         SolutionFile solution;
-        SolutionInfo solutionInfo = null;
         if (string.IsNullOrEmpty(options.SolutionPath))
         {
             solution = null;
         }
         else
         {
-            // load the solution file whzn provided
+            // load the solution file when provided
             try
             {
                 _logger.LogDebug("Loading solution file {SolutionFile}.", options.SolutionPath);
@@ -78,17 +77,17 @@ public class InputFileResolver : IInputFileResolver
             }
             catch (IOException e)
             {
-                _logger.LogError(e, "Failed to load solution file {SolutionFile}.", options.SolutionPath);
+                _logger.LogCritical(e, "Failed to load solution file {SolutionFile}.", options.SolutionPath);
                 return [];
             }
             catch (UnauthorizedAccessException e)
             {
-                _logger.LogError(e, "Failed to access solution file {SolutionFile}.", options.SolutionPath);
+                _logger.LogCritical(e, "Failed to access solution file {SolutionFile}.", options.SolutionPath);
                 return [];
             }
             catch (AggregateException e) // Handles exceptions from .Result on Task
             {
-                _logger.LogError(e, "Failed to load solution file {SolutionFile}.", options.SolutionPath);
+                _logger.LogCritical(e, "Failed to load solution file {SolutionFile}.", options.SolutionPath);
                 return [];
             }
         }
@@ -98,44 +97,71 @@ public class InputFileResolver : IInputFileResolver
             return ScanInSolutionMode(options, solution, normalizedProjectUnderTestNameFilter);
         }
 
+        SolutionInfo solutionInfo = null;
+
         // identify the target configuration and platform
         if (solution!=null)
         {
             var (actualBuildType, actualPlatform) = solution.GetMatching(options.Configuration, options.Platform);
+            _logger.LogDebug("Using solution configuration/platform '{Configuration}|{Platform}'.", actualBuildType, actualPlatform);
+            solutionInfo = new SolutionInfo(solution.FileName, actualBuildType, actualPlatform);
         }
 
         // we analyze the test project(s) and identify the project to be mutated
-        var testProjectFileNames = options.TestProjects.Any() ? options.TestProjects.Select(FindTestProject).ToList()
+        var testProjectsSpecified = options.TestProjects.Any();
+        var testProjectFileNames = testProjectsSpecified ? options.TestProjects.Select(FindTestProject).ToList()
                                                     : [FindTestProject(options.ProjectPath)];
 
         _logger.LogInformation("Analyzing {ProjectCount} test project(s).", testProjectFileNames.Count);
          List<(string projectFile, string framework, string configuration)> projectList =
              [..testProjectFileNames.Select(p => (p, options.TargetFramework, options.Configuration))];
          // if test project is provided but no source project
-         if (options.TestProjects.Any() && string.IsNullOrEmpty(options.SourceProjectName))
+         var targetProjectMode = testProjectsSpecified && string.IsNullOrEmpty(options.SourceProjectName);
+         if (targetProjectMode)
          {
              _logger.LogDebug("Assume working directory contains target project to be mutated.");
              normalizedProjectUnderTestNameFilter = NormalizePath(FindProjectFile(options.WorkingDirectory));
-             if (options.TestProjects.Any(tp => NormalizePath(tp) == normalizedProjectUnderTestNameFilter))
+             targetProjectMode =
+                 options.TestProjects.All(tp => NormalizePath(tp) != normalizedProjectUnderTestNameFilter);
+             if (!targetProjectMode)
              {
                  // we detected a test project, discard it
+                 _logger.LogDebug("Working directory contains a test project.");
                  normalizedProjectUnderTestNameFilter = null;
              }
          }
+
         // we match test projects to mutable projects
         var analyzeAllNeededProjects = AnalyzeAllNeededProjects(projectList, normalizedProjectUnderTestNameFilter, options, ScanMode.ScanTestProjectReferences);
         var (findMutableAnalyzerResults, orphans) = FindMutableAnalyzerResults(analyzeAllNeededProjects);
 
         var result = AnalyzeAndIdentifyProjects(options, solutionInfo, findMutableAnalyzerResults, orphans);
-        if (result.Count <= 1)
+        var mutableProjectsFound = result.Count;
+        if (mutableProjectsFound == 1)
         {
             return result;
         }
+
+        if (mutableProjectsFound == 0)
+        {
+            if (targetProjectMode)
+            {
+                _logger.LogError("Project {projectFile} could not be found as a project referenced by the provided test projects.", normalizedProjectUnderTestNameFilter);
+            }
+            else
+            {
+                _logger.LogError("No project could be found as a project referenced by the provided test projects.");
+            }
+
+            return [];
+        }
+
         // Too many references found
         // look for one project that references all provided test projects
         result = [.. result.Where(p => testProjectFileNames.TrueForAll(n => p.TestProjectsInfo.TestProjects.Any(t => t.ProjectFilePath == n)))];
         if (result.Count == 1)
         {
+            _logger.LogInformation("Selected project {ProjectFile} as it is referenced by all provided test projects.", result[0].AnalyzerResult.ProjectFilePath);
             return result;
         }
         // still ambiguous
