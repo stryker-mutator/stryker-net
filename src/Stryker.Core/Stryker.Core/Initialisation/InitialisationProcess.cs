@@ -66,9 +66,12 @@ public class InitialisationProcess : IInitialisationProcess
     public void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects)
     {
         var solutionInfo = projects.First().SolutionInfo;
+        // pick configuration and platform from solution if available
         var configuration = solutionInfo?.Configuration ?? options.Configuration;
         var platform = solutionInfo?.Platform ?? options.Platform;
-        if (options.IsSolutionContext)
+        var solutionFilePath = solutionInfo?.SolutionFilePath ?? options.SolutionPath;
+        // we build the whole solution if we have a solution file path, even in project mode
+        if (!string.IsNullOrEmpty(solutionFilePath))
         {
             var framework = projects.Any(p => p.IsFullFramework);
             // Build the complete solution
@@ -76,8 +79,8 @@ public class InitialisationProcess : IInitialisationProcess
 
             _initialBuildProcess.InitialBuild(
                 framework,
-                _inputFileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
-                options.SolutionPath, configuration, platform,
+                _inputFileResolver.FileSystem.Path.GetDirectoryName(solutionFilePath),
+                solutionFilePath, configuration, platform,
                 options.TargetFramework, options.MsBuildPath);
         }
         else
