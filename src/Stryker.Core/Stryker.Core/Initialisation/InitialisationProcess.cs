@@ -75,7 +75,7 @@ public class InitialisationProcess : IInitialisationProcess
         {
             var framework = projects.Any(p => p.IsFullFramework);
             // Build the complete solution
-            _logger.LogInformation("Building solution {solutionPathName}.", FileSystem.Path.GetRelativePath(options.WorkingDirectory, solutionFilePath));
+            _logger.LogInformation("Building solution {SolutionPathName}.", FileSystem.Path.GetRelativePath(options.WorkingDirectory, solutionFilePath));
 
             _initialBuildProcess.InitialBuild(
                 framework,
@@ -145,7 +145,7 @@ public class InitialisationProcess : IInitialisationProcess
             }
 
             _logger.LogWarning(
-                "{failingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.",
+                "{FailingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.",
                 failingTestsCount);
         }
 

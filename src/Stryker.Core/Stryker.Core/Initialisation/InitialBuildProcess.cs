@@ -98,7 +98,7 @@ public class InitialBuildProcess : IInitialBuildProcess
     {
         if (result.ExitCode != ExitCodes.Success)
         {
-            _logger.LogError("Initial build failed. Command was [{exe} {args}] (in folder '{folder}'). Result: {Result}", buildCommand, options, path, result.Output);
+            _logger.LogError("Initial build failed. Command was [{Exe} {Args}] (in folder '{Folder}'). Result: {Result}", buildCommand, options, path, result.Output);
             // Initial build failed
             throw new InputException(result.Output, FormatBuildResultErrorString(buildCommand, options));
         }

@@ -97,6 +97,21 @@ public class InputFileResolver : IInputFileResolver
             return ScanInSolutionMode(options, solution, normalizedProjectUnderTestNameFilter);
         }
 
+        var result = SourceProjectInfos(options, solution, normalizedProjectUnderTestNameFilter);
+        if (result.Count<=1)
+        {
+            return result;
+        }
+        // still ambiguous
+        var stringBuilder = new StringBuilder().AppendLine(
+                "Test project contains more than one project reference. Please set the project option (https://stryker-mutator.io/docs/stryker-net/configuration#project-file-name) to specify which project to mutate.")
+            .Append(BuildReferenceChoice(result.Select(p => p.AnalyzerResult.ProjectFilePath)));
+        throw new InputException(stringBuilder.ToString());
+    }
+
+    private List<SourceProjectInfo> SourceProjectInfos(IStrykerOptions options, SolutionFile solution,
+        string normalizedProjectUnderTestNameFilter)
+    {
         SolutionInfo solutionInfo = null;
 
         // identify the target configuration and platform
@@ -110,26 +125,26 @@ public class InputFileResolver : IInputFileResolver
         // we analyze the test project(s) and identify the project to be mutated
         var testProjectsSpecified = options.TestProjects.Any();
         var testProjectFileNames = testProjectsSpecified ? options.TestProjects.Select(FindTestProject).ToList()
-                                                    : [FindTestProject(options.ProjectPath)];
+            : [FindTestProject(options.ProjectPath)];
 
         _logger.LogInformation("Analyzing {ProjectCount} test project(s).", testProjectFileNames.Count);
-         List<(string projectFile, string framework, string configuration)> projectList =
-             [..testProjectFileNames.Select(p => (p, options.TargetFramework, options.Configuration))];
-         // if test project is provided but no source project
-         var targetProjectMode = testProjectsSpecified && string.IsNullOrEmpty(options.SourceProjectName);
-         if (targetProjectMode)
-         {
-             _logger.LogDebug("Assume working directory contains target project to be mutated.");
-             normalizedProjectUnderTestNameFilter = NormalizePath(FindProjectFile(options.WorkingDirectory));
-             targetProjectMode =
-                 options.TestProjects.All(tp => NormalizePath(tp) != normalizedProjectUnderTestNameFilter);
-             if (!targetProjectMode)
-             {
-                 // we detected a test project, discard it
-                 _logger.LogDebug("Working directory contains a test project.");
-                 normalizedProjectUnderTestNameFilter = null;
-             }
-         }
+        List<(string projectFile, string framework, string configuration)> projectList =
+            [..testProjectFileNames.Select(p => (p, options.TargetFramework, options.Configuration))];
+        // if test project is provided but no source project
+        var targetProjectMode = testProjectsSpecified && string.IsNullOrEmpty(options.SourceProjectName);
+        if (targetProjectMode)
+        {
+            _logger.LogDebug("Assume working directory contains target project to be mutated.");
+            normalizedProjectUnderTestNameFilter = NormalizePath(FindProjectFile(options.WorkingDirectory));
+            targetProjectMode =
+                options.TestProjects.All(tp => NormalizePath(tp) != normalizedProjectUnderTestNameFilter);
+            if (!targetProjectMode)
+            {
+                // we detected a test project, discard it
+                _logger.LogDebug("Working directory contains a test project.");
+                normalizedProjectUnderTestNameFilter = null;
+            }
+        }
 
         // we match test projects to mutable projects
         var analyzeAllNeededProjects = AnalyzeAllNeededProjects(projectList, normalizedProjectUnderTestNameFilter, options, ScanMode.ScanTestProjectReferences);
@@ -153,7 +168,7 @@ public class InputFileResolver : IInputFileResolver
                 _logger.LogError("No project could be found as a project referenced by the provided test projects.");
             }
 
-            return [];
+            return result;
         }
 
         // Too many references found
@@ -162,13 +177,9 @@ public class InputFileResolver : IInputFileResolver
         if (result.Count == 1)
         {
             _logger.LogInformation("Selected project {ProjectFile} as it is referenced by all provided test projects.", result[0].AnalyzerResult.ProjectFilePath);
-            return result;
         }
-        // still ambiguous
-        var stringBuilder = new StringBuilder().AppendLine(
-                "Test project contains more than one project reference. Please set the project option (https://stryker-mutator.io/docs/stryker-net/configuration#project-file-name) to specify which project to mutate.")
-            .Append(BuildReferenceChoice(result.Select(p => p.AnalyzerResult.ProjectFilePath)));
-        throw new InputException(stringBuilder.ToString());
+
+        return result;
     }
 
     private IReadOnlyCollection<SourceProjectInfo> ScanInSolutionMode(IStrykerOptions options, SolutionFile solution,
