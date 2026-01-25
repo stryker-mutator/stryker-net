@@ -8,7 +8,7 @@ using Stryker.Abstractions.Options;
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
 
 [TestClass]
-public class MicrosoftTestPlatformRunnerPoolTests
+public class MicrosoftTestPlatformRunnerPoolTests : TestBase
 {
     [TestMethod]
     public void Constructor_ShouldCreateRunnersBasedOnConcurrency()
@@ -195,7 +195,7 @@ public class MicrosoftTestPlatformRunnerPoolTests
     }
 
     [TestMethod]
-    public async Task InitialTest_ShouldHandleNullAssemblies()
+    public async Task InitialTest_ShouldThrowArgumentNullException_WhenAssembliesIsNull()
     {
         // Arrange
         var options = new Mock<IStrykerOptions>();
@@ -204,12 +204,8 @@ public class MicrosoftTestPlatformRunnerPoolTests
         var project = new Mock<IProjectAndTests>();
         project.Setup(x => x.GetTestAssemblies()).Returns((List<string>)null!);
 
-        // Act
-        var result = await pool.InitialTestAsync(project.Object);
-
-        // Assert
-        result.ShouldNotBeNull();
-        result.FailingTests.IsEveryTest.ShouldBeTrue();
+        // Act & Assert
+        await Should.ThrowAsync<ArgumentNullException>(async () => await pool.InitialTestAsync(project.Object));
     }
 
     [TestMethod]
