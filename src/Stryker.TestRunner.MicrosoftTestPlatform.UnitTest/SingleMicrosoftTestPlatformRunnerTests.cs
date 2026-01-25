@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
@@ -168,20 +169,81 @@ public class SingleMicrosoftTestPlatformRunnerTests
     }
 
     [TestMethod]
-    public void Dispose_ShouldCleanUpResources()
+    public async Task Dispose_ShouldCleanUpResources()
     {
         // Arrange
-        var runner = new SingleMicrosoftTestPlatformRunner(
-            0,
+        var testableRunner = new TestableRunner(
+            123,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
             _discoveryLock,
             NullLogger.Instance);
 
-        // Act & Assert - should not throw
-        runner.Dispose();
-        runner.Dispose(); // Second dispose should be safe
+        // Verify mutant file was created
+        testableRunner.MutantFilePath.ShouldNotBeNull();
+        var mutantFilePath = testableRunner.MutantFilePath;
+
+        // Create the mutant file manually to test deletion
+        File.WriteAllText(mutantFilePath, "-1");
+        File.Exists(mutantFilePath).ShouldBeTrue("Mutant file should exist before disposal");
+
+        // Act - First disposal
+        testableRunner.Dispose();
+
+        // Assert
+        testableRunner.DisposedFlagWasSet.ShouldBeTrue("_disposed flag should be set to true");
+        testableRunner.DisposeLogicExecutedCount.ShouldBe(1, "Dispose logic should execute once on first call");
+        File.Exists(mutantFilePath).ShouldBeFalse("Mutant file should be deleted after disposal");
+
+        // Act - Second disposal (verify idempotency via _disposed flag check)
+        testableRunner.Dispose();
+
+        // Assert - disposal count should not increase (verifies early return from _disposed flag check)
+        testableRunner.DisposeLogicExecutedCount.ShouldBe(1, "Dispose logic should only execute once due to _disposed flag check preventing re-execution");
+    }
+
+    private class TestableRunner : SingleMicrosoftTestPlatformRunner
+    {
+        private int _disposeLogicExecutedCount;
+
+        public TestableRunner(
+            int id,
+            Dictionary<string, List<TestNode>> testsByAssembly,
+            Dictionary<string, MtpTestDescription> testDescriptions,
+            TestSet testSet,
+            object discoveryLock,
+            ILogger logger)
+            : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger)
+        {
+        }
+
+        public bool DisposedFlagWasSet { get; private set; }
+        public int DisposeLogicExecutedCount => _disposeLogicExecutedCount;
+        public string MutantFilePath => Path.Combine(Path.GetTempPath(), $"stryker-mutant-123.txt");
+
+        public override void Dispose()
+        {
+            // We need to detect if the disposal logic actually runs
+            // The base Dispose checks _disposed flag first and returns early if already disposed
+            // We'll use reflection to check the _disposed field before and after
+            var disposedField = typeof(SingleMicrosoftTestPlatformRunner).GetField("_disposed", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            
+            var wasDisposedBefore = (bool)disposedField!.GetValue(this)!;
+
+            // Call base dispose
+            base.Dispose();
+
+            var wasDisposedAfter = (bool)disposedField!.GetValue(this)!;
+
+            // If _disposed changed from false to true, the disposal logic executed
+            if (!wasDisposedBefore && wasDisposedAfter)
+            {
+                _disposeLogicExecutedCount++;
+                DisposedFlagWasSet = true;
+            }
+        }
     }
 }
 

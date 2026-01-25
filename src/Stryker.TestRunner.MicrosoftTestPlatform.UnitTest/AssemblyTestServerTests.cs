@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
-using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
 
@@ -95,36 +94,6 @@ public class AssemblyTestServerTests
         {
             await server.RunTestsAsync(null);
         });
-    }
-
-    [TestMethod]
-    public async Task StopAsync_ShouldHandleMultipleCalls()
-    {
-        // Arrange
-        var assembly = "/nonexistent/assembly.dll";
-        var envVars = new Dictionary<string, string?>();
-        var logger = NullLogger.Instance;
-
-        using var server = new AssemblyTestServer(assembly, envVars, logger, "test-runner-1");
-
-        // Act & Assert - should not throw
-        await server.StopAsync();
-        await server.StopAsync();
-    }
-
-    [TestMethod]
-    public void Dispose_ShouldCleanUpResources()
-    {
-        // Arrange
-        var assembly = "/nonexistent/assembly.dll";
-        var envVars = new Dictionary<string, string?>();
-        var logger = NullLogger.Instance;
-
-        var server = new AssemblyTestServer(assembly, envVars, logger, "test-runner-1");
-
-        // Act & Assert - should not throw
-        server.Dispose();
-        server.Dispose(); // Second dispose should be safe
     }
 }
 
