@@ -3,12 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Utilities;
 
-namespace Stryker.Abstractions;
+namespace Stryker.Configuration.Options;
 
 public class StrykerOptions : IStrykerOptions
 {

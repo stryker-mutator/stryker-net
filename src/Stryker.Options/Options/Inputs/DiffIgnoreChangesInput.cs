@@ -1,15 +1,16 @@
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Abstractions.Options;
 using Stryker.Utilities;
 
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 
 public class DiffIgnoreChangesInput : Input<IEnumerable<string>>
 {
     public override IEnumerable<string> Default => Enumerable.Empty<string>();
 
     protected override string Description => @"Allows to specify an array of C# files which should be ignored if present in the diff.
-Any non-excluded files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files. 
+Any non-excluded files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files.
 This feature is only recommended when you are sure these files will not affect results, or when you are prepared to sacrifice accuracy for performance.
 
 Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)

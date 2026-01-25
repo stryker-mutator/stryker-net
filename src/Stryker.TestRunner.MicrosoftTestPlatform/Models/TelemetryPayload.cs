@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace MsTestRunnerDemo.Models;
+namespace Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
 public record TelemetryPayload
 (

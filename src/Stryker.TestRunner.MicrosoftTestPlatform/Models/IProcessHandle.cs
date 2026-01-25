@@ -1,4 +1,4 @@
-namespace MsTestRunnerDemo;
+namespace Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
 public interface IProcessHandle
 {

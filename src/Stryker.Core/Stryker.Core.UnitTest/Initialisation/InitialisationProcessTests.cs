@@ -13,6 +13,7 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Testing;
+using Stryker.Configuration.Options;
 using Stryker.Core.Initialisation;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;

@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions;
+using Stryker.Configuration.Options;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 

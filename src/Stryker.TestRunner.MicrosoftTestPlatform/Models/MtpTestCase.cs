@@ -1,7 +1,6 @@
 using System;
-using MsTestRunnerDemo.Models;
 using Stryker.Abstractions.Testing;
-namespace Stryker.TestRunner.MicrosoftTestPlatform;
+namespace Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
 public sealed class MtpTestCase : ITestCase
 {

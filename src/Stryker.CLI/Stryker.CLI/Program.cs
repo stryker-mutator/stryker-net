@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Stryker.Abstractions.Exceptions;
+using Stryker.CLI.Infrastructure;
 using Stryker.CLI.Logging;
 using Stryker.Configuration;
 using Stryker.Core.Infrastructure;

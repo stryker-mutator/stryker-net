@@ -11,6 +11,7 @@ using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Reporting;
+using Stryker.Configuration.Options;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.Csharp;

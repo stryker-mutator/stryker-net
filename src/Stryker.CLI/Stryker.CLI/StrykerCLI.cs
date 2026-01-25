@@ -14,6 +14,7 @@ using Stryker.CLI.Clients;
 using Stryker.CLI.CommandLineConfig;
 using Stryker.CLI.Logging;
 using Stryker.Configuration;
+using Stryker.Configuration.Options;
 using Stryker.Core;
 
 namespace Stryker.CLI;

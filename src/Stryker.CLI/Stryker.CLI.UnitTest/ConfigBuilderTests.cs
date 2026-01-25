@@ -5,9 +5,10 @@ using Shouldly;
 using Stryker.CLI.CommandLineConfig;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Abstractions.Options;
+using Stryker.Configuration.Options;
+using Stryker.Configuration.Options.Inputs;
 
 namespace Stryker.CLI.UnitTest;
 

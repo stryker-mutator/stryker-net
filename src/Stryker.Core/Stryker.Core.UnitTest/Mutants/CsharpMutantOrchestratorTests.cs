@@ -6,6 +6,7 @@ using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Configuration;
+using Stryker.Configuration.Options;
 using Stryker.Core.Mutants;
 
 namespace Stryker.Core.UnitTest.Mutants;

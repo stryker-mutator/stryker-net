@@ -9,6 +9,7 @@ using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Testing;
+using Stryker.Configuration.Options;
 using Stryker.Core.Initialisation;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;

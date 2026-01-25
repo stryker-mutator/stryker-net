@@ -2,7 +2,7 @@ using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Options.Inputs;
+using Stryker.Configuration.Options.Inputs;
 using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.Options.Inputs;

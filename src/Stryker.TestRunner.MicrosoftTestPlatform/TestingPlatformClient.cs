@@ -2,11 +2,11 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
-using MsTestRunnerDemo.Models;
 using StreamJsonRpc;
-// ReSharper disable All
+using Stryker.TestRunner.MicrosoftTestPlatform.Models;
+using Stryker.TestRunner.MicrosoftTestPlatform.RPC;
 
-namespace MsTestRunnerDemo;
+namespace Stryker.TestRunner.MicrosoftTestPlatform;
 
 public sealed class TestingPlatformClient : IDisposable
 {
@@ -105,7 +105,7 @@ public sealed class TestingPlatformClient : IDisposable
         using CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromMinutes(3));
         return await CheckedInvokeAsync(async () => await JsonRpcClient.InvokeWithParameterObjectAsync<InitializeResponse>(
             "initialize",
-            new InitializeRequest(Environment.ProcessId, new Models.ClientInfo("test-client"),
+            new InitializeRequest(Environment.ProcessId, new ClientInfo("test-client"),
                 new ClientCapabilities(new ClientTestingCapabilities(DebuggerProvider: false))), cancellationToken: cancellationTokenSource.Token));
     }
 
@@ -133,7 +133,7 @@ public sealed class TestingPlatformClient : IDisposable
                 return discoveryListener;
             }, @checked);
 
-    public async Task<ResponseListener> RunTestsAsync(Guid requestId, Func<TestNodeUpdate[], Task> action, Models.TestNode[]? testNodes = null)
+    public async Task<ResponseListener> RunTestsAsync(Guid requestId, Func<TestNodeUpdate[], Task> action, TestNode[]? testNodes = null)
         => await CheckedInvokeAsync(async () =>
         {
             using CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromMinutes(3));

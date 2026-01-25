@@ -8,7 +8,8 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Options.Inputs;
+using Stryker.Configuration.Options;
+using Stryker.Configuration.Options.Inputs;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 

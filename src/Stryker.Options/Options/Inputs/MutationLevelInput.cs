@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 
 public class MutationLevelInput : Input<string>
 {

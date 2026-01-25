@@ -15,6 +15,7 @@ using NuGet.Frameworks;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
+using Stryker.Configuration.Options;
 using Stryker.Core.Initialisation;
 using Stryker.Utilities.Buildalyzer;
 using Stryker.Core.ProjectComponents;

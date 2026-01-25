@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
+using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
 using Stryker.Utilities.Logging;
@@ -21,7 +22,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     private readonly ILogger _logger;
     private readonly int _countOfRunners;
     private readonly TestSet _testSet = new();
-    private readonly Dictionary<string, List<MsTestRunnerDemo.Models.TestNode>> _testsByAssembly = new();
+    private readonly Dictionary<string, List<TestNode>> _testsByAssembly = new();
     private readonly Dictionary<string, MtpTestDescription> _testDescriptions = new();
     private readonly object _discoveryLock = new();
 

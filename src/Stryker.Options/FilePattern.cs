@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
-using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Utilities;
 using Stryker.Utilities.Helpers;
 
-namespace Stryker.Abstractions;
+namespace Stryker.Configuration;
 
 /// <summary>
 /// Contains information about which files and which parts of a file should be in- or excluded.

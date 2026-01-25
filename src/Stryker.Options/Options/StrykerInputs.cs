@@ -1,8 +1,9 @@
 using System.IO.Abstractions;
-using Stryker.Abstractions.Options.Inputs;
-using Stryker.Configuration;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
+using Stryker.Configuration.Options.Inputs;
 
-namespace Stryker.Abstractions.Options;
+namespace Stryker.Configuration.Options;
 
 public interface IStrykerInputs
 {

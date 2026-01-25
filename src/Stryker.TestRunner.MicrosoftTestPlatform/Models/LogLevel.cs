@@ -1,4 +1,4 @@
-namespace MsTestRunnerDemo.Models;
+namespace Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
 public enum LogLevel
 {

@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Utilities;
 
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 
 public class IgnoreMutationsInput : Input<IEnumerable<string>>
 {

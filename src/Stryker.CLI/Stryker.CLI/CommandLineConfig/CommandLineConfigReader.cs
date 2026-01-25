@@ -6,7 +6,8 @@ using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
-using Stryker.Abstractions.Options.Inputs;
+using Stryker.Configuration.Options;
+using Stryker.Configuration.Options.Inputs;
 
 namespace Stryker.CLI.CommandLineConfig;
 
