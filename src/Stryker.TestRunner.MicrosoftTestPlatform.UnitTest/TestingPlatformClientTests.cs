@@ -106,17 +106,46 @@ public class TestingPlatformClientTests
     {
         // Arrange
         var stream = new MemoryStream();
-        var jsonRpc = new JsonRpc(new HeaderDelimitedMessageHandler(stream, stream, new SystemTextJsonFormatter()));
-        var tcpClient = new Mock<TcpClient>();
+        var messageHandler = new HeaderDelimitedMessageHandler(stream, stream, new SystemTextJsonFormatter());
+        var testableJsonRpc = new TestableJsonRpc(messageHandler);
+        var testableTcpClient = new TestableTcpClient();
+        
         var processHandle = new Mock<IProcessHandle>();
 
-        var client = new TestingPlatformClient(jsonRpc, tcpClient.Object, processHandle.Object, false);
+        var client = new TestingPlatformClient(testableJsonRpc, testableTcpClient, processHandle.Object, false);
 
         // Act
         client.Dispose();
 
-        // Assert - no longer verifying mock since we're using real JsonRpc
-        // Disposal completes successfully without throwing
+        // Assert - Verify that both JsonRpc and TcpClient were disposed
+        testableJsonRpc.WasDisposed.ShouldBeTrue("JsonRpc.Dispose should be called when TestingPlatformClient is disposed");
+        testableTcpClient.WasDisposed.ShouldBeTrue("TcpClient.Dispose should be called when TestingPlatformClient is disposed");
+    }
+
+    private class TestableJsonRpc : JsonRpc
+    {
+        public bool WasDisposed { get; private set; }
+
+        public TestableJsonRpc(IJsonRpcMessageHandler messageHandler) : base(messageHandler)
+        {
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            WasDisposed = true;
+            base.Dispose(disposing);
+        }
+    }
+
+    private class TestableTcpClient : TcpClient
+    {
+        public bool WasDisposed { get; private set; }
+
+        protected override void Dispose(bool disposing)
+        {
+            WasDisposed = true;
+            base.Dispose(disposing);
+        }
     }
 }
 

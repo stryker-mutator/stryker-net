@@ -10,7 +10,7 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 
 public sealed class TestingPlatformClient : IDisposable
 {
-    private readonly TcpClient _tcpClient = new();
+    private readonly TcpClient _tcpClient;
     private readonly IProcessHandle _processHandler;
     private readonly TargetHandler _targetHandler = new();
     private readonly StringBuilder _disconnectionReason = new();

@@ -182,14 +182,6 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
 
         var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance, runnerFactory.Object);
 
-        // Wait for all runners to be initialized (up to 5 seconds)
-        var timeout = TimeSpan.FromSeconds(5);
-        var startTime = DateTime.UtcNow;
-        while (createdRunners.Count < 3 && DateTime.UtcNow - startTime < timeout)
-        {
-            Thread.Sleep(50);
-        }
-
         createdRunners.Count.ShouldBe(3, "All 3 runners should have been created before disposal");
 
         // Act

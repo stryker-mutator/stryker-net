@@ -114,12 +114,13 @@ public class ResponseListenerTests
 
         // Act
         var completionTask = listener.WaitCompletionAsync(TimeSpan.FromSeconds(10), cts.Token);
-        cts.Cancel();
+        await cts.CancelAsync();
 
         var result = await completionTask;
 
         // Assert
         result.ShouldBeFalse();
+        cts.Dispose();
     }
 }
 

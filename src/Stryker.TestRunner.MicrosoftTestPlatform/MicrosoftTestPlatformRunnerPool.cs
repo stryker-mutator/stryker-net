@@ -56,15 +56,11 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     internal IEnumerable<SingleMicrosoftTestPlatformRunner> Runners => _availableRunners;
 
-    public MicrosoftTestPlatformRunnerPool(IStrykerOptions options, ILogger? logger = null)
-        : this(options, logger, new DefaultRunnerFactory())
-    {
-    }
-
-    internal MicrosoftTestPlatformRunnerPool(IStrykerOptions options, ILogger? logger, ISingleRunnerFactory runnerFactory)
+    internal MicrosoftTestPlatformRunnerPool(IStrykerOptions options, ILogger? logger, ISingleRunnerFactory? runnerFactory = null)
     {
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<MicrosoftTestPlatformRunnerPool>();
-        _countOfRunners = Math.Max(1, options.Concurrency);        _runnerFactory = runnerFactory;
+        _countOfRunners = Math.Max(1, options.Concurrency);
+        _runnerFactory = runnerFactory ?? new DefaultRunnerFactory();
         _logger.LogWarning("The Microsoft Test Platform testrunner is currently in preview. Coverage analysis is currently unsupported and results should be verified since this feature is still being tested.");
 
         Initialize();
@@ -72,19 +68,19 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     private void Initialize()
     {
-        _ = Task.Run(() =>
-            Parallel.For(0, _countOfRunners, (int i, ParallelLoopState _) =>
-            {
-                var runner = _runnerFactory.CreateRunner(
-                    i,
-                    _testsByAssembly,
-                    _testDescriptions,
-                    _testSet,
-                    _discoveryLock,
-                    _logger);
-                _availableRunners.Add(runner);
-                _runnerAvailableHandler.Set();
-            }));
+        // Create and initialize all runners in parallel because of file IO during initialization
+        Parallel.For(0, _countOfRunners, (int i, ParallelLoopState _) =>
+        {
+            var runner = _runnerFactory.CreateRunner(
+                i,
+                _testsByAssembly,
+                _testDescriptions,
+                _testSet,
+                _discoveryLock,
+                _logger);
+            _availableRunners.Add(runner);
+            _runnerAvailableHandler.Set();
+        });
     }
 
     public async Task<bool> DiscoverTestsAsync(string assembly)
