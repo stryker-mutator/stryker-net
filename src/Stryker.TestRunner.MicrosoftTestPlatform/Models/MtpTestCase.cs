@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Stryker.Abstractions.Testing;
 namespace Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
+[ExcludeFromCodeCoverage]
 public sealed class MtpTestCase : ITestCase
 {
     private readonly TestNode _testNode;

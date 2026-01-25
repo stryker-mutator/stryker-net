@@ -7,6 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>Stryker.TestRunner.MicrosoftTestPlatform.UnitTest</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\Stryker.TestRunner\Stryker.TestRunner.csproj" />
       <ProjectReference Include="..\Stryker.Utilities\Stryker.Utilities.csproj" />
     </ItemGroup>
@@ -18,3 +24,5 @@
     </ItemGroup>
 
 </Project>
+
+

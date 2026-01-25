@@ -1,9 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
-public sealed record TestNodeUpdate
-(
+[ExcludeFromCodeCoverage]
+public sealed record TestNodeUpdate(
     [property: JsonPropertyName("node")]
     TestNode Node,
 

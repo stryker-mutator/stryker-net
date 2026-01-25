@@ -1,7 +1,9 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.RPC;
 
+[ExcludeFromCodeCoverage]
 internal sealed class ConsoleRpcListener : TraceListener
 {
     public override void Write(string? message) => Console.Write(message ?? string.Empty);

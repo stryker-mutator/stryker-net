@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using Stryker.Abstractions.Testing;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
+[ExcludeFromCodeCoverage]
 public sealed class MtpTestDescription : IFrameworkTestDescription
 {
     private readonly ICollection<ITestResult> _initialResults = [];

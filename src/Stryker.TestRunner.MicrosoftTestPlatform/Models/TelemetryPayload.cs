@@ -1,9 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
-public record TelemetryPayload
-(
+[ExcludeFromCodeCoverage]
+public sealed record TelemetryPayload(
     [property: JsonPropertyName(nameof(TelemetryPayload.EventName))]
     string EventName,
 

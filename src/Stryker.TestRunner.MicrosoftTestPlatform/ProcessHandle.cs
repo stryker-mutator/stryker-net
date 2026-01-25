@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using CliWrap;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform;
 
+[ExcludeFromCodeCoverage]
 public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output) : IProcessHandle
 {
     public int Id { get; } = commandTask.ProcessId;
