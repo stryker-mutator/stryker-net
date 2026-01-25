@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
@@ -9,7 +10,33 @@ using Stryker.TestRunner.Tests;
 using Stryker.Utilities.Logging;
 using static Stryker.Abstractions.Testing.ITestRunner;
 
+[assembly: InternalsVisibleTo("Stryker.TestRunner.MicrosoftTestPlatform.UnitTest")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
+
 namespace Stryker.TestRunner.MicrosoftTestPlatform;
+
+internal interface ISingleRunnerFactory
+{
+    SingleMicrosoftTestPlatformRunner CreateRunner(
+        int id,
+        Dictionary<string, List<TestNode>> testsByAssembly,
+        Dictionary<string, MtpTestDescription> testDescriptions,
+        TestSet testSet,
+        object discoveryLock,
+        ILogger logger);
+}
+
+internal class DefaultRunnerFactory : ISingleRunnerFactory
+{
+    public SingleMicrosoftTestPlatformRunner CreateRunner(
+        int id,
+        Dictionary<string, List<TestNode>> testsByAssembly,
+        Dictionary<string, MtpTestDescription> testDescriptions,
+        TestSet testSet,
+        object discoveryLock,
+        ILogger logger) =>
+        new(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger);
+}
 
 /// <summary>
 /// Manages a pool of MicrosoftTestPlatformRunner instances to enable parallel mutation testing
@@ -25,12 +52,19 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     private readonly Dictionary<string, List<TestNode>> _testsByAssembly = new();
     private readonly Dictionary<string, MtpTestDescription> _testDescriptions = new();
     private readonly object _discoveryLock = new();
+    private readonly ISingleRunnerFactory _runnerFactory;
+
+    internal IEnumerable<SingleMicrosoftTestPlatformRunner> Runners => _availableRunners;
 
     public MicrosoftTestPlatformRunnerPool(IStrykerOptions options, ILogger? logger = null)
+        : this(options, logger, new DefaultRunnerFactory())
+    {
+    }
+
+    internal MicrosoftTestPlatformRunnerPool(IStrykerOptions options, ILogger? logger, ISingleRunnerFactory runnerFactory)
     {
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<MicrosoftTestPlatformRunnerPool>();
-        _countOfRunners = Math.Max(1, options.Concurrency);
-
+        _countOfRunners = Math.Max(1, options.Concurrency);        _runnerFactory = runnerFactory;
         _logger.LogWarning("The Microsoft Test Platform testrunner is currently in preview. Coverage analysis is currently unsupported and results should be verified since this feature is still being tested.");
 
         Initialize();
@@ -41,7 +75,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         _ = Task.Run(() =>
             Parallel.For(0, _countOfRunners, (int i, ParallelLoopState _) =>
             {
-                var runner = new SingleMicrosoftTestPlatformRunner(
+                var runner = _runnerFactory.CreateRunner(
                     i,
                     _testsByAssembly,
                     _testDescriptions,

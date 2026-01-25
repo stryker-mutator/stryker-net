@@ -224,7 +224,7 @@ internal sealed class AssemblyTestServer : IDisposable
 /// Maintains persistent test server connections per assembly to reduce process startup overhead.
 /// Uses file-based mutant control to allow changing the active mutant without restarting processes.
 /// </summary>
-internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
+internal class SingleMicrosoftTestPlatformRunner : IDisposable
 {
     private readonly int _id;
     private readonly Dictionary<string, List<TestNode>> _testsByAssembly;
@@ -291,7 +291,7 @@ internal sealed class SingleMicrosoftTestPlatformRunner : IDisposable
         return RunAllTestsAsync(assemblies, mutantId, mutants, update, timeoutCalc);
     }
 
-    public void Dispose()
+    public virtual void Dispose()
     {
         if (_disposed)
         {

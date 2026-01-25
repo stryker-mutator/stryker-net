@@ -12,8 +12,6 @@ public interface IProcessHandle
 
     TextReader StandardOutput { get; }
 
-    void Dispose();
-
     void Kill();
 
     Task<int> StopAsync();

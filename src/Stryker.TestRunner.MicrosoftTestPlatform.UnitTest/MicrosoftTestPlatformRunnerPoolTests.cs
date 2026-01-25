@@ -1,9 +1,12 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
+using Stryker.TestRunner.MicrosoftTestPlatform.Models;
+using Stryker.TestRunner.Tests;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
 
@@ -152,15 +155,51 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
     }
 
     [TestMethod]
-    public void Dispose_ShouldNotThrow()
+    public void Dispose_ShouldDisposeAllRunnersInPool()
     {
         // Arrange
         var options = new Mock<IStrykerOptions>();
-        options.Setup(x => x.Concurrency).Returns(1);
-        var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
+        options.Setup(x => x.Concurrency).Returns(3);
 
-        // Act & Assert - should not throw
+        var disposedRunners = new List<int>();
+        var createdRunners = new List<int>();
+        var runnerFactory = new Mock<ISingleRunnerFactory>();
+
+        runnerFactory.Setup(x => x.CreateRunner(
+                It.IsAny<int>(),
+                It.IsAny<Dictionary<string, List<TestNode>>>(),
+                It.IsAny<Dictionary<string, MtpTestDescription>>(),
+                It.IsAny<TestSet>(),
+                It.IsAny<object>(),
+                It.IsAny<ILogger>()))
+            .Returns<int, Dictionary<string, List<TestNode>>, Dictionary<string, MtpTestDescription>, TestSet, object, ILogger>(
+                (id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) =>
+                {
+                    var testRunner = new TestableRunner(id, () => disposedRunners.Add(id));
+                    createdRunners.Add(id);
+                    return testRunner;
+                });
+
+        var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance, runnerFactory.Object);
+
+        // Wait for all runners to be initialized (up to 5 seconds)
+        var timeout = TimeSpan.FromSeconds(5);
+        var startTime = DateTime.UtcNow;
+        while (createdRunners.Count < 3 && DateTime.UtcNow - startTime < timeout)
+        {
+            Thread.Sleep(50);
+        }
+
+        createdRunners.Count.ShouldBe(3, "All 3 runners should have been created before disposal");
+
+        // Act
         pool.Dispose();
+
+        // Assert - Verify Dispose was called on all runners
+        disposedRunners.Count.ShouldBe(3, "Dispose should be called on all 3 runners");
+        disposedRunners.ShouldContain(0);
+        disposedRunners.ShouldContain(1);
+        disposedRunners.ShouldContain(2);
     }
 
     [TestMethod]

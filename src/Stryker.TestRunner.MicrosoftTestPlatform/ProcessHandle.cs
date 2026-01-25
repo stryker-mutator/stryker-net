@@ -5,17 +5,13 @@ using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 namespace Stryker.TestRunner.MicrosoftTestPlatform;
 
 [ExcludeFromCodeCoverage]
-public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output) : IProcessHandle
+public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output) : IProcessHandle, IDisposable
 {
     public int Id { get; } = commandTask.ProcessId;
     public string ProcessName { get; } = "dotnet";
     public int ExitCode { get; private set; }
     public TextWriter StandardInput => new StringWriter();
     public TextReader StandardOutput => new StreamReader(output);
-    public void Dispose()
-    {
-        commandTask.Dispose();
-    }
 
     public void Kill()
     {
@@ -36,5 +32,10 @@ public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output
     public Task WriteInputAsync(string input)
     {
         return Task.CompletedTask;
+    }
+    
+    public void Dispose()
+    {
+        commandTask.Dispose();
     }
 }
