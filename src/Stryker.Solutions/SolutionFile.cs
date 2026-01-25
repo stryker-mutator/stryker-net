@@ -78,7 +78,7 @@ public class SolutionFile
     {
         var currentScore = -1;
         (string buildType, string platform) bestMatch = (string.Empty, string.Empty);
-        foreach (var (currentBuildType, currentPlatform)  in _configurations.Keys)
+        foreach (var (currentBuildType, currentPlatform) in _configurations.Keys)
         {
             if (buildType == currentBuildType && currentPlatform == platform)
             {

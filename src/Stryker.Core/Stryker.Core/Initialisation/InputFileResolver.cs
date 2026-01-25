@@ -161,7 +161,7 @@ public class InputFileResolver : IInputFileResolver
         {
             if (targetProjectMode)
             {
-                _logger.LogError("Project {projectFile} could not be found as a project referenced by the provided test projects.", normalizedProjectUnderTestNameFilter);
+                _logger.LogError("Project {ProjectFile} could not be found as a project referenced by the provided test projects.", normalizedProjectUnderTestNameFilter);
             }
             else
             {
