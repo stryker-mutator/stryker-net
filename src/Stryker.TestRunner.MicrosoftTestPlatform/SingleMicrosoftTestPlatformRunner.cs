@@ -15,7 +15,7 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 /// Maintains persistent test server connections per assembly to reduce process startup overhead.
 /// Uses file-based mutant control to allow changing the active mutant without restarting processes.
 /// </summary>
-internal class SingleMicrosoftTestPlatformRunner : IDisposable
+public class SingleMicrosoftTestPlatformRunner : IDisposable
 {
     private readonly int _id;
     private readonly Dictionary<string, List<TestNode>> _testsByAssembly;

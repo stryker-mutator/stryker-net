@@ -15,7 +15,7 @@ using static Stryker.Abstractions.Testing.ITestRunner;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform;
 
-internal interface ISingleRunnerFactory
+public interface ISingleRunnerFactory
 {
     SingleMicrosoftTestPlatformRunner CreateRunner(
         int id,
@@ -26,7 +26,7 @@ internal interface ISingleRunnerFactory
         ILogger logger);
 }
 
-internal class DefaultRunnerFactory : ISingleRunnerFactory
+public class DefaultRunnerFactory : ISingleRunnerFactory
 {
     public SingleMicrosoftTestPlatformRunner CreateRunner(
         int id,
@@ -54,9 +54,9 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     private readonly object _discoveryLock = new();
     private readonly ISingleRunnerFactory _runnerFactory;
 
-    internal IEnumerable<SingleMicrosoftTestPlatformRunner> Runners => _availableRunners;
+    public IEnumerable<SingleMicrosoftTestPlatformRunner> Runners => _availableRunners;
 
-    internal MicrosoftTestPlatformRunnerPool(IStrykerOptions options, ILogger? logger, ISingleRunnerFactory? runnerFactory = null)
+    public MicrosoftTestPlatformRunnerPool(IStrykerOptions options, ILogger? logger = null, ISingleRunnerFactory? runnerFactory = null)
     {
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<MicrosoftTestPlatformRunnerPool>();
         _countOfRunners = Math.Max(1, options.Concurrency);
