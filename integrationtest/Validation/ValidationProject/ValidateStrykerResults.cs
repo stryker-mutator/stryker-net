@@ -121,7 +121,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 269, survived: 1, killed: 1, timeout: 0, nocoverage: 351);
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 269, survived: 1, killed: 1, timeout: 0, nocoverage: 351);
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
     }
 
     [Fact]
@@ -159,7 +159,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 269, survived: 1, killed: 1, timeout: 0, nocoverage: 351);
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
     }
 
     [Fact]
@@ -178,7 +178,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 269, survived: 1, killed: 1, timeout: 0, nocoverage: 351);
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
     }
 
     [Fact]
