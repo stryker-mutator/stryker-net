@@ -188,7 +188,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         File.WriteAllText(mutantFilePath, "-1");
         File.Exists(mutantFilePath).ShouldBeTrue("Mutant file should exist before disposal");
 
-        // Act - First disposal
+        // Act
         testableRunner.Dispose();
 
         // Assert
@@ -199,7 +199,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         // Act - Second disposal (verify idempotency via _disposed flag check)
         testableRunner.Dispose();
 
-        // Assert - disposal count should not increase (verifies early return from _disposed flag check)
+        // Assert
         testableRunner.DisposeLogicExecutedCount.ShouldBe(1, "Dispose logic should only execute once due to _disposed flag check preventing re-execution");
     }
 

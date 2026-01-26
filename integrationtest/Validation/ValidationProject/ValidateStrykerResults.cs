@@ -121,9 +121,6 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        // Expected results based on KilledMutants class with Age >= 30 logic
-        // Should have similar results to MSTest (when coverage analysis is working)
-        // For now with coverage-analysis off, we expect nocoverage mutants
         CheckReportMutants(report, total: 5, ignored: 0, survived: 1, killed: 1, timeout: 0, nocoverage: 3);
     }
 
