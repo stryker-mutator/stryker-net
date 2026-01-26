@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Configuration.Options;
 using Stryker.Core.Mutators;
 using Stryker.Core.UnitTest;
 

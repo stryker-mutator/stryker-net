@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Spectre.Console.Testing;
 using Stryker.Abstractions;
+using Stryker.Configuration.Options;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.Reporters;
 

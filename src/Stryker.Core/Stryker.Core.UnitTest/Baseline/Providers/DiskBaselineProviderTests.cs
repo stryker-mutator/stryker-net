@@ -5,6 +5,7 @@ using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
+using Stryker.Configuration.Options;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;

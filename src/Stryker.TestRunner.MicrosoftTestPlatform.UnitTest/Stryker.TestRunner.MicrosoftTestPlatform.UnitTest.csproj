@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="coverlet.collector" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="MSTest" />
+        <PackageReference Include="Moq" />
+        <PackageReference Include="Shouldly" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Stryker.Abstractions\Stryker.Abstractions.csproj" />
+        <ProjectReference Include="..\Stryker.TestRunner.MicrosoftTestPlatform\Stryker.TestRunner.MicrosoftTestPlatform.csproj" />
+        <ProjectReference Include="..\Stryker.Utilities\Stryker.Utilities.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    </ItemGroup>
+
+</Project>
+

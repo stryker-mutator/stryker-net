@@ -1,7 +1,7 @@
 using System.Linq;
 using Shouldly;
-using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Configuration.Options.Inputs;
 using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.Options.Inputs;
@@ -14,7 +14,7 @@ public class DiffIgnoreChangesInputTests : TestBase
     {
         var target = new DiffIgnoreChangesInput();
         target.HelpText.ShouldBe(@"Allows to specify an array of C# files which should be ignored if present in the diff.
-Any non-excluded files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files. 
+Any non-excluded files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files.
 This feature is only recommended when you are sure these files will not affect results, or when you are prepared to sacrifice accuracy for performance.
 
 Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)

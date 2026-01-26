@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions.Options;
 using Stryker.CLI.CommandLineConfig;
+using Stryker.Configuration.Options;
 
 namespace Stryker.CLI.UnitTest;
 

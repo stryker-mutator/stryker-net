@@ -1,6 +1,7 @@
 using Shouldly;
 using Stryker.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Configuration.Options;
 
 namespace Stryker.Core.UnitTest;
 

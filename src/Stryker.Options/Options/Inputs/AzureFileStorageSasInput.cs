@@ -3,7 +3,7 @@ using System.Web;
 using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.Exceptions;
 
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 
 public class AzureFileStorageSasInput : Input<string>
 {

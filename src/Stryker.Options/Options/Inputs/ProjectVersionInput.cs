@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 
 public class ProjectVersionInput : Input<string>
 {

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="NetCoreTestProject.MSTest" type="DotNetProject" factoryName=".NET Project" nameIsGenerated="true">
-    <option name="EXE_PATH" value="$PROJECT_DIR$/Stryker.CLI/Stryker.CLI/bin/Debug/net10.0/Stryker.CLI" />
+    <option name="EXE_PATH" value="$PROJECT_DIR$/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI" />
     <option name="PROGRAM_PARAMETERS" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../integrationtest/TargetProjects/NetCore/NetCoreTestProject.MSTest" />
     <option name="PASS_PARENT_ENVS" value="1" />

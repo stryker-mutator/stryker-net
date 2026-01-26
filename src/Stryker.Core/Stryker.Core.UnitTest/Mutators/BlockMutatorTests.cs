@@ -5,8 +5,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions;
+using Stryker.Core.Mutators;
 
-namespace Stryker.Core.Mutators.Mutators;
+namespace Stryker.Core.UnitTest.Mutators;
 
 [TestClass]
 public class BlockMutatorTests

@@ -1,7 +1,5 @@
 
-using Stryker.Abstractions.Exceptions;
-
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 public class ConfigurationInput : Input<string>
 {
     public override string Default => null;

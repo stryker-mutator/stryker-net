@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DotNet.Globbing;
+using Stryker.Abstractions.Options;
 using Stryker.Utilities;
 
-namespace Stryker.Abstractions.Options;
+namespace Stryker.Configuration;
 
 public readonly struct ExclusionPattern : IExclusionPattern
 {

@@ -3,7 +3,7 @@ using System.Linq;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Utilities;
 
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 
 public class MutateInput : Input<IEnumerable<string>>
 {

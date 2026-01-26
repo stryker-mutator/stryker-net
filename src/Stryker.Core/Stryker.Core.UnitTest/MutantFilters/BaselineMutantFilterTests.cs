@@ -9,6 +9,7 @@ using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
+using Stryker.Configuration.Options;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Baseline.Utils;
 using Stryker.Core.MutantFilters;

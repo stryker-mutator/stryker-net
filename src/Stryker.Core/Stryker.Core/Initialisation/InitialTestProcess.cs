@@ -36,7 +36,8 @@ public class InitialTestProcess : IInitialTestProcess
         var stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        var initTestRunResult = testRunner.InitialTest(project);
+        var initTestRunResultTask = testRunner.InitialTestAsync(project);
+        var initTestRunResult = initTestRunResultTask.GetAwaiter().GetResult();
         // Stop stopwatch immediately after test run
         stopwatch.Stop();
 

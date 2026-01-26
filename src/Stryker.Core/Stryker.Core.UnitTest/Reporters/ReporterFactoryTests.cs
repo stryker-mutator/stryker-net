@@ -5,6 +5,7 @@ using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
+using Stryker.Configuration.Options;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Html;

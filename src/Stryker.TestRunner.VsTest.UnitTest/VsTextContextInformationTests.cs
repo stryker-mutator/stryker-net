@@ -15,6 +15,7 @@ using Serilog.Events;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
+using Stryker.Configuration.Options;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.UnitTest;

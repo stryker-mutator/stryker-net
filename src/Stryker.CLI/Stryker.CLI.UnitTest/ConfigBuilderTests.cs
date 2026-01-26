@@ -5,9 +5,10 @@ using Shouldly;
 using Stryker.CLI.CommandLineConfig;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Abstractions.Options;
+using Stryker.Configuration.Options;
+using Stryker.Configuration.Options.Inputs;
 
 namespace Stryker.CLI.UnitTest;
 
@@ -224,6 +225,7 @@ public class ConfigBuilderTests
         inputs.Setup(x => x.ReportFileNameInput).Returns(new ReportFileNameInput());
         inputs.Setup(x => x.BreakOnInitialTestFailureInput).Returns(new BreakOnInitialTestFailureInput());
         inputs.Setup(x => x.OutputPathInput).Returns(new OutputPathInput());
+        inputs.Setup(x => x.TestRunnerInput).Returns(new TestRunnerInput());
 
         return inputs;
     }

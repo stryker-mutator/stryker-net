@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using Shouldly;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.Options;
+using Stryker.Configuration.Options.Inputs;
 using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.Options.Inputs;

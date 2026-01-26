@@ -7,6 +7,7 @@ using Moq;
 using Shouldly;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions;
+using Stryker.Configuration.Options;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.UnitTest;
 

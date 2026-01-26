@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 
 public class IgnoreMethodsInput : Input<IEnumerable<string>>
 {

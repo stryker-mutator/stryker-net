@@ -1,10 +1,10 @@
-using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Abstractions.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Abstractions.Exceptions;
 
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 
 public class LanguageVersionInput : Input<string>
 {

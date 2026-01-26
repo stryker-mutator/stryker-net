@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- TUnit uses Microsoft.Testing.Platform by default -->
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TUnit" Version="0.5.109" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TargetProject\TargetProject.csproj" />
+  </ItemGroup>
+
+</Project>
+

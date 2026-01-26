@@ -4,6 +4,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
@@ -13,6 +14,7 @@ using Stryker.CLI.Clients;
 using Stryker.CLI.CommandLineConfig;
 using Stryker.CLI.Logging;
 using Stryker.Configuration;
+using Stryker.Configuration.Options;
 using Stryker.Core;
 
 namespace Stryker.CLI;
@@ -122,7 +124,7 @@ public class StrykerCli
             _loggingInitializer.SetupLogOptions(inputs);
 
             PrintStrykerVersionInformationAsync(cmdConfigReader.GetSkipVersionCheckOption(args, app).HasValue());
-            RunStryker(inputs);
+            RunStrykerAsync(inputs).GetAwaiter().GetResult();
             return ExitCode;
         });
 
@@ -148,9 +150,9 @@ public class StrykerCli
         }
     }
 
-    private void RunStryker(IStrykerInputs inputs)
+    private async Task RunStrykerAsync(IStrykerInputs inputs)
     {
-        var result = _stryker.RunMutationTest(inputs);
+        var result = await _stryker.RunMutationTestAsync(inputs).ConfigureAwait(false);
 
         HandleStrykerRunResult(result);
     }

@@ -15,6 +15,7 @@ using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Testing;
+using Stryker.Configuration.Options;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;

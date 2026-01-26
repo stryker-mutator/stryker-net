@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
+using Stryker.Configuration.Options;
 using Stryker.Core.Compiling;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;

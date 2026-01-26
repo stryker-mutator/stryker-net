@@ -3,6 +3,7 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
 using System.Collections.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Configuration.Options;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents.Csharp;
 

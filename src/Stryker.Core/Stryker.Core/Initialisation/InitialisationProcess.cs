@@ -161,7 +161,7 @@ public class InitialisationProcess : IInitialisationProcess
     {
         foreach (var testProject in projectInfo.TestProjectsInfo.AnalyzerResults)
         {
-            if (testRunner.DiscoverTests(testProject.GetAssemblyPath()))
+            if (testRunner.DiscoverTestsAsync(testProject.GetAssemblyPath()).GetAwaiter().GetResult())
             {
                 continue;
             }

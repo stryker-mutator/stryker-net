@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Stryker.Abstractions.Testing;
 
-namespace Stryker.TestRunner.VsTest;
+namespace Stryker.TestRunner.Tests;
 
 public class TestSet : ITestSet
 {

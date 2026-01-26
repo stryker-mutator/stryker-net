@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Testing;
@@ -16,7 +17,7 @@ public interface IMutationTestExecutor
 {
     ITestRunner TestRunner { get; set; }
 
-    void Test(IProjectAndTests project, IList<IMutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
+    Task TestAsync(IProjectAndTests project, IList<IMutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
         TestUpdateHandler updateHandler);
 }
 
@@ -31,13 +32,13 @@ public class MutationTestExecutor : IMutationTestExecutor
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public void Test(IProjectAndTests project, IList<IMutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
+    public async Task TestAsync(IProjectAndTests project, IList<IMutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
         TestUpdateHandler updateHandler)
     {
         var forceSingle = false;
         while (mutantsToTest.Any())
         {
-            var result = RunTestSession(project, mutantsToTest, timeoutMs, updateHandler, forceSingle);
+            var result = await RunTestSessionAsync(project, mutantsToTest, timeoutMs, updateHandler, forceSingle).ConfigureAwait(false);
 
             Logger.LogDebug(
                 "Test run for {Mutants} is {Result} ",
@@ -88,7 +89,7 @@ public class MutationTestExecutor : IMutationTestExecutor
         }
     }
 
-    private ITestRunResult RunTestSession(IProjectAndTests projectAndTests, ICollection<IMutant> mutantsToTest,
+    private async Task<ITestRunResult> RunTestSessionAsync(IProjectAndTests projectAndTests, ICollection<IMutant> mutantsToTest,
         ITimeoutValueCalculator timeoutMs,
         TestUpdateHandler updateHandler, bool forceSingle)
     {
@@ -98,7 +99,7 @@ public class MutationTestExecutor : IMutationTestExecutor
             foreach (var mutant in mutantsToTest)
             {
                 var localResult =
-                    TestRunner.TestMultipleMutants(projectAndTests, timeoutMs, new[] { mutant }, updateHandler);
+                    await TestRunner.TestMultipleMutantsAsync(projectAndTests, timeoutMs, new[] { mutant }, updateHandler).ConfigureAwait(false);
                 if (updateHandler == null || localResult.SessionTimedOut)
                 {
                     mutant.AnalyzeTestRun(localResult.FailingTests,
@@ -111,7 +112,7 @@ public class MutationTestExecutor : IMutationTestExecutor
             return new TestRunResult(true);
         }
 
-        var result = TestRunner.TestMultipleMutants(projectAndTests, timeoutMs, mutantsToTest.ToList(), updateHandler);
+        var result = await TestRunner.TestMultipleMutantsAsync(projectAndTests, timeoutMs, mutantsToTest.ToList(), updateHandler).ConfigureAwait(false);
         if (updateHandler != null && !result.SessionTimedOut)
         {
             return result;

@@ -16,6 +16,7 @@ using Stryker.Abstractions.Testing;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.TestRunner.VsTest;
+using Stryker.TestRunner.MicrosoftTestPlatform;
 
 namespace Stryker.Core.Initialisation;
 
@@ -64,8 +65,8 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
 
         _initializationProcess.BuildProjects(options, projectInfos);
 
-        // create a test runner
-        _runner = runner ?? new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem);
+        // create a test runner based on the selected option
+        _runner = runner ?? CreateTestRunner(options);
         _mutationTestExecutor.TestRunner = _runner;
         InitializeDashboardProjectInformation(options, projectInfos.First());
         var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
@@ -76,6 +77,16 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
             mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
         });
         return mutationTestProcesses;
+    }
+
+    private ITestRunner CreateTestRunner(IStrykerOptions options)
+    {
+        return options.TestRunner switch
+        {
+            Stryker.Abstractions.Options.TestRunner.VsTest => new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem),
+            Stryker.Abstractions.Options.TestRunner.MicrosoftTestPlatform => new MicrosoftTestPlatformRunnerPool(options),
+            _ => throw new InputException($"Unknown test runner: {options.TestRunner}")
+        };
     }
 
     private void InitializeDashboardProjectInformation(IStrykerOptions options, SourceProjectInfo projectInfo)

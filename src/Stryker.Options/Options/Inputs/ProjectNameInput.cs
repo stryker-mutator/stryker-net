@@ -1,4 +1,4 @@
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 
 public class ProjectNameInput : Input<string>
 {

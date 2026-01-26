@@ -1,7 +1,7 @@
 using System;
 using Stryker.Abstractions.Exceptions;
 
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 
 public class DashboardUrlInput : Input<string>
 {

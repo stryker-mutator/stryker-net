@@ -100,9 +100,85 @@ public class ValidateStrykerResults
         using var strykerRunOutput = File.OpenRead(latestReport.FullName);
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
-         
+
         CheckReportMutants(report, total: 660, ignored: 115, survived: 5, killed: 11, timeout: 2, nocoverage: 489);
         CheckReportTestCounts(report, total: 21);
+    }
+
+    [Fact]
+    [Trait("Category", "MSTestMTP")]
+    [Trait("Runtime", "netcore")]
+    public async Task CSharp_NetCore_MSTestMTP()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/NetCoreTestProject.MSTest.MTP/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
+    }
+
+    [Fact]
+    [Trait("Category", "XUnitMTP")]
+    [Trait("Runtime", "netcore")]
+    public async Task CSharp_NetCore_XUnitMTP()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/NetCoreTestProject.XUnit.MTP/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
+    }
+
+    [Fact]
+    [Trait("Category", "NUnitMTP")]
+    [Trait("Runtime", "netcore")]
+    public async Task CSharp_NetCore_NUnitMTP()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/NetCoreTestProject.NUnit.MTP/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
+    }
+
+    [Fact]
+    [Trait("Category", "TUnit")]
+    [Trait("Runtime", "netcore")]
+    public async Task CSharp_NetCore_TUnit()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/NetCoreTestProject.TUnit/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
     }
 
     [Fact]
@@ -122,7 +198,7 @@ public class ValidateStrykerResults
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
         CheckReportMutants(report, total: 660, ignored: 269, survived: 4, killed: 9, timeout: 2, nocoverage: 338);
-        CheckReportTestCounts(report, total: 23);
+        CheckReportTestCounts(report, total: 25);
     }
 
     [Fact]

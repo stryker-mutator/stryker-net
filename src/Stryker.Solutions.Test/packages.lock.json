@@ -133,11 +133,6 @@
           "Microsoft.Testing.Platform": "1.9.1"
         }
       },
-      "Microsoft.Testing.Platform": {
-        "type": "Transitive",
-        "resolved": "1.9.1",
-        "contentHash": "QafNtNSmEI0zazdebnsIkDKmFtTSpmx/5PLOjURWwozcPb3tvRxzosQSL8xwYNM1iPhhKiBksXZyRSE2COisrA=="
-      },
       "Microsoft.Testing.Platform.MSBuild": {
         "type": "Transitive",
         "resolved": "1.9.1",
@@ -240,6 +235,12 @@
         "dependencies": {
           "Microsoft.VisualStudio.SolutionPersistence": "[1.0.52, )"
         }
+      },
+      "Microsoft.Testing.Platform": {
+        "type": "CentralTransitive",
+        "requested": "[1.5.2, )",
+        "resolved": "1.9.1",
+        "contentHash": "QafNtNSmEI0zazdebnsIkDKmFtTSpmx/5PLOjURWwozcPb3tvRxzosQSL8xwYNM1iPhhKiBksXZyRSE2COisrA=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "CentralTransitive",

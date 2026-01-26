@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Abstractions.Options;
 using Stryker.CLI.Logging;
+using Stryker.Configuration.Options;
 
-namespace Stryker.CLI.UnitTest;
+namespace Stryker.CLI.UnitTest.Logging;
 
 [TestClass]
 public class InputBuilderTests

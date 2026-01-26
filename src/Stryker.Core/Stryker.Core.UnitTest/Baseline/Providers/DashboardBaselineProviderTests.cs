@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Stryker.Abstractions;
+using Stryker.Configuration.Options;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Clients;
 using Stryker.Core.ProjectComponents.TestProjects;

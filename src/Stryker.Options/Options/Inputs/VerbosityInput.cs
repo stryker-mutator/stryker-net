@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Serilog.Events;
 using Stryker.Abstractions.Exceptions;
 
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 
 public class VerbosityInput : Input<string>
 {

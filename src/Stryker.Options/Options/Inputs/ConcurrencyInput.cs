@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Utilities.Logging;
 
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 
 public class ConcurrencyInput : Input<int?>
 {
