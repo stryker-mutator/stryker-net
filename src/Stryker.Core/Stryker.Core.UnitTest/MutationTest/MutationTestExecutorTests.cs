@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
@@ -25,7 +26,9 @@ public class MutationTestExecutorTests : TestBase
         var mutant = new Mutant { Id = 1 };
         testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<IMutant>>(), null)).Returns(new TestRunResult(true));
 
-        var target = new MutationTestExecutor(testRunnerMock.Object);
+        var loggerMock = new Mock<ILogger<MutationTestExecutor>>();
+        var target = new MutationTestExecutor(loggerMock.Object);
+        target.TestRunner = testRunnerMock.Object;
 
         target.Test(null, new List<IMutant> { mutant }, null, null);
 
@@ -40,7 +43,9 @@ public class MutationTestExecutorTests : TestBase
         var mutant = new Mutant { Id = 1, CoveringTests = TestIdentifierList.EveryTest() };
         testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), null, It.IsAny<IReadOnlyList<IMutant>>(), null)).Returns(new TestRunResult(false));
 
-        var target = new MutationTestExecutor(testRunnerMock.Object);
+        var loggerMock = new Mock<ILogger<MutationTestExecutor>>();
+        var target = new MutationTestExecutor(loggerMock.Object);
+        target.TestRunner = testRunnerMock.Object;
 
         target.Test(null, new List<IMutant> { mutant }, null, null);
 
@@ -56,7 +61,9 @@ public class MutationTestExecutorTests : TestBase
         testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<IMutant>>(), null)).
             Returns(TestRunResult.TimedOut(new List<VsTestDescription>(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), TestIdentifierList.EveryTest(), "", Enumerable.Empty<string>(), TimeSpan.Zero));
 
-        var target = new MutationTestExecutor(testRunnerMock.Object);
+        var loggerMock = new Mock<ILogger<MutationTestExecutor>>();
+        var target = new MutationTestExecutor(loggerMock.Object);
+        target.TestRunner = testRunnerMock.Object;
 
         var timeoutValueCalculator = new TimeoutValueCalculator(500);
         target.Test(null, new List<IMutant> { mutant }, timeoutValueCalculator, null);
@@ -74,7 +81,9 @@ public class MutationTestExecutorTests : TestBase
         testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<IMutant>>(), null)).
             Returns(TestRunResult.TimedOut(new List<VsTestDescription>(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), "", Enumerable.Empty<string>(), TimeSpan.Zero));
 
-        var target = new MutationTestExecutor(testRunnerMock.Object);
+        var loggerMock = new Mock<ILogger<MutationTestExecutor>>();
+        var target = new MutationTestExecutor(loggerMock.Object);
+        target.TestRunner = testRunnerMock.Object;
 
         var timeoutValueCalculator = new TimeoutValueCalculator(500);
         target.Test(null, new List<IMutant> { mutant1, mutant2 }, timeoutValueCalculator, null);

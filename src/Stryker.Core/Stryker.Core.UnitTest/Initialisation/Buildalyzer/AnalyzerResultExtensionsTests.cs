@@ -52,7 +52,7 @@ public class AnalyzerResultExtensionsTests
         var analyzerResult = Mock.Of<IAnalyzerResult>();
         Mock.Get(analyzerResult)
             .SetupGet(g => g.Properties)
-            .Returns(new Dictionary<string, string> { { "WarningsNotAsErrors", "EXTEXP0001;EXTEXP0002" } });
+            .Returns(new Dictionary<string, string> { { "WarningsNotAsErrors", "EXTEXP0001;\r\n    EXTEXP0002;EXTEXP0003  \r\n;  \r\n EXTEXP0004 \r\n  " } });
 
         // Act
         var diagOptions = analyzerResult.GetDiagnosticOptions();
@@ -60,9 +60,11 @@ public class AnalyzerResultExtensionsTests
         // Assert
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0001", ReportDiagnostic.Warn));
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0002", ReportDiagnostic.Warn));
+        diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0003", ReportDiagnostic.Warn));
+        diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0004", ReportDiagnostic.Warn));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("NoWarn", ReportDiagnostic.Suppress)]
     [DataRow("WarningsAsErrors", ReportDiagnostic.Error)]
     [DataRow("WarningsNotAsErrors", ReportDiagnostic.Warn)]
@@ -117,5 +119,28 @@ public class AnalyzerResultExtensionsTests
         // Assert
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0001", ReportDiagnostic.Suppress));
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0002", ReportDiagnostic.Warn));
+    }
+
+    [TestMethod]
+    [DataRow("NoWarn", ReportDiagnostic.Suppress)]
+    [DataRow("WarningsAsErrors", ReportDiagnostic.Error)]
+    [DataRow("WarningsNotAsErrors", ReportDiagnostic.Warn)]
+    public void GetDiagnosticOptions_DealWithSpecialCharacters(string property, ReportDiagnostic reportDiagnostic)
+    {
+        // Arrange
+        var analyzerResult = Mock.Of<IAnalyzerResult>();
+        Mock.Get(analyzerResult)
+            .SetupGet(g => g.Properties)
+            .Returns(new Dictionary<string, string> { { property, "EXTEXP0001;\r\n    EXTEXP0002;EXTEXP0003  \r\n;  \r\n EXTEXP0004 \n  ; EXTEXP0004  " } });
+
+        // Act
+        var diagOptions = IAnalyzerResultExtensions.GetDiagnosticOptions(analyzerResult);
+
+        // Assert
+        diagOptions.Count.ShouldBe(4);
+        diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0001", reportDiagnostic));
+        diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0002", reportDiagnostic));
+        diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0003", reportDiagnostic));
+        diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0004", reportDiagnostic));
     }
 }

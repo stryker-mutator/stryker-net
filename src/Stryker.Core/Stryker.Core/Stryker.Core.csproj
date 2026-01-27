@@ -4,10 +4,12 @@
     <AssemblyName>Stryker.Core</AssemblyName>
     <RootNamespace>Stryker.Core</RootNamespace>
     <OutputType>Library</OutputType>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   
   <PropertyGroup>
-    <VersionPrefix>4.5.1</VersionPrefix>
+    <VersionPrefix>4.11.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <PackageId>stryker</PackageId>
     <Product>Mutation Testing</Product>
@@ -41,6 +43,7 @@
     <PackageReference Include="DotNet.Glob" />
     <PackageReference Include="Buildalyzer" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.TestPlatform" />
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
@@ -95,6 +98,7 @@
     <ProjectReference Include="..\..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
     <ProjectReference Include="..\..\Stryker.Options\Stryker.Configuration.csproj" />
     <ProjectReference Include="..\..\Stryker.RegexMutators\Stryker.RegexMutators\Stryker.RegexMutators.csproj" />
+    <ProjectReference Include="..\..\Stryker.Solutions\Stryker.Solutions.csproj" />
     <ProjectReference Include="..\..\Stryker.TestRunner.VsTest\Stryker.TestRunner.VsTest.csproj" />
     <ProjectReference Include="..\..\Stryker.Utilities\Stryker.Utilities.csproj" />
   </ItemGroup>

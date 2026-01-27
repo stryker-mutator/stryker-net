@@ -1,3 +1,96 @@
+# [4.11.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.10.0...stryker@4.11.0) (2026-01-09)
+
+
+### Features
+
+* Analyze and log project analysis failure ([#3332](https://github.com/stryker-mutator/stryker-net/issues/3332)) ([557aa7d](https://github.com/stryker-mutator/stryker-net/commit/557aa7d0a04c64531e232b305a55049c67dcf4fd))
+
+
+
+# [4.10.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.9.2...stryker@4.10.0) (2026-01-04)
+
+
+
+## [4.9.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.9.1...stryker@4.9.2) (2025-12-29)
+
+
+### Bug Fixes
+
+* Improve solution support ([#3383](https://github.com/stryker-mutator/stryker-net/issues/3383)) ([8106f97](https://github.com/stryker-mutator/stryker-net/commit/8106f97d1357c6e2f6431065cb1d264feea722b0)), closes [#3365](https://github.com/stryker-mutator/stryker-net/issues/3365)
+
+
+
+## [4.9.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.9.0...stryker@4.9.1) (2025-12-21)
+
+
+
+# [4.9.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.8.1...stryker@4.9.0) (2025-12-17)
+
+
+### Bug Fixes
+
+* Allow multi-line diagnostic suppression msbuild options (NoWarn, WarningsNotAsErrors, etc..) ([#3292](https://github.com/stryker-mutator/stryker-net/issues/3292)) ([fbe23a3](https://github.com/stryker-mutator/stryker-net/commit/fbe23a370bca41ffa8be6a20295be7f9ab28c756))
+* Handle regex parsing timeout on comments ([#3350](https://github.com/stryker-mutator/stryker-net/issues/3350)) ([147793a](https://github.com/stryker-mutator/stryker-net/commit/147793adbdb8b4cc77c745c4b653ae6bb3bd30c6))
+* Set default nullable compilation option to disable ([#3289](https://github.com/stryker-mutator/stryker-net/issues/3289)) ([0ac7efb](https://github.com/stryker-mutator/stryker-net/commit/0ac7efbaa4b4aa9bf0713158a4cb69130046a4f6))
+
+
+### Features
+
+* **analysis:** Support SLNX solution files, solution and platform configuration ([#3340](https://github.com/stryker-mutator/stryker-net/issues/3340)) ([6ed2d32](https://github.com/stryker-mutator/stryker-net/commit/6ed2d32d93e334707df08730dfeed7bba438e2a1))
+* Remove excluded files from json/html reports ([#3281](https://github.com/stryker-mutator/stryker-net/issues/3281)) ([a8c31c5](https://github.com/stryker-mutator/stryker-net/commit/a8c31c579d390f2040a3a81e6364c4eef8c16d02))
+* **reporter:** Skip --open-report hint in CI ([#3301](https://github.com/stryker-mutator/stryker-net/issues/3301)) ([9805bea](https://github.com/stryker-mutator/stryker-net/commit/9805bea7285f05f0f4e5d08350d1bc5e951e7c27))
+
+
+
+## [4.8.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.8.0...stryker@4.8.1) (2025-08-23)
+
+
+### Bug Fixes
+
+* **filter:** materialize mutants to prevent deferred where clause issue in SinceMutantFilter ([#3283](https://github.com/stryker-mutator/stryker-net/issues/3283)) ([a5635e9](https://github.com/stryker-mutator/stryker-net/commit/a5635e9627b6898b028324531f5dafe33b73ccc9))
+
+
+
+# [4.8.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.7.0...stryker@4.8.0) (2025-08-06)
+
+
+### Features
+
+* **compilation:** Support projects using DelaySign ([#3273](https://github.com/stryker-mutator/stryker-net/issues/3273)) ([e9e80d5](https://github.com/stryker-mutator/stryker-net/commit/e9e80d598a9fb5cb778a4666c9341b1c5c38adf6))
+
+
+
+# [4.7.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.6.0...stryker@4.7.0) (2025-07-08)
+
+
+### Bug Fixes
+
+* Safe parsing of implicit new in IgnoreMutantFilter ([#3258](https://github.com/stryker-mutator/stryker-net/issues/3258)) ([fad30b7](https://github.com/stryker-mutator/stryker-net/commit/fad30b7051dc69ec6ff4a2f6910a51d248fe156e))
+
+
+### Features
+
+* **build:** Improve targetframework and msbuild-path options ([#3262](https://github.com/stryker-mutator/stryker-net/issues/3262)) ([6c0f9d9](https://github.com/stryker-mutator/stryker-net/commit/6c0f9d9ad96c792b4108f56b0705062592f4a5ec))
+
+
+
+# [4.6.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.5.1...stryker@4.6.0) (2025-06-06)
+
+
+### Bug Fixes
+
+* adjust RegexMutator to handle new parsing orchestration ([#3252](https://github.com/stryker-mutator/stryker-net/issues/3252)) ([c92b149](https://github.com/stryker-mutator/stryker-net/commit/c92b149ff1f0a37802f34a6693288e2e31692bb4))
+* Improve project analysis when normal analysis fails ([#3184](https://github.com/stryker-mutator/stryker-net/issues/3184)) ([8d1bb7a](https://github.com/stryker-mutator/stryker-net/commit/8d1bb7a966321f52a8c9b1614c395d4bb8e09fe2))
+
+
+### Features
+
+* **mutating:** Mutate unsigned right-shift operator ([#3200](https://github.com/stryker-mutator/stryker-net/issues/3200)) ([f02d015](https://github.com/stryker-mutator/stryker-net/commit/f02d015f777ca85376f58cdef9c4bc1e15805029))
+* **mutating:** Support static using references for Math mutations ([#3205](https://github.com/stryker-mutator/stryker-net/issues/3205)) ([8739133](https://github.com/stryker-mutator/stryker-net/commit/87391336949f11a4ddbf497c6ef9f7e0f375f0ff)), closes [#2933](https://github.com/stryker-mutator/stryker-net/issues/2933) [#2933](https://github.com/stryker-mutator/stryker-net/issues/2933) [#2933](https://github.com/stryker-mutator/stryker-net/issues/2933) [#2933](https://github.com/stryker-mutator/stryker-net/issues/2933) [#2933](https://github.com/stryker-mutator/stryker-net/issues/2933)
+* **mutation:** LINQ Append/Prepend mutation ([#3199](https://github.com/stryker-mutator/stryker-net/issues/3199)) ([3e91f5d](https://github.com/stryker-mutator/stryker-net/commit/3e91f5d353bd3f3c12c3dc0c22cba8190c52c0e4))
+
+
+
 ## [4.5.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.5.0...stryker@4.5.1) (2025-02-04)
 
 

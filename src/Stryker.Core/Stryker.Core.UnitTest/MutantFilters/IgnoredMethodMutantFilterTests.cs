@@ -265,6 +265,35 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
     }
 
     [TestMethod]
+    public void MutantFilter_WorksWithImplicitNew()
+    {
+        // Arrange
+        var source = @"
+public class IgnoredMethodMutantFilter_NestedMethodCalls
+{
+    private void TestMethod()
+    {
+        Dispose(new(""anchor""));
+    }
+}";
+        var options = new StrykerOptions
+        {
+            IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "*.ctor" } }.Validate()
+        };
+
+        var sut = new IgnoredMethodMutantFilter();
+
+            foreach (var (mutant, label) in BuildMutantsToFilter(source, "anchor"))
+            {
+                // Act
+                var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
+
+            // Assert
+            filteredMutants.ShouldContain(mutant, $"{label} should have not been filtered out.");
+        }
+    }
+
+    [TestMethod]
     [DataRow("Dispose")]
     [DataRow("Dispose*")]
     [DataRow("*Dispose")]
@@ -466,6 +495,74 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
     {
         var t = new Foo
                     .MyType(""Param"");
+    }
+}";
+        var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
+        var originalNode = FindEnclosingNode<SyntaxNode>(baseSyntaxTree, "Param");
+
+        var mutant = new Mutant
+        {
+            Mutation = new Mutation
+            {
+                OriginalNode = originalNode,
+            }
+        };
+
+        var options = new StrykerOptions
+        {
+            IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { ignoredMethodName } }.Validate()
+        };
+
+        var sut = new IgnoredMethodMutantFilter();
+
+        // Act
+        var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
+
+        // Assert
+        if (shouldSkipMutant)
+        {
+            filteredMutants.ShouldNotContain(mutant);
+        }
+        else
+        {
+            filteredMutants.ShouldContain(mutant);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("Foo.MyType.ctor", true)]
+    [DataRow("MyType.ctor", true)]
+    [DataRow("Foo.MyType*.ctor", true)]
+    [DataRow("Foo*.MyType*.ctor", true)]
+    [DataRow("*.MyType*.ctor", true)]
+    [DataRow("F*.My*ype*.ctor", true)]
+    [DataRow("MyType*.ctor", true)]
+    [DataRow("*MyType.ctor", true)]
+    [DataRow("*MyType*.ctor", true)]
+    [DataRow("*Type.ctor", true)]
+    [DataRow("My*.ctor", true)]
+    [DataRow("*.ctor", true)]
+    [DataRow("*.*.ctor", true)]
+    [DataRow("MyType.constructor", false)]
+    [DataRow("Type.ctor", false)]
+    [DataRow("Foo.ctor", false)]
+    public void MutantFilter_ShouldIgnoreImplicitConstructor(string ignoredMethodName, bool shouldSkipMutant)
+    {
+        // Arrange
+        var source = @"
+public class Foo
+{
+    public class MyType
+    {
+        public MyType(string test) {}
+    }
+}
+
+public class IgnoredMethodMutantFilter_NestedMethodCalls
+{
+    private void TestMethod()
+    {
+        Foo.MyType t = new(""Param"");
     }
 }";
         var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();

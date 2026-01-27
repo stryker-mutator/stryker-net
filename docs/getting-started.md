@@ -22,7 +22,7 @@ Make sure NuGet targets and build tasks are installed. You can install them with
 
 ## Migrating
 
-Coming from an older version of Stryker.NET? Take a look at our [migration guide](https://stryker-mutator.io/docs/stryker-net/migration-guide).
+Coming from an older version of Stryker.NET? Take a look at our [migration guide](./migration-guide.md).
 
 # Install stryker
 
@@ -85,7 +85,7 @@ Do this by adding a `stryker-config.json` file to your run location. Now add you
 }
 ```
 
-For all available configuration see [our configuration page](https://stryker-mutator.io/docs/stryker-net/Configuration).
+For all available configuration see [our configuration page](./configuration.md).
 
 # Troubleshooting
 Have troubles running Stryker? Try running with trace logging.
@@ -94,4 +94,4 @@ Have troubles running Stryker? Try running with trace logging.
 dotnet stryker --verbosity trace --log-to-file
 ```
 
-Please [report any issues](http://github.com/stryker-mutator/stryker-net/issues) you have or let us know [via Slack](https://join.slack.com/t/stryker-mutator/shared_invite/enQtOTUyMTYyNTg1NDQ0LTU4ODNmZDlmN2I3MmEyMTVhYjZlYmJkOThlNTY3NTM1M2QxYmM5YTM3ODQxYmJjY2YyYzllM2RkMmM1NjNjZjM).
+Please [report any issues](https://github.com/stryker-mutator/stryker-net/issues) you have or let us know [via Slack](https://join.slack.com/t/stryker-mutator/shared_invite/enQtOTUyMTYyNTg1NDQ0LTU4ODNmZDlmN2I3MmEyMTVhYjZlYmJkOThlNTY3NTM1M2QxYmM5YTM3ODQxYmJjY2YyYzllM2RkMmM1NjNjZjM).

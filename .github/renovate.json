@@ -44,14 +44,16 @@
   ],
   "azure-pipelines": {
     "enabled": true,
-    "fileMatch": [
-      "azure.*pipelines?.*\\.ya?ml$",
-      "pipeline-templates/.*\\.ya?ml$"
+    "managerFilePatterns": [
+      "/azure.*pipelines?.*\\.ya?ml$/",
+      "/pipeline-templates/.*\\.ya?ml$/"
     ]
   },
   "customManagers": [
     {
-      "fileMatch": ["(^|/)libman\\.json$"],
+      "managerFilePatterns": [
+        "/(^|/)libman\\.json$/"
+      ],
       "customType": "regex",
       "datasourceTemplate": "npm",
       "matchStrings": [

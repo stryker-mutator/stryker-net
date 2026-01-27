@@ -258,7 +258,7 @@ public sealed class VsTestRunner : IDisposable
             }
             var runSettings = _context.GenerateRunSettings(timeOut, forCoverage, mutantTestsMap,
                 projectAndTests.HelperNamespace, source.TargetFramework, source.TargetPlatform());
-            _logger.LogTrace("{RunnerId}: testing assembly {source}.", RunnerId, source);
+            _logger.LogTrace("{RunnerId}: testing assembly {source}.", RunnerId, source.GetAssemblyFileName());
             var activeId = -1;
             if (mutantTestsMap is { Count: 1 })
             {

@@ -26,57 +26,60 @@ public sealed class IgnoredMethodMutantFilter : IMutantFilter
                     mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options)) :
                     mutants;
 
-    private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, IStrykerOptions options, bool canGoUp = true) =>
-        syntaxNode switch
-        {
-            // Check if the current node is an invocation. This will also ignore invokable properties like `Func<bool> MyProp { get;}`
-            // follow the invocation chain to see if it ends with a filtered one
-            InvocationExpressionSyntax invocation => MatchesAnIgnoredMethod(
-                                                         _triviaRemover.Visit(invocation.Expression).ToString(),
-                                                         options)
-                                                     || (invocation.Parent is MemberAccessExpressionSyntax &&
-                                                         invocation.Parent.Parent is InvocationExpressionSyntax &&
-                                                         IsPartOfIgnoredMethodCall(invocation.Parent.Parent, options,
-                                                             false)) || (canGoUp &&
-                                                                         IsPartOfIgnoredMethodCall(invocation.Parent,
-                                                                             options)),
+    private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, IStrykerOptions options, bool canGoUp = true) => syntaxNode switch
+    {
+        // Check if the current node is an invocation. This will also ignore invokable properties like `Func<bool> MyProp { get;}`
+        // follow the invocation chain to see if it ends with a filtered one
+        InvocationExpressionSyntax invocation => MatchesAnIgnoredMethod(
+                                                     _triviaRemover.Visit(invocation.Expression).ToString(),
+                                                     options)
+                                                 || (invocation.Parent is MemberAccessExpressionSyntax &&
+                                                     invocation.Parent.Parent is InvocationExpressionSyntax &&
+                                                     IsPartOfIgnoredMethodCall(invocation.Parent.Parent, options,
+                                                         false)) || (canGoUp &&
+                                                                     IsPartOfIgnoredMethodCall(invocation.Parent,
+                                                                         options)),
 
-            // Check if the current node is an object creation syntax (constructor invocation).
-            ObjectCreationExpressionSyntax creation => MatchesAnIgnoredMethod(
-                _triviaRemover.Visit(creation.Type) + ".ctor", options),
+        // Check if the current node is an object creation syntax (constructor invocation).
+        ObjectCreationExpressionSyntax creation => MatchesAnIgnoredMethod(
+            _triviaRemover.Visit(creation.Type) + ".ctor", options),
 
-            ConditionalAccessExpressionSyntax conditional => IsPartOfIgnoredMethodCall(conditional.WhenNotNull, options,
-                false),
+        ImplicitObjectCreationExpressionSyntax creation => creation.FirstAncestorOrSelf<VariableDeclarationSyntax>() != null
+            && MatchesAnIgnoredMethod(
+                        _triviaRemover.Visit(creation.FirstAncestorOrSelf<VariableDeclarationSyntax>().Type) + ".ctor", options),
 
-            ConditionalExpressionSyntax conditionalExpression =>
-                (IsPartOfIgnoredMethodCall(conditionalExpression.WhenTrue, options, false) &&
-                 IsPartOfIgnoredMethodCall(conditionalExpression.WhenFalse, options, false))
-                || (canGoUp && IsPartOfIgnoredMethodCall(conditionalExpression.Parent, options)),
+        ConditionalAccessExpressionSyntax conditional => IsPartOfIgnoredMethodCall(conditional.WhenNotNull, options,
+            false),
 
-            ExpressionStatementSyntax expressionStatement => IsPartOfIgnoredMethodCall(expressionStatement.Expression,
-                options, false),
+        ConditionalExpressionSyntax conditionalExpression =>
+            (IsPartOfIgnoredMethodCall(conditionalExpression.WhenTrue, options, false) &&
+             IsPartOfIgnoredMethodCall(conditionalExpression.WhenFalse, options, false))
+            || (canGoUp && IsPartOfIgnoredMethodCall(conditionalExpression.Parent, options)),
 
-            AssignmentExpressionSyntax assignmentExpression => IsPartOfIgnoredMethodCall(assignmentExpression.Right,
-                options, false),
+        ExpressionStatementSyntax expressionStatement => IsPartOfIgnoredMethodCall(expressionStatement.Expression,
+            options, false),
 
-            AwaitExpressionSyntax awaitExpression => IsPartOfIgnoredMethodCall(awaitExpression.Expression, options,
-                false),
+        AssignmentExpressionSyntax assignmentExpression => IsPartOfIgnoredMethodCall(assignmentExpression.Right,
+            options, false),
 
-            LocalDeclarationStatementSyntax localDeclaration => localDeclaration.Declaration.Variables.All(v =>
-                IsPartOfIgnoredMethodCall(v.Initializer?.Value, options, false)),
+        AwaitExpressionSyntax awaitExpression => IsPartOfIgnoredMethodCall(awaitExpression.Expression, options,
+            false),
 
-            BlockSyntax { Statements.Count: > 0 } block => block.Statements.All(s =>
-                IsPartOfIgnoredMethodCall(s, options, false)),
+        LocalDeclarationStatementSyntax localDeclaration => localDeclaration.Declaration.Variables.All(v =>
+            IsPartOfIgnoredMethodCall(v.Initializer?.Value, options, false)),
 
-            ConstructorInitializerSyntax constructorInitializer => MatchesAnIgnoredMethod(
-                _triviaRemover.Visit(constructorInitializer) + ".ctor", options),
+        BlockSyntax { Statements.Count: > 0 } block => block.Statements.All(s =>
+            IsPartOfIgnoredMethodCall(s, options, false)),
 
-            MemberDeclarationSyntax => false,
+        ConstructorInitializerSyntax constructorInitializer => MatchesAnIgnoredMethod(
+            _triviaRemover.Visit(constructorInitializer) + ".ctor", options),
 
-            // Traverse the tree upwards.
-            { Parent: not null } => canGoUp && IsPartOfIgnoredMethodCall(syntaxNode.Parent, options),
-            _ => false,
-        };
+        MemberDeclarationSyntax => false,
+
+        // Traverse the tree upwards.
+        { Parent: not null } => canGoUp && IsPartOfIgnoredMethodCall(syntaxNode.Parent, options),
+        _ => false,
+    };
 
     private static bool MatchesAnIgnoredMethod(string expressionString, IStrykerOptions options) => options.IgnoredMethods.Any(r => r.IsMatch(expressionString));
 

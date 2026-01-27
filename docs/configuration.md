@@ -357,7 +357,7 @@ Default: `null`
 Command line: `N/A`  
 Config file: `"ignore-mutations": ['string', 'logical']`
 
-Ignores mutations that are not currently relevant to your project. Find the mutation names [here](https://stryker-mutator.io/docs/stryker-net/mutations).
+Ignores mutations that are not currently relevant to your project. Find the mutation names [here](./mutations.md).
 
 #### `Linq expressions`
 

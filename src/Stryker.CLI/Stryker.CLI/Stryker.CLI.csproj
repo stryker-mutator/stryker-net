@@ -6,10 +6,12 @@
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotnet-stryker</ToolCommandName>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
   <PropertyGroup>
-    <VersionPrefix>4.5.1</VersionPrefix>
+    <VersionPrefix>4.11.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <PackageId>dotnet-stryker</PackageId>
     <Authors>Richard Werkman, Rouke Broersma</Authors>
@@ -29,6 +31,7 @@
   
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="NuGet.Protocol" />
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>

@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Stryker.Abstractions\Stryker.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Stryker.Solutions\Stryker.Solutions.csproj" />
     <ProjectReference Include="..\..\Stryker.Utilities\Stryker.Utilities.csproj" />
     <ProjectReference Include="..\Stryker.Core\Stryker.Core.csproj" />
   </ItemGroup>

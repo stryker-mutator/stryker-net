@@ -58,9 +58,9 @@ public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>
 
                     yield return new Mutation()
                     {
-                        OriginalNode = patternExpression,
-                        ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression,
-                            SyntaxFactory.Literal(regexMutation.ReplacementPattern)),
+                        OriginalNode = node,
+                        ReplacementNode =  node.ReplaceNode(patternExpression, SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression,
+                            SyntaxFactory.Literal(regexMutation.ReplacementPattern))),
                         DisplayName = regexMutation.DisplayName,
                         Type = Mutator.Regex,
                         Description = regexMutation.Description

@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -11,11 +14,13 @@ using Serilog.Events;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Reporting;
 using Stryker.Abstractions.Testing;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.VsTest;
 using Stryker.Utilities.Logging;
@@ -129,7 +134,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
     }
 
     [TestMethod]
-    public void ShouldUsedDesiredConfigurationWhenDefined()
+    public void ShouldUseDesiredConfigurationWhenDefined()
     {
         // arrange
         // when a solutionPath is given, and it's inside the current directory (basePath)
@@ -143,7 +148,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         };
 
         var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
-        var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, new[] { csPathName }).Object;
+        var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, [csPathName]).Object;
         var testProjectAnalyzerMock = TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object;
         // The analyzer finds two projects
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
@@ -157,10 +162,11 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
 
         // assert
-        buildalyzerAnalyzerManagerMock.Verify(x => x.SetGlobalProperty("Configuration", "Release"), Times.Once());
+        buildalyzerAnalyzerManagerMock.Verify(x => x.SetGlobalProperty("Configuration", "Release"), Times.AtLeastOnce);
     }
 
-    [TestMethod]
+    [TestMethodWithIgnoreIfSupport]
+    [IgnoreIf(nameof(Is.NotWindows))]
     public void ShouldRestoreWhenAnalysisFails()
     {
         // activate log in order to smoke test logging.
@@ -177,7 +183,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
                 ProjectPath = FileSystem.Path.GetFullPath(testCsprojPathName),
                 SourceProjectName = csprojPathName,
                 SolutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln"),
-                DevMode = true
+                DiagMode = true
             };
 
             var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
@@ -208,9 +214,22 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
                 });
 
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
+            var initialTestProcessMock = new Mock<IInitialTestProcess>();
+            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>(), It.IsAny<SourceProjectInfo>(), It.IsAny<ITestRunner>()))
+                .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
+            var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object,
+                nugetRestoreMock.Object, this,
+                TestLoggerFactory.CreateLogger<InputFileResolver>());
+            var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
+
+            var serviceProviderMock = new Mock<IServiceProvider>();
+            var mutationTestExecutorMock = new Mock<IMutationTestExecutor>();
             var target = new ProjectOrchestrator(_projectMutatorMock.Object,
-                initialBuildProcessMock.Object,
-                new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object, nugetRestoreMock.Object));
+                initialisationProcess,
+                inputFileResolver,
+                serviceProviderMock.Object,
+                mutationTestExecutorMock.Object,
+                TestLoggerFactory.CreateLogger<ProjectOrchestrator>());
 
             // act
             var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
@@ -256,12 +275,14 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         // when a solutionPath is given and it's inside the current directory (basePath)
         var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
         var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.csproj");
+        var solutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln");
+        FileSystem.AddFile(solutionPath, new MockFileData("empty"));
         var options = new StrykerOptions
         {
             ProjectPath = FileSystem.Path.GetFullPath(ProjectPath),
             // provide an invalid source project name which should normally fail
             SourceProjectName = "sourceprojec.csproj",
-            SolutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln")
+            SolutionPath = solutionPath
         };
 
         var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
@@ -283,12 +304,15 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         // arrange
         var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
         var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.csproj");
+        var solutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln");
+        FileSystem.AddFile(solutionPath, new MockFileData("empty"));
         var options = new StrykerOptions
         {
             ProjectPath = ProjectPath,
-            SolutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln")
+            SolutionPath = solutionPath
         };
         var libraryProject = FileSystem.Path.Combine(ProjectPath, "libraryproject.csproj");
+
 
         // The analyzer finds two projects
         var libraryAnalyzer = SourceProjectAnalyzerMock(libraryProject, [FileSystem.Path.Combine(ProjectPath, "mylib.cs")]).Object;
@@ -316,10 +340,12 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         // arrange
         var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
         var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.csproj");
+        var solutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln");
+        FileSystem.AddFile(solutionPath, new MockFileData("empty"));
         var options = new StrykerOptions
         {
             ProjectPath = ProjectPath,
-            SolutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln")
+            SolutionPath = solutionPath
         };
         var libraryProject = FileSystem.Path.Combine(ProjectPath, "libraryproject.csproj");
 
@@ -350,10 +376,12 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         // arrange
         var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
         var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.csproj");
+        var solutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln");
+        FileSystem.AddFile(solutionPath, new MockFileData("empty"));
         var options = new StrykerOptions
         {
             ProjectPath = ProjectPath,
-            SolutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln")
+            SolutionPath = solutionPath
         };
         var libraryProject = FileSystem.Path.Combine(ProjectPath, "libraryproject.csproj");
 
@@ -447,8 +475,22 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         mockRunner.Setup(r => r.InitialTest(It.IsAny<IProjectAndTests>())).Returns(new TestRunResult(true));
 
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
+        var initialTestProcessMock = new Mock<IInitialTestProcess>();
+        initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>(), It.IsAny<SourceProjectInfo>(), It.IsAny<ITestRunner>()))
+            .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
+        var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object,
+            new Mock<INugetRestoreProcess>().Object,
+            this,
+            TestLoggerFactory.CreateLogger<InputFileResolver>());
+        var initialisationProcess = new InitialisationProcess(inputFileResolver, initialBuildProcessMock.Object, initialTestProcessMock.Object, TestLoggerFactory.CreateLogger<InitialisationProcess>());
+
+        var serviceProviderMock = new Mock<IServiceProvider>();
+        var mutationTestExecutorMock = new Mock<IMutationTestExecutor>();
         return new ProjectOrchestrator(_projectMutatorMock.Object,
-            initialBuildProcessMock.Object,
-            new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object));
+            initialisationProcess,
+            inputFileResolver,
+            serviceProviderMock.Object,
+            mutationTestExecutorMock.Object,
+            TestLoggerFactory.CreateLogger<ProjectOrchestrator>());
     }
 }

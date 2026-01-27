@@ -22,7 +22,7 @@ public class StrykerInputsTests : TestBase
         ConcurrencyInput = new ConcurrencyInput(),
         DashboardApiKeyInput = new DashboardApiKeyInput(),
         DashboardUrlInput = new DashboardUrlInput(),
-        DevModeInput = new DevModeInput(),
+        DiagModeInput = new DiagModeInput(),
         DiffIgnoreChangesInput = new DiffIgnoreChangesInput(),
         DisableBailInput = new DisableBailInput(),
         DisableMixMutantsInput = new DisableMixMutantsInput(),
@@ -61,6 +61,32 @@ public class StrykerInputsTests : TestBase
 
         result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
         result.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void ShouldSetConfiguration()
+    {
+        _target.ConfigurationInput.SuppliedInput = "TheRelease";
+        var result = _target.ValidateAll();
+        result.Configuration.ShouldBe("TheRelease");
+    }
+
+    [TestMethod]
+    public void ShouldSetConfigurationAndPlatform()
+    {
+        _target.ConfigurationInput.SuppliedInput = "TheRelease|x64";
+        var result = _target.ValidateAll();
+        result.Configuration.ShouldBe("TheRelease");
+        result.Platform.ShouldBe("x64");
+    }
+
+    [TestMethod]
+    public void ShouldIgnoreExtraInfoInConfiguration()
+    {
+        _target.ConfigurationInput.SuppliedInput = "TheRelease|x64|Disregarded";
+        var result = _target.ValidateAll();
+        result.Configuration.ShouldBe("TheRelease");
+        result.Platform.ShouldBe("x64");
     }
 
     [TestMethod]

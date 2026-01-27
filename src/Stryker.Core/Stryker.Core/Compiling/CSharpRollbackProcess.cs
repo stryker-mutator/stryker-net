@@ -252,12 +252,13 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                 // we have to remove every mutation
                 var errorLocation = diagnostic.Location.GetMappedLineSpan();
                 Logger.LogWarning(
-                    "Stryker.NET encountered a compile error in {Path} (at {Line}:{StartCharacter}) with message: {Message} (Source code: {BrokenMutation})",
+                    "An unidentified mutation in {Path} resulted in a compile error (at {Line}:{StartCharacter}) with id: {DiagnosticId}, message: {Message} (Source code: {BrokenMutation})",
                     errorLocation.Path, errorLocation.StartLinePosition.Line,
-                    errorLocation.StartLinePosition.Character, diagnostic.GetMessage(), brokenMutation);
+                    errorLocation.StartLinePosition.Character, diagnostic.Id,
+                    diagnostic.GetMessage(), brokenMutation);
 
                 Logger.LogInformation(
-                    "Safe Mode! Stryker will flag mutations in {DisplayName} as compile error.",
+                    "Safe Mode! Stryker will remove all mutations in {DisplayName} and mark them as 'compile error'.",
                     DisplayName(initNode));
                 // backup, remove all mutations in the node
                 foreach (var mutant in scan.Where(mutant => !suspiciousMutations.Contains(mutant.Node)))

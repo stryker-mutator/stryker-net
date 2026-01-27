@@ -23,7 +23,8 @@ public static class IAnalyzerResultCSharpExtensions
         if (analyzerResult.IsSignedAssembly() && analyzerResult.GetAssemblyOriginatorKeyFile() is var keyFile && keyFile is not null)
         {
             compilationOptions = compilationOptions.WithCryptoKeyFile(keyFile)
-                .WithStrongNameProvider(new DesktopStrongNameProvider());
+                .WithStrongNameProvider(new DesktopStrongNameProvider())
+                .WithDelaySign(analyzerResult.IsDelayedSignedAssembly());
         }
         return compilationOptions;
     }
@@ -32,11 +33,7 @@ public static class IAnalyzerResultCSharpExtensions
 
     private static NullableContextOptions GetNullableContextOptions(this IAnalyzerResult analyzerResult)
     {
-        if (!Enum.TryParse(analyzerResult.GetPropertyOrDefault("Nullable", "enable"), true, out NullableContextOptions nullableOptions))
-        {
-            nullableOptions = NullableContextOptions.Enable;
-        }
-
+        Enum.TryParse(analyzerResult.GetPropertyOrDefault("Nullable", "disable"), true, out NullableContextOptions nullableOptions);
         return nullableOptions;
     }
 }

@@ -25,9 +25,9 @@ public class CommandLineConfigReaderTests
     [TestMethod]
     public void ShouldHandleNoValue()
     {
-        _target.ReadCommandLineConfig(new[] { "--dev-mode" }, _app, _inputs);
+        _target.ReadCommandLineConfig(new[] { "--diag" }, _app, _inputs);
 
-        _inputs.DevModeInput.SuppliedInput.ShouldBe(true);
+        _inputs.DiagModeInput.SuppliedInput.ShouldBe(true);
     }
 
     [TestMethod]
@@ -41,7 +41,7 @@ public class CommandLineConfigReaderTests
     [TestMethod]
     public void ShouldHandleSingleOrNoValueWithNoValue()
     {
-        _target.ReadCommandLineConfig(new[] { "--since" }, _app, _inputs);
+        _target.ReadCommandLineConfig(["--since"], _app, _inputs);
 
         _inputs.SinceInput.SuppliedInput.ShouldBe(true);
         _inputs.SinceTargetInput.SuppliedInput.ShouldBe(null);
@@ -50,7 +50,7 @@ public class CommandLineConfigReaderTests
     [TestMethod]
     public void ShouldHandleSingleOrNoValueWithValue()
     {
-        _target.ReadCommandLineConfig(new[] { "--since:test" }, _app, _inputs);
+        _target.ReadCommandLineConfig(["--since:test"], _app, _inputs);
 
         _inputs.SinceInput.SuppliedInput.ShouldBe(true);
         _inputs.SinceTargetInput.SuppliedInput.ShouldBe("test");
@@ -59,7 +59,7 @@ public class CommandLineConfigReaderTests
     [TestMethod]
     public void ShouldHandleMultiValue()
     {
-        _target.ReadCommandLineConfig(new[] { "--reporter test", "--reporter test2" }, _app, _inputs);
+        _target.ReadCommandLineConfig(["--reporter test", "--reporter test2"], _app, _inputs);
 
         _inputs.ReportersInput.SuppliedInput.Count().ShouldBe(2);
         _inputs.ReportersInput.SuppliedInput.First().ShouldBe("test");
