@@ -3,6 +3,10 @@
     "project-info": {
       "name": "github.com/stryker-mutator/stryker-net",
       "module": "cli"
-    }
+    },
+    "project": "Stryker.CLI",
+    "test-projects": [
+      "../Stryker.CLI.UnitTest/Stryker.CLI.UnitTest.csproj"
+    ]
   }
 }

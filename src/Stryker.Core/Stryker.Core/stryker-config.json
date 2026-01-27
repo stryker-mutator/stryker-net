@@ -1,0 +1,12 @@
+{
+  "stryker-config": {
+    "project-info": {
+      "name": "github.com/stryker-mutator/stryker-net",
+      "module": "core"
+    },
+    "project": "Stryker.Core",
+    "test-projects": [
+      "../Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj"
+    ]
+  }
+}
