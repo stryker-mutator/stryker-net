@@ -13,7 +13,6 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Utilities.Buildalyzer;
-using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.MutationTest;
 

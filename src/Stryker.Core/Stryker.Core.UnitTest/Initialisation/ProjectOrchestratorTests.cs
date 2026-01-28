@@ -37,8 +37,8 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
     public ProjectOrchestratorTests()
     {
         _mutationTestProcessMock.Setup(x => x.Mutate());
-        _projectMutatorMock.Setup(x => x.MutateProject(It.IsAny<StrykerOptions>(), It.IsAny<MutationTestInput>(), It.IsAny<IReporter>()))
-            .Returns((StrykerOptions options, MutationTestInput input, IReporter reporter) =>
+        _projectMutatorMock.Setup(x => x.MutateProject(It.IsAny<StrykerOptions>(), It.IsAny<MutationTestInput>(), It.IsAny<IReporter>(), It.IsAny<IMutationTestProcess>()))
+            .Returns((StrykerOptions options, MutationTestInput input, IReporter reporter, IMutationTestProcess any) =>
             {
                 var mock = new Mock<IMutationTestProcess>();
                 mock.Setup(m => m.Input).Returns(input);
