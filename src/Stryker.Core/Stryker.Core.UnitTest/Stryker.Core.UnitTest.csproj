@@ -26,4 +26,29 @@
     <ProjectReference Include="..\..\Stryker.Utilities\Stryker.Utilities.csproj" />
     <ProjectReference Include="..\Stryker.Core\Stryker.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="TestResources\ExampleSourceFile.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="TestResources\ExampleTestFileA.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="TestResources\ExampleTestFileB.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="TestResources\ExampleTestFilePreprocessorSymbols.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Compile Remove="TestResources\ExampleTestFileA.cs" />
+    <Content Include="TestResources\ExampleTestFileA.cs" />
+    <Compile Remove="TestResources\ExampleTestFileB.cs" />
+    <Content Include="TestResources\ExampleTestFileB.cs" />
+    <Compile Remove="TestResources\ExampleTestFilePreprocessorSymbols.cs" />
+    <Content Include="TestResources\ExampleTestFilePreprocessorSymbols.cs" />
+    <None Remove="TestResources\StrongNameKeyFile.snk" />
+    <Content Include="TestResources\StrongNameKeyFile.snk">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

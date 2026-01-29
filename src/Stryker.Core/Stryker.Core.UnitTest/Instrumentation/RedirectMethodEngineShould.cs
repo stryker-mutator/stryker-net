@@ -33,18 +33,20 @@ public class RedirectMethodEngineShould
 
         injected.Members.Count.ShouldBe(3);
 
-        injected.ToString().ShouldBeEquivalentTo("""
-                                                 class Test
-                                                 {
-                                                 public void Basic(int x)
-                                                 {if(ActiveMutation(2)){Basic_1(x);}else{Basic_0(x);}}
-                                                     public void Basic_0(int x)
-                                                     {
-                                                         x++;
-                                                     }
-                                                 public void Basic_1(int x) {x--;}
-                                                 }
-                                                 """);
+        var expectedTree = SyntaxFactory.ParseSyntaxTree("""
+                                                         class Test
+                                                         {
+                                                         public void Basic(int x)
+                                                         {if(ActiveMutation(2)){Basic_1(x);}else{Basic_0(x);}}
+                                                             public void Basic_0(int x)
+                                                             {
+                                                                 x++;
+                                                             }
+                                                         public void Basic_1(int x) {x--;}
+                                                         }
+                                                         """);
+        var actualTree = SyntaxFactory.ParseSyntaxTree(injected.ToString());
+        actualTree.ShouldBeSemantically(expectedTree);
     }
 
     [TestMethod]
