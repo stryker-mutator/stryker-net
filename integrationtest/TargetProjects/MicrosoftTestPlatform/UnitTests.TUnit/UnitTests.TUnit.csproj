@@ -7,14 +7,16 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="TUnit" Version="0.5.109" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="TUnit" Version="1.12.93" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TargetProject\TargetProject.csproj" />
+    <ProjectReference Include="..\..\NetCore\TargetProject\TargetProject.csproj" />
   </ItemGroup>
 
 </Project>

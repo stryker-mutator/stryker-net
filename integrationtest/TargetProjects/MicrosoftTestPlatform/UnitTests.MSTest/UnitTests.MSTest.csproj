@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TargetProject\TargetProject.csproj" />
+    <ProjectReference Include="..\..\NetCore\TargetProject\TargetProject.csproj" />
   </ItemGroup>
 
 </Project>

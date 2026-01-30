@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         agent: [ubuntu-latest, windows-latest, macos-latest]
-        category: [InitCommand, SingleTestProject, MultipleTestProjects, Solution, MSTestMTP, XUnitMTP, NUnitMTP, TUnit]
+        category: [InitCommand, SingleTestProject, MultipleTestProjects, Solution, MSTestMTP, XUnitMTP, NUnitMTP, TUnit, MTPSolution]
         runtime: [netcore, netframework]
         exclude:
           - runtime: netframework
@@ -29,6 +29,8 @@ jobs:
             category: NUnitMTP
           - runtime: netframework
             category: TUnit
+          - runtime: netframework
+            category: MTPSolution
     runs-on: ${{ matrix.agent }}
     env:
       CATEGORY: ${{ matrix.category }}

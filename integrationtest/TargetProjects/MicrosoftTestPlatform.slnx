@@ -1,0 +1,13 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="NetCore/TargetProject/TargetProject.csproj" />
+  <Project Path="NetCore/Library/Library.csproj" />
+  <Project Path="MicrosoftTestPlatform/UnitTests.MSTest/UnitTests.MSTest.csproj" />
+  <Project Path="MicrosoftTestPlatform/UnitTests.XUnit/UnitTests.XUnit.csproj" />
+  <Project Path="MicrosoftTestPlatform/UnitTests.NUnit/UnitTests.NUnit.csproj" />
+  <Project Path="MicrosoftTestPlatform/UnitTests.TUnit/UnitTests.TUnit.csproj" />
+</Solution>
