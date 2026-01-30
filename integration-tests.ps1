@@ -48,7 +48,7 @@ function Run-Stryker {
 
   $argumentText = ($effectiveArguments | ForEach-Object { $_ }) -join ' '
   Write-Info "Running dotnet-stryker in '$WorkingDirectory' with args: $argumentText"
-  pushd $WorkingDirectory
+  Push-Location $WorkingDirectory
   try {
     if ($effectiveArguments.Count -gt 0) {
       & $stryker @effectiveArguments
@@ -56,7 +56,7 @@ function Run-Stryker {
       & $stryker
     }
   } finally {
-    popd
+    Pop-Location
   }
 
   if ($LASTEXITCODE -ne 0) {

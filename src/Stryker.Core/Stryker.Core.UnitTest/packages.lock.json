@@ -890,7 +890,6 @@
           "Spectre.Console": "[0.54.0, )",
           "Stryker.Abstractions": "[1.0.0, )",
           "Stryker.Configuration": "[1.0.0, )",
-          "Stryker.DataCollector": "[1.0.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
           "Stryker.RegexMutators": "[1.0.0, )",
           "Stryker.Solutions": "[1.0.0, )",

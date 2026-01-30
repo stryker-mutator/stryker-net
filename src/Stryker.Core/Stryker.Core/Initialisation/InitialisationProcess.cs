@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
@@ -64,16 +65,22 @@ public class InitialisationProcess : IInitialisationProcess
     /// <inheritdoc/>
     public void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects)
     {
-        if (options.IsSolutionContext)
+        var solutionInfo = projects.First().SolutionInfo;
+        // pick configuration and platform from solution if available
+        var configuration = solutionInfo?.Configuration ?? options.Configuration;
+        var platform = solutionInfo?.Platform ?? options.Platform;
+        var solutionFilePath = solutionInfo?.SolutionFilePath ?? options.SolutionPath;
+        // we build the whole solution if we have a solution file path, even in project mode
+        if (!string.IsNullOrEmpty(solutionFilePath))
         {
             var framework = projects.Any(p => p.IsFullFramework);
             // Build the complete solution
-            _logger.LogInformation("Building solution {0}",
-                    Path.GetRelativePath(options.WorkingDirectory, options.SolutionPath));
+            _logger.LogInformation("Building solution {SolutionPathName}.", FileSystem.Path.GetRelativePath(options.WorkingDirectory, solutionFilePath));
+
             _initialBuildProcess.InitialBuild(
                 framework,
-                _inputFileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
-                options.SolutionPath, options.Configuration, options.Platform,
+                _inputFileResolver.FileSystem.Path.GetDirectoryName(solutionFilePath),
+                solutionFilePath, configuration, platform,
                 options.TargetFramework, options.MsBuildPath);
         }
         else
@@ -103,6 +110,8 @@ public class InitialisationProcess : IInitialisationProcess
             project.OnProjectBuilt?.Invoke();
         }
     }
+
+    private IFileSystem FileSystem => _inputFileResolver.FileSystem;
 
     public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(IStrykerOptions options,
         IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner) =>
@@ -136,7 +145,7 @@ public class InitialisationProcess : IInitialisationProcess
             }
 
             _logger.LogWarning(
-                "{failingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.",
+                "{FailingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.",
                 failingTestsCount);
         }
 

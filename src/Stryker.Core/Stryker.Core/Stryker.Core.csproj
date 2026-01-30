@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <DebugType>Full</DebugType>
     <AssemblyName>Stryker.Core</AssemblyName>
@@ -95,8 +95,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Stryker.Abstractions\Stryker.Abstractions.csproj" />
-    <ProjectReference Include="..\..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
-    <ProjectReference Include="..\..\Stryker.Options\Stryker.Configuration.csproj" />
+    <ProjectReference Include="..\..\Stryker.Configuration\Stryker.Configuration.csproj" />
     <ProjectReference Include="..\..\Stryker.RegexMutators\Stryker.RegexMutators\Stryker.RegexMutators.csproj" />
     <ProjectReference Include="..\..\Stryker.Solutions\Stryker.Solutions.csproj" />
     <ProjectReference Include="..\..\Stryker.TestRunner.VsTest\Stryker.TestRunner.VsTest.csproj" />

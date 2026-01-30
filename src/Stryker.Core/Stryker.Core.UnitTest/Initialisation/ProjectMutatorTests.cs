@@ -58,10 +58,10 @@ namespace ExtraProject.XUnit
         _mutationTestProcessMock.Setup(x => x.Mutate());
         _mutationTestProcessMock.Setup(x => x.Initialize(It.IsAny<MutationTestInput>(), It.IsAny<IStrykerOptions>(), It.IsAny<IReporter>()));
         _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
-        
+
         var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-            properties: new Dictionary<string, string> 
-            { 
+            properties: new Dictionary<string, string>
+            {
                 { "Language", "C#" },
                 { "AssemblyName", "TestProject" },
                 { "TargetDir", "c:\\bin\\Debug\\netcoreapp3.1" },
@@ -71,14 +71,14 @@ namespace ExtraProject.XUnit
             targetFramework: "netcoreapp3.1",
             projectReferences: Array.Empty<string>(),
             sourceFiles: Array.Empty<string>()).Object;
-        
+
         var folder = new CsharpFolderComposite();
         folder.Add(new CsharpFileLeaf
         {
             FullPath = "c:\\TestClass.cs",
             SyntaxTree = CSharpSyntaxTree.ParseText("class TestClass { }")
         });
-        
+
         _mutationTestInput = new MutationTestInput()
         {
             SourceProjectInfo = new Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo()
@@ -105,7 +105,7 @@ namespace ExtraProject.XUnit
         // arrange
         var options = new StrykerOptions();
         var serviceProviderMock = new Mock<IServiceProvider>();
-        var target = new ProjectMutator(TestLoggerFactory.CreateLogger<ProjectMutator>(), serviceProviderMock.Object, _mutationTestProcessMock.Object);
+        var target = new ProjectMutator(TestLoggerFactory.CreateLogger<ProjectMutator>(), serviceProviderMock.Object);
         var testCase1 = new VsTestCase(new TestCase("mytestname1", new Uri(_testFilePath), _testFileContents)
         {
             Id = Guid.NewGuid(),
@@ -134,7 +134,7 @@ namespace ExtraProject.XUnit
 
         _mutationTestInput.InitialTestRun = initialTestrun;
         // act
-        var result = target.MutateProject(options, _mutationTestInput, _reporterMock.Object);
+        var result = target.MutateProject(options, _mutationTestInput, _reporterMock.Object, _mutationTestProcessMock.Object);
 
         // assert
         result.ShouldNotBeNull();

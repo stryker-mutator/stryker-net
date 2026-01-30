@@ -17,7 +17,7 @@ public static class Program
         {
             // Build DI container
             var services = new ServiceCollection()
-                .AddLogging()
+                .AddLogging(builder => builder.SetMinimumLevel(LogLevel.Trace))
                 .AddStrykerCore()
                 .AddStrykerCli()
                 .BuildServiceProvider();

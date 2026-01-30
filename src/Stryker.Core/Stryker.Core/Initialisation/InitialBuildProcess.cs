@@ -41,14 +41,17 @@ public class InitialBuildProcess : IInitialBuildProcess
         string platform = null, string targetFramework = null,
         string msbuildPath = null)
     {
-        if (fullFramework && string.IsNullOrEmpty(solutionPath))
+        if (fullFramework)
         {
-            throw new InputException("Stryker could not build your project as no solution file was presented. Please pass the solution path to stryker.");
-        }
-
-        if (fullFramework && Environment.OSVersion.Platform != PlatformID.Win32NT)
-        {
-            throw new InputException("Stryker cannot build .NET Framework projects on non-Windows platforms.");
+            // ensure prerequisites for building .NETFramework projects are met
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                throw new InputException("Stryker cannot build .NET Framework projects on non-Windows platforms.");
+            }
+            if (string.IsNullOrEmpty(solutionPath))
+            {
+                throw new InputException("Stryker could not build your project as no solution file was presented. Please pass the solution path to stryker.");
+            }
         }
 
         var msBuildHelper = new MsBuildHelper(fileSystem: _fileSystem, executor: _processExecutor, msBuildPath: msbuildPath);
@@ -95,7 +98,7 @@ public class InitialBuildProcess : IInitialBuildProcess
     {
         if (result.ExitCode != ExitCodes.Success)
         {
-            _logger.LogError("Initial build failed. Command was [{exe} {args}] (in folder '{folder}'). Reult: {Result}", buildCommand, options, path, result.Output);
+            _logger.LogError("Initial build failed. Command was [{Exe} {Args}] (in folder '{Folder}'). Result: {Result}", buildCommand, options, path, result.Output);
             // Initial build failed
             throw new InputException(result.Output, FormatBuildResultErrorString(buildCommand, options));
         }

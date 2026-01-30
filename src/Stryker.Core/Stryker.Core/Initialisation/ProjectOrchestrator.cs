@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,7 +56,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         _initializationProcess ??= _serviceProvider.GetRequiredService<IInitialisationProcess>();
         var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
 
-        if (!projectInfos.Any())
+        if (projectInfos.Count == 0)
         {
             _logger.LogWarning("No project to mutate. Stryker will exit prematurely.");
             return [];
