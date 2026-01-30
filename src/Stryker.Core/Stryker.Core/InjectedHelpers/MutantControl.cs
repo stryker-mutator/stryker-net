@@ -126,10 +126,10 @@ namespace Stryker
             if (ActiveMutant == ActiveMutantNotInitValue)
             {
                 // coalesce null to empty string to avoid null-to-non-nullable conversion
-                string environmentVariableName = Environment.GetEnvironmentVariable("STRYKER_MUTANT_ID_CONTROL_VAR") ?? string.Empty;
+                string environmentVariableName = System.Environment.GetEnvironmentVariable("STRYKER_MUTANT_ID_CONTROL_VAR") ?? string.Empty;
                 if (environmentVariableName.Length > 0)
                 {
-                    string environmentVariable = Environment.GetEnvironmentVariable(environmentVariableName) ?? string.Empty;
+                    string environmentVariable = System.Environment.GetEnvironmentVariable(environmentVariableName) ?? string.Empty;
                     if (string.IsNullOrEmpty(environmentVariable))
                     {
                         ActiveMutant = -1;

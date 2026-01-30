@@ -66,11 +66,11 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         Initialize();
     }
 
-    public async Task ResetTestProcessesAsync()
+    public void ResetTestProcesses()
     {
         _logger.LogDebug("Resetting all test server processes in the pool");
         var tasks = _availableRunners.Select(runner => runner.ResetServerAsync());
-        await Task.WhenAll(tasks);
+        Task.WhenAll(tasks).Wait();
         _logger.LogDebug("All test server processes have been reset");
     }
 
@@ -111,7 +111,12 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
             return new TestRunResult(false, "No test assemblies found");
         }
 
-        return await RunThisAsync(runner => runner.InitialTestAsync(project)).ConfigureAwait(false);
+        var results = await RunThisAsync(runner => runner.InitialTestAsync(project)).ConfigureAwait(false);
+
+        // reset all test processes after the initial test run
+        ResetTestProcesses();
+
+        return results;
     }
 
     public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project)

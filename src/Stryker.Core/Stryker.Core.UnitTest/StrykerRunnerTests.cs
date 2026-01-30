@@ -46,13 +46,9 @@ public class StrykerRunnerTests : TestBase
         var projectInfo = Mock.Of<SourceProjectInfo>();
         projectInfo.ProjectContents = folder;
 
-        var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-        testRunnerMock.Setup(x => x.ResetTestProcessesAsync()).Returns(Task.CompletedTask);
-
         var mutationTestInput = new MutationTestInput()
         {
-            SourceProjectInfo = projectInfo,
-            TestRunner = testRunnerMock.Object
+            SourceProjectInfo = projectInfo
         };
 
         inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
@@ -115,8 +111,6 @@ public class StrykerRunnerTests : TestBase
         {
             Mutants = new Collection<IMutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
         });
-        var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-        testRunnerMock.Setup(x => x.ResetTestProcessesAsync()).Returns(Task.CompletedTask);
         
         var mutationTestInput = new MutationTestInput()
         {
@@ -124,7 +118,6 @@ public class StrykerRunnerTests : TestBase
             {
                 ProjectContents = folder
             },
-            TestRunner = testRunnerMock.Object
         };
 
         inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
@@ -175,15 +168,13 @@ public class StrykerRunnerTests : TestBase
             Mutants = new Collection<IMutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
         });
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-        testRunnerMock.Setup(x => x.ResetTestProcessesAsync()).Returns(Task.CompletedTask);
         
         var mutationTestInput = new MutationTestInput()
         {
             SourceProjectInfo = new SourceProjectInfo()
             {
                 ProjectContents = folder
-            },
-            TestRunner = testRunnerMock.Object
+            }
         };
 
         inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
