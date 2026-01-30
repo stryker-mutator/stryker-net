@@ -4,6 +4,14 @@ on:
   schedule:
     - cron: '0 1 * * *'
   workflow_dispatch:
+    inputs:
+      useLocalTool:
+        description: 'Pack and use local Stryker CLI (instead of nuget tool)'
+        type: boolean
+        required: false
+        default: false
+  # When modifying the workflow, you can enable pull request trigger so it's easier to test changes, but we don't want to run this on every PR
+  # pull_request:
 
 concurrency:
   group: stryker-on-stryker-${{ github.ref }}
@@ -24,9 +32,9 @@ jobs:
           - name: Stryker.Core
             workingDirectory: src/Stryker.Core/Stryker.Core
           - name: Stryker.DataCollector
-            workingDirectory: src/Stryker.DataCollector/Stryker.DataCollector
-          - name: Stryker.Options
-            workingDirectory: src/Stryker.Options
+            workingDirectory: src/Stryker.DataCollector
+          - name: Stryker.Configuration
+            workingDirectory: src/Stryker.Configuration
           - name: Stryker.RegexMutators
             workingDirectory: src/Stryker.RegexMutators/Stryker.RegexMutators
           - name: Stryker.TestRunner.VsTest
@@ -39,9 +47,17 @@ jobs:
             workingDirectory: src/Stryker.Utilities
 
     steps:
+      - uses: actions/checkout@v6
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
             8.x
             10.x
+
+      - name: Run Stryker
+        shell: pwsh
+        env:
+          STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY || '' }}
+          USE_LOCAL_TOOL: ${{ inputs.useLocalTool }}
+        run: ./stryker-on-stryker.ps1 -WorkingDirectory "${{ matrix.workingDirectory }}"
