@@ -1,0 +1,12 @@
+{
+  "stryker-config": {
+    "project-info": {
+      "name": "github.com/stryker-mutator/stryker-net",
+      "module": "regexmutators"
+    },
+    "project": "Stryker.RegexMutators",
+    "test-projects": [
+      "../Stryker.RegexMutators.UnitTest/Stryker.RegexMutators.UnitTest.csproj"
+    ]
+  }
+}

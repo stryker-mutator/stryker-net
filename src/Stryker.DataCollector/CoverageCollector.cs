@@ -63,7 +63,7 @@ namespace Stryker.DataCollector
                 .FriendlyName;
             // ReSharper disable once PossibleNullReferenceException
             var uri = (typeof(CoverageCollector).GetTypeInfo()
-                    .GetCustomAttributes(typeof(DataCollectorTypeUriAttribute), false).First() as
+                    .GetCustomAttributes(typeof(DataCollectorTypeUriAttribute), false)[0] as
                 DataCollectorTypeUriAttribute).TypeUri;
             var line =
                 $"friendlyName=\"{friendlyName}\" uri=\"{uri}\" codebase=\"{codeBase}\" assemblyQualifiedName=\"{qualifiedName}\"";
