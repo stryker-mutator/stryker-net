@@ -148,7 +148,7 @@ function Run-Category {
       if ($Runtime -ne 'netcore') { throw "MTPSolution only supports runtime 'netcore'." }
       $mtpSolutionWd = Join-Path $RepoRoot 'integrationtest\TargetProjects'
       $mtpSolutionPath = Join-Path $mtpSolutionWd 'MicrosoftTestPlatform.slnx'
-      if (Test-Path $mtpSolutionPath) { Run-Stryker -WorkingDirectory $mtpSolutionWd -Arguments @('--solution', $mtpSolutionPath) } else { Write-Warn "MTP Solution not found at $mtpSolutionPath" }
+      if (Test-Path $mtpSolutionPath) { Run-Stryker -WorkingDirectory $mtpSolutionWd -Arguments @('--solution', $mtpSolutionPath, '--testrunner', 'mtp') } else { Write-Warn "MTP Solution not found at $mtpSolutionPath" }
       break
     }
     'Solution' {
