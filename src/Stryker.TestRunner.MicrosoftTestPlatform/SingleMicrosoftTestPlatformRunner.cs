@@ -228,7 +228,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
                 {
                     if (_testsByAssembly.TryGetValue(assembly, out var tests))
                     {
-                    discoveredTests = tests;
+                        discoveredTests = tests;
                         totalDiscoveredTests += tests.Count;
                     }
                 }
