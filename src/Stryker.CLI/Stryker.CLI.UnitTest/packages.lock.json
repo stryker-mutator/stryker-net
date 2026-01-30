@@ -497,11 +497,6 @@
         "resolved": "9.0.0",
         "contentHash": "QhkXUl2gNrQtvPmtBTQHb0YsUrDiDQ2QS09YbtTTiSjGcf7NBqtYbrG/BE06zcBPCKEwQGzIv13IVdXNOSub2w=="
       },
-      "System.ComponentModel.Annotations": {
-        "type": "Transitive",
-        "resolved": "5.0.0",
-        "contentHash": "dMkqfy2el8A8/I76n2Hi1oBFEbG1SfxD2l5nhwXV3XjlnOmwxJlQbYpJH4W51odnU9sARCSAgv7S3CyAFMkpYg=="
-      },
       "System.Configuration.ConfigurationManager": {
         "type": "Transitive",
         "resolved": "8.0.0",
@@ -841,7 +836,7 @@
       "dotnet-stryker": {
         "type": "Project",
         "dependencies": {
-          "McMaster.Extensions.CommandLineUtils": "[4.1.1, )",
+          "McMaster.Extensions.CommandLineUtils": "[5.0.0, )",
           "Microsoft.Extensions.DependencyInjection": "[10.0.2, )",
           "NuGet.Protocol": "[7.0.1, )",
           "YamlDotNet": "[16.3.0, )",
@@ -873,13 +868,13 @@
           "Serilog.Sinks.Console": "[6.1.1, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.54.0, )",
-          "Stryker.Abstractions": "[1.0.0, )",
-          "Stryker.Configuration": "[1.0.0, )",
+          "Stryker.Abstractions": "[4.11.0, )",
+          "Stryker.Configuration": "[4.11.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
-          "Stryker.RegexMutators": "[1.0.0, )",
-          "Stryker.Solutions": "[1.0.0, )",
-          "Stryker.TestRunner.VsTest": "[1.0.0, )",
-          "Stryker.Utilities": "[1.0.0, )",
+          "Stryker.RegexMutators": "[4.11.0, )",
+          "Stryker.Solutions": "[4.11.0, )",
+          "Stryker.TestRunner.VsTest": "[4.11.0, )",
+          "Stryker.Utilities": "[4.11.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
         }
       },
@@ -902,8 +897,8 @@
           "Microsoft.CodeAnalysis.CSharp": "[5.0.0, )",
           "Microsoft.CodeAnalysis.Common": "[5.0.0, )",
           "Serilog": "[4.3.0, )",
-          "Stryker.Abstractions": "[1.0.0, )",
-          "Stryker.Utilities": "[1.0.0, )"
+          "Stryker.Abstractions": "[4.11.0, )",
+          "Stryker.Utilities": "[4.11.0, )"
         }
       },
       "stryker.datacollector": {
@@ -929,7 +924,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.TestPlatform.ObjectModel": "[18.0.1, )",
-          "Stryker.Abstractions": "[1.0.0, )"
+          "Stryker.Abstractions": "[4.11.0, )"
         }
       },
       "stryker.testrunner.vstest": {
@@ -940,10 +935,10 @@
           "Microsoft.TestPlatform.ObjectModel": "[18.0.1, )",
           "Microsoft.TestPlatform.Portable": "[18.0.1, )",
           "Microsoft.TestPlatform.TranslationLayer": "[18.0.1, )",
-          "Stryker.Abstractions": "[1.0.0, )",
-          "Stryker.DataCollector": "[1.0.0, )",
-          "Stryker.TestRunner": "[1.0.0, )",
-          "Stryker.Utilities": "[1.0.0, )",
+          "Stryker.Abstractions": "[4.11.0, )",
+          "Stryker.DataCollector": "[4.11.0, )",
+          "Stryker.TestRunner": "[4.11.0, )",
+          "Stryker.Utilities": "[4.11.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
         }
       },
@@ -956,7 +951,7 @@
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.2, )",
           "Mono.Cecil": "[0.11.6, )",
           "ResXResourceReader.NetStandard": "[1.3.0, )",
-          "Stryker.Abstractions": "[1.0.0, )"
+          "Stryker.Abstractions": "[4.11.0, )"
         }
       },
       "Azure.Storage.Files.Shares": {
@@ -1009,12 +1004,9 @@
       },
       "McMaster.Extensions.CommandLineUtils": {
         "type": "CentralTransitive",
-        "requested": "[4.1.1, )",
-        "resolved": "4.1.1",
-        "contentHash": "zxgDY+G5yVq2q8sVB3Z275Qkxed1jC95nwAfnlSyoG4l5Nicvd4+ke1jXusEZEfyuErlAgXCKS937c13FmZWBg==",
-        "dependencies": {
-          "System.ComponentModel.Annotations": "5.0.0"
-        }
+        "requested": "[5.0.0, )",
+        "resolved": "5.0.0",
+        "contentHash": "f/oIMg5kL+MmY29jFfWJ8Bv9EzDQidN+eJVN2Fb2e5o2u9zN0QXLVOgxoXLbZLUxOzBmZbuhd+ArAt6amducYw=="
       },
       "Microsoft.CodeAnalysis.Common": {
         "type": "CentralTransitive",
