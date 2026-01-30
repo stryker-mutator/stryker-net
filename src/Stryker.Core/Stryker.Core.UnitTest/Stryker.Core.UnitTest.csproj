@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -50,6 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Stryker.Configuration\Stryker.Configuration.csproj" />
     <ProjectReference Include="..\Stryker.Core\Stryker.Core.csproj" />
     <ProjectReference Include="..\..\Stryker.Abstractions\Stryker.Abstractions.csproj" />
     <ProjectReference Include="..\..\Stryker.TestRunner\Stryker.TestRunner.csproj" />
