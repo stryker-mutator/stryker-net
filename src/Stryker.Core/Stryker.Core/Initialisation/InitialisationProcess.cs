@@ -120,7 +120,7 @@ public class InitialisationProcess : IInitialisationProcess
     private InitialTestRun InitialTest(IStrykerOptions options, SourceProjectInfo projectInfo,
         ITestRunner testRunner, bool throwIfFails)
     {
-        DiscoverTests(projectInfo, testRunner, options);
+        DiscoverTests(projectInfo, testRunner);
 
         // initial test
         _logger.LogInformation(
@@ -166,7 +166,7 @@ public class InitialisationProcess : IInitialisationProcess
                 ("Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter", "MSTest.TestAdapter")
     };
 
-    private void DiscoverTests(SourceProjectInfo projectInfo, ITestRunner testRunner, IStrykerOptions options)
+    private void DiscoverTests(SourceProjectInfo projectInfo, ITestRunner testRunner)
     {
         foreach (var testProject in projectInfo.TestProjectsInfo.AnalyzerResults)
         {
@@ -203,23 +203,20 @@ public class InitialisationProcess : IInitialisationProcess
                 _logger.LogWarning(message);
             }
 
+            if (!causeFound && testProject.References.Any(r => r.Contains("Microsoft.Testing.Platform")))
+            {
+                causeFound = true;
+                var message = $"Project '{testProject.ProjectFilePath}' is using Microsoft.Testing.Platform which is not yet supported by Stryker, " +
+                              $"see https://github.com/stryker-mutator/stryker-net/issues/3094";
+                projectInfo.LogError(message);
+                _logger.LogWarning(message);
+            }
+
             if (causeFound)
             {
                 continue;
             }
-            
-            if (testProject.References.Any(r => r.Contains("Microsoft.Testing.Platform")))
-            {
-                if (testRunner is not TestRunner.MicrosoftTestPlatform.MicrosoftTestPlatformRunnerPool)
-                {
-                    var message = $"Project '{testProject.ProjectFilePath}' uses Microsoft.Testing.Platform. Switching to the MTP runner.";
-                    _logger.LogInformation(message);
 
-                    testRunner = new TestRunner.MicrosoftTestPlatform.MicrosoftTestPlatformRunnerPool(options: options, logger: _logger);
-                }
-                continue;
-            }
-            
             var messageForNoReason = $"No test detected for project '{testProject.ProjectFilePath}'. No cause identified.";
             projectInfo.LogError(messageForNoReason);
             _logger.LogWarning(messageForNoReason);
