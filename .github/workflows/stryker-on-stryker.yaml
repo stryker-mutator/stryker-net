@@ -32,7 +32,7 @@ jobs:
           - name: Stryker.Core
             workingDirectory: src/Stryker.Core/Stryker.Core
           - name: Stryker.DataCollector
-            workingDirectory: src/Stryker.DataCollector/Stryker.DataCollector
+            workingDirectory: src/Stryker.DataCollector
           - name: Stryker.Options
             workingDirectory: src/Stryker.Options
           - name: Stryker.RegexMutators

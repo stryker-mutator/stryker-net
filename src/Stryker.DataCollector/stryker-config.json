@@ -6,7 +6,7 @@
     },
     "project": "Stryker.DataCollector",
     "test-projects": [
-      "../../Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj"
+      "../Stryker.TestRunner.VsTest.UnitTest/Stryker.TestRunner.VsTest.UnitTest.csproj"
     ]
   }
 }

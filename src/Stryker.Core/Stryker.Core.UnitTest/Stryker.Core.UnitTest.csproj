@@ -50,10 +50,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Stryker.Abstractions\Stryker.Abstractions.csproj" />
     <ProjectReference Include="..\Stryker.Core\Stryker.Core.csproj" />
+    <ProjectReference Include="..\..\Stryker.Abstractions\Stryker.Abstractions.csproj" />
     <ProjectReference Include="..\..\Stryker.DataCollector\Stryker.DataCollector.csproj" />
-    <ProjectReference Include="..\..\Stryker.Options\Stryker.Options.csproj" />
     <ProjectReference Include="..\..\Stryker.TestRunner\Stryker.TestRunner.csproj" />
     <ProjectReference Include="..\..\Stryker.Utilities\Stryker.Utilities.csproj" />
   </ItemGroup>
