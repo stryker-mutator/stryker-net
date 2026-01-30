@@ -38,11 +38,11 @@ Reasons you might want to lower this setting:
 
         if (SuppliedInput > Default)
         {
-            logger.LogWarning("Using a concurrency of {concurrency} which is more than recommended {safeConcurrencyCount} for normal system operation. " +
+            logger.LogWarning("Using a concurrency of {Concurrency} which is more than recommended {SafeConcurrencyCount} for normal system operation. " +
                 "This might have an impact on performance.", SuppliedInput, Default);
         }
 
-        logger.LogInformation("Stryker will use a max of {concurrency} parallel testsessions.", SuppliedInput.Value);
+        logger.LogInformation("Stryker will use a max of {Concurrency} parallel testsessions.", SuppliedInput.Value);
 
         if (SuppliedInput is 1)
         {

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.1.11312.151 d18.0
+VisualStudioVersion = 18.1.11312.151
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.CLI", "Stryker.CLI\Stryker.CLI\Stryker.CLI.csproj", "{7B35D5F5-F983-4034-8A15-952E8C415010}"
 EndProject
@@ -10,8 +10,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Core", "Stryker.Core\Stryker.Core\Stryker.Core.csproj", "{FC692334-8360-4A94-8692-5768ADC5DD04}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Core.UnitTest", "Stryker.Core\Stryker.Core.UnitTest\Stryker.Core.UnitTest.csproj", "{DBF2BA4B-39BE-48BF-B220-9891608B014F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.DataCollector", "Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj", "{C5C14231-5DA6-4E3C-802C-6D76C0222FE4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.RegexMutators", "Stryker.RegexMutators\Stryker.RegexMutators\Stryker.RegexMutators.csproj", "{4E6E67F9-1890-4A6A-885B-CD6D55B2FC49}"
 EndProject
@@ -24,9 +22,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
 		Directory.Packages.props = Directory.Packages.props
+		..\integration-tests.ps1 = ..\integration-tests.ps1
 		..\README.md = ..\README.md
 		..\.github\renovate.json = ..\.github\renovate.json
-		..\integration-tests.ps1 = ..\integration-tests.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipeline-templates", "pipeline-templates", "{A9BCC324-3DF8-493A-9792-A15C9797AD11}"
@@ -38,8 +36,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipeline-templates", "pipel
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Abstractions", "Stryker.Abstractions\Stryker.Abstractions.csproj", "{C9E6C641-94C1-41D2-BAA4-8BFE42749FBE}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Configuration", "Stryker.Options\Stryker.Configuration.csproj", "{E80FD63A-510D-49E2-B1FE-B6CDD5BA106D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Utilities", "Stryker.Utilities\Stryker.Utilities.csproj", "{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}"
 EndProject
@@ -63,6 +59,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stryker.Solutions", "Stryke
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stryker.Solutions.Test", "Stryker.Solutions.Test\Stryker.Solutions.Test.csproj", "{AE65C8F9-784C-4872-B8B3-04CE2FDBD589}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stryker.DataCollector", "Stryker.DataCollector\Stryker.DataCollector.csproj", "{0BC69D3E-90F8-6278-DAF2-8F34AE3A2ED9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stryker.Configuration", "Stryker.Configuration\Stryker.Configuration.csproj", "{FC6557D9-42DA-1ABA-B6F2-C8E89E4CA573}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,10 +85,6 @@ Global
 		{DBF2BA4B-39BE-48BF-B220-9891608B014F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBF2BA4B-39BE-48BF-B220-9891608B014F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBF2BA4B-39BE-48BF-B220-9891608B014F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C5C14231-5DA6-4E3C-802C-6D76C0222FE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C5C14231-5DA6-4E3C-802C-6D76C0222FE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C5C14231-5DA6-4E3C-802C-6D76C0222FE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C5C14231-5DA6-4E3C-802C-6D76C0222FE4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4E6E67F9-1890-4A6A-885B-CD6D55B2FC49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4E6E67F9-1890-4A6A-885B-CD6D55B2FC49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E6E67F9-1890-4A6A-885B-CD6D55B2FC49}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -101,10 +97,6 @@ Global
 		{C9E6C641-94C1-41D2-BAA4-8BFE42749FBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9E6C641-94C1-41D2-BAA4-8BFE42749FBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9E6C641-94C1-41D2-BAA4-8BFE42749FBE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E80FD63A-510D-49E2-B1FE-B6CDD5BA106D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E80FD63A-510D-49E2-B1FE-B6CDD5BA106D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E80FD63A-510D-49E2-B1FE-B6CDD5BA106D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E80FD63A-510D-49E2-B1FE-B6CDD5BA106D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -129,6 +121,14 @@ Global
 		{AE65C8F9-784C-4872-B8B3-04CE2FDBD589}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE65C8F9-784C-4872-B8B3-04CE2FDBD589}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE65C8F9-784C-4872-B8B3-04CE2FDBD589}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BC69D3E-90F8-6278-DAF2-8F34AE3A2ED9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BC69D3E-90F8-6278-DAF2-8F34AE3A2ED9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BC69D3E-90F8-6278-DAF2-8F34AE3A2ED9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BC69D3E-90F8-6278-DAF2-8F34AE3A2ED9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC6557D9-42DA-1ABA-B6F2-C8E89E4CA573}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC6557D9-42DA-1ABA-B6F2-C8E89E4CA573}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC6557D9-42DA-1ABA-B6F2-C8E89E4CA573}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC6557D9-42DA-1ABA-B6F2-C8E89E4CA573}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
