@@ -130,7 +130,6 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
     [TestMethod]
     public void InitializeShouldFindFilesRecursively()
     {
-
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
                 { _sourceProjectFilePath, new MockFileData(_defaultTestProjectFileContents)},
