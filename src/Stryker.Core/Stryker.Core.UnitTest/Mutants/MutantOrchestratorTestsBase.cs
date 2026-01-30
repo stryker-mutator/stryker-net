@@ -28,7 +28,7 @@ public class MutantOrchestratorTestsBase : TestBase
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(actual);
         Type[] typeToLoad = [typeof(object), typeof(List<>), typeof(Enumerable), typeof(Nullable<>)];
-        MetadataReference[] references = typeToLoad.Select( t=> MetadataReference.CreateFromFile(t.Assembly.Location)).ToArray();
+        var references = typeToLoad.Select( t=> MetadataReference.CreateFromFile(t.Assembly.Location)).Cast<MetadataReference>().ToArray();
         var compilation = CSharpCompilation.Create(null).WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
             .WithNullableContextOptions(NullableContextOptions.Enable))
                         .AddSyntaxTrees(syntaxTree).WithReferences(references);
