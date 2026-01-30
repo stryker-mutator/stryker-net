@@ -60,6 +60,9 @@ public class StrykerRunner : IStrykerRunner
             // Mutate
             _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, reporters).ToList();
 
+            // Reset test processes after mutation to ensure they load the mutated assemblies
+            await Task.WhenAll(_mutationTestProcesses.Select(x => x.Input.TestRunner.ResetTestProcessesAsync()));
+
             var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
             var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo).Aggregate((a, b) => (TestProjectsInfo)a + (TestProjectsInfo)b);
 

@@ -114,6 +114,23 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
+    public async Task ResetServerAsync()
+    {
+        _logger.LogDebug("{RunnerId}: Resetting test servers to reload assemblies", RunnerId);
+        
+        lock (_serverLock)
+        {
+            foreach (var server in _assemblyServers.Values)
+            {
+                server.Dispose();
+            }
+            _assemblyServers.Clear();
+        }
+        
+        _logger.LogDebug("{RunnerId}: Test servers reset complete", RunnerId);
+        await Task.CompletedTask;
+    }
+
     private void WriteMutantIdToFile(int mutantId)
     {
         try

@@ -66,6 +66,14 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         Initialize();
     }
 
+    public async Task ResetTestProcessesAsync()
+    {
+        _logger.LogDebug("Resetting all test server processes in the pool");
+        var tasks = _availableRunners.Select(runner => runner.ResetServerAsync());
+        await Task.WhenAll(tasks);
+        _logger.LogDebug("All test server processes have been reset");
+    }
+
     private void Initialize()
     {
         // Create and initialize all runners in parallel because of file IO during initialization

@@ -20,4 +20,6 @@ public interface ITestRunner : IDisposable
     IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project);
 
     Task<ITestRunResult> TestMultipleMutantsAsync(IProjectAndTests project, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler? update);
+
+    Task ResetTestProcessesAsync();
 }

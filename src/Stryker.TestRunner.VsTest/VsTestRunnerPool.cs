@@ -65,6 +65,12 @@ public sealed class VsTestRunnerPool : ITestRunner
 
     public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project) => Context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest) ? CaptureCoverageTestByTest(project) : CaptureCoverageInOneGo(project);
 
+    public Task ResetTestProcessesAsync()
+    {
+        // VsTest runner doesn't use persistent test servers, so no reset is needed
+        return Task.CompletedTask;
+    }
+
     private void Initialize(Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder = null)
     {
         runnerBuilder ??= (context, i) => new VsTestRunner(context, i);
