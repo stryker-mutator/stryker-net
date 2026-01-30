@@ -10,8 +10,8 @@ on:
         type: boolean
         required: false
         default: false
-  # TODO: Remove before merging
-  pull_request:
+  # When modifying the workflow, you can enable pull request trigger so it's easier to test changes, but we don't want to run this on every PR
+  # pull_request:
 
 concurrency:
   group: stryker-on-stryker-${{ github.ref }}
