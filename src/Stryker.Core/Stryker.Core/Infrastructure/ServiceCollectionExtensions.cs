@@ -1,20 +1,20 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Testing;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Helpers.ProcessUtil;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Reporters;
 using Stryker.Solutions;
-using Stryker.TestRunner.VsTest;
 using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
+    // Cannot be tested directly
+    [ExcludeFromCodeCoverage]
     public static IServiceCollection AddStrykerCore(this IServiceCollection services)
     {
         // Add logging support (providers configured by caller)
@@ -26,10 +26,9 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IProjectMutator, ProjectMutator>();
         services.AddSingleton<IMutationTestExecutor, MutationTestExecutor>();
 
-        // Mutation test process - Scoped as they manage per-project state
-        services.AddScoped<IMutationTestProcess, MutationTestProcess>();
-        services.AddScoped<IInitialisationProcess, InitialisationProcess>();
-        services.AddScoped<IMutationProcess, CsharpMutationProcess>();
+        services.AddTransient<IInitialisationProcess, InitialisationProcess>();
+        services.AddTransient<IMutationTestProcess, MutationTestProcess>();
+        services.AddTransient<IMutationProcess, CsharpMutationProcess>();
 
         // Initialisation services - Transient as they perform per-run operations
         services.AddTransient<IInitialBuildProcess, InitialBuildProcess>();
