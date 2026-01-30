@@ -36,16 +36,15 @@ function Get-DashboardVersion {
 
   $isGh = ${env:GITHUB_ACTIONS} -eq 'true'
   if ($isGh) {
-    $event = ${env:GITHUB_EVENT_NAME}
-    $refName = ${env:GITHUB_REF_NAME}
-    $ref = ${env:GITHUB_REF}
-    $headRef = ${env:GITHUB_HEAD_REF}
+    $ghEvent = ${env:GITHUB_EVENT_NAME}
+    $ghRefName = ${env:GITHUB_REF_NAME}
+    $ghRef = ${env:GITHUB_REF}
 
-    if ($event -eq 'pull_request' -and -not [string]::IsNullOrWhiteSpace($ref)) {
-      return $ref
+    if ($ghEvent -eq 'pull_request' -and -not [string]::IsNullOrWhiteSpace($ghRef)) {
+      return $ghRef
     }
-    if (-not [string]::IsNullOrWhiteSpace($refName)) { return $refName }
-    if (-not [string]::IsNullOrWhiteSpace($ref)) { return $ref }
+    if (-not [string]::IsNullOrWhiteSpace($ghRefName)) { return $ghRefName }
+    if (-not [string]::IsNullOrWhiteSpace($ghRef)) { return $ghRef }
     return 'unknown'
   }
 
