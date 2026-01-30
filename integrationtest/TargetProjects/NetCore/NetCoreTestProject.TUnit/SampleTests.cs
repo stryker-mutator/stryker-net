@@ -1,7 +1,7 @@
 using TUnit.Core;
 using TargetProject.StrykerFeatures;
 
-namespace TargetProject.TUnit;
+namespace NetCoreTestProject.TUnit;
 
 public class SampleTests
 {
@@ -11,7 +11,10 @@ public class SampleTests
     public async Task TestAgeExplicit(int age, bool expired)
     {
         var sut = new KilledMutants { Age = age };
-        await Assert.That(expired == sut.IsExpiredBool()).IsTrue();
+
+        var result = sut.IsExpiredBool();
+
+        await Assert.That(result == expired).IsTrue();
     }
 }
 

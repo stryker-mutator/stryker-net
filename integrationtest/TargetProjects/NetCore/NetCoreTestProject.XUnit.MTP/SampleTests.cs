@@ -11,7 +11,10 @@ public class SampleTests
     public void TestAgeExplicit(int age, bool expired)
     {
         var sut = new KilledMutants { Age = age };
-        Assert.True(expired == sut.IsExpiredBool());
+
+        var result = sut.IsExpiredBool();
+
+        Assert.True(expired == result);
     }
 }
 
