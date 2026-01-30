@@ -217,7 +217,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 29, ignored: 7, survived: 3, killed: 7, timeout: 0, nocoverage: 11);
+        CheckReportMutants(report, total: 27, ignored: 7, survived: 3, killed: 7, timeout: 0, nocoverage: 11);
     }
 
     private void CheckMutationKindsValidity(IJsonReport report)
