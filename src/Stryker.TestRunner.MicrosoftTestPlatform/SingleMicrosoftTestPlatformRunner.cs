@@ -82,38 +82,6 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         return RunAllTestsAsync(assemblies, mutantId, mutants, update, timeoutCalc);
     }
 
-    public virtual void Dispose()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _disposed = true;
-
-        lock (_serverLock)
-        {
-            foreach (var server in _assemblyServers.Values)
-            {
-                server.Dispose();
-            }
-            _assemblyServers.Clear();
-        }
-
-        // Clean up the mutant file
-        try
-        {
-            if (File.Exists(_mutantFilePath))
-            {
-                File.Delete(_mutantFilePath);
-            }
-        }
-        catch
-        {
-            // Ignore cleanup errors
-        }
-    }
-
     public async Task ResetServerAsync()
     {
         _logger.LogDebug("{RunnerId}: Resetting test servers to reload assemblies", RunnerId);
@@ -436,6 +404,46 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         {
             return (new TestRunResult(false, ex.Message), false);
         }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    public virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            lock (_serverLock)
+            {
+                foreach (var server in _assemblyServers.Values)
+                {
+                    server.Dispose();
+                }
+                _assemblyServers.Clear();
+            }
+
+            // Clean up the mutant file
+            try
+            {
+                if (File.Exists(_mutantFilePath))
+                {
+                    File.Delete(_mutantFilePath);
+                }
+            }
+            catch
+            {
+                // Ignore cleanup errors
+            }
+        }
+        _disposed = true;
     }
 }
 

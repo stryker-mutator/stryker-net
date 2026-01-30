@@ -7,6 +7,8 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 [ExcludeFromCodeCoverage]
 public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output) : IProcessHandle, IDisposable
 {
+    private bool _disposed;
+
     public int Id { get; } = commandTask.ProcessId;
     public string ProcessName { get; } = "dotnet";
     public int ExitCode { get; private set; }
@@ -36,6 +38,22 @@ public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output
     
     public void Dispose()
     {
-        commandTask.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            commandTask.Dispose();
+        }
+        
+        _disposed = true;
     }
 }

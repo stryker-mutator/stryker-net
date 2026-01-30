@@ -26,7 +26,6 @@ internal sealed class AssemblyTestServer : IDisposable
     private NetworkStream? _stream;
     private JsonRpc? _rpc;
     private TestingPlatformClient? _client;
-    private CommandTask<CommandResult>? _cliProcess;
     private MemoryStream? _outputStream;
     private bool _isInitialized;
     private bool _disposed;
@@ -59,7 +58,7 @@ internal sealed class AssemblyTestServer : IDisposable
             _outputStream = new MemoryStream();
             var outputPipe = PipeTarget.ToStream(_outputStream);
 
-            _cliProcess = Cli.Wrap("dotnet")
+            var _cliProcess = Cli.Wrap("dotnet")
                 .WithWorkingDirectory(Path.GetDirectoryName(_assembly) ?? string.Empty)
                 .WithArguments([_assembly, "--server", "--client-port", port.ToString()])
                 .WithEnvironmentVariables(_environmentVariables)
@@ -194,11 +193,11 @@ internal sealed class AssemblyTestServer : IDisposable
         _client = null;
         _rpc?.Dispose();
         _rpc = null;
-        _stream?.Dispose();
+        await _stream?.DisposeAsync().ConfigureAwait(false);
         _stream = null;
         _tcpClient?.Dispose();
         _tcpClient = null;
-        _outputStream?.Dispose();
+        await _outputStream?.DisposeAsync().ConfigureAwait(false);
         _outputStream = null;
         _cliProcess = null;
         _isInitialized = false;
