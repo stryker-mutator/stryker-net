@@ -66,6 +66,7 @@ public static class FileConfigReader
         inputs.LanguageVersionInput.SuppliedInput = config.LanguageVersion;
         inputs.TestProjectsInput.SuppliedInput = config.TestProjects;
         inputs.TestCaseFilterInput.SuppliedInput = config.TestCaseFilter;
+        inputs.TestRunnerInput.SuppliedInput = config.TestRunner;
         inputs.DashboardUrlInput.SuppliedInput = config.DashboardUrl;
         inputs.IgnoreMutationsInput.SuppliedInput = config.IgnoreMutations;
         inputs.IgnoredMethodsInput.SuppliedInput = config.IgnoreMethods;
