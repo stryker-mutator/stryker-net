@@ -3,12 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Utilities;
 
-namespace Stryker.Abstractions;
+namespace Stryker.Configuration.Options;
 
 public class StrykerOptions : IStrykerOptions
 {
@@ -250,6 +251,11 @@ public class StrykerOptions : IStrykerOptions
     /// Instruct Stryker to break execution when at least one test failed on initial run.
     /// </summary>
     public bool BreakOnInitialTestFailure { get; set; }
+
+    /// </summary>
+    /// The test runner to use for executing tests
+    /// <summary>
+    public TestRunner TestRunner { get; init; }
 
     /// <summary>
     /// Get/set the mutation id provider

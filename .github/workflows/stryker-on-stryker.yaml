@@ -31,16 +31,18 @@ jobs:
             workingDirectory: src/Stryker.CLI/Stryker.CLI
           - name: Stryker.Core
             workingDirectory: src/Stryker.Core/Stryker.Core
-          - name: Stryker.DataCollector
-            workingDirectory: src/Stryker.DataCollector
           - name: Stryker.Configuration
             workingDirectory: src/Stryker.Configuration
           - name: Stryker.RegexMutators
             workingDirectory: src/Stryker.RegexMutators/Stryker.RegexMutators
-          - name: Stryker.TestRunner.VsTest
-            workingDirectory: src/Stryker.TestRunner.VsTest
           - name: Stryker.TestRunner
             workingDirectory: src/Stryker.TestRunner
+          - name: Stryker.TestRunner.MicrosoftTestPlatform
+            workingDirectory: src/Stryker.TestRunner.MicrosoftTestPlatform
+          - name: Stryker.TestRunner.VsTest
+            workingDirectory: src/Stryker.TestRunner.VsTest
+          - name: Stryker.DataCollector
+            workingDirectory: src/Stryker.DataCollector
           - name: Stryker.Solutions
             workingDirectory: src/Stryker.Solutions
           - name: Stryker.Utilities

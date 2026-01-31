@@ -1,6 +1,6 @@
 using Stryker.Abstractions.Options;
 
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 
 public class DisableBailInput : Input<bool?>
 {

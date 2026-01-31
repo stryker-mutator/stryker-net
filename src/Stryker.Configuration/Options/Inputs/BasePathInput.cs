@@ -1,8 +1,7 @@
-using System.IO;
 using System.IO.Abstractions;
 using Stryker.Abstractions.Exceptions;
 
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 
 public class BasePathInput : Input<string>
 {

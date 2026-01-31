@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using System.Threading.Tasks;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,12 +18,13 @@ using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Reporting;
 using Stryker.Abstractions.Testing;
+using Stryker.Configuration.Options;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.TestRunner.Results;
-using Stryker.TestRunner.VsTest;
+using Stryker.TestRunner.Tests;
 using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.UnitTest.Initialisation;
@@ -48,7 +50,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
     }
 
     [TestMethod]
-    public void ShouldInitializeEachProjectInSolution()
+    public async Task ShouldInitializeEachProjectInSolution()
     {
         // arrange
         // when a solutionPath is given, and it's inside the current directory (basePath)
@@ -70,14 +72,14 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
 
         // act
-        var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
+        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
         // assert
         result.ShouldHaveSingleItem();
     }
 
     [TestMethod]
-    public void ShouldDiscoverContentFiles()
+    public async Task ShouldDiscoverContentFiles()
     {
         // arrange
         // when a solutionPath is given, and it's inside the current directory (basePath)
@@ -105,7 +107,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
 
         // act
-        var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
+        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
         // assert we see the content file
         var scan = ((ProjectComponent<SyntaxTree>)result.First().Input.SourceProjectInfo.ProjectContents).CompilationSyntaxTrees;
@@ -113,7 +115,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
     }
 
     [TestMethod]
-    public void ShouldPassWhenProjectNameIsGiven()
+    public async Task ShouldPassWhenProjectNameIsGiven()
     {
         // arrange
         // when a solutionPath is given, and it's inside the current directory (basePath)
@@ -131,14 +133,14 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object, out var mockRunner);
 
         // act
-        var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
+        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
         // assert
         result.ShouldHaveSingleItem();
     }
 
     [TestMethod]
-    public void ShouldUseDesiredConfigurationWhenDefined()
+    public async Task ShouldUseDesiredConfigurationWhenDefined()
     {
         // arrange
         // when a solutionPath is given, and it's inside the current directory (basePath)
@@ -163,7 +165,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var target = BuildProjectOrchestrator(analyzerResults, out var mockRunner, out var buildalyzerAnalyzerManagerMock);
 
         // act
-        var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
+        await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object);
 
         // assert
         buildalyzerAnalyzerManagerMock.Verify(x => x.SetGlobalProperty("Configuration", "Release"), Times.AtLeastOnce);
@@ -171,7 +173,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 
     [TestMethodWithIgnoreIfSupport]
     [IgnoreIf(nameof(Is.NotWindows))]
-    public void ShouldRestoreWhenAnalysisFails()
+    public async Task ShouldRestoreWhenAnalysisFails()
     {
         // activate log in order to smoke test logging.
         // logging results can be manually evaluated via test output windows
@@ -208,9 +210,9 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             });
 
             var mockRunner = new Mock<ITestRunner>();
-            mockRunner.Setup(r => r.DiscoverTests(It.IsAny<string>())).Returns(true);
+            mockRunner.Setup(r => r.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
             mockRunner.Setup(r => r.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
-            mockRunner.Setup(r => r.InitialTest(It.IsAny<IProjectAndTests>())).Returns(new TestRunResult(true));
+            mockRunner.Setup(r => r.InitialTestAsync(It.IsAny<IProjectAndTests>())).Returns(Task.FromResult(new TestRunResult(true) as ITestRunResult));
             var nugetRestoreMock = new Mock<INugetRestoreProcess>();
             nugetRestoreMock.Setup(x => x.RestorePackages(options.SolutionPath, It.IsAny<string>()))
                 .Callback(() =>
@@ -221,8 +223,8 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
             var initialTestProcessMock = new Mock<IInitialTestProcess>();
-            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>(), It.IsAny<SourceProjectInfo>(), It.IsAny<ITestRunner>()))
-                .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
+            initialTestProcessMock.Setup(x => x.InitialTestAsync(It.IsAny<IStrykerOptions>(), It.IsAny<SourceProjectInfo>(), It.IsAny<ITestRunner>()))
+                .Returns(Task.FromResult(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500))));
             var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object,
                 nugetRestoreMock.Object, this,
                 TestLoggerFactory.CreateLogger<InputFileResolver>());
@@ -238,7 +240,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
                 TestLoggerFactory.CreateLogger<ProjectOrchestrator>());
 
             // act
-            var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
+            var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
             // assert
             result.ShouldHaveSingleItem();
@@ -251,7 +253,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
     }
 
     [TestMethod]
-    public void ShouldFailIfNoProjectFound()
+    public async Task ShouldFailIfNoProjectFound()
     {
         var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
         var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.csproj");
@@ -269,14 +271,14 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
 
         // act
-        var mutateAction = () => target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
+        var mutateAction = async () => (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
         // assert
         mutateAction.ShouldThrow<InputException>();
     }
 
     [TestMethod]
-    public void ShouldFilterInSolutionMode()
+    public async Task ShouldFilterInSolutionMode()
     {
         // when a solutionPath is given and it's inside the current directory (basePath)
         var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
@@ -299,13 +301,14 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
 
         // act
-        var result = () => target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
+        var result = async() => (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+        
         // assert
         result.ShouldThrow<InputException>();
     }
 
     [TestMethod]
-    public void ShouldDiscoverUpstreamProject()
+    public async Task ShouldDiscoverUpstreamProject()
     {
         // arrange
         var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
@@ -334,14 +337,14 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
 
         // act
-        var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
+        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
         // assert
         result.Count.ShouldBe(2);
     }
 
     [TestMethod]
-    public void ShouldDiscoverUpstreamProjectWithInvalidCasing()
+    public async Task ShouldDiscoverUpstreamProjectWithInvalidCasing()
     {
         // arrange
         var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
@@ -371,13 +374,13 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
         // act
-        var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
+        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
         // assert
         result.Count.ShouldBe(2);
     }
 
     [TestMethod]
-    public void ShouldDisregardInvalidReferences()
+    public async Task ShouldDisregardInvalidReferences()
     {
         // arrange
         var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
@@ -403,13 +406,13 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
         // act
-        var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
+        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
         // assert
         result.Count.ShouldBe(1);
     }
 
     [TestMethod]
-    public void ShouldIgnoreProjectWithoutTestAssemblies()
+    public async Task ShouldIgnoreProjectWithoutTestAssemblies()
     {
         // arrange
         var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
@@ -438,7 +441,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
 
         // act
-        var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
+        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
         // assert
         result.ShouldHaveSingleItem();
@@ -478,14 +481,14 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         buildalyzerAnalyzerManagerMock = BuildBuildAnalyzerMock(analyzerResults);
 
         mockRunner = new Mock<ITestRunner>();
-        mockRunner.Setup(r => r.DiscoverTests(It.IsAny<string>())).Returns(true);
+        mockRunner.Setup(r => r.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
         mockRunner.Setup(r => r.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
-        mockRunner.Setup(r => r.InitialTest(It.IsAny<IProjectAndTests>())).Returns(new TestRunResult(true));
+        mockRunner.Setup(r => r.InitialTestAsync(It.IsAny<IProjectAndTests>())).Returns(Task.FromResult(new TestRunResult(true) as ITestRunResult));
 
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
         var initialTestProcessMock = new Mock<IInitialTestProcess>();
-        initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>(), It.IsAny<SourceProjectInfo>(), It.IsAny<ITestRunner>()))
-            .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
+        initialTestProcessMock.Setup(x => x.InitialTestAsync(It.IsAny<IStrykerOptions>(), It.IsAny<SourceProjectInfo>(), It.IsAny<ITestRunner>()))
+            .ReturnsAsync(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
         var inputFileResolver = new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object,
             new Mock<INugetRestoreProcess>().Object,
             this,

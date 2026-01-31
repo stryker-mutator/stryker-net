@@ -16,6 +16,7 @@ using Stryker.Abstractions.Options;
 using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
 using Stryker.Configuration;
+using Stryker.Configuration.Options;
 using Stryker.Core;
 using Stryker.Core.Initialisation;
 
@@ -37,9 +38,9 @@ public class StrykerCLITests
     {
         _options = new StrykerOptions() { Thresholds = new Thresholds { Break = 0 } };
         _runResults = new StrykerRunResult(_options, 0.3);
-        _strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
+        _strykerRunnerMock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
             .Callback<IStrykerInputs>(c => _inputs = c)
-            .Returns(_runResults)
+            .Returns(Task.FromResult(_runResults))
             .Verifiable();
         _nugetClientMock.Setup(x => x.GetLatestVersionAsync()).Returns(Task.FromResult(new SemanticVersion(10, 0, 0)));
         var configBuilder = new ConfigBuilder();
@@ -49,13 +50,13 @@ public class StrykerCLITests
     }
 
     [TestMethod]
-    public void ShouldDisplayInfoOnHelp()
+    public async Task ShouldDisplayInfoOnHelp()
     {
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
         var console = new TestConsole().EmitAnsiSequences().Width(160);
         var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), console, Mock.Of<IFileSystem>());
 
-        target.Run(new string[] { "--help" });
+        await target.RunAsync(new string[] { "--help" });
 
         var expected = @"Stryker: Stryker mutator for .Net
 
@@ -68,19 +69,19 @@ Options:";
     }
 
     [TestMethod]
-    public void ShouldDisplayLogo()
+    public async Task ShouldDisplayLogo()
     {
         var strykerRunnerMock = new Mock<IStrykerRunner>(MockBehavior.Strict);
         var strykerRunResult = new StrykerRunResult(_options, 0.3);
 
-        strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
-            .Returns(strykerRunResult)
+        strykerRunnerMock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
+            .Returns(Task.FromResult(strykerRunResult))
             .Verifiable();
 
         var console = new TestConsole().EmitAnsiSequences().Width(160);
         var target = new StrykerCli(strykerRunnerMock.Object, new ConfigBuilder(), _loggingInitializerMock.Object, _nugetClientMock.Object, console, Mock.Of<IFileSystem>());
 
-        target.Run(Array.Empty<string>());
+        await target.RunAsync(Array.Empty<string>());
 
         // wait 20ms to let the getVersion call be handled
         Thread.Sleep(20);
@@ -94,27 +95,27 @@ Options:";
     }
 
     [TestMethod]
-    public void ShouldCallNugetClient()
+    public async Task ShouldCallNugetClient()
     {
-        _target.Run([]);
+        await _target.RunAsync([]);
 
         _nugetClientMock.Verify(x => x.GetLatestVersionAsync(), Times.Once);
         _nugetClientMock.VerifyNoOtherCalls();
     }
 
     [TestMethod]
-    public void OnAlreadyNewestVersion_ShouldCallNugetClientForPreview()
+    public async Task OnAlreadyNewestVersion_ShouldCallNugetClientForPreview()
     {
         _nugetClientMock.Setup(x => x.GetLatestVersionAsync()).Returns(Task.FromResult(new SemanticVersion(0, 0, 0)));
         _nugetClientMock.Setup(x => x.GetPreviewVersionAsync()).Returns(Task.FromResult(new SemanticVersion(20, 0, 0)));
 
-        _target.Run([]);
+        await _target.RunAsync([]);
 
         _nugetClientMock.VerifyAll();
     }
 
     [TestMethod]
-    public void OnMutationScoreBelowThresholdBreak_ShouldReturn_ExitCodeBreakThresholdViolated()
+    public async Task OnMutationScoreBelowThresholdBreak_ShouldReturn_ExitCodeBreakThresholdViolated()
     {
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
         var options = new StrykerOptions()
@@ -126,12 +127,12 @@ Options:";
         };
         var strykerRunResult = new StrykerRunResult(options, 0.3);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
-                .Returns(strykerRunResult)
-                .Verifiable();
+        mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
+            .Returns(Task.FromResult(strykerRunResult))
+            .Verifiable();
 
         var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
-        var result = target.Run(new string[] { });
+        var result = await target.RunAsync(new string[] { });
 
         mock.Verify();
         target.ExitCode.ShouldBe(ExitCodes.BreakThresholdViolated);
@@ -139,7 +140,7 @@ Options:";
     }
 
     [TestMethod]
-    public void OnMutationScoreEqualToNullAndThresholdBreakEqualTo0_ShouldReturnExitCode0()
+    public async Task OnMutationScoreEqualToNullAndThresholdBreakEqualTo0_ShouldReturnExitCode0()
     {
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
         var options = new StrykerOptions()
@@ -150,12 +151,12 @@ Options:";
             }
         };
         var strykerRunResult = new StrykerRunResult(options, double.NaN);
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
-            .Returns(strykerRunResult)
+        mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
+            .Returns(Task.FromResult(strykerRunResult))
             .Verifiable();
 
         var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
-        var result = target.Run(new string[] { });
+        var result = await target.RunAsync(new string[] { });
 
         mock.Verify();
         target.ExitCode.ShouldBe(0);
@@ -163,7 +164,7 @@ Options:";
     }
 
     [TestMethod]
-    public void OnMutationScoreEqualToNullAndThresholdBreakAbove0_ShouldReturnExitCode0()
+    public async Task OnMutationScoreEqualToNullAndThresholdBreakAbove0_ShouldReturnExitCode0()
     {
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
         var options = new StrykerOptions()
@@ -174,12 +175,12 @@ Options:";
             }
         };
         var strykerRunResult = new StrykerRunResult(options, double.NaN);
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
-            .Returns(strykerRunResult)
+        mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
+            .Returns(Task.FromResult(strykerRunResult))
             .Verifiable();
 
         var target = new StrykerCli(mock.Object, new ConfigBuilder(), _loggingInitializerMock.Object, _nugetClientMock.Object, Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
-        var result = target.Run(new string[] { });
+        var result = await target.RunAsync(new string[] { });
 
         mock.Verify();
         target.ExitCode.ShouldBe(0);
@@ -187,7 +188,7 @@ Options:";
     }
 
     [TestMethod]
-    public void OnMutationScoreAboveThresholdBreak_ShouldReturnExitCode0()
+    public async Task OnMutationScoreAboveThresholdBreak_ShouldReturnExitCode0()
     {
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
         var options = new StrykerOptions()
@@ -199,10 +200,10 @@ Options:";
         };
         var strykerRunResult = new StrykerRunResult(options, 0.1);
 
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>())).Returns(strykerRunResult).Verifiable();
+        mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>())).Returns(Task.FromResult(strykerRunResult)).Verifiable();
 
         var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
-        var result = target.Run(new string[] { });
+        var result = await target.RunAsync(new string[] { });
 
         mock.Verify();
         target.ExitCode.ShouldBe(0);
@@ -213,34 +214,35 @@ Options:";
     [DataRow("--help")]
     [DataRow("-h")]
     [DataRow("-?")]
-    public void ShouldNotStartStryker_WithHelpArgument(string argName)
+    public async Task ShouldNotStartStryker_WithHelpArgument(string argName)
     {
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
         var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
 
-        target.Run(new string[] { argName });
+        await target.RunAsync(new string[] { argName });
 
         mock.VerifyNoOtherCalls();
     }
 
     [TestMethod]
-    public void ShouldThrow_OnException()
+    public async Task ShouldThrow_OnException()
     {
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>()))
+        mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
             .Throws(new Exception("Initial testrun failed"))
             .Verifiable();
 
         var target = new StrykerCli(mock.Object, new ConfigBuilder(), _loggingInitializerMock.Object, _nugetClientMock.Object, Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
-        Should.Throw<Exception>(() => target.Run(new string[] { }));
+
+        await Should.ThrowAsync<Exception>(async () => await target.RunAsync(new string[] { }));
     }
 
     [TestMethod]
     [DataRow("--reporter")]
     [DataRow("-r")]
-    public void ShouldPassReporterArgumentsToStryker_WithReporterArgument(string argName)
+    public async Task ShouldPassReporterArgumentsToStryker_WithReporterArgument(string argName)
     {
-        _target.Run(new string[] { argName, Reporter.Html.ToString(), argName, Reporter.Dots.ToString() });
+        await _target.RunAsync(new string[] { argName, Reporter.Html.ToString(), argName, Reporter.Dots.ToString() });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -251,9 +253,9 @@ Options:";
     [TestMethod]
     [DataRow("--project")]
     [DataRow("-p")]
-    public void ShouldPassProjectArgumentsToStryker_WithProjectArgument(string argName)
+    public async Task ShouldPassProjectArgumentsToStryker_WithProjectArgument(string argName)
     {
-        _target.Run(new string[] { argName, "SomeProjectName.csproj" });
+        await _target.RunAsync(new string[] { argName, "SomeProjectName.csproj" });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -263,9 +265,9 @@ Options:";
     [TestMethod]
     [DataRow("--solution")]
     [DataRow("-s")]
-    public void ShouldPassSolutionArgumentPlusBasePathToStryker_WithSolutionArgument(string argName)
+    public async Task ShouldPassSolutionArgumentPlusBasePathToStryker_WithSolutionArgument(string argName)
     {
-        _target.Run(new string[] { argName, "SomeSolutionPath.sln" });
+        await _target.RunAsync(new string[] { argName, "SomeSolutionPath.sln" });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -275,9 +277,9 @@ Options:";
     [TestMethod]
     [DataRow("--test-project")]
     [DataRow("-tp")]
-    public void ShouldPassTestProjectArgumentsToStryker_WithTestProjectArgument(string argName)
+    public async Task ShouldPassTestProjectArgumentsToStryker_WithTestProjectArgument(string argName)
     {
-        _target.Run(new string[] { argName, "SomeProjectName1.csproj", argName, "SomeProjectName2.csproj" });
+        await _target.RunAsync(new string[] { argName, "SomeProjectName1.csproj", argName, "SomeProjectName2.csproj" });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -288,9 +290,9 @@ Options:";
     [TestMethod]
     [DataRow("--verbosity")]
     [DataRow("-V")]
-    public void ShouldPassLogConsoleArgumentsToStryker_WithLogConsoleArgument(string argName)
+    public async Task ShouldPassLogConsoleArgumentsToStryker_WithLogConsoleArgument(string argName)
     {
-        _target.Run(new[] { argName, "Debug" });
+        await _target.RunAsync(new[] { argName, "Debug" });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -300,9 +302,9 @@ Options:";
     [TestMethod]
     [DataRow("--log-to-file")]
     [DataRow("-L")]
-    public void ShouldPassLogFileArgumentsToStryker_WithLogLevelFileArgument(string argName)
+    public async Task ShouldPassLogFileArgumentsToStryker_WithLogLevelFileArgument(string argName)
     {
-        _target.Run(new string[] { argName });
+        await _target.RunAsync(new string[] { argName });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -311,9 +313,9 @@ Options:";
 
     [TestMethod]
     [DataRow("--diag")]
-    public void WithDevModeArgument_ShouldPassDevModeArgumentsToStryker(string argName)
+    public async Task WithDevModeArgument_ShouldPassDevModeArgumentsToStryker(string argName)
     {
-        _target.Run(new string[] { argName });
+        await _target.RunAsync(new string[] { argName });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -323,9 +325,9 @@ Options:";
     [TestMethod]
     [DataRow("--concurrency")]
     [DataRow("-c")]
-    public void WithMaxConcurrentTestrunnerArgument_ShouldPassValidatedConcurrentTestrunnersToStryker(string argName)
+    public async Task WithMaxConcurrentTestrunnerArgument_ShouldPassValidatedConcurrentTestrunnersToStryker(string argName)
     {
-        _target.Run(new string[] { argName, "4" });
+        await _target.RunAsync(new string[] { argName, "4" });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -335,9 +337,9 @@ Options:";
     [TestMethod]
     [DataRow("--break-at")]
     [DataRow("-b")]
-    public void WithCustomThresholdBreakParameter_ShouldPassThresholdBreakToStryker(string argName)
+    public async Task WithCustomThresholdBreakParameter_ShouldPassThresholdBreakToStryker(string argName)
     {
-        _target.Run(new string[] { argName, "20" });
+        await _target.RunAsync(new string[] { argName, "20" });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -347,13 +349,13 @@ Options:";
     [TestMethod]
     [DataRow("--mutate")]
     [DataRow("-m")]
-    public void ShouldPassFilePatternSetToStryker_WithMutateArgs(string argName)
+    public async Task ShouldPassFilePatternSetToStryker_WithMutateArgs(string argName)
     {
         var firstFileToExclude = "**/*Service.cs";
         var secondFileToExclude = "!**/MySpecialService.cs";
         var thirdFileToExclude = "**/MyOtherService.cs{1..10}{32..45}";
 
-        _target.Run(new[] { argName, firstFileToExclude, argName, secondFileToExclude, argName, thirdFileToExclude });
+        await _target.RunAsync(new[] { argName, firstFileToExclude, argName, secondFileToExclude, argName, thirdFileToExclude });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -366,9 +368,9 @@ Options:";
 
     [TestMethod]
     [DataRow("--since")]
-    public void ShouldEnableDiffFeatureWhenPassed(string argName)
+    public async Task ShouldEnableDiffFeatureWhenPassed(string argName)
     {
-        _target.Run(new string[] { argName });
+        await _target.RunAsync(new string[] { argName });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -377,9 +379,9 @@ Options:";
 
     [TestMethod]
     [DataRow("--since")]
-    public void ShouldSetGitDiffTargetWhenPassed(string argName)
+    public async Task ShouldSetGitDiffTargetWhenPassed(string argName)
     {
-        _target.Run(new string[] { $"{argName}:development" });
+        await _target.RunAsync(new string[] { $"{argName}:development" });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -390,9 +392,9 @@ Options:";
     [TestMethod]
     [DataRow("--mutation-level")]
     [DataRow("-l")]
-    public void ShouldSetMutationLevelWhenPassed(string argName)
+    public async Task ShouldSetMutationLevelWhenPassed(string argName)
     {
-        _target.Run(new string[] { argName, "Advanced" });
+        await _target.RunAsync(new string[] { argName, "Advanced" });
 
         _inputs.MutationLevelInput.SuppliedInput.ShouldBe(MutationLevel.Advanced.ToString());
     }
@@ -400,9 +402,9 @@ Options:";
     [TestMethod]
     [DataRow("--version", "master")]
     [DataRow("-v", "master")]
-    public void ShouldSetProjectVersionFeatureWhenPassed(params string[] argName)
+    public async Task ShouldSetProjectVersionFeatureWhenPassed(params string[] argName)
     {
-        _target.Run(argName);
+        await _target.RunAsync(argName);
 
         _strykerRunnerMock.VerifyAll();
 
@@ -411,9 +413,9 @@ Options:";
 
     [TestMethod]
     [DataRow("--dashboard-api-key", "1234567890")]
-    public void ShouldSupplyDashboardApiKeyWhenPassed(params string[] argName)
+    public async Task ShouldSupplyDashboardApiKeyWhenPassed(params string[] argName)
     {
-        _target.Run(argName);
+        await _target.RunAsync(argName);
 
         _strykerRunnerMock.VerifyAll();
 
@@ -421,10 +423,21 @@ Options:";
     }
 
     [TestMethod]
-    [DataRow("--with-baseline")]
-    public void ShouldSupplyWithBaselineWhenPassed(params string[] argName)
+    [DataRow("--testrunner", "mtp")]
+    public async Task ShouldSupplyTestRunnerWhenPassed(params string[] argName)
     {
-        _target.Run(argName);
+        await _target.RunAsync(argName);
+
+        _strykerRunnerMock.VerifyAll();
+
+        _inputs.TestRunnerInput.SuppliedInput.ShouldBe("mtp");
+    }
+
+    [TestMethod]
+    [DataRow("--with-baseline")]
+    public async Task ShouldSupplyWithBaselineWhenPassed(params string[] argName)
+    {
+        await _target.RunAsync(argName);
 
         _strykerRunnerMock.VerifyAll();
 
@@ -436,9 +449,9 @@ Options:";
     [DataRow("-o:html", "html")]
     [DataRow("--open-report", null)]
     [DataRow("--open-report:dashboard", "dashboard")]
-    public void ShouldSupplyOpenReportInputsWhenPassed(string arg, string expected)
+    public async Task ShouldSupplyOpenReportInputsWhenPassed(string arg, string expected)
     {
-        _target.Run(new[] { arg });
+        await _target.RunAsync(new[] { arg });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -448,9 +461,9 @@ Options:";
 
     [TestMethod]
     [DataRow("--azure-fileshare-sas", "sas")]
-    public void ShouldSupplyAzureFileshareSasWhenPassed(params string[] argName)
+    public async Task ShouldSupplyAzureFileshareSasWhenPassed(params string[] argName)
     {
-        _target.Run(argName);
+        await _target.RunAsync(argName);
 
         _strykerRunnerMock.VerifyAll();
 
@@ -459,9 +472,9 @@ Options:";
 
     [TestMethod]
     [DataRow("--break-on-initial-test-failure")]
-    public void ShouldSupplyBreakOnInitialTestFailureWhenPassed(params string[] argName)
+    public async Task ShouldSupplyBreakOnInitialTestFailureWhenPassed(params string[] argName)
     {
-        _target.Run(argName);
+        await _target.RunAsync(argName);
 
         _strykerRunnerMock.VerifyAll();
 
@@ -471,9 +484,9 @@ Options:";
 
     [TestMethod]
     [DataRow("--target-framework", "net7.0")]
-    public void ShouldSupplyTargetFrameworkWhenPassed(params string[] argName)
+    public async Task ShouldSupplyTargetFrameworkWhenPassed(params string[] argName)
     {
-        _target.Run(argName);
+        await _target.RunAsync(argName);
 
         _strykerRunnerMock.VerifyAll();
 
@@ -482,9 +495,9 @@ Options:";
 
     [TestMethod]
     [DataRow("--skip-version-check")]
-    public void ShouldSupplyDisableCheckForNewerVersion(params string[] argName)
+    public async Task ShouldSupplyDisableCheckForNewerVersion(params string[] argName)
     {
-        _target.Run(argName);
+        await _target.RunAsync(argName);
 
         _strykerRunnerMock.VerifyAll();
 

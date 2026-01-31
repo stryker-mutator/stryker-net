@@ -1,4 +1,4 @@
-namespace Stryker.CLI;
+namespace Stryker.CLI.CommandLineConfig;
 
 public enum InputCategory
 {

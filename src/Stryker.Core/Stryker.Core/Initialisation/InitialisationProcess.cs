@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
@@ -24,7 +25,7 @@ public interface IInitialisationProcess
 
     void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects);
 
-    IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(IStrykerOptions options,
+    Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
         IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner);
 }
 
@@ -113,11 +114,20 @@ public class InitialisationProcess : IInitialisationProcess
 
     private IFileSystem FileSystem => _inputFileResolver.FileSystem;
 
-    public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(IStrykerOptions options,
-        IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner) =>
-        projects.Select(info => new MutationTestInput { SourceProjectInfo = info, TestProjectsInfo = info.TestProjectsInfo, TestRunner = runner, InitialTestRun = InitialTest(options, info, runner, projects.Count == 1) }).ToList();
+    public async Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
+        IReadOnlyCollection<SourceProjectInfo> projects,
+        ITestRunner runner)
+    {
+        var getInputs = projects.Select(async info => new MutationTestInput {
+            SourceProjectInfo = info,
+            TestProjectsInfo = info.TestProjectsInfo,
+            TestRunner = runner,
+            InitialTestRun = await InitialTestAsync(options, info, runner, projects.Count == 1)
+        });
+        return await Task.WhenAll(getInputs);
+    }
 
-    private InitialTestRun InitialTest(IStrykerOptions options, SourceProjectInfo projectInfo,
+    private async Task<InitialTestRun> InitialTestAsync(IStrykerOptions options, SourceProjectInfo projectInfo,
         ITestRunner testRunner, bool throwIfFails)
     {
         DiscoverTests(projectInfo, testRunner);
@@ -128,7 +138,7 @@ public class InitialisationProcess : IInitialisationProcess
         testRunner.GetTests(projectInfo).Count,
         projectInfo.AnalyzerResult.ProjectFilePath);
 
-        var result = _initialTestProcess.InitialTest(options, projectInfo, testRunner);
+        var result = await _initialTestProcess.InitialTestAsync(options, projectInfo, testRunner);
 
         if (!result.Result.FailingTests.IsEmpty)
         {
@@ -170,7 +180,7 @@ public class InitialisationProcess : IInitialisationProcess
     {
         foreach (var testProject in projectInfo.TestProjectsInfo.AnalyzerResults)
         {
-            if (testRunner.DiscoverTests(testProject.GetAssemblyPath()))
+            if (testRunner.DiscoverTestsAsync(testProject.GetAssemblyPath()).GetAwaiter().GetResult())
             {
                 continue;
             }
@@ -216,6 +226,7 @@ public class InitialisationProcess : IInitialisationProcess
             {
                 continue;
             }
+
             var messageForNoReason = $"No test detected for project '{testProject.ProjectFilePath}'. No cause identified.";
             projectInfo.LogError(messageForNoReason);
             _logger.LogWarning(messageForNoReason);

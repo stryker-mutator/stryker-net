@@ -6,6 +6,7 @@
 
   <PropertyGroup>
     <xunit>2.4.1</xunit>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
   <ItemGroup>

@@ -101,28 +101,38 @@ public sealed class SolutionFileShould
             Path.Combine("Stryker.TestRunner.VsTest", "Stryker.TestRunner.VsTest.csproj"),
             Path.Combine("Stryker.TestRunner.VsTest.UnitTest", "Stryker.TestRunner.VsTest.UnitTest.csproj"),
             Path.Combine("Stryker.Solutions", "Stryker.Solutions.csproj"),
-            Path.Combine("Stryker.Solutions.Test", "Stryker.Solutions.Test.csproj")
+            Path.Combine("Stryker.Solutions.Test", "Stryker.Solutions.Test.csproj"),
+            Path.Combine("Stryker.TestRunner.MicrosoftTestPlatform", "Stryker.TestRunner.MicrosoftTestPlatform.csproj"),
+            Path.Combine("Stryker.TestRunner.MicrosoftTestPlatform.UnitTest", "Stryker.TestRunner.MicrosoftTestPlatform.UnitTest.csproj"),
         };
         solution.GetProjects("Debug").ShouldBe(expectedProjects, ignoreOrder: true);
     }
 
     [TestMethod]
-    [DataRow("ExampleLibrary.sln", "Any CPU")]
-    [DataRow("ExampleLibrary.slnx", "AnyCPU")]
-    public void ProvideProjectListForGivenConfigurationOnSolutionWithMultiplePlatforms(string solutionFile, string expectedPlatform)
+    [DataRow("MicrosoftTestPlatform.sln")]
+    [DataRow("MicrosoftTestPlatform.slnx")]
+    public void ProvideProjectListForGivenConfigurationOnSolutionWithMultiplePlatforms(string solutionFile)
     {
         // Arrange
         // Act
-        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","..","fixtures","ExampleLibrary",solutionFile));
+        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","..","integrationtest","TargetProjects",solutionFile));
 
         // Assert
-        var expectedProjectDetails = new List<(string file, string buildType, string platform)>
+        var expectedProjects = new List<string>
         {
-            (Path.Combine("src", "ExampleLibrary.csproj"), "Debug", expectedPlatform),
-            (Path.Combine("tests", "ExampleLibrary.Tests.csproj"), "Debug", expectedPlatform),
+            Path.Combine("NetCore", "TargetProject", "TargetProject.csproj"),
+            Path.Combine("NetCore", "Library", "Library.csproj"),
+            Path.Combine("MicrosoftTestPlatform", "UnitTests.MSTest", "UnitTests.MSTest.csproj"),
+            Path.Combine("MicrosoftTestPlatform", "UnitTests.XUnit", "UnitTests.XUnit.csproj"),
+            Path.Combine("MicrosoftTestPlatform", "UnitTests.NUnit", "UnitTests.NUnit.csproj"),
+            Path.Combine("MicrosoftTestPlatform", "UnitTests.TUnit", "UnitTests.TUnit.csproj"),
         };
-        solution.GetProjects("Debug").ShouldBe(expectedProjectDetails.Select(x => x.file));
-        solution.GetProjectsWithDetails("Debug").ShouldBe(expectedProjectDetails);
+        solution.GetProjects("Debug").ShouldBe(expectedProjects, ignoreOrder: true);
+        
+        var projectsWithDetails = solution.GetProjectsWithDetails("Debug").ToList();
+        projectsWithDetails.Select(x => x.file).ShouldBe(expectedProjects, ignoreOrder: true);
+        projectsWithDetails.All(x => x.buildType == "Debug").ShouldBeTrue();
+        projectsWithDetails.All(x => x.platform == "Any CPU" || x.platform == "AnyCPU").ShouldBeTrue();
     }
 
     [TestMethod]

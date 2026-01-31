@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
@@ -9,7 +10,7 @@ namespace Stryker.Core.Initialisation;
 
 public interface IInitialTestProcess
 {
-    InitialTestRun InitialTest(IStrykerOptions options, IProjectAndTests project, ITestRunner testRunner);
+    Task<InitialTestRun> InitialTestAsync(IStrykerOptions options, IProjectAndTests project, ITestRunner testRunner);
 }
 
 public class InitialTestProcess : IInitialTestProcess
@@ -30,13 +31,13 @@ public class InitialTestProcess : IInitialTestProcess
     /// <param name="testRunner"></param>
     /// <param name="options">Stryker options</param>
     /// <returns>The duration of the initial test run</returns>
-    public InitialTestRun InitialTest(IStrykerOptions options, IProjectAndTests project, ITestRunner testRunner)
+    public async Task<InitialTestRun> InitialTestAsync(IStrykerOptions options, IProjectAndTests project, ITestRunner testRunner)
     {
         // Setup a stopwatch to record the initial test duration
         var stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        var initTestRunResult = testRunner.InitialTest(project);
+        var initTestRunResult = await testRunner.InitialTestAsync(project);
         // Stop stopwatch immediately after test run
         stopwatch.Stop();
 

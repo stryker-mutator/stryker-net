@@ -4,7 +4,7 @@ using Spectre.Console;
 using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
 
-namespace Stryker.CLI;
+namespace Stryker.CLI.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {

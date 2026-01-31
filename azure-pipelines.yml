@@ -209,7 +209,7 @@ stages:
         testName: 'macos-netcore-multi-test-project'
         workingDirectory: 'integrationtest/TargetProjects/NetCore/TargetProject'
     - task: DotNetCoreCLI@2
-      displayName: 'Assert integration test results Solution'
+      displayName: 'Assert integration test results MultipleTestProjects'
       inputs:
         command: test
         projects: '**/Validation.csproj'

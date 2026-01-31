@@ -12,6 +12,7 @@ using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
+using Stryker.Configuration.Options;
 using Stryker.Core.Clients;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents.TestProjects;

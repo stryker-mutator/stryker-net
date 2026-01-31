@@ -1,7 +1,9 @@
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Stryker.Abstractions.Exceptions;
+using Stryker.CLI.Infrastructure;
 using Stryker.CLI.Logging;
 using Stryker.Configuration;
 using Stryker.Core.Infrastructure;
@@ -10,7 +12,7 @@ namespace Stryker.CLI;
 
 public static class Program
 {
-    public static int Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         try
         {
@@ -23,7 +25,7 @@ public static class Program
             // ensure the logger Factory instance is shared
             ApplicationLogging.LoggerFactory = services.GetRequiredService<ILoggerFactory>();
             var app = services.GetRequiredService<StrykerCli>();
-            return app.Run(args);
+            return await app.RunAsync(args);
         }
         catch (NoTestProjectsException exception)
         {

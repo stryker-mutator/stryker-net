@@ -100,9 +100,105 @@ public class ValidateStrykerResults
         using var strykerRunOutput = File.OpenRead(latestReport.FullName);
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
-         
+
         CheckReportMutants(report, total: 660, ignored: 115, survived: 5, killed: 11, timeout: 2, nocoverage: 489);
         CheckReportTestCounts(report, total: 21);
+    }
+
+    [Fact]
+    [Trait("Category", "MSTestMTP")]
+    [Trait("Runtime", "netcore")]
+    public async Task CSharp_NetCore_MSTestMTP()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/MicrosoftTestPlatform/UnitTests.MSTest/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
+    }
+
+    [Fact]
+    [Trait("Category", "XUnitMTP")]
+    [Trait("Runtime", "netcore")]
+    public async Task CSharp_NetCore_XUnitMTP()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/MicrosoftTestPlatform/UnitTests.XUnit/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
+    }
+
+    [Fact]
+    [Trait("Category", "NUnitMTP")]
+    [Trait("Runtime", "netcore")]
+    public async Task CSharp_NetCore_NUnitMTP()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/MicrosoftTestPlatform/UnitTests.NUnit/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
+    }
+
+    [Fact]
+    [Trait("Category", "TUnit")]
+    [Trait("Runtime", "netcore")]
+    public async Task CSharp_NetCore_TUnit()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/MicrosoftTestPlatform/UnitTests.TUnit/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
+    }
+
+    [Fact]
+    [Trait("Category", "MTPSolution")]
+    [Trait("Runtime", "netcore")]
+    public async Task CSharp_NetCore_MTPSolution()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        CheckReportMutants(report, total: 670, ignored: 272, survived: 359, killed: 1, timeout: 0, nocoverage: 0);
+        CheckReportTestCounts(report, total: 0); // MTP doesn't report tests yet
     }
 
     [Fact]

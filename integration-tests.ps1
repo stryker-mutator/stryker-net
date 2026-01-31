@@ -120,6 +120,37 @@ function Run-Category {
       if (Test-Path $multiWd) { Run-Stryker -WorkingDirectory $multiWd } else { Write-Warn "Multi test project not found at $multiWd" }
       break
     }
+    'MSTestMTP' {
+      if ($Runtime -ne 'netcore') { throw "MSTestMTP only supports runtime 'netcore'." }
+      $mtpWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\MicrosoftTestPlatform\UnitTests.MSTest'
+      if (Test-Path $mtpWd) { Run-Stryker -WorkingDirectory $mtpWd } else { Write-Warn "MTP test project not found at $mtpWd" }
+      break
+    }
+    'XUnitMTP' {
+      if ($Runtime -ne 'netcore') { throw "XUnitMTP only supports runtime 'netcore'." }
+      $xunitMtpWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\MicrosoftTestPlatform\UnitTests.XUnit'
+      if (Test-Path $xunitMtpWd) { Run-Stryker -WorkingDirectory $xunitMtpWd } else { Write-Warn "XUnit MTP test project not found at $xunitMtpWd" }
+      break
+    }
+    'NUnitMTP' {
+      if ($Runtime -ne 'netcore') { throw "NUnitMTP only supports runtime 'netcore'." }
+      $nunitMtpWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\MicrosoftTestPlatform\UnitTests.NUnit'
+      if (Test-Path $nunitMtpWd) { Run-Stryker -WorkingDirectory $nunitMtpWd } else { Write-Warn "NUnit MTP test project not found at $nunitMtpWd" }
+      break
+    }
+    'TUnit' {
+      if ($Runtime -ne 'netcore') { throw "TUnit only supports runtime 'netcore'." }
+      $tunitWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\MicrosoftTestPlatform\UnitTests.TUnit'
+      if (Test-Path $tunitWd) { Run-Stryker -WorkingDirectory $tunitWd } else { Write-Warn "TUnit test project not found at $tunitWd" }
+      break
+    }
+    'MTPSolution' {
+      if ($Runtime -ne 'netcore') { throw "MTPSolution only supports runtime 'netcore'." }
+      $mtpSolutionWd = Join-Path $RepoRoot 'integrationtest\TargetProjects'
+      $mtpSolutionPath = Join-Path $mtpSolutionWd 'MicrosoftTestPlatform.slnx'
+      if (Test-Path $mtpSolutionPath) { Run-Stryker -WorkingDirectory $mtpSolutionWd -Arguments @('--solution', $mtpSolutionPath, '--testrunner', 'mtp') } else { Write-Warn "MTP Solution not found at $mtpSolutionPath" }
+      break
+    }
     'Solution' {
       if ($Runtime -eq 'netcore') {
         $netcoreWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore'

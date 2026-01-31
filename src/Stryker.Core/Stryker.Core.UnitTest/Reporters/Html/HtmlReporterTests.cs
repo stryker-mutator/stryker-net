@@ -8,6 +8,7 @@ using Shouldly;
 using Spectre.Console.Testing;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
+using Stryker.Configuration.Options;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Html;

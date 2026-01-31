@@ -1,0 +1,13 @@
+{
+  "stryker-config": {
+    "testrunner": "mtp",
+    "project-info": {
+      "name": "github.com/stryker-mutator/stryker-net",
+      "module": "testrunner-microsofttestplatform"
+    },
+    "project": "Stryker.TestRunner.MicrosoftTestPlatform",
+    "test-projects": [
+      "../Stryker.TestRunner.MicrosoftTestPlatform.UnitTest/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest.csproj"
+    ]
+  }
+}

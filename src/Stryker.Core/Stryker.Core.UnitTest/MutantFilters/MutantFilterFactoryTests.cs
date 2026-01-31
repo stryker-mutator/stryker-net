@@ -6,11 +6,13 @@ using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Baseline;
+using Stryker.Configuration.Options;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json;
+using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.VsTest;
 
 namespace Stryker.Core.UnitTest.MutantFilters;

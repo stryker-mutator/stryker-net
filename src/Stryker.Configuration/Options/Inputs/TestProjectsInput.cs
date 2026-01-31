@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using Stryker.Utilities;
 
-namespace Stryker.Abstractions.Options.Inputs;
+namespace Stryker.Configuration.Options.Inputs;
 
 public class TestProjectsInput : Input<IEnumerable<string>>
 {
