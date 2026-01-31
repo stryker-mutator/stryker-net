@@ -1,0 +1,5 @@
+{
+  "stryker-config": {
+    "testrunner": "MTP"
+  }
+}

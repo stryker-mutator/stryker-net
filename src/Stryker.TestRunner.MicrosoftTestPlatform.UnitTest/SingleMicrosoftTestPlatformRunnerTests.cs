@@ -222,7 +222,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         public int DisposeLogicExecutedCount => _disposeLogicExecutedCount;
         public string MutantFilePath => Path.Combine(Path.GetTempPath(), $"stryker-mutant-123.txt");
 
-        public override void Dispose()
+        public override void Dispose(bool disposing)
         {
             // We need to detect if the disposal logic actually runs
             // The base Dispose checks _disposed flag first and returns early if already disposed
@@ -233,7 +233,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
             var wasDisposedBefore = (bool)disposedField!.GetValue(this)!;
 
             // Call base dispose
-            base.Dispose();
+            base.Dispose(disposing);
 
             var wasDisposedAfter = (bool)disposedField!.GetValue(this)!;
 

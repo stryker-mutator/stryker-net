@@ -45,6 +45,8 @@ jobs:
             workingDirectory: src/Stryker.Solutions
           - name: Stryker.Utilities
             workingDirectory: src/Stryker.Utilities
+          - name: Stryker.TestRunner.MicrosoftTestPlatform
+            workingDirectory: src/Stryker.TestRunner.MicrosoftTestPlatform
 
     steps:
       - uses: actions/checkout@v6

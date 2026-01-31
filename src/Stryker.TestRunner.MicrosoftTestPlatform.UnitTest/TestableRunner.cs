@@ -18,9 +18,9 @@ internal class TestableRunner : SingleMicrosoftTestPlatformRunner
         _onDispose = onDispose;
     }
 
-    public override void Dispose()
+    public override void Dispose(bool disposing)
     {
         _onDispose?.Invoke();
-        base.Dispose();
+        base.Dispose(disposing);
     }
 }
