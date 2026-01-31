@@ -21,7 +21,7 @@ namespace Stryker.Core.Initialisation;
 
 public interface IProjectOrchestrator : IDisposable
 {
-    Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(IStrykerOptions options, IReporter reporters, ITestRunner runner = null);
+    Task<IEnumerable<IMutationTestProcess>> MutateAndTestProjectsAsync(IStrykerOptions options, IReporter reporters, ITestRunner runner = null);
 }
 
 public sealed class ProjectOrchestrator : IProjectOrchestrator
@@ -50,7 +50,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(IStrykerOptions options, IReporter reporters,
+    public async Task<IEnumerable<IMutationTestProcess>> MutateAndTestProjectsAsync(IStrykerOptions options, IReporter reporters,
         ITestRunner runner = null)
     {
         _initializationProcess ??= _serviceProvider.GetRequiredService<IInitialisationProcess>();
@@ -64,18 +64,40 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
 
         _initializationProcess.BuildProjects(options, projectInfos);
 
-        // create a test runner based on the selected option
         _runner = runner ?? CreateTestRunner(options);
         _mutationTestExecutor.TestRunner = _runner;
         InitializeDashboardProjectInformation(options, projectInfos.First());
-        var inputs = await _initializationProcess.GetMutationTestInputsAsync(options, projectInfos, _runner);
 
-        var mutationTestProcesses = new ConcurrentBag<IMutationTestProcess>();
-        Parallel.ForEach(inputs, mutationTestInput =>
+        var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
+
+        var initialTestRunTask = _initializationProcess.RunInitialTestsAsync(options, inputs);
+
+        var mutationTask = Task.Run(() =>
         {
-            mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
+            var mutationTestProcesses = new ConcurrentBag<IMutationTestProcess>();
+            Parallel.ForEach(inputs, mutationTestInput =>
+            {
+                mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
+            });
+            return mutationTestProcesses;
         });
-        return mutationTestProcesses;
+
+        // Run initial test and mutation in parallel for better performance
+        await Task.WhenAll(initialTestRunTask, mutationTask);
+
+        var initialTestResults = initialTestRunTask.Result;
+        var processes = mutationTask.Result;
+        
+        foreach (var process in processes)
+        {
+            if (initialTestResults.TryGetValue(process.Input, out var initialTestRun))
+            {
+                process.Input.InitialTestRun = initialTestRun;
+                _projectMutator.EnrichWithInitialTestRunInfo(process.Input);
+            }
+        }
+
+        return processes;
     }
 
     private ITestRunner CreateTestRunner(IStrykerOptions options)
