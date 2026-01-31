@@ -7,7 +7,7 @@
     },
     "project": "Stryker.MicrosoftTestPlatform",
     "test-projects": [
-      "../Stryker.MicrosoftTestPlatform.Test/Stryker.MicrosoftTestPlatform.Test.csproj"
+      "../Stryker.MicrosoftTestPlatform.UnitTest/Stryker.MicrosoftTestPlatform.UnitTest.csproj"
     ]
   }
 }
