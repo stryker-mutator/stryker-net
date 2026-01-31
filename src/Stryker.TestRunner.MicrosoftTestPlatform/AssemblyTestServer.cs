@@ -193,13 +193,12 @@ internal sealed class AssemblyTestServer : IDisposable
         _client = null;
         _rpc?.Dispose();
         _rpc = null;
-        await _stream?.DisposeAsync().ConfigureAwait(false);
+        _stream?.Dispose();
         _stream = null;
         _tcpClient?.Dispose();
         _tcpClient = null;
-        await _outputStream?.DisposeAsync().ConfigureAwait(false);
+        _outputStream?.Dispose();
         _outputStream = null;
-        _cliProcess = null;
         _isInitialized = false;
     }
 
