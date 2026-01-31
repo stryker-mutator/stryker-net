@@ -39,7 +39,7 @@ public class FileConfigReaderTests
         mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>())).Returns(Task.FromResult(runResults)).Verifiable();
         var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
 
-        target.Run(new string[] { });
+        target.RunAsync(new string[] { });
 
         mock.VerifyAll();
 
@@ -71,7 +71,7 @@ public class FileConfigReaderTests
 
         var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
 
-        target.Run(new string[] { argName, "filled-stryker-config.json" });
+        target.RunAsync(new string[] { argName, "filled-stryker-config.json" });
 
         mock.VerifyAll();
 
@@ -118,7 +118,7 @@ public class FileConfigReaderTests
 
         var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
 
-        target.Run(new string[] { "-f", "filled-stryker-config.yaml" });
+        target.RunAsync(new string[] { "-f", "filled-stryker-config.yaml" });
 
         mock.VerifyAll();
 

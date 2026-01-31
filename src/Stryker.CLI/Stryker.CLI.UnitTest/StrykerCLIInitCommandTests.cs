@@ -32,7 +32,7 @@ public class StrykerCLIInitCommandTests
     [TestMethod]
     public void Init()
     {
-        _target.Run(new[] { "init" });
+        _target.RunAsync(new[] { "init" });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -65,7 +65,7 @@ public class StrykerCLIInitCommandTests
     [DataRow("init", "-f", "test.json")]
     public void InitCustomPath(params string[] args)
     {
-        _target.Run(args);
+        _target.RunAsync(args);
 
         _strykerRunnerMock.VerifyAll();
 
@@ -80,7 +80,7 @@ public class StrykerCLIInitCommandTests
         // deny overwrite
         _consoleMock.Input.PushKey(ConsoleKey.Enter);
 
-        _target.Run(new[] { "init" });
+        _target.RunAsync(new[] { "init" });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -98,7 +98,7 @@ public class StrykerCLIInitCommandTests
         _consoleMock.Input.PushKey(ConsoleKey.Y);
         _consoleMock.Input.PushKey(ConsoleKey.Enter);
 
-        _target.Run(new[] { "init" });
+        _target.RunAsync(new[] { "init" });
 
         _strykerRunnerMock.VerifyAll();
 
@@ -111,7 +111,7 @@ public class StrykerCLIInitCommandTests
     [TestMethod]
     public void InitOverride()
     {
-        _target.Run(new[] { "init",
+        _target.RunAsync(new[] { "init",
             "--verbosity", "debug",
             "--project", "testProject",
             "--reporter", "dots",

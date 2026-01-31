@@ -21,7 +21,7 @@ namespace Stryker.Core.Initialisation;
 
 public interface IProjectOrchestrator : IDisposable
 {
-    IEnumerable<IMutationTestProcess> MutateProjects(IStrykerOptions options, IReporter reporters, ITestRunner runner = null);
+    Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(IStrykerOptions options, IReporter reporters, ITestRunner runner = null);
 }
 
 public sealed class ProjectOrchestrator : IProjectOrchestrator
@@ -50,7 +50,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public IEnumerable<IMutationTestProcess> MutateProjects(IStrykerOptions options, IReporter reporters,
+    public async Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(IStrykerOptions options, IReporter reporters,
         ITestRunner runner = null)
     {
         _initializationProcess ??= _serviceProvider.GetRequiredService<IInitialisationProcess>();
@@ -68,7 +68,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         _runner = runner ?? CreateTestRunner(options);
         _mutationTestExecutor.TestRunner = _runner;
         InitializeDashboardProjectInformation(options, projectInfos.First());
-        var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
+        var inputs = await _initializationProcess.GetMutationTestInputsAsync(options, projectInfos, _runner);
 
         var mutationTestProcesses = new ConcurrentBag<IMutationTestProcess>();
         Parallel.ForEach(inputs, mutationTestInput =>

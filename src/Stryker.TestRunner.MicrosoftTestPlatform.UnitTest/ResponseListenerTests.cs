@@ -35,7 +35,7 @@ public class ResponseListenerTests
         });
 
         var testNode = new TestNode("test1", "Test 1", "test", "discovered");
-        var updates = new[] { new TestNodeUpdate(testNode, null) };
+        var updates = new[] { new TestNodeUpdate(testNode, string.Empty) };
 
         // Act
         await listener.OnMessageReceiveAsync(updates);

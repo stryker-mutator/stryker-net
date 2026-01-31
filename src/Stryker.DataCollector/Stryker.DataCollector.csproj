@@ -11,8 +11,4 @@
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <PackageReference Include="Microsoft.TestPlatform.Portable" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Stryker.DataCollector\" />
-  </ItemGroup>
 </Project>

@@ -97,7 +97,7 @@ public class StrykerCli
     /// Analyzes the arguments and displays an interface to the user. Kicks off the program.
     /// </summary>
     /// <param name="args">User input</param>
-    public int Run(string[] args)
+    public async Task<int> RunAsync(string[] args)
     {
         var app = new CommandLineApplication(new ConsoleWrapper(_console))
         {
@@ -115,7 +115,7 @@ public class StrykerCli
         cmdConfigReader.RegisterCommandLineOptions(app, inputs);
         cmdConfigReader.RegisterInitCommand(app, _fileSystem, inputs, args);
 
-        app.OnExecute(() =>
+        app.OnExecuteAsync(async (cancellationToken) =>
         {
             // app started
             PrintStrykerASCIIName();
@@ -123,14 +123,15 @@ public class StrykerCli
             _configReader.Build(inputs, args, app, cmdConfigReader);
             _loggingInitializer.SetupLogOptions(inputs);
 
-            PrintStrykerVersionInformationAsync(cmdConfigReader.GetSkipVersionCheckOption(args, app).HasValue());
-            RunStrykerAsync(inputs).GetAwaiter().GetResult();
+            // Print version info. Don't await, let it run in the background for performance reasons
+            _ = PrintStrykerVersionInformationAsync(cmdConfigReader.GetSkipVersionCheckOption(args, app).HasValue());
+            await RunStrykerAsync(inputs);
             return ExitCode;
         });
 
         try
         {
-            return app.Execute(args);
+            return await app.ExecuteAsync(args);
         }
         catch (CommandParsingException ex)
         {
@@ -200,7 +201,7 @@ public class StrykerCli
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0079:Remove unnecessary suppression", Justification = "Suppression is for sonarcloud which Roslyn does not know about.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "This method is fire and forget. Task.Run also doesn't work in unit tests")]
-    private async void PrintStrykerVersionInformationAsync(bool skipVersionCheck)
+    private async Task PrintStrykerVersionInformationAsync(bool skipVersionCheck)
     {
         var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
         var assembly = Assembly.GetExecutingAssembly();

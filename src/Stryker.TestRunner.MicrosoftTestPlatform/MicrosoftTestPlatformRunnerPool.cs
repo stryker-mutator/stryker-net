@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
@@ -10,33 +9,7 @@ using Stryker.TestRunner.Tests;
 using Stryker.Utilities.Logging;
 using static Stryker.Abstractions.Testing.ITestRunner;
 
-[assembly: InternalsVisibleTo("Stryker.TestRunner.MicrosoftTestPlatform.UnitTest")]
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
-
 namespace Stryker.TestRunner.MicrosoftTestPlatform;
-
-public interface ISingleRunnerFactory
-{
-    SingleMicrosoftTestPlatformRunner CreateRunner(
-        int id,
-        Dictionary<string, List<TestNode>> testsByAssembly,
-        Dictionary<string, MtpTestDescription> testDescriptions,
-        TestSet testSet,
-        object discoveryLock,
-        ILogger logger);
-}
-
-public class DefaultRunnerFactory : ISingleRunnerFactory
-{
-    public SingleMicrosoftTestPlatformRunner CreateRunner(
-        int id,
-        Dictionary<string, List<TestNode>> testsByAssembly,
-        Dictionary<string, MtpTestDescription> testDescriptions,
-        TestSet testSet,
-        object discoveryLock,
-        ILogger logger) =>
-        new(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger);
-}
 
 /// <summary>
 /// Manages a pool of MicrosoftTestPlatformRunner instances to enable parallel mutation testing

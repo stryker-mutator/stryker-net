@@ -34,7 +34,7 @@ public class InitialTestProcessTests : TestBase
     }
 
     [TestMethod]
-    public void InitialTestProcess_ShouldNotThrowIfAFewTestsFail()
+    public async Task InitialTestProcess_ShouldNotThrowIfAFewTestsFail()
     {
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
         var test1 = "test1";
@@ -54,19 +54,19 @@ public class InitialTestProcessTests : TestBase
         testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
         testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
 
-        _target.InitialTest(_options, null, testRunnerMock.Object);
+        await _target.InitialTestAsync(_options, null, testRunnerMock.Object);
 
         testRunnerMock.Verify(p => p.InitialTestAsync(It.IsAny<IProjectAndTests>()), Times.Once);
     }
 
     [TestMethod]
-    public void InitialTestProcess_ShouldCalculateTestTimeout()
+    public async Task InitialTestProcess_ShouldCalculateTestTimeout()
     {
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
         testRunnerMock.Setup(x => x.InitialTestAsync(It.IsAny<IProjectAndTests>())).Callback(() => Thread.Sleep(10)).Returns(Task.FromResult(new TestRunResult(true) as ITestRunResult));
         testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
         testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
-        var result = _target.InitialTest(_options, null, testRunnerMock.Object);
+        var result = await _target.InitialTestAsync(_options, null, testRunnerMock.Object);
 
         result.TimeoutValueCalculator.DefaultTimeout.ShouldBeInRange(1, 200, "This test contains a Thread.Sleep to simulate time passing as this test is testing that a stopwatch is used correctly to measure time.\n If this test is failing for unclear reasons, perhaps the computer running the test is too slow causing the time estimation to be off");
     }
