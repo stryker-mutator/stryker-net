@@ -14,6 +14,12 @@ namespace Stryker.Core.Initialisation;
 public interface IProjectMutator
 {
     IMutationTestProcess MutateProject(IStrykerOptions options, MutationTestInput input, IReporter reporters, IMutationTestProcess mutationTestProcess = null);
+
+    /// <summary>
+    /// Enriches the test projects info with unit test information from the initial test run.
+    /// This should be called after the initial test run has completed.
+    /// </summary>
+    void EnrichWithInitialTestRunInfo(MutationTestInput input);
 }
 
 public class ProjectMutator : IProjectMutator
@@ -32,13 +38,20 @@ public class ProjectMutator : IProjectMutator
         var process = mutationTestProcess ?? _serviceProvider.GetRequiredService<IMutationTestProcess>();
         process.Initialize(input, options, reporters);
 
-        // Enrich test projects info with unit tests
-        EnrichTestProjectsWithTestInfo(input.InitialTestRun, input.TestProjectsInfo);
-
-        // mutate
         process.Mutate();
 
         return process;
+    }
+
+    /// <inheritdoc/>
+    public void EnrichWithInitialTestRunInfo(MutationTestInput input)
+    {
+        if (input.InitialTestRun is null)
+        {
+            return;
+        }
+
+        EnrichTestProjectsWithTestInfo(input.InitialTestRun, input.TestProjectsInfo);
     }
 
     private void EnrichTestProjectsWithTestInfo(InitialTestRun initialTestRun, ITestProjectsInfo testProjectsInfo)

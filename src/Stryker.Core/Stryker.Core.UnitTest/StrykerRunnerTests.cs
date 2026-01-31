@@ -58,7 +58,7 @@ public class StrykerRunnerTests : TestBase
             OptimizationMode = OptimizationModes.SkipUncoveredMutants
         });
 
-        projectOrchestratorMock.Setup(x => x.MutateProjectsAsync(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>(), It.IsAny<ITestRunner>()))
+        projectOrchestratorMock.Setup(x => x.MutateAndTestProjectsAsync(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>(), It.IsAny<ITestRunner>()))
             .ReturnsAsync(new List<IMutationTestProcess>()
             {
                 mutationTestProcessMock.Object
@@ -88,7 +88,7 @@ public class StrykerRunnerTests : TestBase
 
         await target.RunMutationTestAsync(inputsMock.Object);
 
-        projectOrchestratorMock.Verify(x => x.MutateProjectsAsync(It.Is<StrykerOptions>(x => x.ProjectPath == "C:/test"), It.IsAny<IReporter>(), It.IsAny<ITestRunner>()), Times.Once);
+        projectOrchestratorMock.Verify(x => x.MutateAndTestProjectsAsync(It.Is<StrykerOptions>(x => x.ProjectPath == "C:/test"), It.IsAny<IReporter>(), It.IsAny<ITestRunner>()), Times.Once);
         mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Once);
         mutationTestProcessMock.Verify(x => x.TestAsync(It.IsAny<IEnumerable<IMutant>>()), Times.Once);
         reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()), Times.Once);
@@ -127,7 +127,7 @@ public class StrykerRunnerTests : TestBase
             LogOptions = new LogOptions()
         });
 
-        projectOrchestratorMock.Setup(x => x.MutateProjectsAsync(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>(), It.IsAny<ITestRunner>()))
+        projectOrchestratorMock.Setup(x => x.MutateAndTestProjectsAsync(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>(), It.IsAny<ITestRunner>()))
             .ReturnsAsync(new List<IMutationTestProcess>() { mutationTestProcessMock.Object });
 
         mutationTestProcessMock.Setup(x => x.FilterMutants());
@@ -184,7 +184,7 @@ public class StrykerRunnerTests : TestBase
             LogOptions = new LogOptions()
         });
 
-        projectOrchestratorMock.Setup(x => x.MutateProjectsAsync(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>(), It.IsAny<ITestRunner>()))
+        projectOrchestratorMock.Setup(x => x.MutateAndTestProjectsAsync(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>(), It.IsAny<ITestRunner>()))
             .ReturnsAsync(new List<IMutationTestProcess>() { });
 
         reporterFactoryMock.Setup(x => x.Create(It.IsAny<StrykerOptions>(), It.IsAny<IGitInfoProvider>())).Returns(reporterMock.Object);
