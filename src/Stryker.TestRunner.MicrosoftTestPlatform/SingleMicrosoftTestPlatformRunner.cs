@@ -180,6 +180,107 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
+    private List<TestNode>? GetDiscoveredTests(string assembly)
+    {
+        lock (_discoveryLock)
+        {
+            return _testsByAssembly.TryGetValue(assembly, out var tests) ? tests : null;
+        }
+    }
+
+    private TimeSpan? CalculateAssemblyTimeout(List<TestNode> discoveredTests, ITimeoutValueCalculator timeoutCalc, string assembly)
+    {
+        var estimatedTimeMs = (int)discoveredTests
+            .Where(t => _testDescriptions.TryGetValue(t.Uid, out _))
+            .Sum(t =>
+            {
+                lock (_discoveryLock)
+                {
+                    return _testDescriptions.TryGetValue(t.Uid, out var desc)
+                        ? desc.InitialRunTime.TotalMilliseconds
+                        : 0;
+                }
+            });
+        
+        var timeoutMs = timeoutCalc.CalculateTimeoutValue(estimatedTimeMs);
+        _logger.LogDebug("{RunnerId}: Using {TimeoutMs} ms as test run timeout for {Assembly}",
+            RunnerId, timeoutMs, Path.GetFileName(assembly));
+        
+        return TimeSpan.FromMilliseconds(timeoutMs);
+    }
+
+    private async Task HandleAssemblyTimeoutAsync(string assembly, List<TestNode> discoveredTests, List<string> allTimedOutTests)
+    {
+        _logger.LogDebug("{RunnerId}: Test run timed out for {Assembly}", RunnerId, Path.GetFileName(assembly));
+        
+        allTimedOutTests.AddRange(discoveredTests.Select(t => t.Uid));
+        
+        AssemblyTestServer? server;
+        lock (_serverLock)
+        {
+            _assemblyServers.TryGetValue(assembly, out server);
+        }
+        
+        if (server is not null)
+        {
+            _logger.LogDebug("{RunnerId}: Restarting test server for {Assembly} after timeout", RunnerId, Path.GetFileName(assembly));
+            await server.RestartAsync().ConfigureAwait(false);
+        }
+    }
+
+    private void AggregateTestResults(
+        TestRunResult result,
+        List<TestNode>? discoveredTests,
+        List<string> allExecutedTests,
+        List<string> allFailedTests,
+        List<string> allMessages,
+        List<string> errorMessages,
+        ref int totalExecutedTests,
+        ref TimeSpan totalDuration)
+    {
+        if (result.ExecutedTests.IsEveryTest)
+        {
+            totalExecutedTests += discoveredTests?.Count ?? 0;
+        }
+        else
+        {
+            var executedIds = result.ExecutedTests.GetIdentifiers().ToList();
+            allExecutedTests.AddRange(executedIds);
+            totalExecutedTests += executedIds.Count;
+        }
+
+        allFailedTests.AddRange(result.FailingTests.GetIdentifiers());
+        totalDuration += result.Duration;
+        allMessages.AddRange(result.Messages);
+        
+        if (!string.IsNullOrWhiteSpace(result.ResultMessage))
+        {
+            errorMessages.Add(result.ResultMessage);
+        }
+    }
+
+    private async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> ProcessSingleAssemblyAsync(
+        string assembly,
+        ITimeoutValueCalculator? timeoutCalc)
+    {
+        if (!File.Exists(assembly))
+        {
+            return (null, false, null);
+        }
+
+        var discoveredTests = GetDiscoveredTests(assembly);
+        
+        TimeSpan? timeout = null;
+        if (timeoutCalc is not null && discoveredTests is not null)
+        {
+            timeout = CalculateAssemblyTimeout(discoveredTests, timeoutCalc, assembly);
+        }
+
+        var (testResults, timedOut) = await RunTestsInternalAsync(assembly, null, timeout).ConfigureAwait(false);
+        
+        return (testResults as TestRunResult, timedOut, discoveredTests);
+    }
+
     private async Task<ITestRunResult> RunAllTestsAsync(
         IReadOnlyList<string> assemblies,
         int mutantId,
@@ -189,7 +290,6 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     {
         try
         {
-            // Update the mutant file before running tests
             WriteMutantIdToFile(mutantId);
 
             var allExecutedTests = new List<string>();
@@ -203,128 +303,79 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
             foreach (var assembly in assemblies)
             {
-                if (!File.Exists(assembly))
+                var (result, timedOut, discoveredTests) = await ProcessSingleAssemblyAsync(assembly, timeoutCalc).ConfigureAwait(false);
+                
+                if (discoveredTests is not null)
                 {
-                    continue;
+                    totalDiscoveredTests += discoveredTests.Count;
                 }
 
-                List<TestNode>? discoveredTests = null;
-                lock (_discoveryLock)
+                if (timedOut && discoveredTests is not null)
                 {
-                    if (_testsByAssembly.TryGetValue(assembly, out var tests))
-                    {
-                        discoveredTests = tests;
-                        totalDiscoveredTests += tests.Count;
-                    }
+                    await HandleAssemblyTimeoutAsync(assembly, discoveredTests, allTimedOutTests).ConfigureAwait(false);
                 }
 
-                // Calculate timeout based on expected test duration
-                TimeSpan? timeout = null;
-                if (timeoutCalc is not null && discoveredTests is not null)
+                if (result is not null)
                 {
-                    var estimatedTimeMs = (int)discoveredTests
-                        .Where(t => _testDescriptions.TryGetValue(t.Uid, out _))
-                        .Sum(t =>
-                        {
-                            lock (_discoveryLock) // prevent InvalidOperationException by concurrent dictionary access
-                            {
-                                return _testDescriptions.TryGetValue(t.Uid, out var desc)
-                                    ? desc.InitialRunTime.TotalMilliseconds
-                                    : 0;
-                            }
-                        });
-                    var timeoutMs = timeoutCalc.CalculateTimeoutValue(estimatedTimeMs);
-                    timeout = TimeSpan.FromMilliseconds(timeoutMs);
-                    _logger.LogDebug("{RunnerId}: Using {TimeoutMs} ms as test run timeout for {Assembly}",
-                        RunnerId, timeoutMs, Path.GetFileName(assembly));
-                }
-
-                var (testResults, timedOut) = await RunTestsInternalAsync(assembly, null, timeout).ConfigureAwait(false);
-
-                if (timedOut)
-                {
-                    _logger.LogDebug("{RunnerId}: Test run timed out for {Assembly}", RunnerId, Path.GetFileName(assembly));
-
-                    // Mark all tests from this assembly as timed out
-                    if (discoveredTests is not null)
-                    {
-                        allTimedOutTests.AddRange(discoveredTests.Select(t => t.Uid));
-                    }
-
-                    // Restart the server since the test process is likely stuck
-                    AssemblyTestServer? server;
-                    lock (_serverLock)
-                    {
-                        _assemblyServers.TryGetValue(assembly, out server);
-                    }
-                    if (server is not null)
-                    {
-                        _logger.LogDebug("{RunnerId}: Restarting test server for {Assembly} after timeout", RunnerId, Path.GetFileName(assembly));
-                        await server.RestartAsync().ConfigureAwait(false);
-                    }
-                }
-
-                if (testResults is TestRunResult result)
-                {
-                    if (result.ExecutedTests.IsEveryTest)
-                    {
-                        totalExecutedTests += discoveredTests?.Count ?? 0;
-                    }
-                    else
-                    {
-                        var executedIds = result.ExecutedTests.GetIdentifiers().ToList();
-                        allExecutedTests.AddRange(executedIds);
-                        totalExecutedTests += executedIds.Count;
-                    }
-
-                    allFailedTests.AddRange(result.FailingTests.GetIdentifiers());
-                    totalDuration += result.Duration;
-                    allMessages.AddRange(result.Messages);
-                    if (!string.IsNullOrWhiteSpace(result.ResultMessage))
-                    {
-                        errorMessages.Add(result.ResultMessage);
-                    }
+                    AggregateTestResults(result, discoveredTests, allExecutedTests, allFailedTests, 
+                        allMessages, errorMessages, ref totalExecutedTests, ref totalDuration);
                 }
             }
 
-            var executedTests = totalDiscoveredTests > 0 && totalExecutedTests >= totalDiscoveredTests
-                ? TestIdentifierList.EveryTest()
-                : new TestIdentifierList(allExecutedTests);
-
-            var failedTestIds = allFailedTests.Count > 0
-                ? new TestIdentifierList(allFailedTests)
-                : TestIdentifierList.NoTest();
-
-            var timedOutTestIds = allTimedOutTests.Count > 0
-                ? new TestIdentifierList(allTimedOutTests)
-                : TestIdentifierList.NoTest();
-
-            IEnumerable<MtpTestDescription> testDescriptionValues;
-            lock (_discoveryLock)
-            {
-                testDescriptionValues = _testDescriptions.Values.ToList();
-            }
-
-            // Report combined results to Stryker for mutant status determination
-            if (update is not null && mutants is not null)
-            {
-                update.Invoke(mutants, failedTestIds, executedTests, timedOutTestIds);
-            }
-
-            return new TestRunResult(
-                testDescriptionValues,
-                executedTests,
-                failedTestIds,
-                timedOutTestIds,
-                string.Join(Environment.NewLine, errorMessages),
-                allMessages,
-                totalDuration);
+            return BuildFinalTestResult(allExecutedTests, allFailedTests, allTimedOutTests, 
+                allMessages, errorMessages, totalDuration, totalDiscoveredTests, totalExecutedTests, 
+                mutants, update);
         }
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "{RunnerId}: Failed to run tests for mutant ID {MutantId}", RunnerId, mutantId);
             return new TestRunResult(false, ex.Message);
         }
+    }
+
+    private ITestRunResult BuildFinalTestResult(
+        List<string> allExecutedTests,
+        List<string> allFailedTests,
+        List<string> allTimedOutTests,
+        List<string> allMessages,
+        List<string> errorMessages,
+        TimeSpan totalDuration,
+        int totalDiscoveredTests,
+        int totalExecutedTests,
+        IReadOnlyList<IMutant>? mutants,
+        TestUpdateHandler? update)
+    {
+        var executedTests = totalDiscoveredTests > 0 && totalExecutedTests >= totalDiscoveredTests
+            ? TestIdentifierList.EveryTest()
+            : new TestIdentifierList(allExecutedTests);
+
+        var failedTestIds = allFailedTests.Count > 0
+            ? new TestIdentifierList(allFailedTests)
+            : TestIdentifierList.NoTest();
+
+        var timedOutTestIds = allTimedOutTests.Count > 0
+            ? new TestIdentifierList(allTimedOutTests)
+            : TestIdentifierList.NoTest();
+
+        IEnumerable<MtpTestDescription> testDescriptionValues;
+        lock (_discoveryLock)
+        {
+            testDescriptionValues = _testDescriptions.Values.ToList();
+        }
+
+        if (update is not null && mutants is not null)
+        {
+            update.Invoke(mutants, failedTestIds, executedTests, timedOutTestIds);
+        }
+
+        return new TestRunResult(
+            testDescriptionValues,
+            executedTests,
+            failedTestIds,
+            timedOutTestIds,
+            string.Join(Environment.NewLine, errorMessages),
+            allMessages,
+            totalDuration);
     }
 
     private async Task<(ITestRunResult Result, bool TimedOut)> RunTestsInternalAsync(
