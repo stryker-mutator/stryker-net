@@ -25,7 +25,6 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
-using Stryker.TestRunner.VsTest;
 using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.UnitTest.Initialisation;
@@ -166,7 +165,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var target = BuildProjectOrchestrator(analyzerResults, out var mockRunner, out var buildalyzerAnalyzerManagerMock);
 
         // act
-        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+        await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object);
 
         // assert
         buildalyzerAnalyzerManagerMock.Verify(x => x.SetGlobalProperty("Configuration", "Release"), Times.AtLeastOnce);
@@ -303,6 +302,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 
         // act
         var result = async() => (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+        
         // assert
         result.ShouldThrow<InputException>();
     }

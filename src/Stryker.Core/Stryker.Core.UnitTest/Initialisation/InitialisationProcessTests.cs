@@ -240,7 +240,7 @@ public class InitialisationProcessTests : TestBase
 
         var projects = target.GetMutableProjectsInfo(options);
         target.BuildProjects(options, projects);
-        var input = (await target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object)).First();
+        await target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object);
 
         inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>()), Times.Once);
         initialTestProcessMock.Verify(x => x.InitialTestAsync(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), testRunnerMock.Object), Times.Once);
