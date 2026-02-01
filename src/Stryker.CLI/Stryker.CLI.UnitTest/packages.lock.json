@@ -989,7 +989,7 @@
         "type": "Project",
         "dependencies": {
           "CliWrap": "[3.10.0, )",
-          "Microsoft.Testing.Platform": "[1.5.2, )",
+          "Microsoft.Testing.Platform": "[1.9.1, )",
           "StreamJsonRpc": "[2.24.84, )",
           "Stryker.TestRunner": "[4.11.0, )",
           "Stryker.Utilities": "[4.11.0, )"
@@ -1146,7 +1146,7 @@
       },
       "Microsoft.Testing.Platform": {
         "type": "CentralTransitive",
-        "requested": "[1.5.2, )",
+        "requested": "[1.9.1, )",
         "resolved": "1.9.1",
         "contentHash": "QafNtNSmEI0zazdebnsIkDKmFtTSpmx/5PLOjURWwozcPb3tvRxzosQSL8xwYNM1iPhhKiBksXZyRSE2COisrA=="
       },
