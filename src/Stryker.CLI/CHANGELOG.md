@@ -1,3 +1,17 @@
+# [4.12.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.11.0...dotnet-stryker@4.12.0) (2026-02-01)
+
+
+### Bug Fixes
+
+* Solve concurrency issues related to dependency injection ([#3405](https://github.com/stryker-mutator/stryker-net/issues/3405)) ([931ac8a](https://github.com/stryker-mutator/stryker-net/commit/931ac8a0b462d516c1d990f6342aa274e3accd87))
+
+
+### Features
+
+* Use solution configuration when provided in solution file ([#3411](https://github.com/stryker-mutator/stryker-net/issues/3411)) ([27d08ee](https://github.com/stryker-mutator/stryker-net/commit/27d08eec46a2564a588835ff468ac03ce701aed2))
+
+
+
 # [4.11.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.10.0...dotnet-stryker@4.11.0) (2026-01-09)
 
 
