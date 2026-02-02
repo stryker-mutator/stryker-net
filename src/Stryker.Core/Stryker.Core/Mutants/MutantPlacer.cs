@@ -48,11 +48,15 @@ public class MutantPlacer
         {
             if (instrumentEngines.TryGetValue(engine.InstrumentEngineId, out var existing))
             {
+                // handle multiple registrations
                 if (existing.engine!.GetType() != engine.GetType())
                 {
+                    // not the same engine type trying to register with the same id
+                    // design error
                     throw new InvalidOperationException(
                         $"Cannot register {engine.GetType().Name} as name {engine.InstrumentEngineId} is already registered to {existing.engine.GetType().Name}.");
                 }
+                // disregard multiple registrations of the same engine
                 return existing.annotation;
             }
 

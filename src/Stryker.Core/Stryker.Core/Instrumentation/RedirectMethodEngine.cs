@@ -9,7 +9,7 @@ namespace Stryker.Core.Instrumentation;
 
 internal class RedirectMethodEngine : BaseEngine<MethodDeclarationSyntax>
 {
-    private const string _redirectHints = "RedirectHints";
+    private const string RedirectHints = "RedirectHints";
 
     public ClassDeclarationSyntax InjectRedirect(ClassDeclarationSyntax originalClass,
         ExpressionSyntax condition,
@@ -21,7 +21,7 @@ internal class RedirectMethodEngine : BaseEngine<MethodDeclarationSyntax>
             throw new ArgumentException($"Syntax tree does not contains {originalMethod.Identifier}.", nameof(originalMethod));
         }
 
-        // find alternative names
+        // this is to avoid name clashes when multiple mutations are applied to the same method
         var index = 0;
         var newNameForOriginal = FindNewName(originalClass, originalMethod, ref index);
         var newNameForMutated = FindNewName(originalClass, originalMethod, ref index);
@@ -31,7 +31,7 @@ internal class RedirectMethodEngine : BaseEngine<MethodDeclarationSyntax>
         var originalCall = GenerateRedirectedInvocation(originalMethod, newNameForOriginal);
         var mutatedCall = GenerateRedirectedInvocation(originalMethod, newNameForMutated);
 
-        var redirectHints = new SyntaxAnnotation(_redirectHints, $"{originalMethod.Identifier.ToString()},{newNameForOriginal},{newNameForMutated}");
+        var redirectHints = new SyntaxAnnotation(RedirectHints, $"{originalMethod.Identifier},{newNameForOriginal},{newNameForMutated}");
 
         var redirector = originalMethod
             .WithBody(SyntaxFactory.Block(
@@ -41,9 +41,9 @@ internal class RedirectMethodEngine : BaseEngine<MethodDeclarationSyntax>
 
         // update the class
         var resultingClass = originalClass.RemoveNode(originalMethod, SyntaxRemoveOptions.KeepNoTrivia)
-            ?.AddMembers([redirector.WithTrailingNewLine().WithAdditionalAnnotations(redirectHints, Marker),
+            ?.AddMembers(redirector.WithTrailingNewLine().WithAdditionalAnnotations(redirectHints, Marker),
                 originalMethod.WithIdentifier(SyntaxFactory.Identifier(newNameForOriginal)).WithTrailingNewLine().WithAdditionalAnnotations(redirectHints, Marker),
-                mutatedMethod.WithIdentifier(SyntaxFactory.Identifier(newNameForMutated)).WithTrailingNewLine().WithAdditionalAnnotations(redirectHints, Marker)]);
+                mutatedMethod.WithIdentifier(SyntaxFactory.Identifier(newNameForMutated)).WithTrailingNewLine().WithAdditionalAnnotations(redirectHints, Marker));
         return resultingClass;
     }
 
@@ -52,6 +52,15 @@ internal class RedirectMethodEngine : BaseEngine<MethodDeclarationSyntax>
             SyntaxFactory.ArgumentList( SyntaxFactory.SeparatedList(
                 originalMethod.ParameterList.Parameters.Select(p => SyntaxFactory.Argument( SyntaxFactory.IdentifierName(p.Identifier))))));
 
+    /// <summary>
+    /// Finds a new name for the redirected method that does not clash with existing methods
+    /// </summary>
+    /// <param name="originalClass">class containing the method</param>
+    /// <param name="originalMethod">method to find a name for</param>
+    /// <param name="index">index used for naming, contains the next available value on return</param>
+    /// <returns>a new class name that does not conflict with existing method names</returns>
+    /// <remarks>Construct names in the 'currentName_index' form and increment the index if there is a collision.
+    /// returned index value must be reused when generating multiple names to prevent any collision when injecting methods.</remarks>
     private static string FindNewName(ClassDeclarationSyntax originalClass, MethodDeclarationSyntax originalMethod, ref int index)
     {
         string newNameForOriginal;
@@ -65,9 +74,9 @@ internal class RedirectMethodEngine : BaseEngine<MethodDeclarationSyntax>
 
     protected override SyntaxNode Revert(MethodDeclarationSyntax node) => throw new NotSupportedException("Cannot revert node in place.");
 
-    public override SyntaxNode RemoveInstrumentationFrom(SyntaxNode tree, SyntaxNode instrumentation)
+    public override SyntaxNode RemoveInstrumentationFrom(SyntaxNode _, SyntaxNode instrumentation)
     {
-        var annotation = instrumentation.GetAnnotations(_redirectHints).FirstOrDefault()?.Data;
+        var annotation = instrumentation.GetAnnotations(RedirectHints).FirstOrDefault()?.Data;
         if (string.IsNullOrEmpty(annotation))
         {
             throw new InvalidOperationException($"Unable to find details to rollback this instrumentation: '{instrumentation}'");
@@ -76,7 +85,6 @@ internal class RedirectMethodEngine : BaseEngine<MethodDeclarationSyntax>
         var method = (MethodDeclarationSyntax) instrumentation;
         var names = annotation.Split(',').ToList();
 
-        
         var parentClass = (ClassDeclarationSyntax) method.Parent;
         var renamedMethod = (MethodDeclarationSyntax) parentClass.Members.
             First( m=> m is MethodDeclarationSyntax meth && meth.Identifier.Text == names[1]);
@@ -87,5 +95,4 @@ internal class RedirectMethodEngine : BaseEngine<MethodDeclarationSyntax>
         parentClass = parentClass.ReplaceNode(oldNode, renamedMethod.WithIdentifier(SyntaxFactory.Identifier(names[0])));
         return parentClass;
     }
-
 }

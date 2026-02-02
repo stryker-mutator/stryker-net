@@ -187,7 +187,7 @@ internal static class RoslynHelper
     /// <param name="skipBlock">set to true to avoid scan into block statements</param>
     /// <returns></returns>
     public static bool ContainsNodeThatVerifies(this SyntaxNode node, Func<SyntaxNode, bool> predicate, bool skipBlock = true) =>
-        // scan 
+        // scan
         node.DescendantNodes((child) =>
         {
             if (skipBlock && child is BlockSyntax)
@@ -199,20 +199,19 @@ internal static class RoslynHelper
                    && (child.Parent is not LocalFunctionStatementSyntax localFunction || localFunction.ExpressionBody != child);
         } ).Any(predicate);
 
-
     /// <summary>
-    /// Ensure a statement is in a syntax bock.
+    /// Ensure a statement is in a syntax block.
     /// </summary>
     /// <param name="statement">the statement to put into a block.</param>
     /// <returns>a block containing <paramref name="statement"/>, or <paramref name="statement"/> if it is already a block</returns>
     public static BlockSyntax AsBlock(this StatementSyntax statement) => statement as BlockSyntax ?? SyntaxFactory.Block(statement);
 
     /// <summary>
-    /// Ensure an expression is in a syntax bock.
+    /// Ensure an expression is in a syntax block.
     /// </summary>
     /// <param name="expression">the expression to put into a block.</param>
     /// <returns>a block containing <paramref name="expression"/></returns>
-    public static BlockSyntax AsBlock(this ExpressionSyntax expression) =>SyntaxFactory.ExpressionStatement(expression).AsBlock();
+    public static BlockSyntax AsBlock(this ExpressionSyntax expression) => SyntaxFactory.ExpressionStatement(expression).AsBlock();
 
     /// <summary>
     /// Ensure a <see cref="SyntaxNode"/> is followed by a trailing newline
