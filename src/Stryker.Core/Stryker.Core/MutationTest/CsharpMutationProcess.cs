@@ -2,10 +2,12 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
+using Stryker.Configuration;
 using Stryker.Core.Compiling;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
@@ -36,22 +38,40 @@ public class CsharpMutationProcess : IMutationProcess
     {
         _options = options;
         var projectInfo = input.SourceProjectInfo.ProjectContents;
-        var orchestrator = new CsharpMutantOrchestrator(new MutantPlacer(input.SourceProjectInfo.CodeInjector), options: _options);
         var compilingProcess = new CsharpCompilingProcess(input, options: _options);
-        var semanticModels = compilingProcess.GetSemanticModels(projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree));
+        var files = projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().ToList();
+        var semanticModels = compilingProcess.GetSemanticModels(files.Select(x => x.SyntaxTree)).ToList();
 
-        foreach (var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
+        var semanticModelLookup = semanticModels.ToDictionary(sm => sm.SyntaxTree);
+        var placer = new MutantPlacer(input.SourceProjectInfo.CodeInjector);
+
+        _options.MutantIdProvider ??= new BasicIdProvider();
+
+        var parallelOptions = new ParallelOptions
+        {
+            // Use configured concurrency when provided; otherwise, derive a safe default
+            MaxDegreeOfParallelism = options.Concurrency > 0
+                ? options.Concurrency
+                : Math.Max(1, Environment.ProcessorCount - 1)
+        };
+
+        Parallel.ForEach(files, parallelOptions, file =>
         {
             _logger.LogDebug("Mutating {FilePath}", file.FullPath);
-            var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree, semanticModels.First(x => x.SyntaxTree == file.SyntaxTree));
+
+            var orchestrator = new CsharpMutantOrchestrator(placer, options: _options);
+
+            var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree, semanticModelLookup[file.SyntaxTree]);
             file.MutatedSyntaxTree = mutatedSyntaxTree;
+
             if (_options.DiagMode)
             {
                 _logger.LogTrace("Mutated {FullPath}:{NewLine}{MutatedSyntaxTree}",
                     file.FullPath, Environment.NewLine, mutatedSyntaxTree.GetText());
             }
+
             file.Mutants = orchestrator.GetLatestMutantBatch();
-        }
+        });
 
         _logger.LogDebug("{MutantsCount} mutants created", projectInfo.Mutants.Count());
     }

@@ -76,8 +76,8 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         // Run initial test and mutation in parallel for better performance
         await Task.WhenAll(initialTestRunTask, mutationTask);
 
-        var initialTestResults = initialTestRunTask.Result;
-        var processes = mutationTask.Result;
+        var initialTestResults = await initialTestRunTask;
+        var processes = await mutationTask;
 
         // Compile mutated assemblies after initial tests complete to avoid file conflicts
         foreach (var process in processes)
@@ -101,17 +101,10 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
     {
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         var mutationTestProcesses = new ConcurrentBag<IMutationTestProcess>();
-        var parallelOptions = new ParallelOptions
-        {
-            // Use configured concurrency when provided; otherwise, derive a safe default
-            MaxDegreeOfParallelism = options.Concurrency > 0
-                ? options.Concurrency
-                : Math.Max(1, Environment.ProcessorCount - 1)
-        };
-        Parallel.ForEach(inputs, parallelOptions, mutationTestInput =>
+        foreach (var mutationTestInput in inputs)
         {
             mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
-        });
+        }
         stopwatch.Stop();
         _logger.LogInformation("Project mutation completed in {ElapsedMilliseconds} ms", stopwatch.ElapsedMilliseconds);
         return mutationTestProcesses;
