@@ -144,6 +144,7 @@ public class InitialisationProcess : IInitialisationProcess
     public async Task<IReadOnlyDictionary<MutationTestInput, InitialTestRun>> RunInitialTestsAsync(IStrykerOptions options,
         IReadOnlyCollection<MutationTestInput> inputs)
     {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         var throwIfFails = inputs.Count == 1;
         var tasks = inputs.Select(async input =>
         {
@@ -152,6 +153,8 @@ public class InitialisationProcess : IInitialisationProcess
         });
 
         var results = await Task.WhenAll(tasks);
+        stopwatch.Stop();
+        _logger.LogInformation("Initial test run completed in {ElapsedMilliseconds} ms", stopwatch.ElapsedMilliseconds);
         return results.ToDictionary(r => r.input, r => r.initialTestRun);
     }
 

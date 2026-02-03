@@ -46,6 +46,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
                 mock.Setup(m => m.Input).Returns(input);
                 return mock.Object;
             });
+        _projectMutatorMock.Setup(x => x.CompileProject(It.IsAny<IMutationTestProcess>()));
         _projectMutatorMock.Setup(x => x.EnrichWithInitialTestRunInfo(It.IsAny<MutationTestInput>()));
     }
 

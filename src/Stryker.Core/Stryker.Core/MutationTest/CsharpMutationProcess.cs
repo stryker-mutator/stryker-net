@@ -31,6 +31,7 @@ public class CsharpMutationProcess : IMutationProcess
         _logger = logger;
     }
 
+    /// <inheritdoc/>
     public void Mutate(MutationTestInput input, IStrykerOptions options)
     {
         _options = options;
@@ -39,25 +40,26 @@ public class CsharpMutationProcess : IMutationProcess
         var compilingProcess = new CsharpCompilingProcess(input, options: _options);
         var semanticModels = compilingProcess.GetSemanticModels(projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree));
 
-        // Mutate source files
         foreach (var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
         {
             _logger.LogDebug("Mutating {FilePath}", file.FullPath);
-            // Mutate the syntax tree
             var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree, semanticModels.First(x => x.SyntaxTree == file.SyntaxTree));
-            // Add the mutated syntax tree for compilation
             file.MutatedSyntaxTree = mutatedSyntaxTree;
             if (_options.DiagMode)
             {
                 _logger.LogTrace("Mutated {FullPath}:{NewLine}{MutatedSyntaxTree}",
                     file.FullPath, Environment.NewLine, mutatedSyntaxTree.GetText());
             }
-            // Filter the mutants
             file.Mutants = orchestrator.GetLatestMutantBatch();
         }
 
         _logger.LogDebug("{MutantsCount} mutants created", projectInfo.Mutants.Count());
+    }
 
+    /// <inheritdoc/>
+    public void Compile(MutationTestInput input)
+    {
+        var compilingProcess = new CsharpCompilingProcess(input, options: _options);
         CompileMutations(input, compilingProcess);
     }
 

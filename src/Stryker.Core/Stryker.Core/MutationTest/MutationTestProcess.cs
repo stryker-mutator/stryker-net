@@ -20,7 +20,19 @@ public interface IMutationTestProcess
 {
     MutationTestInput Input { get; }
     void Initialize(MutationTestInput input, IStrykerOptions options, IReporter reporter);
+    
+    /// <summary>
+    /// Mutates the syntax trees and stores them in memory.
+    /// Does not compile or write to disk.
+    /// </summary>
     void Mutate();
+    
+    /// <summary>
+    /// Compiles the mutated syntax trees and writes the assembly to disk.
+    /// Must be called after initial tests complete.
+    /// </summary>
+    void Compile();
+    
     Task<StrykerRunResult> TestAsync(IEnumerable<IMutant> mutantsToTest);
     void Restore();
     void GetCoverage();
@@ -63,6 +75,11 @@ public class MutationTestProcess : IMutationTestProcess
     public void Mutate()
     {
         _mutationProcess.Mutate(Input, _options);
+    }
+
+    public void Compile()
+    {
+        _mutationProcess.Compile(Input);
     }
 
     public void FilterMutants() => _mutationProcess.FilterMutants(Input);

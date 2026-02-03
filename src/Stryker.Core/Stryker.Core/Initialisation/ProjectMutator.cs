@@ -13,7 +13,17 @@ namespace Stryker.Core.Initialisation;
 
 public interface IProjectMutator
 {
+    /// <summary>
+    /// Mutates the project syntax trees and stores them in memory.
+    /// Does not compile or write to disk, making it safe to run in parallel with initial tests.
+    /// </summary>
     IMutationTestProcess MutateProject(IStrykerOptions options, MutationTestInput input, IReporter reporters, IMutationTestProcess mutationTestProcess = null);
+
+    /// <summary>
+    /// Compiles the mutated project and writes the assembly to disk.
+    /// Must be called after initial tests complete.
+    /// </summary>
+    void CompileProject(IMutationTestProcess process);
 
     /// <summary>
     /// Enriches the test projects info with unit test information from the initial test run.
@@ -41,6 +51,12 @@ public class ProjectMutator : IProjectMutator
         process.Mutate();
 
         return process;
+    }
+
+    /// <inheritdoc/>
+    public void CompileProject(IMutationTestProcess process)
+    {
+        process.Compile();
     }
 
     /// <inheritdoc/>

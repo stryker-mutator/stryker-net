@@ -71,23 +71,20 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
 
         var initialTestRunTask = _initializationProcess.RunInitialTestsAsync(options, inputs);
-
-        var mutationTask = Task.Run(() =>
-        {
-            var mutationTestProcesses = new ConcurrentBag<IMutationTestProcess>();
-            Parallel.ForEach(inputs, mutationTestInput =>
-            {
-                mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
-            });
-            return mutationTestProcesses;
-        });
+        var mutationTask = MutateProjectsAsync(options, reporters, inputs);
 
         // Run initial test and mutation in parallel for better performance
         await Task.WhenAll(initialTestRunTask, mutationTask);
 
         var initialTestResults = initialTestRunTask.Result;
         var processes = mutationTask.Result;
-        
+
+        // Compile mutated assemblies after initial tests complete to avoid file conflicts
+        foreach (var process in processes)
+        {
+            _projectMutator.CompileProject(process);
+        }
+
         foreach (var process in processes)
         {
             if (initialTestResults.TryGetValue(process.Input, out var initialTestRun))
@@ -98,6 +95,26 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         }
 
         return processes;
+    }
+
+    private async Task<ConcurrentBag<IMutationTestProcess>> MutateProjectsAsync(IStrykerOptions options, IReporter reporters, IReadOnlyCollection<MutationTestInput> inputs)
+    {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var mutationTestProcesses = new ConcurrentBag<IMutationTestProcess>();
+        var parallelOptions = new ParallelOptions
+        {
+            // Use configured concurrency when provided; otherwise, derive a safe default
+            MaxDegreeOfParallelism = options.Concurrency > 0
+                ? options.Concurrency
+                : Math.Max(1, Environment.ProcessorCount - 1)
+        };
+        Parallel.ForEach(inputs, parallelOptions, mutationTestInput =>
+        {
+            mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
+        });
+        stopwatch.Stop();
+        _logger.LogInformation("Project mutation completed in {ElapsedMilliseconds} ms", stopwatch.ElapsedMilliseconds);
+        return mutationTestProcesses;
     }
 
     private ITestRunner CreateTestRunner(IStrykerOptions options)
