@@ -174,7 +174,10 @@ public static class IAnalyzerResultExtensions
     {
         if (!bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestProject"), out var isTestProject))
         {
-            isTestProject = Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n));
+            if (!bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestingPlatformApplication"), out isTestProject))
+            {
+                isTestProject = Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n));
+            }
         }
 
         var hasTestProjectTypeGuid = analyzerResult
