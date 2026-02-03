@@ -85,13 +85,10 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
             _projectMutator.CompileProject(process);
         }
 
-        foreach (var process in processes)
+        foreach (var process in processes.Where(p => initialTestResults.ContainsKey(p.Input)))  
         {
-            if (initialTestResults.TryGetValue(process.Input, out var initialTestRun))
-            {
-                process.Input.InitialTestRun = initialTestRun;
+                process.Input.InitialTestRun = initialTestResults[process.Input];
                 _projectMutator.EnrichWithInitialTestRunInfo(process.Input);
-            }
         }
 
         return processes;
