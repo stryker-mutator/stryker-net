@@ -303,7 +303,7 @@ public class InitialisationProcessTests : TestBase
     }
 
     [TestMethod]
-    public async Task InitialisationProcess_ShouldThrowOnWhenNoTestDetectedAndCorrectDependencies()
+    public void InitialisationProcess_ShouldThrowOnWhenNoTestDetectedAndCorrectDependencies()
     {
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
         var inputFileResolverMock = new Mock<IInputFileResolver>(MockBehavior.Strict);
