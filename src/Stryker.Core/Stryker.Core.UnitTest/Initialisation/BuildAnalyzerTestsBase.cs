@@ -77,7 +77,7 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
     /// <param name="csProj">production code project pathname</param>
     /// <param name="frameworks"></param>
     /// <param name="success"></param>
-    /// <param name="dontGenerateProjectReference">true to prevent project references to pe determined for assembly references</param>
+    /// <param name="dontGenerateProjectReference">true to prevent project references to be determined for assembly references</param>
     /// <returns>a mock project analyzer</returns>
     /// <remarks>the test project references the production code project and contains no source file</remarks>
     protected Mock<IProjectAnalyzer> TestProjectAnalyzerMock(string testCsprojPathName, string csProj, IEnumerable<string> frameworks = null, bool success = true, bool dontGenerateProjectReference= false)
@@ -95,7 +95,7 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
     /// <param name="csProj">production code project pathname</param>
     /// <param name="frameworks"></param>
     /// <returns>a mock project analyzer</returns>
-    /// <remarks>project analysis will fully failed</remarks>
+    /// <remarks>project analysis will fully fail</remarks>
     protected Mock<IProjectAnalyzer> TestProjectFailedAnalyzerMock(string testCsprojPathName, string csProj, IEnumerable<string> frameworks = null)
     {
         frameworks??=[DefaultFramework];
