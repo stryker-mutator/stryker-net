@@ -289,27 +289,26 @@ public class InputFileResolver : IInputFileResolver
             {
                 _logger.LogWarning("  can't be mutated because no test project references it. If this is a test project, " +
                                    "ensure it has the property: <IsTestProject>true</IsTestProject> in its project file.");
+                continue;
+            }
+            // dump associated test projects
+            foreach (var testProject in testProjects)
+            {
+                _logger.LogInformation("  referenced by test project {ProjectName}, analysis {Result}.",
+                    testProject.ProjectFilePath,
+                    testProject.IsValid() ? "succeeded" : "failed");
+            }
+            // provide synthetic status
+            if (testProjects.Any(r => r.IsValid()))
+            {
+                _logger.LogInformation("  can be mutated.");
             }
             else
             {
-                foreach (var testProject in testProjects)
-                {
-                    _logger.LogInformation("  referenced by test project {ProjectName}, analysis {Result}.",
-                        testProject.ProjectFilePath,
-                        testProject.IsValid() ? "succeeded" : "failed");
-                }
-
-                if (testProjects.Any(r => r.IsValid()))
-                {
-                    _logger.LogInformation("  can be mutated.");
-                }
-                else
-                {
-                    _logger.LogWarning("  can't be mutated because all referencing test projects' analysis failed.");
-                }
+                _logger.LogWarning("  can't be mutated because all referencing test projects' analysis failed.");
             }
         }
-
+        // dump test projects that do not reference any mutable project
         foreach (var unusedTestProject in unusedTestProjects)
         {
             _logger.LogInformation("Test project {ProjectName} does not appear to test any mutable project, analysis {Result}.",
