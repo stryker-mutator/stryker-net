@@ -70,6 +70,12 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
 
         var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
 
+        // Backup assemblies before running tests in parallel to prevent file access conflicts
+        foreach (var input in inputs)
+        {
+            input.TestProjectsInfo.BackupOriginalAssembly(input.SourceProjectInfo.AnalyzerResult);
+        }
+
         var initialTestRunTask = _initializationProcess.RunInitialTestsAsync(options, inputs);
         var mutationTask = MutateProjectsAsync(options, reporters, inputs);
 
