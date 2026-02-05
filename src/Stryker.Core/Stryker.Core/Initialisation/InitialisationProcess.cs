@@ -154,7 +154,9 @@ public class InitialisationProcess : IInitialisationProcess
 
         var results = await Task.WhenAll(tasks);
         stopwatch.Stop();
-        var numberOfTests = results.Sum(r => r.initialTestRun.Result.ExecutedTests.Count);
+        var numberOfTests = results.Sum(r => r.initialTestRun.Result.ExecutedTests.IsEveryTest 
+            ? r.initialTestRun.Result.TestDescriptions.Count() 
+            : r.initialTestRun.Result.ExecutedTests.Count);
         _logger.LogInformation("Initial testrun ran {NumberOfTests} tests in {ElapsedMilliseconds} ms", numberOfTests , stopwatch.ElapsedMilliseconds);
         return results.ToDictionary(r => r.input, r => r.initialTestRun);
     }
