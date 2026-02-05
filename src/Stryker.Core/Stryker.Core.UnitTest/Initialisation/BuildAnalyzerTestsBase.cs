@@ -77,14 +77,30 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
     /// <param name="csProj">production code project pathname</param>
     /// <param name="frameworks"></param>
     /// <param name="success"></param>
+    /// <param name="dontGenerateProjectReference">true to prevent project references to pe determined for assembly references</param>
     /// <returns>a mock project analyzer</returns>
     /// <remarks>the test project references the production code project and contains no source file</remarks>
     protected Mock<IProjectAnalyzer> TestProjectAnalyzerMock(string testCsprojPathName, string csProj, IEnumerable<string> frameworks = null, bool success = true, bool dontGenerateProjectReference= false)
     {
         frameworks??=[DefaultFramework];
         var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
-        var projectReferences =  string.IsNullOrEmpty(csProj) ? [] : GetProjectResult(csProj, frameworks.First()).ProjectReferences.Append(csProj).ToList();
+        var projectReferences = string.IsNullOrEmpty(csProj) ? [] : GetProjectResult(csProj, frameworks.First()).ProjectReferences.Append(csProj).ToList();
         return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, projectReferences, frameworks, () => success, [], dontGenerateProjectReference);
+    }
+
+    /// <summary>
+    /// Build a simple test project
+    /// </summary>
+    /// <param name="testCsprojPathName">test project pathname</param>
+    /// <param name="csProj">production code project pathname</param>
+    /// <param name="frameworks"></param>
+    /// <returns>a mock project analyzer</returns>
+    /// <remarks>project analysis will fully failed</remarks>
+    protected Mock<IProjectAnalyzer> TestProjectFailedAnalyzerMock(string testCsprojPathName, string csProj, IEnumerable<string> frameworks = null)
+    {
+        frameworks??=[DefaultFramework];
+        var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
+        return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, [], frameworks, () => false, []);
     }
 
     private IAnalyzerResult GetProjectResult(string projectFile, string expectedFramework, bool returnDefaultIfNotFound = true)

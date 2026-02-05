@@ -245,7 +245,7 @@ public class InputFileResolver : IInputFileResolver
                 !r.Key.IsValid() || r.Value.All(r2 => !r2.IsValid())))
         {
             // no mutable project found
-            LogAnalysis(findMutableAnalyzerResults, unusedTestProjects);
+            LogAnalysis(findMutableAnalyzerResults, unusedTestProjects, options.DiagMode);
             throw new InputException("Failed to analyze project builds. Stryker cannot continue.");
         }
 
@@ -269,7 +269,8 @@ public class InputFileResolver : IInputFileResolver
     }
 
     // Log the analysis results
-    private void LogAnalysis(Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults, List<IAnalyzerResult> unusedTestProjects)
+    private void LogAnalysis(Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults,
+        List<IAnalyzerResult> unusedTestProjects, bool optionsDiagMode)
     {
         if (findMutableAnalyzerResults.Count == 0)
         {
@@ -316,7 +317,10 @@ public class InputFileResolver : IInputFileResolver
                 unusedTestProject.IsValid() ? "succeeded" : "failed");
         }
 
-        _logger.LogWarning("Use --diag option to have the analysis logs in the log file.");
+        if (!optionsDiagMode)
+        {
+            _logger.LogWarning("Use --diag option to have the analysis logs in the log file.");
+        }
     }
 
     private ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> AnalyzeAllNeededProjects(
