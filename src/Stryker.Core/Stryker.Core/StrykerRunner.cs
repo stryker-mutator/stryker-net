@@ -63,8 +63,6 @@ public class StrykerRunner : IStrykerRunner
             var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
             var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo).Aggregate((a, b) => (TestProjectsInfo)a + (TestProjectsInfo)b);
 
-            _logger.LogInformation("{MutantsCount} mutants created", rootComponent.Mutants.Count());
-
             AnalyzeCoverage(options);
 
             // Filter

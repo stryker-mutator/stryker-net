@@ -91,10 +91,10 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
             _projectMutator.CompileProject(process);
         }
 
-        foreach (var process in processes.Where(p => initialTestResults.ContainsKey(p.Input)))  
+        foreach (var input in processes.Select(p => p.Input).Where(initialTestResults.ContainsKey))  
         {
-                process.Input.InitialTestRun = initialTestResults[process.Input];
-                _projectMutator.EnrichWithInitialTestRunInfo(process.Input);
+            input.InitialTestRun = initialTestResults[input];
+            _projectMutator.EnrichWithInitialTestRunInfo(input);
         }
 
         return processes;
@@ -109,7 +109,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
             mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
         }
         stopwatch.Stop();
-        _logger.LogInformation("Project mutation completed in {ElapsedMilliseconds} ms", stopwatch.ElapsedMilliseconds);
+        _logger.LogInformation("{MutantsCount} mutants created in {ElapsedMilliseconds} ms", mutationTestProcesses.SelectMany(x => x.Input.SourceProjectInfo.ProjectContents.Mutants).Count(), stopwatch.ElapsedMilliseconds);
         return mutationTestProcesses;
     }
 
