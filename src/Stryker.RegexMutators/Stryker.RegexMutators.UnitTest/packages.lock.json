@@ -238,7 +238,7 @@
       },
       "Microsoft.Testing.Platform": {
         "type": "CentralTransitive",
-        "requested": "[1.5.2, )",
+        "requested": "[1.9.1, )",
         "resolved": "1.9.1",
         "contentHash": "QafNtNSmEI0zazdebnsIkDKmFtTSpmx/5PLOjURWwozcPb3tvRxzosQSL8xwYNM1iPhhKiBksXZyRSE2COisrA=="
       },
