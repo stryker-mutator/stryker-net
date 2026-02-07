@@ -24,10 +24,12 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     private readonly object _discoveryLock;
     private readonly ILogger _logger;
     private readonly string _mutantFilePath;
+    private readonly string _coverageFilePath;
 
     private readonly Dictionary<string, AssemblyTestServer> _assemblyServers = new();
     private readonly object _serverLock = new();
     private bool _disposed;
+    private bool _coverageMode;
 
     private string RunnerId => $"MtpRunner-{_id}";
 
@@ -46,8 +48,9 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         _discoveryLock = discoveryLock;
         _logger = logger;
 
-        // Create a unique file path for this runner to communicate the active mutant ID
+        // Create unique file paths for this runner to communicate with the test process
         _mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-{_id}.txt");
+        _coverageFilePath = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{_id}.txt");
 
         // Initialize with no active mutation
         WriteMutantIdToFile(-1);
@@ -116,11 +119,114 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
     private Dictionary<string, string?> BuildEnvironmentVariables()
     {
-        // Use file-based mutant control for process reuse
-        return new Dictionary<string, string?>
+        var envVars = new Dictionary<string, string?>
         {
             ["STRYKER_MUTANT_FILE"] = _mutantFilePath
         };
+
+        // Add coverage file path when in coverage mode
+        if (_coverageMode)
+        {
+            envVars["STRYKER_COVERAGE_FILE"] = _coverageFilePath;
+        }
+
+        return envVars;
+    }
+
+    /// <summary>
+    /// Enables or disables coverage capture mode. When enabled, the test process will track
+    /// which mutations are covered and write the data to a file on process exit.
+    /// </summary>
+    public void SetCoverageMode(bool enabled)
+    {
+        if (_coverageMode == enabled)
+        {
+            return;
+        }
+
+        _coverageMode = enabled;
+        _logger.LogDebug("{RunnerId}: Coverage mode {Status}", RunnerId, enabled ? "enabled" : "disabled");
+
+        // Reset servers to apply the new environment variables
+        lock (_serverLock)
+        {
+            foreach (var server in _assemblyServers.Values)
+            {
+                server.Dispose();
+            }
+            _assemblyServers.Clear();
+        }
+
+        // Clean up any existing coverage file
+        if (enabled)
+        {
+            DeleteCoverageFile();
+        }
+    }
+
+    /// <summary>
+    /// Reads coverage data from the coverage file written by the test process.
+    /// Returns the covered mutants and static mutants as separate lists.
+    /// </summary>
+    public (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants) ReadCoverageData()
+    {
+        if (!File.Exists(_coverageFilePath))
+        {
+            _logger.LogDebug("{RunnerId}: Coverage file not found at {Path}", RunnerId, _coverageFilePath);
+            return (Array.Empty<int>(), Array.Empty<int>());
+        }
+
+        try
+        {
+            var content = File.ReadAllText(_coverageFilePath).Trim();
+            _logger.LogDebug("{RunnerId}: Read coverage data: {Content}", RunnerId, content);
+
+            if (string.IsNullOrEmpty(content))
+            {
+                return (Array.Empty<int>(), Array.Empty<int>());
+            }
+
+            var parts = content.Split(';');
+            var coveredMutants = ParseMutantIds(parts.Length > 0 ? parts[0] : string.Empty);
+            var staticMutants = ParseMutantIds(parts.Length > 1 ? parts[1] : string.Empty);
+
+            return (coveredMutants, staticMutants);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "{RunnerId}: Failed to read coverage file at {Path}", RunnerId, _coverageFilePath);
+            return (Array.Empty<int>(), Array.Empty<int>());
+        }
+    }
+
+    private static IReadOnlyList<int> ParseMutantIds(string idString)
+    {
+        if (string.IsNullOrWhiteSpace(idString))
+        {
+            return Array.Empty<int>();
+        }
+
+        return idString
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => int.TryParse(s.Trim(), out var id) ? id : (int?)null)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .ToList();
+    }
+
+    private void DeleteCoverageFile()
+    {
+        try
+        {
+            if (File.Exists(_coverageFilePath))
+            {
+                File.Delete(_coverageFilePath);
+            }
+        }
+        catch
+        {
+            // Ignore cleanup errors
+        }
     }
 
     private async Task<AssemblyTestServer> GetOrCreateServerAsync(string assembly)
@@ -481,12 +587,16 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
                 _assemblyServers.Clear();
             }
 
-            // Clean up the mutant file
+            // Clean up temp files
             try
             {
                 if (File.Exists(_mutantFilePath))
                 {
                     File.Delete(_mutantFilePath);
+                }
+                if (File.Exists(_coverageFilePath))
+                {
+                    File.Delete(_coverageFilePath);
                 }
             }
             catch

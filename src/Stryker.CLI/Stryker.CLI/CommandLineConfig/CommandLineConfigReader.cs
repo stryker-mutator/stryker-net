@@ -208,7 +208,7 @@ public class CommandLineConfigReader
         // Category: Misc
         AddCliInput(inputs.BreakOnInitialTestFailureInput, "break-on-initial-test-failure", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
         AddCliInput(inputs.DiagModeInput, "diag", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
-        AddCliInput(inputs.TestRunnerInput, "testrunner", "t", argumentHint: "vstest,mtp", category: InputCategory.Misc);
+        AddCliInput(inputs.TestRunnerInput, "test-runner", "t", argumentHint: "vstest,mtp", category: InputCategory.Misc);
     }
 
     private void RegisterCliInput(CommandLineApplication app, CliInput option)

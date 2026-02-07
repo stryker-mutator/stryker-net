@@ -180,6 +180,9 @@ internal sealed class AssemblyTestServer : IDisposable
             try
             {
                 await _client.ExitAsync().ConfigureAwait(false);
+                // Wait for the process to actually exit so that ProcessExit event can fire
+                // This ensures coverage data is flushed before we dispose the resources
+                await _client.WaitServerProcessExitAsync().WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
             }
             catch
             {

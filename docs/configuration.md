@@ -208,6 +208,22 @@ See [Stryker dashboard](./reporters.md#dashboard-reporter)
 
 ## Control flow
 
+### `test-runner` &lt;`string`&gt;
+
+Default: `vstest`  
+Command line: `[-t|--test-runner] "mtp"`  
+Config file: `"test-runner": 'mtp'`
+
+> **Note:** The Microsoft Test Platform (MTP) test runner is currently in preview. Results should be verified as this feature is still being tested.
+
+Specifies the test runner to use for executing tests during mutation testing.
+
+Available options:
+* `vstest` - The traditional Visual Studio Test Platform runner (default)
+* `mtp` - The Microsoft Test Platform runner (preview)
+
+The MTP test runner is a modern alternative that provides better performance in certain scenarios and supports newer testing frameworks like TUnit. However, it's still in preview and may have limitations compared to the VsTest runner.
+
 ### `mutation-level` &lt;`level`&gt;
 
 Default: `Standard`  
