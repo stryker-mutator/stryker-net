@@ -43,7 +43,6 @@ public class CsharpMutationProcess : IMutationProcess
         var semanticModels = compilingProcess.GetSemanticModels(files.Select(x => x.SyntaxTree)).ToList();
 
         var semanticModelLookup = semanticModels.ToDictionary(sm => sm.SyntaxTree);
-        var placer = new MutantPlacer(input.SourceProjectInfo.CodeInjector);
 
         _options.MutantIdProvider ??= new BasicIdProvider();
 
@@ -59,6 +58,7 @@ public class CsharpMutationProcess : IMutationProcess
         {
             _logger.LogDebug("Mutating {FilePath}", file.FullPath);
 
+            var placer = new MutantPlacer(input.SourceProjectInfo.CodeInjector);
             var orchestrator = new CsharpMutantOrchestrator(placer, options: _options);
 
             var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree, semanticModelLookup[file.SyntaxTree]);

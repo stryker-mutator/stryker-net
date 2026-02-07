@@ -77,7 +77,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         }
 
         var initialTestRunTask = _initializationProcess.RunInitialTestsAsync(options, inputs);
-        var mutationTask = MutateProjectsAsync(options, reporters, inputs);
+        var mutationTask =  Task.FromResult(MutateProjects(options, reporters, inputs).ToList());
 
         // Run initial test and mutation in parallel for better performance
         await Task.WhenAll(initialTestRunTask, mutationTask);
@@ -100,7 +100,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         return processes;
     }
 
-    private async Task<ConcurrentBag<IMutationTestProcess>> MutateProjectsAsync(IStrykerOptions options, IReporter reporters, IReadOnlyCollection<MutationTestInput> inputs)
+    private ConcurrentBag<IMutationTestProcess> MutateProjects(IStrykerOptions options, IReporter reporters, IReadOnlyCollection<MutationTestInput> inputs)
     {
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         var mutationTestProcesses = new ConcurrentBag<IMutationTestProcess>();
