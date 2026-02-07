@@ -1,6 +1,6 @@
 {
   "stryker-config": {
-    "testrunner": "MTP",
+    "test-runner": "MTP",
     "reporters": [
       "Dots",
       "ClearText",
