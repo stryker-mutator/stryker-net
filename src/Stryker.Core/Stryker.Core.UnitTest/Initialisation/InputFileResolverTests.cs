@@ -1567,4 +1567,67 @@ Please specify a test project name filter that results in one project.
 
         result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectFilePath);
     }
+
+    [TestMethod]
+    public void ShouldSetPlatformGlobalPropertyOnBuildalyzer()
+    {
+        // Arrange: project with x64 platform specified via Configuration "Debug|x64"
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectFilePath, new MockFileData(_defaultSourceProjectFileContents) },
+            { Path.Combine(_sourcePath, "MyFile.cs"), new MockFileData(_sourceFile) },
+            { _testProjectFilePath, new MockFileData(_defaultTestProjectFileContents) },
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath, fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"]);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        var analyzerManagerMock = BuildBuildAnalyzerMock(analyzerResults);
+
+        var target = BuildTestResolver(fileSystem);
+
+        // Act: resolve with Platform set via "Debug|x64" configuration string
+        var options = new StrykerOptions { ProjectPath = _testPath, Configuration = "Debug|x64" };
+        target.ResolveSourceProjectInfos(options);
+
+        // Assert: Platform "x64" was passed to Buildalyzer's SetGlobalProperty
+        analyzerManagerMock.Verify(x => x.SetGlobalProperty("Platform", "x64"), Times.AtLeastOnce);
+    }
+
+    [TestMethod]
+    public void ShouldNotSetPlatformGlobalPropertyWhenNoPlatformSpecified()
+    {
+        // Arrange: project without platform (default AnyCPU)
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectFilePath, new MockFileData(_defaultSourceProjectFileContents) },
+            { Path.Combine(_sourcePath, "MyFile.cs"), new MockFileData(_sourceFile) },
+            { _testProjectFilePath, new MockFileData(_defaultTestProjectFileContents) },
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath, fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"]);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        var analyzerManagerMock = BuildBuildAnalyzerMock(analyzerResults);
+
+        var target = BuildTestResolver(fileSystem);
+
+        // Act: resolve with only Configuration, no platform
+        var options = new StrykerOptions { ProjectPath = _testPath, Configuration = "Debug" };
+        target.ResolveSourceProjectInfos(options);
+
+        // Assert: Platform was never set (only Configuration was)
+        analyzerManagerMock.Verify(x => x.SetGlobalProperty("Configuration", "Debug"), Times.AtLeastOnce);
+        analyzerManagerMock.Verify(x => x.SetGlobalProperty("Platform", It.IsAny<string>()), Times.Never);
+    }
 }

@@ -128,8 +128,8 @@ public class InputFileResolver : IInputFileResolver
             : [FindTestProject(options.ProjectPath)];
 
         _logger.LogInformation("Analyzing {ProjectCount} test project(s).", testProjectFileNames.Count);
-        List<(string projectFile, string framework, string configuration)> projectList =
-            [..testProjectFileNames.Select(p => (p, options.TargetFramework, options.Configuration))];
+        List<(string projectFile, string framework, string configuration, string platform)> projectList =
+            [..testProjectFileNames.Select(p => (p, options.TargetFramework, options.Configuration, options.Platform))];
         // if test project is provided but no source project
         var targetProjectMode = testProjectsSpecified && string.IsNullOrEmpty(options.SourceProjectName);
         if (targetProjectMode)
@@ -204,7 +204,7 @@ public class InputFileResolver : IInputFileResolver
         var solutionInfo = new SolutionInfo(solution.FileName, actualBuildType, actualPlatform);
         // analyze all projects
         var projectsWithDetails = solution.GetProjectsWithDetails(actualBuildType, actualPlatform)
-            .Select(p => (p.file, options.TargetFramework, p.buildType)).ToList();
+            .Select(p => (p.file, options.TargetFramework, p.buildType, p.platform)).ToList();
 
         _logger.LogDebug("Analyzing {0} projects.", projectsWithDetails.Count);
         // we match test projects to mutable projects
@@ -323,12 +323,13 @@ public class InputFileResolver : IInputFileResolver
     }
 
     private ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> AnalyzeAllNeededProjects(
-        List<(string projectFile, string framework, string configuration)> projects, string normalizedProjectUnderTestNameFilter,
+        List<(string projectFile, string framework, string configuration, string platform)> projects, string normalizedProjectUnderTestNameFilter,
         IStrykerOptions options, ScanMode mode)
     {
         var mutableProjectsAnalyzerResults = new ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)>();
-        var list = new DynamicEnumerableQueue<(string projectFile, string framework, string configuration)>(projects);
+        var list = new DynamicEnumerableQueue<(string projectFile, string framework, string configuration, string platform)>(projects);
         const string Configuration = "Configuration";
+        const string Platform = "Platform";
         try
         {
             var parallelOptions = new ParallelOptions
@@ -347,6 +348,12 @@ public class InputFileResolver : IInputFileResolver
                             manager.SetGlobalProperty(Configuration, entry.configuration);
                         }
 
+                        // specify platform if any provided
+                        if (!string.IsNullOrEmpty(entry.platform))
+                        {
+                            manager.SetGlobalProperty(Platform, entry.platform);
+                        }
+
                         var buildResult = AnalyzeThisProject(manager.GetProject(entry.projectFile),
                             entry.framework,
                             normalizedProjectUnderTestNameFilter,
@@ -354,7 +361,7 @@ public class InputFileResolver : IInputFileResolver
                             options,
                             mutableProjectsAnalyzerResults);
                         // scan references if recursive scan is enabled
-                        ScanReferences(mode, buildResult).ForEach(p => list.Add((p, entry.framework, options.Configuration)));
+                        ScanReferences(mode, buildResult).ForEach(p => list.Add((p, entry.framework, options.Configuration, entry.platform)));
                     }
                 );
             }
