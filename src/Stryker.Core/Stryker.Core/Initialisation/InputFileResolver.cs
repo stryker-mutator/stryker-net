@@ -113,6 +113,8 @@ public class InputFileResolver : IInputFileResolver
         string normalizedProjectUnderTestNameFilter)
     {
         SolutionInfo solutionInfo = null;
+        var configuration = options.Configuration;
+        var platform = options.Platform;
 
         // identify the target configuration and platform
         if (solution != null)
@@ -120,6 +122,8 @@ public class InputFileResolver : IInputFileResolver
             var (actualBuildType, actualPlatform) = solution.GetMatching(options.Configuration, options.Platform);
             _logger.LogDebug("Using solution configuration/platform '{Configuration}|{Platform}'.", actualBuildType, actualPlatform);
             solutionInfo = new SolutionInfo(solution.FileName, actualBuildType, actualPlatform);
+            configuration = actualBuildType;
+            platform = actualPlatform;
         }
 
         // we analyze the test project(s) and identify the project to be mutated
@@ -129,7 +133,7 @@ public class InputFileResolver : IInputFileResolver
 
         _logger.LogInformation("Analyzing {ProjectCount} test project(s).", testProjectFileNames.Count);
         List<(string projectFile, string framework, string configuration, string platform)> projectList =
-            [..testProjectFileNames.Select(p => (p, options.TargetFramework, options.Configuration, options.Platform))];
+            [..testProjectFileNames.Select(p => (p, options.TargetFramework, configuration, platform))];
         // if test project is provided but no source project
         var targetProjectMode = testProjectsSpecified && string.IsNullOrEmpty(options.SourceProjectName);
         if (targetProjectMode)

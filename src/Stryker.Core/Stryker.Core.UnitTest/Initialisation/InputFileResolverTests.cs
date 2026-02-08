@@ -1737,4 +1737,49 @@ Please specify a test project name filter that results in one project.
         analyzerManagerMock.Verify(x => x.SetGlobalProperty("Configuration", "Debug"), Times.AtLeastOnce);
         analyzerManagerMock.Verify(x => x.SetGlobalProperty("Platform", It.IsAny<string>()), Times.Never);
     }
+
+    [TestMethod]
+    public void ShouldUseNormalizedSolutionConfigurationWhenGetMatchingFallsBack()
+    {
+        // Arrange: solution only has Release|x86, but we request Debug|x64.
+        // GetMatching should fall back to the available Release|x86.
+        var solutionPath = Path.Combine(_filesystemRoot, "solution.sln");
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectFilePath, new MockFileData(_defaultSourceProjectFileContents) },
+            { Path.Combine(_sourcePath, "MyFile.cs"), new MockFileData(_sourceFile) },
+            { _testProjectFilePath, new MockFileData(_defaultTestProjectFileContents) },
+            { solutionPath, new MockFileData("") },
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath, fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"]);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        var analyzerManagerMock = BuildBuildAnalyzerMock(analyzerResults);
+
+        // Build a solution with only Release|x86 available
+        var solution = SolutionFile.BuildFromProjectList(
+            [_sourceProjectFilePath, _testProjectFilePath], ["x86"]);
+
+        var target = BuildTestResolverWithSolutionProvider(fileSystem,
+            new CustomSolutionProvider(_ => solution));
+
+        // Act: request Debug|x64 — GetMatching will normalize to the available config
+        var options = new StrykerOptions
+        {
+            ProjectPath = _testPath,
+            SolutionPath = solutionPath,
+            Configuration = "Debug|x64"
+        };
+        target.ResolveSourceProjectInfos(options);
+
+        // Assert: Buildalyzer receives the solution-normalized platform "x86", not the requested "x64"
+        analyzerManagerMock.Verify(x => x.SetGlobalProperty("Platform", "x86"), Times.AtLeastOnce);
+        analyzerManagerMock.Verify(x => x.SetGlobalProperty("Platform", "x64"), Times.Never);
+    }
 }
