@@ -351,9 +351,7 @@ public class InputFileResolver : IInputFileResolver
                         // specify platform if any provided
                         if (!string.IsNullOrEmpty(entry.platform))
                         {
-                            // "Any CPU" is the solution-level name; MSBuild requires "AnyCPU"
-                            var msBuildPlatform = string.Equals(entry.platform, "Any CPU", StringComparison.OrdinalIgnoreCase) ? "AnyCPU" : entry.platform;
-                            manager.SetGlobalProperty(Platform, msBuildPlatform);
+                            manager.SetGlobalProperty(Platform, entry.platform);
                         }
 
                         var buildResult = AnalyzeThisProject(manager.GetProject(entry.projectFile),
