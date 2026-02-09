@@ -25,7 +25,6 @@ public interface IInputFileResolver
     IFileSystem FileSystem { get; }
 }
 
-
 /// <summary>
 ///  - Reads .csproj to find project under test
 ///  - Scans project under test and store files to mutate
@@ -38,7 +37,7 @@ public class InputFileResolver : IInputFileResolver
     private readonly IBuildalyzerProvider _analyzerProvider;
     private readonly ISolutionProvider _solutionProvider;
     private static readonly HashSet<string> ImportantProperties =
-        ["Configuration", "Platform", "AssemblyName", "Configurations"];
+        ["Configuration", "Platform", "AssemblyName", "Configurations", "TargetPath"];
 
     private readonly INugetRestoreProcess _nugetRestoreProcess;
     private readonly Dictionary<string, string> _buildLogs = [];
@@ -58,6 +57,12 @@ public class InputFileResolver : IInputFileResolver
 
     public IFileSystem FileSystem { get; }
 
+    /// <summary>
+    /// Identifies the project(s) to mutate and their associated test project(s) according to provided options, and returns a collection of <see cref="SourceProjectInfo"/> describing them.
+    /// </summary>
+    /// <param name="options">Stryker options</param>
+    /// <returns>a collection of <see cref="SourceProjectInfos"/> describing mutable project</returns>
+    /// <exception cref="InputException">Thrown if the method fails during analysis.</exception>
     public IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(IStrykerOptions options)
     {
         var normalizedProjectUnderTestNameFilter = NormalizePath(options.SourceProjectName);
@@ -109,6 +114,14 @@ public class InputFileResolver : IInputFileResolver
         throw new InputException(stringBuilder.ToString());
     }
 
+    /// <summary>
+    /// Identifies the project(s) to mutate and their associated test project(s) according to provided options, and returns a collection of <see cref="SourceProjectInfo"/> describing them, when not mutating
+    /// the whole solution.
+    /// </summary>
+    /// <param name="options">Stryker options</param>
+    /// <param name="solution">solution file if any</param>
+    /// <param name="normalizedProjectUnderTestNameFilter">name filter to apply to the mutated projects</param>
+    /// <returns>identified mutable projects matching the provided name filter (when provided). Can be empty</returns>
     private List<SourceProjectInfo> SourceProjectInfos(IStrykerOptions options, SolutionFile solution,
         string normalizedProjectUnderTestNameFilter)
     {
@@ -130,7 +143,8 @@ public class InputFileResolver : IInputFileResolver
         _logger.LogInformation("Analyzing {ProjectCount} test project(s).", testProjectFileNames.Count);
         List<(string projectFile, string framework, string configuration)> projectList =
             [..testProjectFileNames.Select(p => (p, options.TargetFramework, options.Configuration))];
-        // if test project is provided but no source project
+        // if test project is provided but no source project => working directory should contain the project to mutate, we try to detect
+        // it and use it as a filter for the analysis. This allows users to just cd into a project and run stryker
         var targetProjectMode = testProjectsSpecified && string.IsNullOrEmpty(options.SourceProjectName);
         if (targetProjectMode)
         {
@@ -141,13 +155,15 @@ public class InputFileResolver : IInputFileResolver
             if (!targetProjectMode)
             {
                 // we detected a test project, discard it
+                // Stryker will need to detect mutable projects out from test project references
                 _logger.LogDebug("Working directory contains a test project.");
                 normalizedProjectUnderTestNameFilter = null;
             }
         }
 
-        // we match test projects to mutable projects
+        // we analyze test projects
         var analyzeAllNeededProjects = AnalyzeAllNeededProjects(projectList, normalizedProjectUnderTestNameFilter, options, ScanMode.ScanTestProjectReferences);
+        // we match test projects to mutable projects
         var (findMutableAnalyzerResults, orphans) = FindMutableAnalyzerResults(analyzeAllNeededProjects);
 
         var result = AnalyzeAndIdentifyProjects(options, solutionInfo, findMutableAnalyzerResults, orphans);
@@ -406,7 +422,7 @@ public class InputFileResolver : IInputFileResolver
     /// </summary>
     /// <param name="mode">scan mode</param>
     /// <param name="buildResult">analyzer results to parse</param>
-    /// <returns>A list of project to analyse</returns>
+    /// <returns>A list of project to analyze</returns>
     private List<string> ScanReferences(ScanMode mode, IEnumerable<IAnalyzerResult> buildResult)
     {
         var referencesToAdd = new List<string>();
@@ -429,7 +445,6 @@ public class InputFileResolver : IInputFileResolver
         _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
 
         var env = new EnvironmentOptions();
-
         if (!string.IsNullOrEmpty(options.MsBuildPath))
         {
             // we need to forward this path to buildalyzer
@@ -437,15 +452,13 @@ public class InputFileResolver : IInputFileResolver
         }
 
         var buildResult = project.Build(env);
-        // store the build log
         _buildLogs[projectLogName] = buildLogger.ToString();
-        // clear the log
         buildLogger.GetStringBuilder().Clear();
 
-        var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
-            TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
-            buildResult.Any(br => br.IsValidFor(tf)));
+        var projectFileTargetFrameworks = GetTargetFrameworks(project, options, projectLogName, buildResult);
+        var buildResultOverallSuccess = buildResult.IsValidFor(projectFileTargetFrameworks);
 
+        // retry if it failed
         if (!buildResultOverallSuccess)
         {
             if (options.DiagMode)
@@ -455,6 +468,10 @@ public class InputFileResolver : IInputFileResolver
 
             // if this is a full framework project, we can retry after a nuget restore
             buildResult = RetryBuild(project, options, projectLogName, buildResult, out buildResultOverallSuccess);
+            // store the build log
+            _buildLogs[projectLogName] = buildLogger.ToString();
+            // clear the log
+            buildLogger.GetStringBuilder().Clear();
         }
 
         LogAnalyzerResult(buildResult, options);
@@ -465,7 +482,7 @@ public class InputFileResolver : IInputFileResolver
         }
 
         // log failure details
-        var failedFrameworks = project.ProjectFile.TargetFrameworks.Where(tf =>
+        var failedFrameworks = projectFileTargetFrameworks.Where(tf =>
             !buildResult.Any(br => br.IsValidFor(tf))).ToList();
         _logger.LogWarning(
             "Analysis of project {ProjectFilePath} failed for frameworks {FrameworkList}.",
@@ -473,10 +490,36 @@ public class InputFileResolver : IInputFileResolver
 
         if (options.DiagMode)
         {
-            _logger.LogWarning("Project analysis failed. The MsBuild log: {BuildLog}", buildLogger.ToString());
+            _logger.LogWarning("Project {ProjectFilePath} analysis failed. The MsBuild log is: {Log}", projectLogName, _buildLogs[projectLogName]);
         }
 
         return buildResult;
+    }
+
+    // get the list of target frameworks
+    private string[] GetTargetFrameworks(IProjectAnalyzer project, IStrykerOptions options, string projectLogName,
+        IAnalyzerResults buildResult)
+    {
+        var projectFileTargetFrameworks = project.ProjectFile.TargetFrameworks;
+        if (projectFileTargetFrameworks.Length > 0)
+        {
+            _logger.LogDebug("Project {ProjectFilePath} supported frameworks: {FrameworkList}.", projectLogName, string.Join(',', projectFileTargetFrameworks));
+        }
+        else
+        {
+            if (!string.IsNullOrEmpty(options.TargetFramework))
+            {
+                _logger.LogWarning("Failed to identify target frameworks for project {ProjectFilePath}. Assuming selected framework ({framework}) is present.", projectLogName, options.TargetFramework);
+                projectFileTargetFrameworks=[options.TargetFramework];
+            }
+            else
+            {
+                projectFileTargetFrameworks = buildResult.Select(br => br.TargetFramework).ToArray();
+                _logger.LogWarning("Failed to identify target frameworks for project {ProjectFilePath}. Using analysis results: {frameworks}", projectLogName, string.Join(',', projectFileTargetFrameworks));
+            }
+        }
+
+        return projectFileTargetFrameworks;
     }
 
     private IAnalyzerResults RetryBuild(IProjectAnalyzer project, IStrykerOptions options, string projectLogName,
@@ -502,16 +545,16 @@ public class InputFileResolver : IInputFileResolver
         buildResult = project.Build(buildOptions);
 
         // check the new status
-        buildResultOverallSuccess = project.ProjectFile.TargetFrameworks.Length > 0 &&
-            Array.TrueForAll(project.ProjectFile.TargetFrameworks, tf =>
-            buildResult.Any(br => br.IsValidFor(tf)));
+        buildResultOverallSuccess = buildResult.IsValidFor(project.ProjectFile.TargetFrameworks);
 
-        if (!buildResultOverallSuccess && !string.IsNullOrEmpty(options.TargetFramework))
+        if (buildResultOverallSuccess || string.IsNullOrEmpty(options.TargetFramework))
         {
-            // still failed, we can try using target framework option
-            buildResult = project.Build(options.TargetFramework);
-            buildResultOverallSuccess = buildResult.Any( br => br.IsValidFor(options.TargetFramework));
+            return buildResult;
         }
+
+        // still failed, we can try using target framework option
+        buildResult = project.Build(options.TargetFramework);
+        buildResultOverallSuccess = buildResult.Any( br => br.IsValidFor(options.TargetFramework));
 
         return buildResult;
     }
@@ -543,29 +586,42 @@ public class InputFileResolver : IInputFileResolver
             {
                 log.AppendLine($"Property {property}={properties.GetValueOrDefault(property) ?? "\"'undefined'\""}");
             }
-            foreach (var sourceFile in analyzerResult.SourceFiles)
+            if (analyzerResult.SourceFiles.Length == 0)
             {
-                log.AppendLine($"SourceFile {sourceFile}");
+                log.AppendLine("** No source files identified **");
             }
-
-            foreach (var reference in analyzerResult.References)
+            else
             {
-                log.AppendLine($"References: {FileSystem.Path.GetFileName(reference)} (in {FileSystem.Path.GetDirectoryName(reference)})");
-            }
-
-            foreach (var property in properties)
-            {
-                if (ImportantProperties.Contains(property.Key))
+                foreach (var sourceFile in analyzerResult.SourceFiles)
                 {
-                    continue; // already logged
+                    log.AppendLine($"SourceFile {sourceFile}");
                 }
-
-                log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
             }
+            if (analyzerResult.References.Length == 0)
+            {
+                log.AppendLine("** No references Identified **");
+            }
+            else
+            {
+                foreach (var reference in analyzerResult.References)
+                {
+                    log.AppendLine($"References: {FileSystem.Path.GetFileName(reference)} (in {FileSystem.Path.GetDirectoryName(reference)})");
+                }
+            }
+
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                // dumps all other properties as well, as they can be useful for diagnosing build issues
+                foreach (var property in properties.Where( p => !ImportantProperties.Contains(p.Key) ))
+                {
+                    log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
+                }
+            }
+
             log.AppendLine();
         }
         log.AppendLine("**** End Buildalyzer result ****");
-        _logger.LogTrace(log.ToString());
+        _logger.LogDebug(log.ToString());
     }
 
     private IAnalyzerResult SelectAnalyzerResult(IEnumerable<IAnalyzerResult> analyzerResults, string targetFramework)
@@ -600,24 +656,24 @@ public class InputFileResolver : IInputFileResolver
 
         var firstAnalyzerResult = PickFrameworkVersion();
         var availableFrameworks = validResults.Select(a => a.TargetFramework).Distinct();
-        var firstFramework = firstAnalyzerResult.TargetFramework;
         _logger.LogWarning(
             """
              Could not find a valid analysis for target {0} for project '{1}'.
              The available target frameworks are: {2}.
                   selected version is {3}.
-             """, targetFramework, projectName, string.Join(',', availableFrameworks), firstFramework);
+             """, targetFramework, projectName, string.Join(',', availableFrameworks), firstAnalyzerResult.TargetFramework);
 
         return firstAnalyzerResult;
 
         IAnalyzerResult PickFrameworkVersion()
         {
-            return validResults.Find(a => a.Succeeded && !a.TargetsFullFramework()) ?? validResults[0];
+            return validResults.Find(a => a.IsValid() && !a.TargetsFullFramework()) ?? validResults[0];
         }
     }
 
     private (Dictionary<IAnalyzerResult, List<IAnalyzerResult>>, List<IAnalyzerResult>) FindMutableAnalyzerResults(ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> mutableProjectsAnalyzerResults)
     {
+        // separate test projects from mutable projects, and keep only analyzer results building an assembly (exclude solution folders and such)
         var analyzerTestProjects = mutableProjectsAnalyzerResults.Where(p => p.isTest).SelectMany(p => p.result).Where(p => p.BuildsAnAssembly());
         var mutableProjects = mutableProjectsAnalyzerResults.Where(p => !p.isTest).SelectMany(p => p.result).Where(p => p.BuildsAnAssembly()).ToArray();
 
@@ -661,7 +717,7 @@ public class InputFileResolver : IInputFileResolver
     private static bool ScanAssemblyReferences(Dictionary<IAnalyzerResult, List<IAnalyzerResult>> mutableToTestMap, IAnalyzerResult[] mutableProjects, IAnalyzerResult testProject)
     {
         var foundOneProject = false;
-        // we identify which project are referenced by it
+        // we identify which projects are referenced by it
         foreach (var mutableProject in mutableProjects)
         {
             var assemblyPath = mutableProject.GetAssemblyPath();
@@ -709,17 +765,16 @@ public class InputFileResolver : IInputFileResolver
                     "Mutation testing of F# projects is not ready yet. No mutants will be generated."));
         }
 
-        var builder = (ProjectComponentsBuilder)(language switch
+        ProjectComponentsBuilder builder;
+        if (language == Language.Csharp)
         {
-            Language.Csharp => new CsharpProjectComponentsBuilder(
-                targetProjectInfo,
-                options,
-                _foldersToExclude,
-                _logger,
-                FileSystem),
-
-            _ => throw new NotSupportedException($"Language not supported: {language}")
-        });
+            builder = new CsharpProjectComponentsBuilder(targetProjectInfo, options, _foldersToExclude, _logger,
+                FileSystem);
+        }
+        else
+        {
+            throw new NotSupportedException($"Language not supported: {language}");
+        }
 
         var inputFiles = builder.Build();
         builder.InjectHelpers(inputFiles);
