@@ -14,15 +14,15 @@
       },
       "TUnit": {
         "type": "Direct",
-        "requested": "[1.13.70, )",
-        "resolved": "1.13.70",
-        "contentHash": "xYtlDtp2criVs/fswlDNWfSdZt23RbKqeUK/QgojDNBp2rlp7Nf4OFID/XmkYjWEwi6yKiiuS0PWiGnnGh8kmw==",
+        "requested": "[1.14.0, )",
+        "resolved": "1.14.0",
+        "contentHash": "FbhNd3v5yd6iKflcWp1HGxo82OlnU0ms/rf265wRtNzZ9MVqihV3GOMTuMnKfmBAN+FuVwIJzFbBSSzWP9idqQ==",
         "dependencies": {
           "Microsoft.Testing.Extensions.CodeCoverage": "18.4.1",
           "Microsoft.Testing.Extensions.Telemetry": "2.1.0",
           "Microsoft.Testing.Extensions.TrxReport": "2.1.0",
-          "TUnit.Assertions": "1.13.70",
-          "TUnit.Engine": "1.13.70"
+          "TUnit.Assertions": "1.14.0",
+          "TUnit.Engine": "1.14.0"
         }
       },
       "EnumerableAsyncProcessor": {
@@ -138,24 +138,24 @@
       },
       "TUnit.Assertions": {
         "type": "Transitive",
-        "resolved": "1.13.70",
-        "contentHash": "TEJA48IiD4OPUbTzhfUKxJJxrmRLuncZrBeICETVfL6tMKux+e38OBdcio45NuEUF0Te7Qn6feCERZO3pDfJog=="
+        "resolved": "1.14.0",
+        "contentHash": "w5Be5hEHChrEeK680+RyFiKGpIcMuw9f0BxcRnHUPUi9MmgCR3tenh9X0x1twZnnsVM9cyov+sfkl52mES6Kmg=="
       },
       "TUnit.Core": {
         "type": "Transitive",
-        "resolved": "1.13.70",
-        "contentHash": "A1NmHVyvzHzl4iEYzjxZMQQ1DDuJYx0DwSg3I0XIISoJewep+zXtiIQooKVrMFJZgHpHjmTT7RVosExGHzNLqw=="
+        "resolved": "1.14.0",
+        "contentHash": "Tlyb4OygAB2lHTmT7Rr2CLJAgMbEeP/eYq7EpziOPwsMrQYEX23jLRiwipLAXNkHXcDemGGgYwAB6vwbm+/8FQ=="
       },
       "TUnit.Engine": {
         "type": "Transitive",
-        "resolved": "1.13.70",
-        "contentHash": "anX5lLlhe2mnGYUs0TxLaGRn8l1gYZGNGyNWgOUYLZcrkhIzMECQODTdplo1LtOobNnqwSb4k8JKhfCjoUm+SA==",
+        "resolved": "1.14.0",
+        "contentHash": "ap+YgQ5dTUM+WixXdrd/yE57W15ptShEjI0EgtpvPK1uFx4h0Y2xgKqVfZ77URCVsPN7r3tV9JL93zC05BHPQA==",
         "dependencies": {
           "EnumerableAsyncProcessor": "3.8.4",
           "Microsoft.Testing.Extensions.TrxReport.Abstractions": "2.1.0",
           "Microsoft.Testing.Platform": "2.1.0",
           "Microsoft.Testing.Platform.MSBuild": "2.1.0",
-          "TUnit.Core": "1.13.70"
+          "TUnit.Core": "1.14.0"
         }
       },
       "library": {
