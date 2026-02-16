@@ -32,7 +32,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="5.0.0" />
-    <PackageReference Include="Serilog" Version="4.3.0">
+    <PackageReference Include="Serilog" Version="4.3.1">
       <Aliases>TheLog</Aliases>
     </PackageReference>
   </ItemGroup>
