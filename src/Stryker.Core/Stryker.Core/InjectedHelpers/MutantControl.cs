@@ -27,8 +27,8 @@ namespace Stryker
             _cachedCoverageFilePath = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_FILE") ?? string.Empty;
             _coverageFilePathCached = true;
 
-            // Enable coverage capture if coverage file path is configured (MTP runner mode)
-            if (!string.IsNullOrEmpty(_cachedCoverageFilePath))
+            // Enable coverage capture if coverage file path is configured and valid (MTP runner mode)
+            if (!string.IsNullOrEmpty(_cachedCoverageFilePath) && IsValidCoveragePath(_cachedCoverageFilePath))
             {
                 CaptureCoverage = true;
                 
@@ -116,6 +116,46 @@ namespace Stryker
         }
 
         /// <summary>
+        /// Validates that a file path is safe for writing coverage data.
+        /// Ensures the path is under the temp directory and follows expected naming pattern.
+        /// </summary>
+        private static bool IsValidCoveragePath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+
+            try
+            {
+                // Get the full path to resolve any relative paths or symlinks
+                string fullPath = System.IO.Path.GetFullPath(path);
+                string tempPath = System.IO.Path.GetFullPath(System.IO.Path.GetTempPath());
+
+                // Ensure the file is under the temp directory
+                if (!fullPath.StartsWith(tempPath, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                // Validate filename pattern (stryker-coverage-*.txt)
+                string fileName = System.IO.Path.GetFileName(fullPath);
+                if (!fileName.StartsWith("stryker-coverage-", System.StringComparison.OrdinalIgnoreCase) ||
+                    !fileName.EndsWith(".txt", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+            catch
+            {
+                // If any path operation fails, consider it unsafe
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Gets coverage data and writes it to a file for MTP runner IPC.
         /// Called by MTP runner after each test completes.
         /// Format: "coveredMutants;staticMutants" (comma-separated IDs)
@@ -129,6 +169,12 @@ namespace Stryker
             }
 
             if (string.IsNullOrEmpty(_cachedCoverageFilePath))
+            {
+                return;
+            }
+
+            // Validate the path before writing to prevent arbitrary file writes
+            if (!IsValidCoveragePath(_cachedCoverageFilePath))
             {
                 return;
             }
