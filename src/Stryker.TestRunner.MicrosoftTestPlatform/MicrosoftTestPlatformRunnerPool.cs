@@ -49,7 +49,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     private void Initialize()
     {
-        // Create and initialize all runners in parallel because of file IO during initialization
+        // Create and initialize all runners in parallel to speed up startup time
         Parallel.For(0, _countOfRunners, (int i, ParallelLoopState _) =>
         {
             var runner = _runnerFactory.CreateRunner(

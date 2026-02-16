@@ -212,7 +212,7 @@ See [Stryker dashboard](./reporters.md#dashboard-reporter)
 
 Default: `vstest`  
 Command line: `[-t|--test-runner] "mtp"`  
-Config file: `"test-runner": 'mtp'`
+Config file: `"test-runner": "mtp"`
 
 > **Note:** The Microsoft Test Platform (MTP) test runner is currently in preview. Results should be verified as this feature is still being tested.
 

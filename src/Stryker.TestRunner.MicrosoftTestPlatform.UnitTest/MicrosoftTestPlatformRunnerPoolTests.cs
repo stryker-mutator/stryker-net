@@ -161,8 +161,7 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         var options = new Mock<IStrykerOptions>();
         options.Setup(x => x.Concurrency).Returns(3);
 
-        var disposedRunners = new List<int>();
-        var createdRunners = new List<int>();
+        var disposedRunners = new System.Collections.Concurrent.ConcurrentBag<int>();
         var runnerFactory = new Mock<ISingleRunnerFactory>();
 
         runnerFactory.Setup(x => x.CreateRunner(
@@ -176,18 +175,19 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
                 (id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) =>
                 {
                     var testRunner = new TestableRunner(id, () => disposedRunners.Add(id));
-                    createdRunners.Add(id);
                     return testRunner;
                 });
 
         var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance, runnerFactory.Object);
 
-        createdRunners.Count.ShouldBe(3, "All 3 runners should have been created before disposal");
+        // The pool uses Parallel.For to create runners, which should complete before constructor returns
+        // However, to be defensive against timing issues, verify by checking the actual runners in the pool
+        pool.Runners.Count().ShouldBe(3, "All 3 runners should be available in the pool");
 
         // Act
         pool.Dispose();
 
-        // Assert - Verify Dispose was called on all runners
+        // Assert
         disposedRunners.Count.ShouldBe(3, "Dispose should be called on all 3 runners");
         disposedRunners.ShouldContain(0);
         disposedRunners.ShouldContain(1);

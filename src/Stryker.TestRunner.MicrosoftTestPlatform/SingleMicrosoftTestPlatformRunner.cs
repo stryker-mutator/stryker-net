@@ -599,9 +599,10 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
                     File.Delete(_coverageFilePath);
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // Ignore cleanup errors
+                _logger.LogWarning(ex, "{RunnerId}: Failed to clean up temp files", RunnerId);
             }
         }
         _disposed = true;
