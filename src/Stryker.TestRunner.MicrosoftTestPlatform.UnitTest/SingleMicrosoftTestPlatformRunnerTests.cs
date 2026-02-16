@@ -203,6 +203,447 @@ public class SingleMicrosoftTestPlatformRunnerTests
         testableRunner.DisposeLogicExecutedCount.ShouldBe(1, "Dispose logic should only execute once due to _disposed flag check preventing re-execution");
     }
 
+    [TestMethod]
+    public void SetCoverageMode_ShouldEnableCoverageMode()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            1,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        // Act
+        runner.SetCoverageMode(true);
+
+        // Assert
+        runner.IsCoverageModeEnabled.ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void SetCoverageMode_ShouldDisableCoverageMode()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            2,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        runner.SetCoverageMode(true);
+
+        // Act
+        runner.SetCoverageMode(false);
+
+        // Assert
+        runner.IsCoverageModeEnabled.ShouldBeFalse();
+    }
+
+    [TestMethod]
+    public void SetCoverageMode_ShouldBeIdempotent_WhenCalledWithSameValue()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            3,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        runner.SetCoverageMode(true);
+
+        // Act - Call with same value
+        runner.SetCoverageMode(true);
+
+        // Assert - Should still be enabled and not throw any exceptions
+        runner.IsCoverageModeEnabled.ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void SetCoverageMode_ShouldTransitionFromDisabledToEnabled()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            4,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        runner.IsCoverageModeEnabled.ShouldBeFalse("Should start disabled");
+
+        // Act
+        runner.SetCoverageMode(true);
+
+        // Assert
+        runner.IsCoverageModeEnabled.ShouldBeTrue("Should be enabled after calling SetCoverageMode(true)");
+    }
+
+    [TestMethod]
+    public void SetCoverageMode_ShouldTransitionFromEnabledToDisabled()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            5,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        runner.SetCoverageMode(true);
+        runner.IsCoverageModeEnabled.ShouldBeTrue("Should be enabled after first call");
+
+        // Act
+        runner.SetCoverageMode(false);
+
+        // Assert
+        runner.IsCoverageModeEnabled.ShouldBeFalse("Should be disabled after calling SetCoverageMode(false)");
+    }
+
+    [TestMethod]
+    public void SetCoverageMode_ShouldDeleteCoverageFile_WhenEnabling()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            6,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        // Create a coverage file
+        File.WriteAllText(runner.CoverageFilePath, "1,2,3;4,5,6");
+        File.Exists(runner.CoverageFilePath).ShouldBeTrue();
+
+        // Act
+        runner.SetCoverageMode(true);
+
+        // Assert
+        File.Exists(runner.CoverageFilePath).ShouldBeFalse("Coverage file should be deleted when enabling coverage mode");
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldReturnEmptyLists_WhenFileDoesNotExist()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            7,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        // Ensure file doesn't exist
+        if (File.Exists(runner.CoverageFilePath))
+        {
+            File.Delete(runner.CoverageFilePath);
+        }
+
+        // Act
+        var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+
+        // Assert
+        coveredMutants.ShouldBeEmpty();
+        staticMutants.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldReturnEmptyLists_WhenFileIsEmpty()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            8,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        File.WriteAllText(runner.CoverageFilePath, "");
+
+        // Act
+        var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+
+        // Assert
+        coveredMutants.ShouldBeEmpty();
+        staticMutants.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldReturnEmptyLists_WhenFileContainsOnlyWhitespace()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            9,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        File.WriteAllText(runner.CoverageFilePath, "   \n\t  ");
+
+        // Act
+        var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+
+        // Assert
+        coveredMutants.ShouldBeEmpty();
+        staticMutants.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldParseCoveredMutantsOnly()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            10,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        File.WriteAllText(runner.CoverageFilePath, "1,2,3");
+
+        // Act
+        var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+
+        // Assert
+        coveredMutants.ShouldBe(new[] { 1, 2, 3 });
+        staticMutants.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldParseBothCoveredAndStaticMutants()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            11,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        File.WriteAllText(runner.CoverageFilePath, "1,2,3;4,5,6");
+
+        // Act
+        var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+
+        // Assert
+        coveredMutants.ShouldBe(new[] { 1, 2, 3 });
+        staticMutants.ShouldBe(new[] { 4, 5, 6 });
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldHandleEmptyCoveredSection()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            12,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        File.WriteAllText(runner.CoverageFilePath, ";4,5,6");
+
+        // Act
+        var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+
+        // Assert
+        coveredMutants.ShouldBeEmpty();
+        staticMutants.ShouldBe(new[] { 4, 5, 6 });
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldHandleEmptyStaticSection()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            13,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        File.WriteAllText(runner.CoverageFilePath, "1,2,3;");
+
+        // Act
+        var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+
+        // Assert
+        coveredMutants.ShouldBe(new[] { 1, 2, 3 });
+        staticMutants.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldHandleDataWithSpaces()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            14,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        File.WriteAllText(runner.CoverageFilePath, " 1 , 2 , 3 ; 4 , 5 , 6 ");
+
+        // Act
+        var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+
+        // Assert
+        coveredMutants.ShouldBe(new[] { 1, 2, 3 });
+        staticMutants.ShouldBe(new[] { 4, 5, 6 });
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldSkipInvalidNumbers()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            15,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        File.WriteAllText(runner.CoverageFilePath, "1,invalid,3;4,bad,6");
+
+        // Act
+        var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+
+        // Assert
+        coveredMutants.ShouldBe(new[] { 1, 3 });
+        staticMutants.ShouldBe(new[] { 4, 6 });
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldHandleMixedValidAndInvalidData()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            16,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        File.WriteAllText(runner.CoverageFilePath, "1,,3,notanumber,5;,,7,xyz,9");
+
+        // Act
+        var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+
+        // Assert
+        coveredMutants.ShouldBe(new[] { 1, 3, 5 });
+        staticMutants.ShouldBe(new[] { 7, 9 });
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldReturnEmptyLists_OnFileReadException()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            17,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        // Create a locked file by opening it exclusively
+        using var fileStream = new FileStream(runner.CoverageFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+        fileStream.Write(new byte[] { 1, 2, 3 });
+
+        // Act
+        var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+
+        // Assert
+        coveredMutants.ShouldBeEmpty();
+        staticMutants.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldHandleSingleMutantId()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            18,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        File.WriteAllText(runner.CoverageFilePath, "42;");
+
+        // Act
+        var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+
+        // Assert
+        coveredMutants.ShouldBe(new[] { 42 });
+        staticMutants.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldHandleLargeNumbers()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            19,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        File.WriteAllText(runner.CoverageFilePath, "2147483647;2147483646");
+
+        // Act
+        var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+
+        // Assert
+        coveredMutants.ShouldBe(new[] { 2147483647 });
+        staticMutants.ShouldBe(new[] { 2147483646 });
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldHandleNegativeNumbers()
+    {
+        // Arrange
+        using var runner = new TestableRunnerForCoverage(
+            20,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        File.WriteAllText(runner.CoverageFilePath, "-1,2,-3;4,-5");
+
+        // Act
+        var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+
+        // Assert
+        coveredMutants.ShouldBe(new[] { -1, 2, -3 });
+        staticMutants.ShouldBe(new[] { 4, -5 });
+    }
+
     private class TestableRunner : SingleMicrosoftTestPlatformRunner
     {
         private int _disposeLogicExecutedCount;
@@ -224,24 +665,48 @@ public class SingleMicrosoftTestPlatformRunnerTests
 
         public override void Dispose(bool disposing)
         {
-            // We need to detect if the disposal logic actually runs
-            // The base Dispose checks _disposed flag first and returns early if already disposed
-            // We'll use reflection to check the _disposed field before and after
             var disposedField = typeof(SingleMicrosoftTestPlatformRunner).GetField("_disposed", 
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             
             var wasDisposedBefore = (bool)disposedField!.GetValue(this)!;
 
-            // Call base dispose
             base.Dispose(disposing);
 
             var wasDisposedAfter = (bool)disposedField!.GetValue(this)!;
 
-            // If _disposed changed from false to true, the disposal logic executed
             if (!wasDisposedBefore && wasDisposedAfter)
             {
                 _disposeLogicExecutedCount++;
                 DisposedFlagWasSet = true;
+            }
+        }
+    }
+
+    private class TestableRunnerForCoverage : SingleMicrosoftTestPlatformRunner
+    {
+        private readonly int _id;
+
+        public TestableRunnerForCoverage(
+            int id,
+            Dictionary<string, List<TestNode>> testsByAssembly,
+            Dictionary<string, MtpTestDescription> testDescriptions,
+            TestSet testSet,
+            object discoveryLock,
+            ILogger logger)
+            : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger)
+        {
+            _id = id;
+        }
+
+        public string CoverageFilePath => Path.Combine(Path.GetTempPath(), $"stryker-coverage-{_id}.txt");
+
+        public bool IsCoverageModeEnabled
+        {
+            get
+            {
+                var field = typeof(SingleMicrosoftTestPlatformRunner).GetField("_coverageMode",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                return (bool)field!.GetValue(this)!;
             }
         }
     }
