@@ -114,7 +114,8 @@ public class InputFileResolver : IInputFileResolver
     {
         SolutionInfo solutionInfo = null;
         var configuration = options.Configuration;
-        var platform = options.Platform;
+        // "Any CPU" is the solution-level name; MSBuild requires "AnyCPU"
+        var platform = NormalizePlatform(options.Platform);
 
         // identify the target configuration and platform
         if (solution != null)
@@ -123,7 +124,7 @@ public class InputFileResolver : IInputFileResolver
             _logger.LogDebug("Using solution configuration/platform '{Configuration}|{Platform}'.", actualBuildType, actualPlatform);
             solutionInfo = new SolutionInfo(solution.FileName, actualBuildType, actualPlatform);
             configuration = actualBuildType;
-            platform = actualPlatform;
+            platform = NormalizePlatform(actualPlatform);
         }
 
         // we analyze the test project(s) and identify the project to be mutated
@@ -208,7 +209,7 @@ public class InputFileResolver : IInputFileResolver
         var solutionInfo = new SolutionInfo(solution.FileName, actualBuildType, actualPlatform);
         // analyze all projects
         var projectsWithDetails = solution.GetProjectsWithDetails(actualBuildType, actualPlatform)
-            .Select(p => (p.file, options.TargetFramework, p.buildType, p.platform)).ToList();
+            .Select(p => (p.file, options.TargetFramework, p.buildType, NormalizePlatform(p.platform))).ToList();
 
         _logger.LogDebug("Analyzing {0} projects.", projectsWithDetails.Count);
         // we match test projects to mutable projects
@@ -803,6 +804,9 @@ public class InputFileResolver : IInputFileResolver
     }
 
     private static string NormalizePath(string path) => path?.Replace('\\', '/');
+
+    private static string NormalizePlatform(string platform) =>
+        string.Equals(platform, "Any CPU", StringComparison.OrdinalIgnoreCase) ? "AnyCPU" : platform;
 
     private sealed class DynamicEnumerableQueue<T>
     {
