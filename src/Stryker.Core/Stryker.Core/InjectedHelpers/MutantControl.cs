@@ -132,19 +132,38 @@ namespace Stryker
                 string fullPath = System.IO.Path.GetFullPath(path);
                 string tempPath = System.IO.Path.GetFullPath(System.IO.Path.GetTempPath());
 
-                // Use GetRelativePath to check if the file is truly under temp directory
-                // If the relative path starts with "..", the file is outside the temp directory
-                string relativePath = System.IO.Path.GetRelativePath(tempPath, fullPath);
-                if (relativePath.StartsWith("..", System.StringComparison.Ordinal) || 
-                    System.IO.Path.IsPathRooted(relativePath))
+                // Ensure temp path ends with directory separator for proper comparison
+                if (!tempPath.EndsWith(System.IO.Path.DirectorySeparatorChar.ToString()))
+                {
+                    tempPath = tempPath + System.IO.Path.DirectorySeparatorChar;
+                }
+
+                // Check if the file path starts with temp directory path
+                // Use case-insensitive comparison for Windows compatibility
+                if (fullPath.Length <= tempPath.Length)
+                {
+                    return false;
+                }
+
+                string fullPathLower = fullPath.ToLower();
+                string tempPathLower = tempPath.ToLower();
+                
+                if (!fullPathLower.StartsWith(tempPathLower))
+                {
+                    return false;
+                }
+
+                // Check for path traversal patterns in the remaining path
+                string remainingPath = fullPath.Substring(tempPath.Length);
+                if (remainingPath.IndexOf("..") >= 0)
                 {
                     return false;
                 }
 
                 // Validate filename pattern (stryker-coverage-*.txt)
                 string fileName = System.IO.Path.GetFileName(fullPath);
-                if (!fileName.StartsWith("stryker-coverage-", System.StringComparison.OrdinalIgnoreCase) ||
-                    !fileName.EndsWith(".txt", System.StringComparison.OrdinalIgnoreCase))
+                if (fileName.Length < 17 || !fileName.ToLower().StartsWith("stryker-coverage-") ||
+                    !fileName.ToLower().EndsWith(".txt"))
                 {
                     return false;
                 }
@@ -164,6 +183,11 @@ namespace Stryker
             catch (System.NotSupportedException)
             {
                 // Path format not supported
+                return false;
+            }
+            catch
+            {
+                // Any other unexpected exception, consider path unsafe
                 return false;
             }
         }
