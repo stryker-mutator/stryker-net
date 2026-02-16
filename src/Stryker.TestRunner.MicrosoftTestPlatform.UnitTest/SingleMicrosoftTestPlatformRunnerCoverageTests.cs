@@ -23,60 +23,186 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
     }
 
     [TestMethod]
-    public void SetCoverageMode_ShouldEnableCoverageMode()
+    public async Task SetCoverageMode_ShouldEnableCoverageMode()
     {
-        using var runner = new SingleMicrosoftTestPlatformRunner(
-            0,
-            _testsByAssembly,
-            _testDescriptions,
-            _testSet,
-            _discoveryLock,
-            NullLogger.Instance);
-
-        runner.SetCoverageMode(true);
-
-        // Coverage mode should be enabled - we can verify by setting it again (should not have any effect)
-        runner.SetCoverageMode(true);
-    }
-
-    [TestMethod]
-    public void SetCoverageMode_ShouldDisableCoverageMode()
-    {
-        using var runner = new SingleMicrosoftTestPlatformRunner(
-            0,
-            _testsByAssembly,
-            _testDescriptions,
-            _testSet,
-            _discoveryLock,
-            NullLogger.Instance);
-
-        runner.SetCoverageMode(true);
-        runner.SetCoverageMode(false);
-
-        // Coverage mode should now be disabled
-        runner.SetCoverageMode(false);
-    }
-
-    [TestMethod]
-    public void SetCoverageMode_ShouldNoOp_WhenModeIsAlreadySet()
-    {
-        using var runner = new SingleMicrosoftTestPlatformRunner(
-            0,
-            _testsByAssembly,
-            _testDescriptions,
-            _testSet,
-            _discoveryLock,
-            NullLogger.Instance);
-
-        // Enable coverage mode
-        runner.SetCoverageMode(true);
-        // Try to enable again - should do nothing
-        runner.SetCoverageMode(true);
+        var runnerId = 600;
+        var coverageFilePath = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{runnerId}.txt");
         
-        // Disable coverage mode
+        try
+        {
+            // Create an existing coverage file that should be deleted
+            await File.WriteAllTextAsync(coverageFilePath, "1,2,3");
+            File.Exists(coverageFilePath).ShouldBeTrue("Setup: coverage file should exist before test");
+
+            using var runner = new SingleMicrosoftTestPlatformRunner(
+                runnerId,
+                _testsByAssembly,
+                _testDescriptions,
+                _testSet,
+                _discoveryLock,
+                NullLogger.Instance);
+
+            // Create a test assembly to trigger server creation
+            var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+            await runner.DiscoverTestsAsync(testAssembly);
+
+            // Enable coverage mode
+            runner.SetCoverageMode(true);
+
+            // The old coverage file should be deleted
+            File.Exists(coverageFilePath).ShouldBeFalse("Coverage file should be deleted when enabling coverage mode");
+
+            // Servers should be disposed and will be recreated on next use with coverage env var
+            // Verify we can still discover tests (which recreates servers)
+            var result = await runner.DiscoverTestsAsync(testAssembly);
+            result.ShouldBeTrue("Server should be recreated successfully after enabling coverage mode");
+
+            // Trying to enable again should be a no-op
+            await File.WriteAllTextAsync(coverageFilePath, "test");
+            runner.SetCoverageMode(true);
+            File.Exists(coverageFilePath).ShouldBeTrue("Should not delete file when mode is already enabled");
+        }
+        finally
+        {
+            if (File.Exists(coverageFilePath))
+            {
+                File.Delete(coverageFilePath);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task SetCoverageMode_ShouldDisableCoverageMode()
+    {
+        var runnerId = 601;
+        var coverageFilePath = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{runnerId}.txt");
+        
+        try
+        {
+            using var runner = new SingleMicrosoftTestPlatformRunner(
+                runnerId,
+                _testsByAssembly,
+                _testDescriptions,
+                _testSet,
+                _discoveryLock,
+                NullLogger.Instance);
+
+            var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+
+            // Enable coverage mode first
+            runner.SetCoverageMode(true);
+            await runner.DiscoverTestsAsync(testAssembly);
+            
+            // Create a coverage file
+            await File.WriteAllTextAsync(coverageFilePath, "1,2,3");
+            File.Exists(coverageFilePath).ShouldBeTrue("Setup: coverage file should exist");
+
+            // Disable coverage mode
+            runner.SetCoverageMode(false);
+
+            // The coverage file should be deleted when changing modes (clean start)
+            File.Exists(coverageFilePath).ShouldBeFalse("Coverage file should be deleted when disabling coverage mode");
+
+            // Servers should be disposed and will be recreated without coverage env var
+            var result = await runner.DiscoverTestsAsync(testAssembly);
+            result.ShouldBeTrue("Server should be recreated successfully after disabling coverage mode");
+
+            // Trying to disable again should be a no-op (no servers disposed, no file deletion)
+            await File.WriteAllTextAsync(coverageFilePath, "test");
+            runner.SetCoverageMode(false);
+            File.Exists(coverageFilePath).ShouldBeTrue("Should not delete file when mode is already disabled");
+        }
+        finally
+        {
+            if (File.Exists(coverageFilePath))
+            {
+                File.Delete(coverageFilePath);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task SetCoverageMode_ShouldNoOp_WhenModeIsAlreadySet()
+    {
+        var runnerId = 602;
+        var coverageFilePath = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{runnerId}.txt");
+        
+        try
+        {
+            using var runner = new SingleMicrosoftTestPlatformRunner(
+                runnerId,
+                _testsByAssembly,
+                _testDescriptions,
+                _testSet,
+                _discoveryLock,
+                NullLogger.Instance);
+
+            var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+            await runner.DiscoverTestsAsync(testAssembly);
+
+            // Enable coverage mode
+            runner.SetCoverageMode(true);
+            File.Exists(coverageFilePath).ShouldBeFalse("Coverage file should be deleted on first enable");
+
+            // Create a coverage file to verify no-op doesn't delete it
+            await File.WriteAllTextAsync(coverageFilePath, "test-data");
+            
+            // Try to enable again - should do nothing (no server disposal, no file deletion)
+            runner.SetCoverageMode(true);
+            File.Exists(coverageFilePath).ShouldBeTrue("Coverage file should NOT be deleted when mode already enabled");
+            (await File.ReadAllTextAsync(coverageFilePath)).ShouldBe("test-data", "File content should be unchanged");
+
+            // Verify servers are still functional (not disposed)
+            var result = await runner.DiscoverTestsAsync(testAssembly);
+            result.ShouldBeTrue("Servers should still be functional after no-op");
+            
+            // Disable coverage mode
+            runner.SetCoverageMode(false);
+            
+            // Try to disable again - should do nothing (no server disposal)
+            runner.SetCoverageMode(false);
+            
+            // Verify servers are still functional
+            result = await runner.DiscoverTestsAsync(testAssembly);
+            result.ShouldBeTrue("Servers should still be functional after no-op disable");
+        }
+        finally
+        {
+            if (File.Exists(coverageFilePath))
+            {
+                File.Delete(coverageFilePath);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task SetCoverageMode_ShouldRestartServers_WhenTogglingBetweenModes()
+    {
+        var runnerId = 603;
+
+        using var runner = new SingleMicrosoftTestPlatformRunner(
+            runnerId,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+
+        // Initial discovery without coverage
+        var result1 = await runner.DiscoverTestsAsync(testAssembly);
+        result1.ShouldBeTrue("Initial discovery should succeed");
+
+        // Enable coverage - should restart servers
+        runner.SetCoverageMode(true);
+        var result2 = await runner.DiscoverTestsAsync(testAssembly);
+        result2.ShouldBeTrue("Discovery after enabling coverage should succeed (server restarted)");
+
+        // Disable coverage - should restart servers again
         runner.SetCoverageMode(false);
-        // Try to disable again - should do nothing
-        runner.SetCoverageMode(false);
+        var result3 = await runner.DiscoverTestsAsync(testAssembly);
+        result3.ShouldBeTrue("Discovery after disabling coverage should succeed (server restarted)");
     }
 
     [TestMethod]

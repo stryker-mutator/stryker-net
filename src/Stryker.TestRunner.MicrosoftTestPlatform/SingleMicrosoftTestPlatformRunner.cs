@@ -141,6 +141,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     {
         if (_coverageMode == enabled)
         {
+            // Already in the desired state; no action needed
             return;
         }
 
@@ -157,11 +158,8 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             _assemblyServers.Clear();
         }
 
-        // Clean up any existing coverage file
-        if (enabled)
-        {
-            DeleteCoverageFile();
-        }
+        // Clean up any existing coverage file, even when enabling, to ensure we start fresh
+        DeleteCoverageFile();
     }
 
     /// <summary>
