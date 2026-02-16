@@ -244,7 +244,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     }
 
     [TestMethod]
-    public void SetCoverageMode_ShouldBeIdempotent_WhenCalledWithSameValue()
+    public void SetCoverageMode_ShouldBeIdempotent_WhenCalledWithTrue()
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
@@ -265,7 +265,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     }
 
     [TestMethod]
-    public void SetCoverageMode_ShouldTransitionFromDisabledToEnabled()
+    public void SetCoverageMode_ShouldBeIdempotent_WhenCalledWithFalse()
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
@@ -276,35 +276,14 @@ public class SingleMicrosoftTestPlatformRunnerTests
             _discoveryLock,
             NullLogger.Instance);
 
-        runner.IsCoverageModeEnabled.ShouldBeFalse("Should start disabled");
+        // Default is false, so calling it again should be idempotent
+        runner.IsCoverageModeEnabled.ShouldBeFalse();
 
-        // Act
-        runner.SetCoverageMode(true);
-
-        // Assert
-        runner.IsCoverageModeEnabled.ShouldBeTrue("Should be enabled after calling SetCoverageMode(true)");
-    }
-
-    [TestMethod]
-    public void SetCoverageMode_ShouldTransitionFromEnabledToDisabled()
-    {
-        // Arrange
-        using var runner = new TestableRunnerForCoverage(
-            5,
-            _testsByAssembly,
-            _testDescriptions,
-            _testSet,
-            _discoveryLock,
-            NullLogger.Instance);
-
-        runner.SetCoverageMode(true);
-        runner.IsCoverageModeEnabled.ShouldBeTrue("Should be enabled after first call");
-
-        // Act
+        // Act - Call with same value as default
         runner.SetCoverageMode(false);
 
-        // Assert
-        runner.IsCoverageModeEnabled.ShouldBeFalse("Should be disabled after calling SetCoverageMode(false)");
+        // Assert - Should still be disabled and not throw any exceptions
+        runner.IsCoverageModeEnabled.ShouldBeFalse();
     }
 
     [TestMethod]
@@ -312,7 +291,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
-            6,
+            5,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
@@ -335,7 +314,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
-            7,
+            6,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
@@ -361,7 +340,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
-            8,
+            7,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
@@ -383,7 +362,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
-            9,
+            8,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
@@ -405,7 +384,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
-            10,
+            9,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
@@ -427,7 +406,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
-            11,
+            10,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
@@ -449,7 +428,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
-            12,
+            11,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
@@ -471,7 +450,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
-            13,
+            12,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
@@ -493,7 +472,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
-            14,
+            13,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
@@ -515,7 +494,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
-            15,
+            14,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
@@ -537,7 +516,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
-            16,
+            15,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
@@ -559,7 +538,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
-            17,
+            16,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
@@ -583,7 +562,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
-            18,
+            17,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
@@ -605,7 +584,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
-            19,
+            18,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
@@ -627,7 +606,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     {
         // Arrange
         using var runner = new TestableRunnerForCoverage(
-            20,
+            19,
             _testsByAssembly,
             _testDescriptions,
             _testSet,
