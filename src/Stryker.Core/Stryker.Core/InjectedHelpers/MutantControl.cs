@@ -144,9 +144,10 @@ namespace Stryker
                     ResetCoverage();
                 }
             }
-            catch
+            catch (System.Exception ex)
             {
-                // Ignore file write errors to avoid failing tests
+                // Do not fail tests due to coverage write issues; log for diagnostics instead.
+                System.Diagnostics.Debug.WriteLine($"[Stryker] Failed to flush coverage to file '{_cachedCoverageFilePath}': {ex}");
             }
         }
 
