@@ -147,7 +147,7 @@ namespace Stryker
             catch (System.Exception ex)
             {
                 // Do not fail tests due to coverage write issues; log for diagnostics instead.
-                System.Diagnostics.Debug.WriteLine($"[Stryker] Failed to flush coverage to file '{_cachedCoverageFilePath}': {ex}");
+                System.Diagnostics.Debug.WriteLine(string.Format("[Stryker] Failed to flush coverage to file '{0}': {1}", _cachedCoverageFilePath, ex));
             }
         }
 
