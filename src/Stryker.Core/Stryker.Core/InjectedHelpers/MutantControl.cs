@@ -132,8 +132,11 @@ namespace Stryker
                 string fullPath = System.IO.Path.GetFullPath(path);
                 string tempPath = System.IO.Path.GetFullPath(System.IO.Path.GetTempPath());
 
-                // Ensure the file is under the temp directory
-                if (!fullPath.StartsWith(tempPath, System.StringComparison.OrdinalIgnoreCase))
+                // Use GetRelativePath to check if the file is truly under temp directory
+                // If the relative path starts with "..", the file is outside the temp directory
+                string relativePath = System.IO.Path.GetRelativePath(tempPath, fullPath);
+                if (relativePath.StartsWith("..", System.StringComparison.Ordinal) || 
+                    System.IO.Path.IsPathRooted(relativePath))
                 {
                     return false;
                 }
@@ -148,9 +151,19 @@ namespace Stryker
 
                 return true;
             }
-            catch
+            catch (System.ArgumentException)
             {
-                // If any path operation fails, consider it unsafe
+                // Invalid path characters or format
+                return false;
+            }
+            catch (System.IO.PathTooLongException)
+            {
+                // Path exceeds maximum length
+                return false;
+            }
+            catch (System.NotSupportedException)
+            {
+                // Path format not supported
                 return false;
             }
         }
