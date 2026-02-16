@@ -25,6 +25,27 @@ public class SingleMicrosoftTestPlatformRunnerTests
         _discoveryLock = new object();
     }
 
+    [TestCleanup]
+    public void Cleanup()
+    {
+        // Clean up any temporary coverage files created during tests
+        for (int id = 1; id <= 20; id++)
+        {
+            var coverageFilePath = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{id}.txt");
+            try
+            {
+                if (File.Exists(coverageFilePath))
+                {
+                    File.Delete(coverageFilePath);
+                }
+            }
+            catch
+            {
+                // Ignore cleanup errors
+            }
+        }
+    }
+
     [TestMethod]
     public void Constructor_ShouldCreateRunner()
     {
@@ -547,7 +568,9 @@ public class SingleMicrosoftTestPlatformRunnerTests
 
         // Create a locked file by opening it exclusively
         using var fileStream = new FileStream(runner.CoverageFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
-        fileStream.Write(new byte[] { 1, 2, 3 });
+        var writer = new StreamWriter(fileStream);
+        writer.Write("1,2,3;4,5,6");
+        writer.Flush();
 
         // Act
         var (coveredMutants, staticMutants) = runner.ReadCoverageData();
