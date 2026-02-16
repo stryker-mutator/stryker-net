@@ -128,7 +128,7 @@ namespace Stryker
 
             try
             {
-                // Get the full path to resolve any relative paths or symlinks
+                // Get the full path to normalize and canonicalize the path
                 string fullPath = System.IO.Path.GetFullPath(path);
                 string tempPath = System.IO.Path.GetFullPath(System.IO.Path.GetTempPath());
 
