@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -176,12 +177,25 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
                 (id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) =>
                 {
                     var testRunner = new TestableRunner(id, () => disposedRunners.Add(id));
-                    createdRunners.Add(id);
+                    lock (createdRunners)
+                    {
+                        createdRunners.Add(id);
+                        Monitor.Pulse(createdRunners);
+                    }
                     return testRunner;
                 });
 
         var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance, runnerFactory.Object);
-
+        var timeout = new Stopwatch();
+        timeout.Start();
+        var start = timeout.ElapsedMilliseconds;
+        lock (createdRunners)
+        {
+            while (createdRunners.Count<3 && timeout.ElapsedMilliseconds-start<2000)
+            {
+                Monitor.Wait(createdRunners, 200);
+            }
+        }
         createdRunners.Count.ShouldBe(3, "All 3 runners should have been created before disposal");
 
         // Act
