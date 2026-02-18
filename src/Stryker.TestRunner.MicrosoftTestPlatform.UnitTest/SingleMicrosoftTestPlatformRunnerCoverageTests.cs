@@ -460,7 +460,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
     }
 
     [TestMethod]
-    public async Task ResetServerAsync_ShouldComplete()
+    public async Task ResetServerAsync_ShouldDisposeAndClearAllServers()
     {
         using var runner = new SingleMicrosoftTestPlatformRunner(
             0,
@@ -470,8 +470,19 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
             _discoveryLock,
             NullLogger.Instance);
 
+        // Populate _assemblyServers by discovering tests against the real test assembly
+        var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+        await runner.DiscoverTestsAsync(testAssembly);
+
+        var serversField = typeof(SingleMicrosoftTestPlatformRunner)
+            .GetField("_assemblyServers", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+
+        var serversBefore = (Dictionary<string, AssemblyTestServer>)serversField.GetValue(runner)!;
+        serversBefore.ShouldNotBeEmpty("servers should be populated after discovery");
+
         await runner.ResetServerAsync();
 
-        // Verify no exceptions
+        var serversAfter = (Dictionary<string, AssemblyTestServer>)serversField.GetValue(runner)!;
+        serversAfter.ShouldBeEmpty("all servers should be disposed and removed after reset");
     }
 }
