@@ -1,5 +1,10 @@
 namespace Stryker
 {
+    /// <summary>
+    /// A static class used for controlling mutant activation and coverage tracking at runtime.
+    /// It supports both environment variable-based control (for VSTest runner) and file-based control (for MTP runner with process reuse).
+    /// It should only use C# features up to v2 to ensure compatibility with the widest range of projects it is injected into.
+    /// </summary>
     public static class MutantControl
     {
         private static System.Collections.Generic.List<int> _coveredMutants = new System.Collections.Generic.List<int>();
@@ -118,8 +123,8 @@ namespace Stryker
         }
 
         /// <summary>
-        /// Gets coverage data and writes it to a file for MTP runner IPC.
-        /// Called by MTP runner after each test completes.
+        /// Writes accumulated coverage data to a file for MTP runner IPC.
+        /// Called automatically on process exit to capture all coverage from tests run in this process.
         /// Format: "coveredMutants;staticMutants" (comma-separated IDs)
         /// </summary>
         public static void FlushCoverageToFile()

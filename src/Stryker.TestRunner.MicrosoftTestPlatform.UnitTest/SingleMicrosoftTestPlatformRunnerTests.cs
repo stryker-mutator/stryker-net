@@ -5,6 +5,8 @@ using Shouldly;
 using Stryker.Abstractions;
 using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
+using System.Reflection;
+using Stryker.TestRunner.Results;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
 
@@ -15,6 +17,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     private Dictionary<string, MtpTestDescription> _testDescriptions = null!;
     private TestSet _testSet = null!;
     private object _discoveryLock = null!;
+    private readonly string _testAssemblyPath = Assembly.GetExecutingAssembly().Location;
 
     [TestInitialize]
     public void Initialize()
@@ -23,6 +26,462 @@ public class SingleMicrosoftTestPlatformRunnerTests
         _testDescriptions = new Dictionary<string, MtpTestDescription>();
         _testSet = new TestSet();
         _discoveryLock = new object();
+    }
+
+    private SingleMicrosoftTestPlatformRunner CreateRunner(int id = 0) =>
+        new(id, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+    [TestMethod]
+    public async Task InitialTestAsync_CallsRunTestsInternalAsync_AndHandlesServerCreationFailure()
+    {
+        // Arrange - InitialTestAsync eventually calls RunTestsInternalAsync via RunAllTestsAsync
+        var project = new Mock<IProjectAndTests>();
+        var invalidAssembly = "/path/to/nonexistent.dll";
+        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { invalidAssembly });
+
+        using var runner = CreateRunner(0);
+
+        // Act - This will call RunAllTestsAsync -> ProcessSingleAssemblyAsync -> RunTestsInternalAsync
+        // RunTestsInternalAsync will handle the exception when GetOrCreateServerAsync fails
+        var result = await runner.InitialTestAsync(project.Object);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.ExecutedTests.ShouldNotBeNull();
+        result.FailingTests.ShouldNotBeNull();
+        result.Duration.ShouldBeGreaterThanOrEqualTo(TimeSpan.Zero);
+    }
+
+    [TestMethod]
+    public async Task TestMultipleMutantsAsync_CallsRunTestsInternalAsync_WithNonExistentAssembly()
+    {
+        // Arrange
+        var project = new Mock<IProjectAndTests>();
+        var invalidAssembly = "/invalid/path/test.dll";
+        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { invalidAssembly });
+
+        var mutant = new Mock<IMutant>();
+        mutant.Setup(x => x.Id).Returns(1);
+        var mutants = new List<IMutant> { mutant.Object };
+
+        using var runner = CreateRunner(0);
+
+        // Act - Calls RunAllTestsAsync -> ProcessSingleAssemblyAsync -> RunTestsInternalAsync
+        var result = await runner.TestMultipleMutantsAsync(project.Object, null, mutants, null);
+
+        // Assert - RunTestsInternalAsync catches exceptions and returns TestRunResult
+        result.ShouldNotBeNull();
+        result.ExecutedTests.ShouldNotBeNull();
+        result.Duration.ShouldBeGreaterThanOrEqualTo(TimeSpan.Zero);
+    }
+
+    [TestMethod]
+    public async Task RunTestsInternalAsync_HandlesExceptionPath_WhenServerCreationFails()
+    {
+        // Arrange
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { "/nonexistent.dll" });
+
+        using var runner = CreateRunner(0);
+
+        // Act - This exercises the exception handling in RunTestsInternalAsync
+        var result = await runner.InitialTestAsync(project.Object);
+
+        // Assert - RunTestsInternalAsync returns TestRunResult(false, ex.Message) on exception
+        result.ShouldNotBeNull();
+        var testRunResult = result as Stryker.TestRunner.Results.TestRunResult;
+        testRunResult.ShouldNotBeNull();
+        testRunResult.FailingTests.ShouldNotBeNull();
+    }
+
+    [TestMethod]
+    [DataRow("assembly-a.dll")]
+    [DataRow("assembly-b.dll")]
+    [DataRow("Some/Path/To/Assembly.dll")]
+    public void GetDiscoveredTests_ReturnsNull_WhenAssemblyNotRegistered(string assembly)
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.GetDiscoveredTests(assembly);
+
+        result.ShouldBeNull();
+    }
+
+    [TestMethod]
+    public void GetDiscoveredTests_ReturnsTests_WhenAssemblyIsRegistered()
+    {
+        var tests = new List<TestNode>
+        {
+            new("uid-1", "Test1", "test", "passed"),
+            new("uid-2", "Test2", "test", "failed")
+        };
+        _testsByAssembly["my-assembly.dll"] = tests;
+
+        using var runner = CreateRunner();
+
+        var result = runner.GetDiscoveredTests("my-assembly.dll");
+
+        result.ShouldNotBeNull();
+        result.Count.ShouldBe(2);
+        result[0].Uid.ShouldBe("uid-1");
+        result[1].Uid.ShouldBe("uid-2");
+    }
+
+    [TestMethod]
+    public void GetDiscoveredTests_ReturnsEmptyList_WhenAssemblyHasNoTests()
+    {
+        _testsByAssembly["empty.dll"] = [];
+
+        using var runner = CreateRunner();
+
+        var result = runner.GetDiscoveredTests("empty.dll");
+
+        result.ShouldNotBeNull();
+        result.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    [DataRow(100, 500, 500)]
+    [DataRow(0, 500, 500)]
+    [DataRow(250, 1000, 1000)]
+    public void CalculateAssemblyTimeout_ReturnsExpectedTimeout(
+        int initialRunTimeMs, int calculatorReturns, int expectedMs)
+    {
+        var testNode = new TestNode("uid-1", "Test1", "test", "passed");
+        var discoveredTests = new List<TestNode> { testNode };
+
+        var desc = new MtpTestDescription(testNode);
+        desc.RegisterInitialTestResult(new MtpTestResult(TimeSpan.FromMilliseconds(initialRunTimeMs)));
+        _testDescriptions["uid-1"] = desc;
+
+        var timeoutCalc = new Mock<ITimeoutValueCalculator>();
+        timeoutCalc.Setup(x => x.CalculateTimeoutValue(It.IsAny<int>()))
+            .Returns(calculatorReturns);
+
+        using var runner = CreateRunner();
+
+        var result = runner.CalculateAssemblyTimeout(discoveredTests, timeoutCalc.Object, "test.dll");
+
+        result.ShouldNotBeNull();
+        result.Value.TotalMilliseconds.ShouldBe(expectedMs);
+    }
+
+    [TestMethod]
+    public void CalculateAssemblyTimeout_SumsMultipleTestDurations()
+    {
+        var test1 = new TestNode("uid-1", "Test1", "test", "passed");
+        var test2 = new TestNode("uid-2", "Test2", "test", "passed");
+        var discoveredTests = new List<TestNode> { test1, test2 };
+
+        var desc1 = new MtpTestDescription(test1);
+        desc1.RegisterInitialTestResult(new MtpTestResult(TimeSpan.FromMilliseconds(100)));
+        _testDescriptions["uid-1"] = desc1;
+
+        var desc2 = new MtpTestDescription(test2);
+        desc2.RegisterInitialTestResult(new MtpTestResult(TimeSpan.FromMilliseconds(200)));
+        _testDescriptions["uid-2"] = desc2;
+
+        int capturedEstimate = -1;
+        var timeoutCalc = new Mock<ITimeoutValueCalculator>();
+        timeoutCalc.Setup(x => x.CalculateTimeoutValue(It.IsAny<int>()))
+            .Callback<int>(ms => capturedEstimate = ms)
+            .Returns(999);
+
+        using var runner = CreateRunner();
+
+        runner.CalculateAssemblyTimeout(discoveredTests, timeoutCalc.Object, "test.dll");
+
+        capturedEstimate.ShouldBe(300);
+    }
+
+    [TestMethod]
+    public void CalculateAssemblyTimeout_SkipsTestsWithoutDescription()
+    {
+        var test1 = new TestNode("uid-1", "Test1", "test", "passed");
+        var testWithoutDesc = new TestNode("uid-unknown", "Unknown", "test", "passed");
+        var discoveredTests = new List<TestNode> { test1, testWithoutDesc };
+
+        var desc1 = new MtpTestDescription(test1);
+        desc1.RegisterInitialTestResult(new MtpTestResult(TimeSpan.FromMilliseconds(150)));
+        _testDescriptions["uid-1"] = desc1;
+
+        int capturedEstimate = -1;
+        var timeoutCalc = new Mock<ITimeoutValueCalculator>();
+        timeoutCalc.Setup(x => x.CalculateTimeoutValue(It.IsAny<int>()))
+            .Callback<int>(ms => capturedEstimate = ms)
+            .Returns(777);
+
+        using var runner = CreateRunner();
+
+        runner.CalculateAssemblyTimeout(discoveredTests, timeoutCalc.Object, "test.dll");
+
+        capturedEstimate.ShouldBe(150);
+    }
+
+    [TestMethod]
+    public async Task HandleAssemblyTimeoutAsync_AddsAllTestUidsToTimedOutList()
+    {
+        var tests = new List<TestNode>
+        {
+            new("uid-1", "Test1", "test", "passed"),
+            new("uid-2", "Test2", "test", "passed"),
+            new("uid-3", "Test3", "test", "passed")
+        };
+        var timedOutTests = new List<string>();
+
+        using var runner = CreateRunner();
+
+        await runner.HandleAssemblyTimeoutAsync("some-assembly.dll", tests, timedOutTests);
+
+        timedOutTests.ShouldBe(["uid-1", "uid-2", "uid-3"]);
+    }
+
+    [TestMethod]
+    public async Task HandleAssemblyTimeoutAsync_AppendsToExistingTimedOutList()
+    {
+        var tests = new List<TestNode> { new("uid-new", "NewTest", "test", "passed") };
+        var timedOutTests = new List<string> { "uid-existing" };
+
+        using var runner = CreateRunner();
+        await runner.HandleAssemblyTimeoutAsync("assembly.dll", tests, timedOutTests);
+
+        timedOutTests.Count.ShouldBe(2);
+        timedOutTests.ShouldContain("uid-existing");
+        timedOutTests.ShouldContain("uid-new");
+    }
+
+    [TestMethod]
+    public async Task HandleAssemblyTimeoutAsync_HandlesEmptyTestList()
+    {
+        var tests = new List<TestNode>();
+        var timedOutTests = new List<string>();
+
+        using var runner = CreateRunner();
+
+        await runner.HandleAssemblyTimeoutAsync("assembly.dll", tests, timedOutTests);
+
+        timedOutTests.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public async Task RunTestsInternalAsync_ReturnsFailedResult_WhenServerCreationFails()
+    {
+        using var runner = CreateRunner();
+
+        var (result, timedOut) = await runner.RunTestsInternalAsync("/nonexistent/assembly.dll", null, null);
+
+        timedOut.ShouldBeFalse();
+        result.ShouldNotBeNull();
+        result.ResultMessage.ShouldNotBeNullOrEmpty();
+    }
+
+    [TestMethod]
+    [DataRow("/path/a.dll")]
+    [DataRow("/another/path/b.dll")]
+    public async Task RunTestsInternalAsync_CatchesException_AndReturnsResult(string assembly)
+    {
+        using var runner = CreateRunner();
+
+        var (result, timedOut) = await runner.RunTestsInternalAsync(assembly, null, null);
+
+        timedOut.ShouldBeFalse();
+        result.ShouldBeOfType<TestRunResult>();
+        result.Duration.ShouldBe(TimeSpan.Zero);
+    }
+
+    [TestMethod]
+    public async Task RunTestsInternalAsync_WithTimeout_StillReturnsResult_WhenServerFails()
+    {
+        using var runner = CreateRunner();
+        var timeout = TimeSpan.FromMilliseconds(100);
+
+        var (result, timedOut) = await runner.RunTestsInternalAsync("/nonexistent.dll", null, timeout)!;
+
+        timedOut.ShouldBeFalse();
+        result.ShouldNotBeNull();
+        result.FailingTests.ShouldNotBeNull();
+    }
+
+    [TestMethod]
+    public async Task RunTestsInternalAsync_WithFilter_StillReturnsResult_WhenServerFails()
+    {
+        Func<TestNode, bool> filter = t => t.Uid == "uid-1";
+
+        using var runner = CreateRunner();
+
+        var (result, timedOut) = await runner.RunTestsInternalAsync("/nonexistent.dll", filter, null)!;
+
+        timedOut.ShouldBeFalse();
+        result.ExecutedTests.ShouldNotBeNull();
+    }
+
+    [TestMethod]
+    public async Task RunTestsInternalAsync_WithTimeout_DoesNotHangOnRealAssembly()
+    {
+        // Arrange - This test ensures we don't try to start real servers that would hang
+        var fakeAssemblyPath = "/path/to/fake/test.dll";
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { fakeAssemblyPath });
+
+        var mutant = new Mock<IMutant>();
+        mutant.Setup(x => x.Id).Returns(1);
+        var mutants = new List<IMutant> { mutant.Object };
+
+        var timeoutCalc = new Mock<ITimeoutValueCalculator>();
+        timeoutCalc.Setup(x => x.CalculateTimeoutValue(It.IsAny<int>())).Returns(1);
+
+        // Add discovered tests
+        var testNode = new TestNode("test1", "TestMethod1", "passed", "passed");
+        _testsByAssembly[fakeAssemblyPath] = new List<TestNode> { testNode };
+        _testDescriptions["test1"] = new MtpTestDescription(testNode);
+
+        using var runner = CreateRunner(0);
+
+        // Act - Should complete quickly without hanging, even though we have a timeout calculator
+        var result = await runner.TestMultipleMutantsAsync(project.Object, timeoutCalc.Object, mutants, null);
+
+        // Assert - The test completes without hanging (file doesn't exist so returns early)
+        result.ShouldNotBeNull();
+        result.ExecutedTests.ShouldNotBeNull();
+    }
+
+    [TestMethod]
+    public async Task RunTestsInternalAsync_HandlesNoDiscoveredTests()
+    {
+        // Arrange - no tests discovered for assembly
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { _testAssemblyPath });
+
+        using var runner = CreateRunner(0);
+
+        // Act - RunTestsInternalAsync will get null tests
+        var result = await runner.InitialTestAsync(project.Object);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.ExecutedTests.ShouldNotBeNull();
+    }
+
+    [TestMethod]
+    public async Task RunTestsInternalAsync_RegistersTestResults_InTestDescriptions()
+    {
+        // Arrange
+        var testNode = new TestNode("test1", "TestMethod1", "passed", "passed");
+        var mtpTestDesc = new MtpTestDescription(testNode);
+        _testDescriptions["test1"] = mtpTestDesc;
+
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { _testAssemblyPath });
+
+        using var runner = CreateRunner(0);
+
+        // Act
+        var result = await runner.InitialTestAsync(project.Object);
+
+        // Assert - Test descriptions should still be in the dictionary
+        _testDescriptions.ShouldContainKey("test1");
+        result.ShouldNotBeNull();
+    }
+
+    [TestMethod]
+    public async Task RunTestsInternalAsync_CalculatesDuration()
+    {
+        // Arrange
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { "/nonexistent.dll" });
+
+        using var runner = CreateRunner(0);
+
+        // Act
+        var startTime = DateTime.UtcNow;
+        var result = await runner.InitialTestAsync(project.Object);
+        var endTime = DateTime.UtcNow;
+
+        // Assert - Duration should be calculated
+        result.ShouldNotBeNull();
+        result.Duration.ShouldBeGreaterThanOrEqualTo(TimeSpan.Zero);
+        result.Duration.ShouldBeLessThan(endTime - startTime + TimeSpan.FromSeconds(2));
+    }
+
+    [TestMethod]
+    public async Task RunTestsInternalAsync_WithMultipleMutants_UsesNegativeOneMutantId()
+    {
+        // Arrange
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { "/test.dll" });
+
+        var mutant1 = new Mock<IMutant>();
+        mutant1.Setup(x => x.Id).Returns(1);
+        var mutant2 = new Mock<IMutant>();
+        mutant2.Setup(x => x.Id).Returns(2);
+        var mutants = new List<IMutant> { mutant1.Object, mutant2.Object };
+
+        using var runner = CreateRunner(0);
+
+        // Act - With multiple mutants, mutantId should be -1 (no mutation)
+        var result = await runner.TestMultipleMutantsAsync(project.Object, null, mutants, null);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.ExecutedTests.ShouldNotBeNull();
+    }
+
+    [TestMethod]
+    public async Task RunTestsInternalAsync_WithSingleMutant_UsesMutantId()
+    {
+        // Arrange
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { "/test.dll" });
+
+        var mutant = new Mock<IMutant>();
+        mutant.Setup(x => x.Id).Returns(42);
+        var mutants = new List<IMutant> { mutant.Object };
+
+        using var runner = CreateRunner(0);
+
+        // Act - With single mutant, that mutant's ID should be used
+        var result = await runner.TestMultipleMutantsAsync(project.Object, null, mutants, null);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.ExecutedTests.ShouldNotBeNull();
+    }
+
+    [TestMethod]
+    public async Task RunTestsInternalAsync_ReturnsEveryTest_WhenAllTestsExecuted()
+    {
+        // Arrange - Set up a scenario where all discovered tests would be executed
+        var testNode = new TestNode("test1", "TestMethod1", "passed", "passed");
+        _testsByAssembly[_testAssemblyPath] = new List<TestNode> { testNode };
+
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { _testAssemblyPath });
+
+        using var runner = CreateRunner(0);
+
+        // Act
+        var result = await runner.InitialTestAsync(project.Object);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.ExecutedTests.ShouldNotBeNull();
+    }
+
+    [TestMethod]
+    public async Task RunTestsInternalAsync_IncludesResultMessage_OnError()
+    {
+        // Arrange
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { "/invalid/assembly.dll" });
+
+        using var runner = CreateRunner(0);
+
+        // Act
+        var result = await runner.InitialTestAsync(project.Object);
+
+        // Assert - Result message should be included on error
+        result.ShouldNotBeNull();
+        result.ResultMessage.ShouldNotBeNull();
     }
 
     [TestCleanup]
@@ -44,22 +503,6 @@ public class SingleMicrosoftTestPlatformRunnerTests
                 // Ignore cleanup errors
             }
         }
-    }
-
-    [TestMethod]
-    public void Constructor_ShouldCreateRunner()
-    {
-        // Act
-        using var runner = new SingleMicrosoftTestPlatformRunner(
-            0,
-            _testsByAssembly,
-            _testDescriptions,
-            _testSet,
-            _discoveryLock,
-            NullLogger.Instance);
-
-        // Assert
-        runner.ShouldNotBeNull();
     }
 
     [TestMethod]

@@ -225,9 +225,10 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
                 File.Delete(_coverageFilePath);
             }
         }
-        catch
+        catch (Exception ex)
         {
             // Ignore cleanup errors
+            _logger.LogWarning(ex, "{RunnerId}: Failed to delete coverage file at {Path}", RunnerId, _coverageFilePath);
         }
     }
 
@@ -288,7 +289,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    private List<TestNode>? GetDiscoveredTests(string assembly)
+    internal List<TestNode>? GetDiscoveredTests(string assembly)
     {
         lock (_discoveryLock)
         {
@@ -296,7 +297,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    private TimeSpan? CalculateAssemblyTimeout(List<TestNode> discoveredTests, ITimeoutValueCalculator timeoutCalc, string assembly)
+    internal TimeSpan? CalculateAssemblyTimeout(List<TestNode> discoveredTests, ITimeoutValueCalculator timeoutCalc, string assembly)
     {
         var estimatedTimeMs = (int)discoveredTests
             .Where(t => _testDescriptions.TryGetValue(t.Uid, out _))
@@ -317,7 +318,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         return TimeSpan.FromMilliseconds(timeoutMs);
     }
 
-    private async Task HandleAssemblyTimeoutAsync(string assembly, List<TestNode> discoveredTests, List<string> allTimedOutTests)
+    internal async Task HandleAssemblyTimeoutAsync(string assembly, List<TestNode> discoveredTests, List<string> allTimedOutTests)
     {
         _logger.LogDebug("{RunnerId}: Test run timed out for {Assembly}", RunnerId, Path.GetFileName(assembly));
         
@@ -336,7 +337,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    private void AggregateTestResults(
+    internal void AggregateTestResults(
         TestRunResult result,
         List<TestNode>? discoveredTests,
         List<string> allExecutedTests,
@@ -367,7 +368,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    private async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> ProcessSingleAssemblyAsync(
+    internal async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> ProcessSingleAssemblyAsync(
         string assembly,
         ITimeoutValueCalculator? timeoutCalc)
     {
@@ -441,7 +442,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    private ITestRunResult BuildFinalTestResult(
+    internal ITestRunResult BuildFinalTestResult(
         List<string> allExecutedTests,
         List<string> allFailedTests,
         List<string> allTimedOutTests,
@@ -486,7 +487,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             totalDuration);
     }
 
-    private async Task<(ITestRunResult Result, bool TimedOut)> RunTestsInternalAsync(
+    internal async Task<(ITestRunResult Result, bool TimedOut)> RunTestsInternalAsync(
         string assembly,
         Func<TestNode, bool>? testUidFilter,
         TimeSpan? timeout = null)
