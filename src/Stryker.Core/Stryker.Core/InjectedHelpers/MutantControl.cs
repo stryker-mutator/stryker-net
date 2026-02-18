@@ -24,12 +24,14 @@ namespace Stryker
         static MutantControl()
         {
             // Check for MTP file-based coverage mode at class initialization
-            _cachedCoverageFilePath = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_FILE") ?? string.Empty;
-            _coverageFilePathCached = true;
-
-            // Enable coverage capture if coverage file path is configured and valid (MTP runner mode)
-            if (!string.IsNullOrEmpty(_cachedCoverageFilePath) && IsValidCoveragePath(_cachedCoverageFilePath))
+            // Environment variable contains only the filename, not the full path
+            string coverageFileName = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_FILE") ?? string.Empty;
+            
+            if (!string.IsNullOrEmpty(coverageFileName))
             {
+                // Construct full path using temp directory
+                _cachedCoverageFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), coverageFileName);
+                _coverageFilePathCached = true;
                 CaptureCoverage = true;
                 
                 // Register for process exit to flush coverage data
@@ -116,83 +118,6 @@ namespace Stryker
         }
 
         /// <summary>
-        /// Validates that a file path is safe for writing coverage data.
-        /// Ensures the path is under the temp directory and follows expected naming pattern.
-        /// </summary>
-        private static bool IsValidCoveragePath(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                return false;
-            }
-
-            try
-            {
-                // Get the full path to normalize and canonicalize the path
-                string fullPath = System.IO.Path.GetFullPath(path);
-                string tempPath = System.IO.Path.GetFullPath(System.IO.Path.GetTempPath());
-
-                // Ensure temp path ends with directory separator for proper comparison
-                if (!tempPath.EndsWith(System.IO.Path.DirectorySeparatorChar.ToString()))
-                {
-                    tempPath = tempPath + System.IO.Path.DirectorySeparatorChar;
-                }
-
-                // Check if the file path starts with temp directory path
-                // Use case-insensitive comparison for Windows compatibility
-                if (fullPath.Length <= tempPath.Length)
-                {
-                    return false;
-                }
-
-                string fullPathLower = fullPath.ToLower();
-                string tempPathLower = tempPath.ToLower();
-                
-                if (!fullPathLower.StartsWith(tempPathLower))
-                {
-                    return false;
-                }
-
-                // Check for path traversal patterns in the remaining path
-                string remainingPath = fullPath.Substring(tempPath.Length);
-                if (remainingPath.IndexOf("..") >= 0)
-                {
-                    return false;
-                }
-
-                // Validate filename pattern (stryker-coverage-*.txt)
-                string fileName = System.IO.Path.GetFileName(fullPath);
-                if (fileName.Length < 17 || !fileName.ToLower().StartsWith("stryker-coverage-") ||
-                    !fileName.ToLower().EndsWith(".txt"))
-                {
-                    return false;
-                }
-
-                return true;
-            }
-            catch (System.ArgumentException)
-            {
-                // Invalid path characters or format
-                return false;
-            }
-            catch (System.IO.PathTooLongException)
-            {
-                // Path exceeds maximum length
-                return false;
-            }
-            catch (System.NotSupportedException)
-            {
-                // Path format not supported
-                return false;
-            }
-            catch
-            {
-                // Any other unexpected exception, consider path unsafe
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Gets coverage data and writes it to a file for MTP runner IPC.
         /// Called by MTP runner after each test completes.
         /// Format: "coveredMutants;staticMutants" (comma-separated IDs)
@@ -201,17 +126,17 @@ namespace Stryker
         {
             if (!_coverageFilePathCached)
             {
-                _cachedCoverageFilePath = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_FILE") ?? string.Empty;
+                // Environment variable contains only the filename
+                string coverageFileName = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_FILE") ?? string.Empty;
+                if (!string.IsNullOrEmpty(coverageFileName))
+                {
+                    // Construct full path using temp directory
+                    _cachedCoverageFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), coverageFileName);
+                }
                 _coverageFilePathCached = true;
             }
 
             if (string.IsNullOrEmpty(_cachedCoverageFilePath))
-            {
-                return;
-            }
-
-            // Validate the path before writing to prevent arbitrary file writes
-            if (!IsValidCoveragePath(_cachedCoverageFilePath))
             {
                 return;
             }

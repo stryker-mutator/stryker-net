@@ -124,10 +124,10 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             ["STRYKER_MUTANT_FILE"] = _mutantFilePath
         };
 
-        // Add coverage file path when in coverage mode
+        // Add coverage filename when in coverage mode (MutantControl will combine with temp path)
         if (_coverageMode)
         {
-            envVars["STRYKER_COVERAGE_FILE"] = _coverageFilePath;
+            envVars["STRYKER_COVERAGE_FILE"] = Path.GetFileName(_coverageFilePath);
         }
 
         return envVars;
