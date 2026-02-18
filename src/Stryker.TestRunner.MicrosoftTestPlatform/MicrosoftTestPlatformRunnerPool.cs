@@ -26,12 +26,14 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     private readonly Dictionary<string, MtpTestDescription> _testDescriptions = new();
     private readonly object _discoveryLock = new();
     private readonly ISingleRunnerFactory _runnerFactory;
+    private readonly IStrykerOptions _options;
 
     public IEnumerable<SingleMicrosoftTestPlatformRunner> Runners => _availableRunners;
 
     public MicrosoftTestPlatformRunnerPool(IStrykerOptions options, ILogger? logger = null, ISingleRunnerFactory? runnerFactory = null)
     {
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<MicrosoftTestPlatformRunnerPool>();
+        _options = options;
         _countOfRunners = Math.Max(1, options.Concurrency);
         _runnerFactory = runnerFactory ?? new DefaultRunnerFactory();
         _logger.LogWarning("The Microsoft Test Platform testrunner is currently in preview. Results should be verified since this feature is still being tested.");
@@ -58,7 +60,8 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
                 _testDescriptions,
                 _testSet,
                 _discoveryLock,
-                _logger);
+                _logger,
+                _options);
             _availableRunners.Add(runner);
             _runnerAvailableHandler.Set();
         });

@@ -38,7 +38,7 @@ internal sealed class AssemblyTestServer : IDisposable
         _logger = logger;
         _runnerId = runnerId;
         _options = options;
-        _connectionFactory = connectionFactory ?? new DefaultTestServerConnectionFactory();
+        _connectionFactory = connectionFactory ?? new DefaultTestServerConnectionFactory(options);
     }
 
     public bool IsInitialized => _isInitialized;

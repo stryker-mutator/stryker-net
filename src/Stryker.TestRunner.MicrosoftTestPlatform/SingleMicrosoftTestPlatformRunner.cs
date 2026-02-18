@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 using Stryker.TestRunner.Results;
@@ -25,6 +26,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     private readonly ILogger _logger;
     private readonly string _mutantFilePath;
     private readonly string _coverageFilePath;
+    private readonly IStrykerOptions? _options;
 
     private readonly Dictionary<string, AssemblyTestServer> _assemblyServers = new();
     private readonly object _serverLock = new();
@@ -39,7 +41,8 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         Dictionary<string, MtpTestDescription> testDescriptions,
         TestSet testSet,
         object discoveryLock,
-        ILogger logger)
+        ILogger logger,
+        IStrykerOptions? options = null)
     {
         _id = id;
         _testsByAssembly = testsByAssembly;
@@ -47,6 +50,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         _testSet = testSet;
         _discoveryLock = discoveryLock;
         _logger = logger;
+        _options = options;
 
         // Create unique file paths for this runner to communicate with the test process
         _mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-{_id}.txt");
@@ -239,7 +243,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
 
         var environmentVariables = BuildEnvironmentVariables();
-        server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId);
+        server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options);
 
         var started = await server.StartAsync().ConfigureAwait(false);
         if (!started)
