@@ -212,7 +212,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
             .Select(s => int.TryParse(s.Trim(), out var id) ? id : (int?)null)
             .Where(id => id.HasValue)
-            .Select(id => id!.Value)
+            .Select(id => id.Value)
             .ToList();
     }
 
