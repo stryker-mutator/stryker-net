@@ -24,12 +24,14 @@ namespace Stryker
         static MutantControl()
         {
             // Check for MTP file-based coverage mode at class initialization
-            _cachedCoverageFilePath = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_FILE") ?? string.Empty;
-            _coverageFilePathCached = true;
-
-            // Enable coverage capture if coverage file path is configured (MTP runner mode)
-            if (!string.IsNullOrEmpty(_cachedCoverageFilePath))
+            // Environment variable contains only the filename, not the full path
+            string coverageFileName = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_FILE") ?? string.Empty;
+            
+            if (!string.IsNullOrEmpty(coverageFileName))
             {
+                // Construct full path using temp directory
+                _cachedCoverageFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), coverageFileName);
+                _coverageFilePathCached = true;
                 CaptureCoverage = true;
                 
                 // Register for process exit to flush coverage data
@@ -124,7 +126,13 @@ namespace Stryker
         {
             if (!_coverageFilePathCached)
             {
-                _cachedCoverageFilePath = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_FILE") ?? string.Empty;
+                // Environment variable contains only the filename
+                string coverageFileName = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_FILE") ?? string.Empty;
+                if (!string.IsNullOrEmpty(coverageFileName))
+                {
+                    // Construct full path using temp directory
+                    _cachedCoverageFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), coverageFileName);
+                }
                 _coverageFilePathCached = true;
             }
 
