@@ -172,16 +172,25 @@ public static class IAnalyzerResultExtensions
 
     private static bool IsTestProject(this IAnalyzerResult analyzerResult)
     {
-        if (!bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestProject"), out var isTestProject))
+        if (bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestingPlatformApplication"), out var isTestingPlatformApplication) && isTestingPlatformApplication)
         {
-            isTestProject = Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n));
+            return true;
         }
 
-        var hasTestProjectTypeGuid = analyzerResult
-            .GetPropertyOrDefault("ProjectTypeGuids", "")
-            .Contains("{3AC096D0-A1C2-E12C-1390-A8335801FDAB}");
+        if (bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestProject"), out var isTestProject) && isTestProject)
+        {
+            return true;
+        }
 
-        return isTestProject || hasTestProjectTypeGuid;
+        if (Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n)))
+        {
+            return true;
+        }
+
+        const string TestProjectTypeGuid = "{3AC096D0-A1C2-E12C-1390-A8335801FDAB}";
+        return analyzerResult
+            .GetPropertyOrDefault("ProjectTypeGuids", "")
+            .Contains(TestProjectTypeGuid);
     }
 
     public static OutputKind GetOutputKind(this IAnalyzerResult analyzerResult) =>

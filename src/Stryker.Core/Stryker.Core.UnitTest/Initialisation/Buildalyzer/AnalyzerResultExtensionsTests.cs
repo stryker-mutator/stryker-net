@@ -143,4 +143,35 @@ public class AnalyzerResultExtensionsTests
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0003", reportDiagnostic));
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0004", reportDiagnostic));
     }
+
+    [TestMethod]
+    [DataRow("IsTestProject", "true", true)]
+    [DataRow("IsTestProject", "True", true)]
+    [DataRow("IsTestProject", "false", false)]
+    [DataRow("IsTestProject", "False", false)]
+    [DataRow("IsTestProject", "NotABoolean", false)]
+    [DataRow("IsTestProject", null, false)]
+    [DataRow("IsTestingPlatformApplication", "true", true)]
+    [DataRow("IsTestingPlatformApplication", "True", true)]
+    [DataRow("IsTestingPlatformApplication", "false", false)]
+    [DataRow("IsTestingPlatformApplication", "False", false)]
+    [DataRow("IsTestingPlatformApplication", "NotABoolean", false)]
+    [DataRow("IsTestingPlatformApplication", null, false)]
+    public void IsTestProject(string property, string value, bool expected)
+    {
+        // Arrange
+        var analyzerResult = Mock.Of<IAnalyzerResult>();
+        Mock.Get(analyzerResult)
+            .SetupGet(g => g.Properties)
+            .Returns(value == null ? [] : new Dictionary<string, string> { { property, value } });
+        Mock.Get(analyzerResult)
+            .SetupGet(g => g.PackageReferences)
+            .Returns(new Dictionary<string, IReadOnlyDictionary<string, string>>());
+
+        // Act
+        var isTestProject = IAnalyzerResultExtensions.IsTestProject([analyzerResult]);
+
+        // Assert
+        isTestProject.ShouldBe(expected);
+    }
 }
