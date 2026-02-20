@@ -167,11 +167,16 @@ internal sealed class AssemblyTestServer : IDisposable
             {
                 await _client.ExitAsync().ConfigureAwait(false);
                 // Coverage data must be flushed before disposing resources
-                await _client.WaitServerProcessExitAsync().WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                var timeout = TimeSpan.FromSeconds(30);
+                await _client.WaitServerProcessExitAsync().WaitAsync(timeout).ConfigureAwait(false);
+            }
+            catch (TimeoutException)
+            {
+                _logger.LogWarning("{RunnerId}: Test server process for {Assembly} did not exit within the expected time.", _runnerId, _assembly);
             }
             catch
             {
-                // Ignore errors during graceful shutdown
+                _logger.LogWarning("{RunnerId}: Test server process for {Assembly} could not be stopped gracefully.", _runnerId, _assembly);
             }
         }
 

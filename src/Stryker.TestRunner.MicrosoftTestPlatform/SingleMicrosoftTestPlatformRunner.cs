@@ -143,18 +143,18 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     /// </summary>
     public void SetCoverageMode(bool enabled)
     {
-        if (_coverageMode == enabled)
-        {
-            // Already in the desired state; no action needed
-            return;
-        }
-
-        _coverageMode = enabled;
-        _logger.LogDebug("{RunnerId}: Coverage mode {Status}", RunnerId, enabled ? "enabled" : "disabled");
-
-        // Reset servers to apply the new environment variables
         lock (_serverLock)
         {
+            if (_coverageMode == enabled)
+            {
+                // Already in the desired state; no action needed
+                return;
+            }
+
+            _coverageMode = enabled;
+            _logger.LogDebug("{RunnerId}: Coverage mode {Status}", RunnerId, enabled ? "enabled" : "disabled");
+
+            // Reset servers to apply the new environment variables
             foreach (var server in _assemblyServers.Values)
             {
                 server.Dispose();
@@ -227,7 +227,6 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
         catch (Exception ex)
         {
-            // Ignore cleanup errors
             _logger.LogWarning(ex, "{RunnerId}: Failed to delete coverage file at {Path}", RunnerId, _coverageFilePath);
         }
     }
