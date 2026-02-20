@@ -423,7 +423,7 @@ Options:";
     }
 
     [TestMethod]
-    [DataRow("--testrunner", "mtp")]
+    [DataRow("--test-runner", "mtp")]
     public async Task ShouldSupplyTestRunnerWhenPassed(params string[] argName)
     {
         await _target.RunAsync(argName);

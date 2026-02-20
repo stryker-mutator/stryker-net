@@ -87,6 +87,7 @@ stages:
     - task: SonarCloudPublish@4
       inputs:
         pollingTimeoutSec: '300'
+        
 - stage: PublishIntegrationtestPackage
   displayName: Publish Integrationtest Package
   dependsOn: UpdatePackageLockFiles
