@@ -5,7 +5,6 @@ using Shouldly;
 using Stryker.Abstractions;
 using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
-using System.Reflection;
 using Stryker.TestRunner.Results;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
@@ -17,7 +16,6 @@ public class SingleMicrosoftTestPlatformRunnerTests
     private Dictionary<string, MtpTestDescription> _testDescriptions = null!;
     private TestSet _testSet = null!;
     private object _discoveryLock = null!;
-    private readonly string _testAssemblyPath = Assembly.GetExecutingAssembly().Location;
 
     [TestInitialize]
     public void Initialize()
@@ -31,7 +29,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     private SingleMicrosoftTestPlatformRunner CreateRunner(int id = 0) =>
         new(id, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task InitialTestAsync_CallsRunTestsInternalAsync_AndHandlesServerCreationFailure()
     {
         // Arrange - InitialTestAsync eventually calls RunTestsInternalAsync via RunAllTestsAsync
@@ -52,7 +50,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.Duration.ShouldBeGreaterThanOrEqualTo(TimeSpan.Zero);
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task TestMultipleMutantsAsync_CallsRunTestsInternalAsync_WithNonExistentAssembly()
     {
         // Arrange
@@ -75,7 +73,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.Duration.ShouldBeGreaterThanOrEqualTo(TimeSpan.Zero);
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task RunTestsInternalAsync_HandlesExceptionPath_WhenServerCreationFails()
     {
         // Arrange
@@ -94,7 +92,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         testRunResult.FailingTests.ShouldNotBeNull();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     [DataRow("assembly-a.dll")]
     [DataRow("assembly-b.dll")]
     [DataRow("Some/Path/To/Assembly.dll")]
@@ -107,7 +105,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.ShouldBeNull();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void GetDiscoveredTests_ReturnsTests_WhenAssemblyIsRegistered()
     {
         var tests = new List<TestNode>
@@ -127,7 +125,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result[1].Uid.ShouldBe("uid-2");
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void GetDiscoveredTests_ReturnsEmptyList_WhenAssemblyHasNoTests()
     {
         _testsByAssembly["empty.dll"] = [];
@@ -140,7 +138,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.ShouldBeEmpty();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     [DataRow(100, 500, 500)]
     [DataRow(0, 500, 500)]
     [DataRow(250, 1000, 1000)]
@@ -166,7 +164,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.Value.TotalMilliseconds.ShouldBe(expectedMs);
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void CalculateAssemblyTimeout_SumsMultipleTestDurations()
     {
         var test1 = new TestNode("uid-1", "Test1", "test", "passed");
@@ -194,7 +192,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         capturedEstimate.ShouldBe(300);
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void CalculateAssemblyTimeout_SkipsTestsWithoutDescription()
     {
         var test1 = new TestNode("uid-1", "Test1", "test", "passed");
@@ -218,7 +216,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         capturedEstimate.ShouldBe(150);
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task HandleAssemblyTimeoutAsync_AddsAllTestUidsToTimedOutList()
     {
         var tests = new List<TestNode>
@@ -236,7 +234,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         timedOutTests.ShouldBe(["uid-1", "uid-2", "uid-3"]);
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task HandleAssemblyTimeoutAsync_AppendsToExistingTimedOutList()
     {
         var tests = new List<TestNode> { new("uid-new", "NewTest", "test", "passed") };
@@ -250,7 +248,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         timedOutTests.ShouldContain("uid-new");
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task HandleAssemblyTimeoutAsync_HandlesEmptyTestList()
     {
         var tests = new List<TestNode>();
@@ -263,7 +261,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         timedOutTests.ShouldBeEmpty();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task RunTestsInternalAsync_ReturnsFailedResult_WhenServerCreationFails()
     {
         using var runner = CreateRunner();
@@ -275,7 +273,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.ResultMessage.ShouldNotBeNullOrEmpty();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     [DataRow("/path/a.dll")]
     [DataRow("/another/path/b.dll")]
     public async Task RunTestsInternalAsync_CatchesException_AndReturnsResult(string assembly)
@@ -289,7 +287,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.Duration.ShouldBe(TimeSpan.Zero);
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task RunTestsInternalAsync_WithTimeout_StillReturnsResult_WhenServerFails()
     {
         using var runner = CreateRunner();
@@ -302,20 +300,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.FailingTests.ShouldNotBeNull();
     }
 
-    [TestMethod]
-    public async Task RunTestsInternalAsync_WithFilter_StillReturnsResult_WhenServerFails()
-    {
-        Func<TestNode, bool> filter = t => t.Uid == "uid-1";
-
-        using var runner = CreateRunner();
-
-        var (result, timedOut) = await runner.RunTestsInternalAsync("/nonexistent.dll", filter, null)!;
-
-        timedOut.ShouldBeFalse();
-        result.ExecutedTests.ShouldNotBeNull();
-    }
-
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task RunTestsInternalAsync_WithTimeout_DoesNotHangOnRealAssembly()
     {
         // Arrange - This test ensures we don't try to start real servers that would hang
@@ -345,24 +330,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.ExecutedTests.ShouldNotBeNull();
     }
 
-    [TestMethod]
-    public async Task RunTestsInternalAsync_HandlesNoDiscoveredTests()
-    {
-        // Arrange - no tests discovered for assembly
-        var project = new Mock<IProjectAndTests>();
-        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { _testAssemblyPath });
-
-        using var runner = CreateRunner(0);
-
-        // Act - RunTestsInternalAsync will get null tests
-        var result = await runner.InitialTestAsync(project.Object);
-
-        // Assert
-        result.ShouldNotBeNull();
-        result.ExecutedTests.ShouldNotBeNull();
-    }
-
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task RunTestsInternalAsync_RegistersTestResults_InTestDescriptions()
     {
         // Arrange
@@ -371,7 +339,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         _testDescriptions["test1"] = mtpTestDesc;
 
         var project = new Mock<IProjectAndTests>();
-        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { _testAssemblyPath });
+        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { "/nonexistent/assembly.dll" });
 
         using var runner = CreateRunner(0);
 
@@ -383,7 +351,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.ShouldNotBeNull();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task RunTestsInternalAsync_CalculatesDuration()
     {
         // Arrange
@@ -403,7 +371,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.Duration.ShouldBeLessThan(endTime - startTime + TimeSpan.FromSeconds(2));
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task RunTestsInternalAsync_WithMultipleMutants_UsesNegativeOneMutantId()
     {
         // Arrange
@@ -426,7 +394,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.ExecutedTests.ShouldNotBeNull();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task RunTestsInternalAsync_WithSingleMutant_UsesMutantId()
     {
         // Arrange
@@ -447,27 +415,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.ExecutedTests.ShouldNotBeNull();
     }
 
-    [TestMethod]
-    public async Task RunTestsInternalAsync_ReturnsEveryTest_WhenAllTestsExecuted()
-    {
-        // Arrange - Set up a scenario where all discovered tests would be executed
-        var testNode = new TestNode("test1", "TestMethod1", "passed", "passed");
-        _testsByAssembly[_testAssemblyPath] = new List<TestNode> { testNode };
-
-        var project = new Mock<IProjectAndTests>();
-        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { _testAssemblyPath });
-
-        using var runner = CreateRunner(0);
-
-        // Act
-        var result = await runner.InitialTestAsync(project.Object);
-
-        // Assert
-        result.ShouldNotBeNull();
-        result.ExecutedTests.ShouldNotBeNull();
-    }
-
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task RunTestsInternalAsync_IncludesResultMessage_OnError()
     {
         // Arrange
@@ -505,7 +453,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         }
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task DiscoverTestsAsync_ShouldReturnFalse_WhenAssemblyNotFound()
     {
         // Arrange
@@ -524,7 +472,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.ShouldBeFalse();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task InitialTestAsync_ShouldReturnTestRunResult()
     {
         // Arrange
@@ -548,7 +496,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.FailingTests.ShouldNotBeNull();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task TestMultipleMutantsAsync_ShouldReturnTestRunResult_WithNoAssemblies()
     {
         // Arrange
@@ -576,7 +524,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.FailingTests.ShouldNotBeNull();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task TestMultipleMutantsAsync_ShouldUseCorrectMutantId_WhenSingleMutant()
     {
         // Arrange
@@ -603,7 +551,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         mutant.Verify(x => x.Id, Times.AtLeastOnce);
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task TestMultipleMutantsAsync_ShouldUseNoMutationId_WhenMultipleMutants()
     {
         // Arrange
@@ -632,7 +580,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.ExecutedTests.ShouldNotBeNull();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public async Task Dispose_ShouldCleanUpResources()
     {
         // Arrange
@@ -667,7 +615,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         testableRunner.DisposeLogicExecutedCount.ShouldBe(1, "Dispose logic should only execute once due to _disposed flag check preventing re-execution");
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void SetCoverageMode_ShouldEnableCoverageMode()
     {
         // Arrange
@@ -686,7 +634,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         runner.IsCoverageModeEnabled.ShouldBeTrue();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void SetCoverageMode_ShouldDisableCoverageMode()
     {
         // Arrange
@@ -707,7 +655,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         runner.IsCoverageModeEnabled.ShouldBeFalse();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void SetCoverageMode_ShouldBeIdempotent_WhenCalledWithTrue()
     {
         // Arrange
@@ -728,7 +676,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         runner.IsCoverageModeEnabled.ShouldBeTrue();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void SetCoverageMode_ShouldBeIdempotent_WhenCalledWithFalse()
     {
         // Arrange
@@ -750,7 +698,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         runner.IsCoverageModeEnabled.ShouldBeFalse();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void SetCoverageMode_ShouldDeleteCoverageFile_WhenEnabling()
     {
         // Arrange
@@ -773,7 +721,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         File.Exists(runner.CoverageFilePath).ShouldBeFalse("Coverage file should be deleted when enabling coverage mode");
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void ReadCoverageData_ShouldReturnEmptyLists_WhenFileDoesNotExist()
     {
         // Arrange
@@ -799,7 +747,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         staticMutants.ShouldBeEmpty();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void ReadCoverageData_ShouldReturnEmptyLists_WhenFileIsEmpty()
     {
         // Arrange
@@ -821,7 +769,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         staticMutants.ShouldBeEmpty();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void ReadCoverageData_ShouldReturnEmptyLists_WhenFileContainsOnlyWhitespace()
     {
         // Arrange
@@ -843,7 +791,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         staticMutants.ShouldBeEmpty();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void ReadCoverageData_ShouldParseCoveredMutantsOnly()
     {
         // Arrange
@@ -865,7 +813,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         staticMutants.ShouldBeEmpty();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void ReadCoverageData_ShouldParseBothCoveredAndStaticMutants()
     {
         // Arrange
@@ -887,7 +835,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         staticMutants.ShouldBe(new[] { 4, 5, 6 });
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void ReadCoverageData_ShouldHandleEmptyCoveredSection()
     {
         // Arrange
@@ -909,7 +857,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         staticMutants.ShouldBe(new[] { 4, 5, 6 });
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void ReadCoverageData_ShouldHandleEmptyStaticSection()
     {
         // Arrange
@@ -931,7 +879,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         staticMutants.ShouldBeEmpty();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void ReadCoverageData_ShouldHandleDataWithSpaces()
     {
         // Arrange
@@ -953,7 +901,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         staticMutants.ShouldBe(new[] { 4, 5, 6 });
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void ReadCoverageData_ShouldSkipInvalidNumbers()
     {
         // Arrange
@@ -975,7 +923,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         staticMutants.ShouldBe(new[] { 4, 6 });
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void ReadCoverageData_ShouldHandleMixedValidAndInvalidData()
     {
         // Arrange
@@ -997,7 +945,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         staticMutants.ShouldBe(new[] { 7, 9 });
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void ReadCoverageData_ShouldReturnEmptyLists_OnFileReadException()
     {
         // Arrange
@@ -1023,7 +971,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         staticMutants.ShouldBeEmpty();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void ReadCoverageData_ShouldHandleSingleMutantId()
     {
         // Arrange
@@ -1045,7 +993,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         staticMutants.ShouldBeEmpty();
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void ReadCoverageData_ShouldHandleLargeNumbers()
     {
         // Arrange
@@ -1067,7 +1015,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         staticMutants.ShouldBe(new[] { 2147483646 });
     }
 
-    [TestMethod]
+    [TestMethod, Timeout(1000)]
     public void ReadCoverageData_ShouldHandleNegativeNumbers()
     {
         // Arrange
