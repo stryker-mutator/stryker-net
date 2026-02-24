@@ -23,10 +23,9 @@ public class SolutionFile
 
     public HashSet<string> GetBuildTypes() => _configurations.Keys.Select(x => x.buildType).ToHashSet();
 
-    public string FileName { get; init; } = string.Empty;
+    public string FileName { get; private init; } = string.Empty;
 
     private HashSet<string> GetPlatforms() => _configurations.Keys.Select(x => x.platform).ToHashSet();
-
 
     private string DefaultPlatform
     {
@@ -162,6 +161,20 @@ public class SolutionFile
             .ToImmutableList();
     }
 
+    public (string configuration, string platform) GetProjectConfiguration(string filename, string configuration, string platform)
+    {
+        configuration = GetEffectiveBuildType(configuration);
+        platform ??= DefaultPlatform;
+        foreach (var entry in _configurations)
+        {
+            if (entry.Value.TryGetValue(filename, out var projectConfig))
+            {
+                return (projectConfig.buildType, projectConfig.platform);
+            }
+        }
+        return (configuration, platform);
+    }
+
     /// <summary>
     /// Create a solution file from a list of projects having two build types, Debug and Release, and the provided platforms.
     /// </summary>
@@ -172,7 +185,7 @@ public class SolutionFile
     public static SolutionFile BuildFromProjectList(List<string> projects, string[]? platforms = null)
     {
         var result = new SolutionFile();
-        platforms ??= [ DefaultSolutionType, "x86" ];
+        platforms ??= [ "AnyCPU", "x86" ];
         // default to Debug|Any CPU
         string[] buildTypes = ["Debug", "Release"];
         foreach (var buildType in buildTypes)
@@ -184,7 +197,8 @@ public class SolutionFile
                 {
                     projectDict[project] = (buildType, platform);
                 }
-                result._configurations.Add((buildType, platform), projectDict);
+                var solutionPlatform = platform == "AnyCPU" ? "Any CPU" : platform;
+                result._configurations.Add((buildType, solutionPlatform), projectDict);
             }
         }
         return result;

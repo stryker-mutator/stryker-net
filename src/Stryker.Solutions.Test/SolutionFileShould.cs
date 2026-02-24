@@ -128,7 +128,7 @@ public sealed class SolutionFileShould
             Path.Combine("MicrosoftTestPlatform", "UnitTests.TUnit", "UnitTests.TUnit.csproj"),
         };
         solution.GetProjects("Debug").ShouldBe(expectedProjects, ignoreOrder: true);
-        
+
         var projectsWithDetails = solution.GetProjectsWithDetails("Debug").ToList();
         projectsWithDetails.Select(x => x.file).ShouldBe(expectedProjects, ignoreOrder: true);
         projectsWithDetails.All(x => x.buildType == "Debug").ShouldBeTrue();
@@ -165,7 +165,7 @@ public sealed class SolutionFileShould
 
         var match = solution.GetMatching("Debug", "x64");
         // Assert
-        match.ShouldBe(("Debug", "AnyCPU"));
+        match.ShouldBe(("Debug", "Any CPU"));
     }
 
     [TestMethod]
@@ -176,6 +176,6 @@ public sealed class SolutionFileShould
 
         var match = solution.GetMatching("Stryker", "x64");
         // Assert
-        match.ShouldBe(("Debug", "AnyCPU"));
+        match.ShouldBe(("Debug", "Any CPU"));
     }
 }

@@ -6,6 +6,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
 using Buildalyzer;
+using Buildalyzer.Environment;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -1567,7 +1568,7 @@ Please specify a test project name filter that results in one project.
         target.ResolveSourceProjectInfos(options);
 
         // Assert
-        managerMock.Verify(x => x.SetGlobalProperty("Platform", "x64"), Times.AtLeastOnce);
+        sourceProjectManagerMock.Verify(x => x.Build(It.Is<EnvironmentOptions>( env => env.GlobalProperties["Platform"] == "x64")), Times.AtLeastOnce);
     }
 
     [TestMethod]
@@ -1642,7 +1643,7 @@ Please specify a test project name filter that results in one project.
         target.ResolveSourceProjectInfos(options);
 
         // Assert
-        managerMock.Verify(x => x.SetGlobalProperty("Platform", "x64"), Times.AtLeastOnce);
+        sourceProjectManagerMock.Verify(x => x.Build(It.Is<EnvironmentOptions>( env => env.GlobalProperties["Platform"] == "x64")), Times.AtLeastOnce);
     }
 
     [TestMethod]
@@ -1716,7 +1717,7 @@ Please specify a test project name filter that results in one project.
         target.ResolveSourceProjectInfos(options);
 
         // Assert: Buildalyzer receives the solution-normalized platform "x86", not the requested "x64"
-        analyzerManagerMock.Verify(x => x.SetGlobalProperty("Platform", "x86"), Times.AtLeastOnce);
-        analyzerManagerMock.Verify(x => x.SetGlobalProperty("Platform", "x64"), Times.Never);
+        sourceProjectManagerMock.Verify(x => x.Build(It.Is<EnvironmentOptions>( env => env.GlobalProperties["Platform"] == "x86")), Times.AtLeastOnce);
+        sourceProjectManagerMock.Verify(x => x.Build(It.Is<EnvironmentOptions>( env => env.GlobalProperties["Platform"] == "x64")), Times.Never);
     }
 }
