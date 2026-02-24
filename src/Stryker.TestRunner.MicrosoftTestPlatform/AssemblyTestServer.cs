@@ -172,7 +172,8 @@ internal sealed class AssemblyTestServer : IDisposable
             }
             catch (TimeoutException exception)
             {
-                _logger.LogWarning(exception, "{RunnerId}: Test server process for {Assembly} did not exit within the expected time.", _runnerId, _assembly);
+                _logger.LogWarning(exception, "{RunnerId}: Test server process for {Assembly} did not exit within the expected time. Killing forcefully.", _runnerId, _assembly);
+                _process?.ProcessHandle.Kill(); // Force kill if it doesn't exit gracefully
             }
             catch (Exception exception)
             {
