@@ -170,13 +170,13 @@ internal sealed class AssemblyTestServer : IDisposable
                 var timeout = TimeSpan.FromSeconds(30);
                 await _client.WaitServerProcessExitAsync().WaitAsync(timeout).ConfigureAwait(false);
             }
-            catch (TimeoutException)
+            catch (TimeoutException exception)
             {
-                _logger.LogWarning("{RunnerId}: Test server process for {Assembly} did not exit within the expected time.", _runnerId, _assembly);
+                _logger.LogWarning(exception, "{RunnerId}: Test server process for {Assembly} did not exit within the expected time.", _runnerId, _assembly);
             }
-            catch
+            catch (Exception exception)
             {
-                _logger.LogWarning("{RunnerId}: Test server process for {Assembly} could not be stopped gracefully.", _runnerId, _assembly);
+                _logger.LogWarning(exception, "{RunnerId}: Test server process for {Assembly} could not be stopped gracefully.", _runnerId, _assembly);
             }
         }
 
