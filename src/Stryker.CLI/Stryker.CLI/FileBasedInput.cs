@@ -82,7 +82,7 @@ public class FileBasedInput : IExtraData
     [JsonPropertyName("test-case-filter")]
     public string TestCaseFilter { get; init; }
 
-    [JsonPropertyName("testrunner")]
+    [JsonPropertyName("test-runner")]
     public string TestRunner { get; init; }
 
     [JsonPropertyName("ignore-mutations")]
