@@ -593,11 +593,11 @@ public class SingleMicrosoftTestPlatformRunnerTests
             NullLogger.Instance);
 
         // Verify mutant file was created
-        testableRunner.MutantFilePath.ShouldNotBeNull();
-        var mutantFilePath = testableRunner.MutantFilePath;
+        TestableRunner.MutantFilePath.ShouldNotBeNull();
+        var mutantFilePath = TestableRunner.MutantFilePath;
 
         // Create the mutant file manually to test deletion
-        File.WriteAllText(mutantFilePath, "-1");
+        await File.WriteAllTextAsync(mutantFilePath, "-1");
         File.Exists(mutantFilePath).ShouldBeTrue("Mutant file should exist before disposal");
 
         // Act
@@ -1054,7 +1054,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
 
         public bool DisposedFlagWasSet { get; private set; }
         public int DisposeLogicExecutedCount => _disposeLogicExecutedCount;
-        public string MutantFilePath => Path.Combine(Path.GetTempPath(), $"stryker-mutant-123.txt");
+        public static string MutantFilePath => Path.Combine(Path.GetTempPath(), $"stryker-mutant-123.txt");
 
         public override void Dispose(bool disposing)
         {
