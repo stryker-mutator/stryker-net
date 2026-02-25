@@ -20,8 +20,9 @@ internal interface ITestServerConnectionFactory
 
     /// <summary>
     /// Creates an <see cref="ITestingPlatformClient"/> from an accepted TCP connection and process handle.
+    /// When <paramref name="rpcLogFilePath"/> is non-null, all JSON-RPC frames are traced to that file.
     /// </summary>
-    ITestingPlatformClient CreateClient(Stream stream, IProcessHandle processHandle, bool enableDiagnostic);
+    ITestingPlatformClient CreateClient(Stream stream, IProcessHandle processHandle, string? rpcLogFilePath);
 }
 
 /// <summary>

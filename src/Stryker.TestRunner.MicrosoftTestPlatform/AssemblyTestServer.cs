@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Serilog.Events;
 using Stryker.Abstractions.Options;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
@@ -77,8 +76,8 @@ internal sealed class AssemblyTestServer : IDisposable
 
             (_stream, _connection) = await acceptTask.ConfigureAwait(false);
 
-            var enableDiagnostic = _options?.LogOptions.LogLevel == LogEventLevel.Verbose;
-            _client = _connectionFactory.CreateClient(_stream, _process.ProcessHandle, enableDiagnostic);
+            var rpcLogFilePath = BuildRpcLogFilePath();
+            _client = _connectionFactory.CreateClient(_stream, _process.ProcessHandle, rpcLogFilePath);
 
             await _client.InitializeAsync().ConfigureAwait(false);
             _isInitialized = true;
@@ -193,6 +192,21 @@ internal sealed class AssemblyTestServer : IDisposable
         _process?.Dispose();
         _process = null;
         _isInitialized = false;
+    }
+
+    /// <summary>
+    /// Returns a per-instance RPC trace log path when log-to-file is enabled, or null otherwise.
+    /// </summary>
+    private string? BuildRpcLogFilePath()
+    {
+        if (_options?.LogOptions.LogToFile != true || string.IsNullOrEmpty(_options.OutputPath))
+        {
+            return null;
+        }
+
+        var logsDirectory = Path.Combine(_options.OutputPath, "logs", "test-servers");
+        var fileName = $"rpc-{Path.GetFileNameWithoutExtension(_assembly)}-{_runnerId}-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}.log";
+        return Path.Combine(logsDirectory, fileName);
     }
 
     public void Dispose()

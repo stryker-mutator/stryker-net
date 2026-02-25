@@ -65,7 +65,7 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
         return new CliTestServerProcess(cliProcess, outputStream);
     }
 
-    public ITestingPlatformClient CreateClient(Stream stream, IProcessHandle processHandle, bool enableDiagnostic)
+    public ITestingPlatformClient CreateClient(Stream stream, IProcessHandle processHandle, string? rpcLogFilePath)
     {
         var rpc = new JsonRpc(new HeaderDelimitedMessageHandler(stream, stream, new SystemTextJsonFormatter
         {
@@ -73,7 +73,7 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
         }));
 
         var tcpClient = new TcpClient();
-        return new TestingPlatformClient(rpc, tcpClient, processHandle, enableDiagnostic);
+        return new TestingPlatformClient(rpc, tcpClient, processHandle, rpcLogFilePath);
     }
 
     private sealed class TcpTestServerListener(TcpListener listener) : ITestServerListener

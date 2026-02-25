@@ -18,7 +18,7 @@ public sealed class TestingPlatformClient : ITestingPlatformClient
     private readonly TargetHandler _targetHandler = new();
     private readonly StringBuilder _disconnectionReason = new();
 
-    public TestingPlatformClient(JsonRpc jsonRpc, TcpClient tcpClient, IProcessHandle processHandler, bool enableDiagnostic = false)
+    public TestingPlatformClient(JsonRpc jsonRpc, TcpClient tcpClient, IProcessHandle processHandler, string? rpcLogFilePath = null)
     {
         JsonRpcClient = jsonRpc;
         _tcpClient = tcpClient;
@@ -30,10 +30,10 @@ public sealed class TestingPlatformClient : ITestingPlatformClient
                 MethodNameTransform = CommonMethodNameTransforms.CamelCase,
             });
 
-        if (enableDiagnostic)
+        if (rpcLogFilePath is not null)
         {
             JsonRpcClient.TraceSource.Switch.Level = SourceLevels.All;
-            JsonRpcClient.TraceSource.Listeners.Add(new ConsoleRpcListener());
+            JsonRpcClient.TraceSource.Listeners.Add(new FileRpcListener(rpcLogFilePath));
         }
 
         JsonRpcClient.Disconnected += JsonRpcClient_Disconnected;
