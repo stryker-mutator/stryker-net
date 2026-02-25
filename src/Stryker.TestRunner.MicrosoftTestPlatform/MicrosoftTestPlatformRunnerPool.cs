@@ -26,15 +26,17 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     private readonly Dictionary<string, MtpTestDescription> _testDescriptions = new();
     private readonly object _discoveryLock = new();
     private readonly ISingleRunnerFactory _runnerFactory;
+    private readonly IStrykerOptions _options;
 
     public IEnumerable<SingleMicrosoftTestPlatformRunner> Runners => _availableRunners;
 
     public MicrosoftTestPlatformRunnerPool(IStrykerOptions options, ILogger? logger = null, ISingleRunnerFactory? runnerFactory = null)
     {
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<MicrosoftTestPlatformRunnerPool>();
+        _options = options;
         _countOfRunners = Math.Max(1, options.Concurrency);
         _runnerFactory = runnerFactory ?? new DefaultRunnerFactory();
-        _logger.LogWarning("The Microsoft Test Platform testrunner is currently in preview. Coverage analysis is currently unsupported and results should be verified since this feature is still being tested.");
+        _logger.LogWarning("The Microsoft Test Platform testrunner is currently in preview. Results should be verified since this feature is still being tested.");
 
         Initialize();
     }
@@ -49,7 +51,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     private void Initialize()
     {
-        // Create and initialize all runners in parallel because of file IO during initialization
+        // Create and initialize all runners in parallel to speed up startup time
         Parallel.For(0, _countOfRunners, (int i, ParallelLoopState _) =>
         {
             var runner = _runnerFactory.CreateRunner(
@@ -58,7 +60,8 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
                 _testDescriptions,
                 _testSet,
                 _discoveryLock,
-                _logger);
+                _logger,
+                _options);
             _availableRunners.Add(runner);
             _runnerAvailableHandler.Set();
         });
@@ -94,13 +97,66 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project)
     {
-        return _testDescriptions.Values.Select(testDescription =>
-            CoverageRunResult.Create(
-                testDescription.Id,
-                CoverageConfidence.Dubious,
-                [],
-                [],
-                []));
+        _logger.LogInformation("Starting coverage capture for MTP runner");
+
+        // Enable coverage mode on all runners
+        foreach (var runner in _availableRunners)
+        {
+            runner.SetCoverageMode(true);
+        }
+
+        try
+        {
+            // Run all tests with coverage tracking enabled
+            var testResult = RunThisAsync(runner => runner.InitialTestAsync(project)).GetAwaiter().GetResult();
+
+            if (testResult.FailingTests.IsEveryTest)
+            {
+                _logger.LogWarning("Coverage test run failed: {Message}", testResult.ResultMessage);
+            }
+
+            // Reset test processes to trigger coverage file flush (process exit writes coverage)
+            ResetTestProcesses();
+
+            // Aggregate coverage data from all runners
+            var allCoveredMutants = new HashSet<int>();
+            var allStaticMutants = new HashSet<int>();
+
+            foreach (var runner in _availableRunners)
+            {
+                var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+                foreach (var mutantId in coveredMutants)
+                {
+                    allCoveredMutants.Add(mutantId);
+                }
+                foreach (var mutantId in staticMutants)
+                {
+                    allStaticMutants.Add(mutantId);
+                }
+            }
+
+            _logger.LogInformation("Coverage capture complete: {CoveredCount} mutations covered, {StaticCount} static mutations",
+                allCoveredMutants.Count, allStaticMutants.Count);
+
+            // For cumulative coverage, we return a single coverage result that applies to all tests
+            // Each test is assumed to cover all the mutations that were covered during the full test run
+            // Static mutants are marked as such for proper handling during mutation testing
+            return _testDescriptions.Values.Select(testDescription =>
+                CoverageRunResult.Create(
+                    testDescription.Id,
+                    CoverageConfidence.Normal,
+                    allCoveredMutants,
+                    allStaticMutants,
+                    []));
+        }
+        finally
+        {
+            // Disable coverage mode on all runners for subsequent mutation testing
+            foreach (var runner in _availableRunners)
+            {
+                runner.SetCoverageMode(false);
+            }
+        }
     }
 
     public async Task<ITestRunResult> TestMultipleMutantsAsync(

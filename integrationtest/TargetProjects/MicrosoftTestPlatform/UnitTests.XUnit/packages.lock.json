@@ -4,12 +4,12 @@
     "net10.0": {
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
-        "requested": "[18.0.1, )",
-        "resolved": "18.0.1",
-        "contentHash": "WNpu6vI2rA0pXY4r7NKxCN16XRWl5uHu6qjuyVLoDo6oYEggIQefrMjkRuibQHm/NslIUNCcKftvoWAN80MSAg==",
+        "requested": "[18.3.0, )",
+        "resolved": "18.3.0",
+        "contentHash": "xW3kXuWRQtgoxJp4J+gdhHSQyK+6Wb/AZDSd7lMvuMRYlZ1tnpkojyfZlWilB5G4dmZ0Y0ZxU/M23TlubndNkw==",
         "dependencies": {
-          "Microsoft.CodeCoverage": "18.0.1",
-          "Microsoft.TestPlatform.TestHost": "18.0.1"
+          "Microsoft.CodeCoverage": "18.3.0",
+          "Microsoft.TestPlatform.TestHost": "18.3.0"
         }
       },
       "xunit.v3": {
@@ -46,8 +46,8 @@
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
-        "resolved": "18.0.1",
-        "contentHash": "O+utSr97NAJowIQT/OVp3Lh9QgW/wALVTP4RG1m2AfFP4IyJmJz0ZBmFJUsRQiAPgq6IRC0t8AAzsiPIsaUDEA=="
+        "resolved": "18.3.0",
+        "contentHash": "23BNy/vziREC20Wwhb50K7+kZe0m07KlLWDQv4qjJ9tt3QjpDpDIqJFrhYHmMEo9xDkuSp55U/8h4bMF7MiB+g=="
       },
       "Microsoft.Testing.Extensions.Telemetry": {
         "type": "Transitive",
@@ -81,15 +81,15 @@
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Transitive",
-        "resolved": "18.0.1",
-        "contentHash": "qT/mwMcLF9BieRkzOBPL2qCopl8hQu6A1P7JWAoj/FMu5i9vds/7cjbJ/LLtaiwWevWLAeD5v5wjQJ/l6jvhWQ=="
+        "resolved": "18.3.0",
+        "contentHash": "AEIEX2aWdPO9XbtR96eBaJxmXRD9vaI9uQ1T/JbPEKlTAZwYx0ZrMzKyULMdh/HH9Sg03kXCoN7LszQ90o6nPQ=="
       },
       "Microsoft.TestPlatform.TestHost": {
         "type": "Transitive",
-        "resolved": "18.0.1",
-        "contentHash": "uDJKAEjFTaa2wHdWlfo6ektyoh+WD4/Eesrwb4FpBFKsLGehhACVnwwTI4qD3FrIlIEPlxdXg3SyrYRIcO+RRQ==",
+        "resolved": "18.3.0",
+        "contentHash": "twmsoelXnp1uWMU3VGip9f0Jr1mZ0PZqgJdF35CIrdYgYrkHIJMV1m8uKyhcdjLdsQDESHAgkR7KhS9i1qpJag==",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "18.0.1",
+          "Microsoft.TestPlatform.ObjectModel": "18.3.0",
           "Newtonsoft.Json": "13.0.3"
         }
       },
@@ -105,8 +105,8 @@
       },
       "Serilog": {
         "type": "Transitive",
-        "resolved": "4.3.0",
-        "contentHash": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ=="
+        "resolved": "4.3.1",
+        "contentHash": "savYe7h5yRlkqBVOwP8cIRDOdqKiPmYCU4W87JH38sBmcKD5EBoXvQIw6bNEvZ/pTe1gsiye3VFCzBsoppGkXQ=="
       },
       "xunit.analyzers": {
         "type": "Transitive",
@@ -183,7 +183,7 @@
         "dependencies": {
           "Library": "[1.0.0, )",
           "Microsoft.CodeAnalysis.Common": "[5.0.0, )",
-          "Serilog": "[4.3.0, )"
+          "Serilog": "[4.3.1, )"
         }
       }
     }

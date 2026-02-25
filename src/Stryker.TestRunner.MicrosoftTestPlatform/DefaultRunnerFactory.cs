@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Stryker.Abstractions.Options;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 using Stryker.TestRunner.Tests;
 
@@ -15,7 +16,8 @@ public interface ISingleRunnerFactory
         Dictionary<string, MtpTestDescription> testDescriptions,
         TestSet testSet,
         object discoveryLock,
-        ILogger logger);
+        ILogger logger,
+        IStrykerOptions? options = null);
 }
 
 /// <summary>
@@ -29,7 +31,8 @@ public class DefaultRunnerFactory : ISingleRunnerFactory
         Dictionary<string, MtpTestDescription> testDescriptions,
         TestSet testSet,
         object discoveryLock,
-        ILogger logger) =>
-        new(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger);
+        ILogger logger,
+        IStrykerOptions? options = null) =>
+        new(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger, options);
 }
 

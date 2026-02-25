@@ -113,6 +113,9 @@ public class InputFileResolver : IInputFileResolver
         string normalizedProjectUnderTestNameFilter)
     {
         SolutionInfo solutionInfo = null;
+        var configuration = options.Configuration;
+        // "Any CPU" is the solution-level name; MSBuild requires "AnyCPU"
+        var platform = NormalizePlatform(options.Platform);
 
         // identify the target configuration and platform
         if (solution != null)
@@ -120,6 +123,8 @@ public class InputFileResolver : IInputFileResolver
             var (actualBuildType, actualPlatform) = solution.GetMatching(options.Configuration, options.Platform);
             _logger.LogDebug("Using solution configuration/platform '{Configuration}|{Platform}'.", actualBuildType, actualPlatform);
             solutionInfo = new SolutionInfo(solution.FileName, actualBuildType, actualPlatform);
+            configuration = actualBuildType;
+            platform = NormalizePlatform(actualPlatform);
         }
 
         // we analyze the test project(s) and identify the project to be mutated
@@ -128,8 +133,8 @@ public class InputFileResolver : IInputFileResolver
             : [FindTestProject(options.ProjectPath)];
 
         _logger.LogInformation("Analyzing {ProjectCount} test project(s).", testProjectFileNames.Count);
-        List<(string projectFile, string framework, string configuration)> projectList =
-            [..testProjectFileNames.Select(p => (p, options.TargetFramework, options.Configuration))];
+        List<(string projectFile, string framework, string configuration, string platform)> projectList =
+            [..testProjectFileNames.Select(p => (p, options.TargetFramework, configuration, platform))];
         // if test project is provided but no source project
         var targetProjectMode = testProjectsSpecified && string.IsNullOrEmpty(options.SourceProjectName);
         if (targetProjectMode)
@@ -204,7 +209,7 @@ public class InputFileResolver : IInputFileResolver
         var solutionInfo = new SolutionInfo(solution.FileName, actualBuildType, actualPlatform);
         // analyze all projects
         var projectsWithDetails = solution.GetProjectsWithDetails(actualBuildType, actualPlatform)
-            .Select(p => (p.file, options.TargetFramework, p.buildType)).ToList();
+            .Select(p => (p.file, options.TargetFramework, p.buildType, NormalizePlatform(p.platform))).ToList();
 
         _logger.LogDebug("Analyzing {0} projects.", projectsWithDetails.Count);
         // we match test projects to mutable projects
@@ -245,7 +250,7 @@ public class InputFileResolver : IInputFileResolver
                 !r.Key.IsValid() || r.Value.All(r2 => !r2.IsValid())))
         {
             // no mutable project found
-            LogAnalysis(findMutableAnalyzerResults, unusedTestProjects);
+            LogAnalysis(findMutableAnalyzerResults, unusedTestProjects, options.DiagMode);
             throw new InputException("Failed to analyze project builds. Stryker cannot continue.");
         }
 
@@ -269,7 +274,8 @@ public class InputFileResolver : IInputFileResolver
     }
 
     // Log the analysis results
-    private void LogAnalysis(Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults, List<IAnalyzerResult> unusedTestProjects)
+    private void LogAnalysis(Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults,
+        List<IAnalyzerResult> unusedTestProjects, bool optionsDiagMode)
     {
         if (findMutableAnalyzerResults.Count == 0)
         {
@@ -288,27 +294,26 @@ public class InputFileResolver : IInputFileResolver
             {
                 _logger.LogWarning("  can't be mutated because no test project references it. If this is a test project, " +
                                    "ensure it has the property: <IsTestProject>true</IsTestProject> in its project file.");
+                continue;
+            }
+            // dump associated test projects
+            foreach (var testProject in testProjects)
+            {
+                _logger.LogInformation("  referenced by test project {ProjectName}, analysis {Result}.",
+                    testProject.ProjectFilePath,
+                    testProject.IsValid() ? "succeeded" : "failed");
+            }
+            // provide synthetic status
+            if (testProjects.Any(r => r.IsValid()))
+            {
+                _logger.LogInformation("  can be mutated.");
             }
             else
             {
-                foreach (var testProject in testProjects)
-                {
-                    _logger.LogInformation("  referenced by test project {ProjectName}, analysis {Result}.",
-                        testProject.ProjectFilePath,
-                        testProject.IsValid() ? "succeeded" : "failed");
-                }
-
-                if (testProjects.Any(r => r.IsValid()))
-                {
-                    _logger.LogInformation("  can be mutated.");
-                }
-                else
-                {
-                    _logger.LogWarning("  can't be mutated because all referencing test projects' analysis failed.");
-                }
+                _logger.LogWarning("  can't be mutated because all referencing test projects' analysis failed.");
             }
         }
-
+        // dump test projects that do not reference any mutable project
         foreach (var unusedTestProject in unusedTestProjects)
         {
             _logger.LogInformation("Test project {ProjectName} does not appear to test any mutable project, analysis {Result}.",
@@ -316,16 +321,20 @@ public class InputFileResolver : IInputFileResolver
                 unusedTestProject.IsValid() ? "succeeded" : "failed");
         }
 
-        _logger.LogWarning("Use --diag option to have the analysis logs in the log file.");
+        if (!optionsDiagMode)
+        {
+            _logger.LogWarning("Use --diag option to have the analysis logs in the log file.");
+        }
     }
 
     private ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> AnalyzeAllNeededProjects(
-        List<(string projectFile, string framework, string configuration)> projects, string normalizedProjectUnderTestNameFilter,
+        List<(string projectFile, string framework, string configuration, string platform)> projects, string normalizedProjectUnderTestNameFilter,
         IStrykerOptions options, ScanMode mode)
     {
         var mutableProjectsAnalyzerResults = new ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)>();
-        var list = new DynamicEnumerableQueue<(string projectFile, string framework, string configuration)>(projects);
+        var list = new DynamicEnumerableQueue<(string projectFile, string framework, string configuration, string platform)>(projects);
         const string Configuration = "Configuration";
+        const string Platform = "Platform";
         try
         {
             var parallelOptions = new ParallelOptions
@@ -344,6 +353,12 @@ public class InputFileResolver : IInputFileResolver
                             manager.SetGlobalProperty(Configuration, entry.configuration);
                         }
 
+                        // specify platform if any provided
+                        if (!string.IsNullOrEmpty(entry.platform))
+                        {
+                            manager.SetGlobalProperty(Platform, entry.platform);
+                        }
+
                         var buildResult = AnalyzeThisProject(manager.GetProject(entry.projectFile),
                             entry.framework,
                             normalizedProjectUnderTestNameFilter,
@@ -351,7 +366,7 @@ public class InputFileResolver : IInputFileResolver
                             options,
                             mutableProjectsAnalyzerResults);
                         // scan references if recursive scan is enabled
-                        ScanReferences(mode, buildResult).ForEach(p => list.Add((p, entry.framework, options.Configuration)));
+                        ScanReferences(mode, buildResult).ForEach(p => list.Add((p, entry.framework, options.Configuration, entry.platform)));
                     }
                 );
             }
@@ -789,6 +804,9 @@ public class InputFileResolver : IInputFileResolver
     }
 
     private static string NormalizePath(string path) => path?.Replace('\\', '/');
+
+    private static string NormalizePlatform(string platform) =>
+        string.Equals(platform, "Any CPU", StringComparison.OrdinalIgnoreCase) ? "AnyCPU" : platform;
 
     private sealed class DynamicEnumerableQueue<T>
     {

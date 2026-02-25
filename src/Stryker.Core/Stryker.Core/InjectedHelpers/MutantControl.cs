@@ -1,5 +1,10 @@
 namespace Stryker
 {
+    /// <summary>
+    /// A static class used for controlling mutant activation and coverage tracking at runtime.
+    /// It supports both environment variable-based control (for VSTest runner) and file-based control (for MTP runner with process reuse).
+    /// It should only use C# features up to v2 to ensure compatibility with the widest range of projects it is injected into.
+    /// </summary>
     public static class MutantControl
     {
         private static System.Collections.Generic.List<int> _coveredMutants = new System.Collections.Generic.List<int>();
@@ -11,10 +16,37 @@ namespace Stryker
         private static string _cachedMutantFilePath = string.Empty;
         private static bool _mutantFilePathCached;
 
+        // Coverage file path for MTP runner (file-based IPC)
+        private static string _cachedCoverageFilePath = string.Empty;
+        private static bool _coverageFilePathCached;
+        private static bool _processExitRegistered;
+
         // this attribute will be set by the Stryker Data Collector before each test
         public static bool CaptureCoverage;
         public static int ActiveMutant = -2;
         public const int ActiveMutantNotInitValue = -2;
+
+        static MutantControl()
+        {
+            // Check for MTP file-based coverage mode at class initialization
+            // Environment variable contains only the filename, not the full path
+            string coverageFileName = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_FILE") ?? string.Empty;
+            
+            if (!string.IsNullOrEmpty(coverageFileName))
+            {
+                // Construct full path using temp directory
+                _cachedCoverageFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), coverageFileName);
+                _coverageFilePathCached = true;
+                CaptureCoverage = true;
+                
+                // Register for process exit to flush coverage data
+                if (!_processExitRegistered)
+                {
+                    System.AppDomain.CurrentDomain.ProcessExit += delegate { FlushCoverageToFile(); };
+                    _processExitRegistered = true;
+                }
+            }
+        }
 
         public static void InitCoverage()
         {
@@ -88,6 +120,48 @@ namespace Stryker
             System.Collections.Generic.IList<int>[] result = new System.Collections.Generic.IList<int>[] { _coveredMutants, _coveredStaticMutants };
             ResetCoverage();
             return result;
+        }
+
+        /// <summary>
+        /// Writes accumulated coverage data to a file for MTP runner IPC.
+        /// Called automatically on process exit to capture all coverage from tests run in this process.
+        /// Format: "coveredMutants;staticMutants" (comma-separated IDs)
+        /// </summary>
+        public static void FlushCoverageToFile()
+        {
+            if (!_coverageFilePathCached)
+            {
+                // Environment variable contains only the filename
+                string coverageFileName = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_FILE") ?? string.Empty;
+                if (!string.IsNullOrEmpty(coverageFileName))
+                {
+                    // Construct full path using temp directory
+                    _cachedCoverageFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), coverageFileName);
+                }
+                _coverageFilePathCached = true;
+            }
+
+            if (string.IsNullOrEmpty(_cachedCoverageFilePath))
+            {
+                return;
+            }
+
+            try
+            {
+                lock (_coverageLock)
+                {
+                    string covered = string.Join(",", _coveredMutants);
+                    string staticMutants = string.Join(",", _coveredStaticMutants);
+                    string content = covered + ";" + staticMutants;
+                    System.IO.File.WriteAllText(_cachedCoverageFilePath, content);
+                    ResetCoverage();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                // Do not fail tests due to coverage write issues; log for diagnostics instead.
+                System.Diagnostics.Debug.WriteLine(string.Format("[Stryker] Failed to flush coverage to file '{0}': {1}", _cachedCoverageFilePath, ex));
+            }
         }
 
         private static void CurrentDomain_ProcessExit(object sender, System.EventArgs e)
