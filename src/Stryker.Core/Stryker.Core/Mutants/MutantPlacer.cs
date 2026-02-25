@@ -152,6 +152,20 @@ public class MutantPlacer
         throw new InvalidOperationException($"Unable to find an engine to remove injection from this node: '{nodeToRemove}'");
     }
 
+    public static SyntaxNode RemoveMutation(SyntaxNode nodeToRemove)
+    {
+        var annotatedNode = nodeToRemove.GetAnnotatedNodes(Injector).FirstOrDefault();
+        if (annotatedNode != null)
+        {
+            var id = annotatedNode.GetAnnotations(Injector).First().Data;
+            if (!string.IsNullOrEmpty(id))
+            {
+                return instrumentEngines[id].engine.RemoveInstrumentationFrom(nodeToRemove.SyntaxTree.GetRoot(), annotatedNode);
+            }
+        }
+        throw new InvalidOperationException($"Unable to find an engine to remove injection from this node: '{nodeToRemove}'");
+    }
+
     /// <summary>
     /// Returns true if the node contains a mutation requiring all child mutations to be removed when it has to be removed
     /// </summary>

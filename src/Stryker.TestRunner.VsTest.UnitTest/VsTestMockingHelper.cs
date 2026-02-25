@@ -56,7 +56,7 @@ public class VsTestMockingHelper : TestBase
 
     public VsTestMockingHelper()
     {
-        var currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        var currentDirectory = ".";Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         _filesystemRoot = Path.GetPathRoot(currentDirectory);
 
         var sourceFile = File.ReadAllText(currentDirectory + "/TestResources/ExampleSourceFile.cs");

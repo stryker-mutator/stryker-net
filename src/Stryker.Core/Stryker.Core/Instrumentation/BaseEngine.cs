@@ -46,4 +46,10 @@ internal abstract class BaseEngine<T> : IInstrumentCode where T : CSharpSyntaxNo
         }
         throw new InvalidOperationException($"Expected a {typeof(T).Name}, found:\n{node.ToFullString()}.");
     }
+
+    public virtual SyntaxNode RemoveInstrumentationFrom(SyntaxNode tree, SyntaxNode instrumentation)
+    {
+        var restoredNode = RemoveInstrumentation(instrumentation);
+        return tree.ReplaceNode(instrumentation, restoredNode);
+    }
 }

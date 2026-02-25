@@ -21,4 +21,6 @@ public interface IInstrumentCode
     /// <returns>returns a node without the instrumentation.</returns>
     /// <exception cref="InvalidOperationException">if the node was not instrumented (by this instrumentingEngine)</exception>
     SyntaxNode RemoveInstrumentation(SyntaxNode node);
+
+    SyntaxNode RemoveInstrumentationFrom(SyntaxNode tree, SyntaxNode instrumentation);
 }

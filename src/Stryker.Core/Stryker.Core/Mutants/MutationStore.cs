@@ -10,7 +10,6 @@ using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Mutants;
 
-
 /// <summary>
 /// This enum is used to track the syntax 'level' of mutations that are injected in the code.
 /// </summary>
@@ -143,6 +142,7 @@ internal class MutationStore
             controller.StoreMutations(store);
             return true;
         }
+
         Logger.LogDebug("There is no structure to control {MutationsCount} mutations. They are dropped.", store.Count());
         foreach (var mutant in store)
         {
