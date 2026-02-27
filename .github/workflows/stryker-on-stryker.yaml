@@ -63,3 +63,11 @@ jobs:
           STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY || '' }}
           USE_LOCAL_TOOL: ${{ inputs.useLocalTool }}
         run: ./stryker-on-stryker.ps1 -WorkingDirectory "${{ matrix.workingDirectory }}"
+
+      - name: Upload Stryker logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stryker-logs-${{ matrix.name }}
+          path: ${{ matrix.workingDirectory }}/StrykerOutput/*/logs/
+          if-no-files-found: ignore
