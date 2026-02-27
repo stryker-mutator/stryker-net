@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using StreamJsonRpc;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 using Stryker.TestRunner.MicrosoftTestPlatform.RPC;
@@ -18,7 +19,7 @@ public sealed class TestingPlatformClient : ITestingPlatformClient
     private readonly TargetHandler _targetHandler = new();
     private readonly StringBuilder _disconnectionReason = new();
 
-    public TestingPlatformClient(JsonRpc jsonRpc, TcpClient tcpClient, IProcessHandle processHandler, string? rpcLogFilePath = null)
+    public TestingPlatformClient(JsonRpc jsonRpc, TcpClient tcpClient, IProcessHandle processHandler, ILogger logger, string? rpcLogFilePath = null)
     {
         JsonRpcClient = jsonRpc;
         _tcpClient = tcpClient;
@@ -33,7 +34,7 @@ public sealed class TestingPlatformClient : ITestingPlatformClient
         if (rpcLogFilePath is not null)
         {
             JsonRpcClient.TraceSource.Switch.Level = SourceLevels.All;
-            JsonRpcClient.TraceSource.Listeners.Add(new FileRpcListener(rpcLogFilePath));
+            JsonRpcClient.TraceSource.Listeners.Add(new FileRpcListener(rpcLogFilePath, logger));
         }
 
         JsonRpcClient.Disconnected += JsonRpcClient_Disconnected;

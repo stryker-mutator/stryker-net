@@ -77,7 +77,7 @@ internal sealed class AssemblyTestServer : IDisposable
             (_stream, _connection) = await acceptTask.ConfigureAwait(false);
 
             var rpcLogFilePath = BuildRpcLogFilePath();
-            _client = _connectionFactory.CreateClient(_stream, _process.ProcessHandle, rpcLogFilePath);
+            _client = _connectionFactory.CreateClient(_stream, _process.ProcessHandle, _logger, rpcLogFilePath);
 
             await _client.InitializeAsync().ConfigureAwait(false);
             _isInitialized = true;

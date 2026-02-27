@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
@@ -41,7 +42,7 @@ public class AssemblyTestServerTests
 
         _factoryMock.Setup(f => f.CreateListener()).Returns((_listenerMock.Object, port));
         _factoryMock.Setup(f => f.StartProcess(TestAssembly, port, _envVars)).Returns(_processMock.Object);
-        _factoryMock.Setup(f => f.CreateClient(stream, _processHandleMock.Object, null)).Returns(_clientMock.Object);
+        _factoryMock.Setup(f => f.CreateClient(stream, _processHandleMock.Object, It.IsAny<ILogger>(), null)).Returns(_clientMock.Object);
 
         _listenerMock.Setup(l => l.AcceptConnectionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync((stream, connection));
@@ -108,13 +109,13 @@ public class AssemblyTestServerTests
         _listenerMock.Setup(l => l.AcceptConnectionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync((stream, connection));
         _processMock.Setup(p => p.WaitForExitAsync()).Returns(new TaskCompletionSource().Task);
-        _factoryMock.Setup(f => f.CreateClient(stream, _processHandleMock.Object, null)).Returns(_clientMock.Object);
+        _factoryMock.Setup(f => f.CreateClient(stream, _processHandleMock.Object, It.IsAny<ILogger>(), null)).Returns(_clientMock.Object);
         _clientMock.Setup(c => c.InitializeAsync()).ReturnsAsync((InitializeResponse)null!);
 
         using var server = CreateServer();
         await server.StartAsync();
 
-        _factoryMock.Verify(f => f.CreateClient(stream, _processHandleMock.Object, null), Times.Once);
+        _factoryMock.Verify(f => f.CreateClient(stream, _processHandleMock.Object, It.IsAny<ILogger>(), null), Times.Once);
     }
 
     [TestMethod]
@@ -426,7 +427,7 @@ public class AssemblyTestServerTests
 
         _factoryMock.Setup(f => f.CreateListener()).Returns((_listenerMock.Object, port1));
         _factoryMock.Setup(f => f.StartProcess(TestAssembly, port1, _envVars)).Returns(_processMock.Object);
-        _factoryMock.Setup(f => f.CreateClient(stream1, _processHandleMock.Object, null)).Returns(_clientMock.Object);
+        _factoryMock.Setup(f => f.CreateClient(stream1, _processHandleMock.Object, It.IsAny<ILogger>(), null)).Returns(_clientMock.Object);
         _listenerMock.Setup(l => l.AcceptConnectionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync((stream1, connection1));
         _processMock.Setup(p => p.WaitForExitAsync()).Returns(new TaskCompletionSource().Task);
