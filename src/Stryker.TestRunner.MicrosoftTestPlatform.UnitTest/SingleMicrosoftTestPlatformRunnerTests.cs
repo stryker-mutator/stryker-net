@@ -1209,7 +1209,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
             ILogger logger)
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
-        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> ProcessSingleAssemblyAsync(
+        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAllTestsInternalAsync(
             string assembly, ITimeoutValueCalculator? timeoutCalc)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
@@ -1236,7 +1236,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
             ILogger logger)
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
-        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> ProcessSingleAssemblyAsync(
+        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAllTestsInternalAsync(
             string assembly, ITimeoutValueCalculator? timeoutCalc)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
