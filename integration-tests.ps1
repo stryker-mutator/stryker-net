@@ -23,7 +23,7 @@ function Pack-And-Install-Tool {
   )
 
   Write-Info "Packing $ToolVersion to $PublishPath"
-  dotnet pack $ToolProject "-p:PackageVersion=${ToolVersion}" --output $PublishPath
+  dotnet pack $ToolProject "-c=Debug -p:PackageVersion=${ToolVersion}" --output $PublishPath
   if ($LASTEXITCODE -ne 0) { throw "dotnet pack failed with exit code ${LASTEXITCODE}" }
 
   # Ensure we always use the freshly packed tool version in the local tool-path.
