@@ -388,29 +388,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         public IEnumerable<string> Messages => _messages;
     }
 
-    internal virtual async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> ProcessSingleAssemblyAsync(
-        string assembly,
-        ITimeoutValueCalculator? timeoutCalc)
-    {
-        if (!File.Exists(assembly))
-        {
-            return (null, false, null);
-        }
-
-        var discoveredTests = GetDiscoveredTests(assembly);
-        
-        TimeSpan? timeout = null;
-        if (timeoutCalc is not null && discoveredTests is not null)
-        {
-            timeout = CalculateAssemblyTimeout(discoveredTests, timeoutCalc, assembly);
-        }
-
-        var (testResults, timedOut) = await RunTestsInternalAsync(assembly, null, timeout).ConfigureAwait(false);
-        
-        return (testResults as TestRunResult, timedOut, discoveredTests);
-    }
-
-    private async Task<ITestRunResult> RunAllTestsAsync(
+    internal async Task<ITestRunResult> RunAllTestsAsync(
         IReadOnlyList<string> assemblies,
         int mutantId,
         IReadOnlyList<IMutant>? mutants,
@@ -425,7 +403,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
             foreach (var assembly in assemblies)
             {
-                var (result, timedOut, discoveredTests) = await ProcessSingleAssemblyAsync(assembly, timeoutCalc).ConfigureAwait(false);
+                var (result, timedOut, discoveredTests) = await RunAllTestsInternalAsync(assembly, timeoutCalc).ConfigureAwait(false);
 
                 if (discoveredTests is not null)
                 {
@@ -485,6 +463,28 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             _logger.LogDebug(ex, "{RunnerId}: Failed to run tests for mutant ID {MutantId}", RunnerId, mutantId);
             return new TestRunResult(false, ex.Message);
         }
+    }
+
+    internal virtual async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAllTestsInternalAsync(
+        string assembly,
+        ITimeoutValueCalculator? timeoutCalc)
+    {
+        if (!File.Exists(assembly))
+        {
+            return (null, false, null);
+        }
+
+        var discoveredTests = GetDiscoveredTests(assembly);
+        
+        TimeSpan? timeout = null;
+        if (timeoutCalc is not null && discoveredTests is not null)
+        {
+            timeout = CalculateAssemblyTimeout(discoveredTests, timeoutCalc, assembly);
+        }
+
+        var (testResults, timedOut) = await RunTestsInternalAsync(assembly, null, timeout).ConfigureAwait(false);
+        
+        return (testResults as TestRunResult, timedOut, discoveredTests);
     }
 
     internal async Task<(ITestRunResult Result, bool TimedOut)> RunTestsInternalAsync(
