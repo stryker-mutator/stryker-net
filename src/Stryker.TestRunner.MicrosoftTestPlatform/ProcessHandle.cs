@@ -13,7 +13,18 @@ public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output
     public string ProcessName { get; } = "dotnet";
     public int ExitCode { get; private set; }
     public TextWriter StandardInput => new StringWriter();
-    public TextReader StandardOutput => new StreamReader(output);
+    public TextReader StandardOutput
+    {
+        get
+        {
+            // Output is rarely consumed, and when it is, it's from a file stream
+            if (output.CanSeek && output.Position != 0)
+            {
+                output.Position = 0;
+            }
+            return new StreamReader(output);
+        }
+    }
 
     public void Kill()
     {

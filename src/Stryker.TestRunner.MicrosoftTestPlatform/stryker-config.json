@@ -1,6 +1,6 @@
 {
   "stryker-config": {
-    "testrunner": "mtp",
+    "test-runner": "mtp",
     "project-info": {
       "name": "github.com/stryker-mutator/stryker-net",
       "module": "testrunner-microsofttestplatform"

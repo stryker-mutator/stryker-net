@@ -34,7 +34,6 @@ public class InjectedHelperTests : TestBase
 
         var needed = new[] { ".CoreLib", ".Runtime", "System.IO.Pipes", ".Collections", ".Console" };
         var references = new List<MetadataReference>();
-        var hack = new NamedPipeClientStream("test");
         foreach (var assembly in assemblies)
         {
             if (needed.Any(x => assembly.FullName.Contains(x)))
