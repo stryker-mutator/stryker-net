@@ -36,7 +36,7 @@ function Pack-And-Install-Tool {
   dotnet tool uninstall dotnet-stryker --tool-path $ToolPath 2>$null
   if ($LASTEXITCODE -ne 0) { Write-Info "dotnet-stryker was not previously installed in '$ToolPath' (continuing)" }
 
-  dotnet tool install dotnet-stryker --add-source $PublishPath --allow-downgrade --tool-path $ToolPath --version $ToolVersion
+  dotnet tool install dotnet-stryker --source $PublishPath --allow-downgrade --tool-path $ToolPath --version $ToolVersion
   if ($LASTEXITCODE -ne 0) { throw "dotnet tool install failed with exit code ${LASTEXITCODE}" }
 }
 
