@@ -26,6 +26,11 @@ function Pack-And-Install-Tool {
   dotnet pack $ToolProject "-c=Debug -p:PackageVersion=${ToolVersion}" --output $PublishPath
   if ($LASTEXITCODE -ne 0) { throw "dotnet pack failed with exit code ${LASTEXITCODE}" }
 
+  # Verify that the pack produced a package for the tool
+  if (-not (Test-Path $PublishPath)) {
+    throw "Publish path '$PublishPath' does not exist after packing"
+  }
+
   # Ensure we always use the freshly packed tool version in the local tool-path.
   # `dotnet tool install` does not overwrite an existing local tool installation.
   dotnet tool uninstall dotnet-stryker --tool-path $ToolPath 2>$null
