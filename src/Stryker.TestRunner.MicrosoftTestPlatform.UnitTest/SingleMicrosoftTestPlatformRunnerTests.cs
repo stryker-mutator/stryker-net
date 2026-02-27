@@ -139,6 +139,49 @@ public class SingleMicrosoftTestPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
+    public void CalculateAssemblyTimeout_ShouldNotAccumulate_WhenCalledMultipleTimes()
+    {
+        // Regression: RegisterInitialTestResult was called on every test run,
+        // causing InitialRunTime to grow unboundedly and inflating the timeout.
+        var test1 = new TestNode("uid-1", "Test1", "test", "passed");
+        var discoveredTests = new List<TestNode> { test1 };
+
+        var desc = new MtpTestDescription(test1);
+        desc.RegisterInitialTestResult(new MtpTestResult(TimeSpan.FromMilliseconds(100)));
+        // Simulate a second run registering again (the bug)
+        desc.RegisterInitialTestResult(new MtpTestResult(TimeSpan.FromMilliseconds(100)));
+        _testDescriptions["uid-1"] = desc;
+
+        int capturedEstimate = -1;
+        var timeoutCalc = new Mock<ITimeoutValueCalculator>();
+        timeoutCalc.Setup(x => x.CalculateTimeoutValue(It.IsAny<int>()))
+            .Callback<int>(ms => capturedEstimate = ms)
+            .Returns(500);
+
+        using var runner = CreateRunner();
+        runner.CalculateAssemblyTimeout(discoveredTests, timeoutCalc.Object, "test.dll");
+
+        // The estimated time should be 100ms (first registration only), not 200ms
+        capturedEstimate.ShouldBe(100);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void RegisterInitialTestResult_ShouldNotInflateRunTime_WhenCalledMultipleTimes()
+    {
+        // Regression: RegisterInitialTestResult was called on every mutation run,
+        // causing InitialRunTime to grow unboundedly and inflating the timeout.
+        var testNode = new TestNode("uid-1", "Test1", "test", "passed");
+        var desc = new MtpTestDescription(testNode);
+
+        desc.RegisterInitialTestResult(new MtpTestResult(TimeSpan.FromMilliseconds(100)));
+        desc.RegisterInitialTestResult(new MtpTestResult(TimeSpan.FromMilliseconds(100)));
+        desc.RegisterInitialTestResult(new MtpTestResult(TimeSpan.FromMilliseconds(100)));
+
+        // Should stay at the first registered value, not accumulate
+        desc.InitialRunTime.TotalMilliseconds.ShouldBe(100);
+    }
+
+    [TestMethod, Timeout(1000)]
     [DataRow(100, 500, 500)]
     [DataRow(0, 500, 500)]
     [DataRow(250, 1000, 1000)]
