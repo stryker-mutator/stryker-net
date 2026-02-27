@@ -71,6 +71,7 @@ function Invoke-Stryker {
   )
   $effectiveToolParameters += '--verbosity debug'
   $effectiveToolParameters += '--log-to-file'
+  $effectiveToolParameters += '--open-report:dashboard'
 
   Push-Location $RunDirectory
   Write-Info ("Current working directory: " + (Get-Location))
