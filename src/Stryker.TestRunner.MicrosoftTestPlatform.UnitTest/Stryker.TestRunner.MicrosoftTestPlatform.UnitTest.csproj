@@ -14,7 +14,7 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
         <PackageReference Include="Moq" />
         <PackageReference Include="Shouldly" />
-        <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" VersionOverride="17.14.2" />
+        <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" VersionOverride="18.5.1" />
     </ItemGroup>
 
     <ItemGroup>
