@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 using Stryker.TestRunner.Results;
@@ -1080,6 +1081,56 @@ public class SingleMicrosoftTestPlatformRunnerTests
         staticMutants.ShouldBe(new[] { 4, -5 });
     }
 
+    [TestMethod, Timeout(1000)]
+    public async Task TestMultipleMutantsAsync_SetsSessionTimedOut_WhenAssemblyTimesOut()
+    {
+        var assembly = "/fake/assembly.dll";
+        var testNode = new TestNode("test-uid-1", "TestMethod1", "test", "discovered");
+        _testsByAssembly[assembly] = [testNode];
+        _testDescriptions["test-uid-1"] = new MtpTestDescription(testNode);
+
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns([assembly]);
+
+        var mutant = new Mock<IMutant>();
+        mutant.Setup(x => x.Id).Returns(1);
+
+        var timeoutCalc = new Mock<ITimeoutValueCalculator>();
+        timeoutCalc.Setup(x => x.CalculateTimeoutValue(It.IsAny<int>())).Returns(500);
+
+        using var runner = new TimeoutSimulatingRunner(
+            0, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+        var result = await runner.TestMultipleMutantsAsync(project.Object, timeoutCalc.Object, [mutant.Object], null);
+
+        result.SessionTimedOut.ShouldBeTrue();
+    }
+
+    [TestMethod, Timeout(1000)]
+    public async Task TestMultipleMutantsAsync_DoesNotSetSessionTimedOut_WhenNoTimeout()
+    {
+        var assembly = "/fake/assembly.dll";
+        var testNode = new TestNode("test-uid-1", "TestMethod1", "test", "discovered");
+        _testsByAssembly[assembly] = [testNode];
+        _testDescriptions["test-uid-1"] = new MtpTestDescription(testNode);
+
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns([assembly]);
+
+        var mutant = new Mock<IMutant>();
+        mutant.Setup(x => x.Id).Returns(1);
+
+        var timeoutCalc = new Mock<ITimeoutValueCalculator>();
+        timeoutCalc.Setup(x => x.CalculateTimeoutValue(It.IsAny<int>())).Returns(500);
+
+        using var runner = new NoTimeoutSimulatingRunner(
+            0, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+        var result = await runner.TestMultipleMutantsAsync(project.Object, timeoutCalc.Object, [mutant.Object], null);
+
+        result.SessionTimedOut.ShouldBeFalse();
+    }
+
     private class TestableRunner : SingleMicrosoftTestPlatformRunner
     {
         private int _disposeLogicExecutedCount;
@@ -1144,6 +1195,60 @@ public class SingleMicrosoftTestPlatformRunnerTests
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 return (bool)field!.GetValue(this)!;
             }
+        }
+    }
+
+    private class TimeoutSimulatingRunner : SingleMicrosoftTestPlatformRunner
+    {
+        public TimeoutSimulatingRunner(
+            int id,
+            Dictionary<string, List<TestNode>> testsByAssembly,
+            Dictionary<string, MtpTestDescription> testDescriptions,
+            TestSet testSet,
+            object discoveryLock,
+            ILogger logger)
+            : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
+
+        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> ProcessSingleAssemblyAsync(
+            string assembly, ITimeoutValueCalculator? timeoutCalc)
+        {
+            var discoveredTests = GetDiscoveredTests(assembly);
+            var result = new TestRunResult(
+                Array.Empty<IFrameworkTestDescription>(),
+                TestIdentifierList.EveryTest(),
+                TestIdentifierList.NoTest(),
+                TestIdentifierList.NoTest(),
+                string.Empty,
+                Enumerable.Empty<string>(),
+                TimeSpan.Zero);
+            return Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>((result, true, discoveredTests));
+        }
+    }
+
+    private class NoTimeoutSimulatingRunner : SingleMicrosoftTestPlatformRunner
+    {
+        public NoTimeoutSimulatingRunner(
+            int id,
+            Dictionary<string, List<TestNode>> testsByAssembly,
+            Dictionary<string, MtpTestDescription> testDescriptions,
+            TestSet testSet,
+            object discoveryLock,
+            ILogger logger)
+            : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
+
+        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> ProcessSingleAssemblyAsync(
+            string assembly, ITimeoutValueCalculator? timeoutCalc)
+        {
+            var discoveredTests = GetDiscoveredTests(assembly);
+            var result = new TestRunResult(
+                Array.Empty<IFrameworkTestDescription>(),
+                TestIdentifierList.EveryTest(),
+                TestIdentifierList.NoTest(),
+                TestIdentifierList.NoTest(),
+                string.Empty,
+                Enumerable.Empty<string>(),
+                TimeSpan.Zero);
+            return Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>((result, false, discoveredTests));
         }
     }
 }

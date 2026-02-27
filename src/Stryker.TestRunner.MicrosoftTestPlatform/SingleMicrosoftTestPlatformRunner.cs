@@ -346,6 +346,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         private int _totalExecutedTests;
 
         public List<string> TimedOutTests { get; } = [];
+        public bool HasTimeout { get; set; }
         public TimeSpan TotalDuration { get; private set; }
 
         public void Aggregate(TestRunResult result, List<TestNode>? discoveredTests)
@@ -387,7 +388,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         public IEnumerable<string> Messages => _messages;
     }
 
-    internal async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> ProcessSingleAssemblyAsync(
+    internal virtual async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> ProcessSingleAssemblyAsync(
         string assembly,
         ITimeoutValueCalculator? timeoutCalc)
     {
@@ -432,6 +433,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
                     if (timedOut)
                     {
+                        accumulator.HasTimeout = true;
                         await HandleAssemblyTimeoutAsync(assembly, discoveredTests, accumulator.TimedOutTests).ConfigureAwait(false);
                     }
                 }
@@ -455,6 +457,18 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             if (update is not null && mutants is not null)
             {
                 update.Invoke(mutants, failedTestIds, executedTests, timedOutTestIds);
+            }
+
+            if (accumulator.HasTimeout)
+            {
+                return TestRunResult.TimedOut(
+                    testDescriptionValues,
+                    executedTests,
+                    failedTestIds,
+                    timedOutTestIds,
+                    accumulator.BuildErrorMessage(),
+                    accumulator.Messages,
+                    accumulator.TotalDuration);
             }
 
             return new TestRunResult(
