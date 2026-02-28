@@ -135,6 +135,7 @@ namespace ExtraProject.XUnit
         _mutationTestInput.InitialTestRun = initialTestrun;
         // act
         var result = target.MutateProject(options, _mutationTestInput, _reporterMock.Object, _mutationTestProcessMock.Object);
+        target.EnrichWithInitialTestRunInfo(_mutationTestInput);
 
         // assert
         result.ShouldNotBeNull();
