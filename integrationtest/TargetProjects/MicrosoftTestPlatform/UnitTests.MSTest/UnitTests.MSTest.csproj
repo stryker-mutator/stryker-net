@@ -1,4 +1,4 @@
-<Project Sdk="MSTest.Sdk/3.8.2">
+<Project Sdk="MSTest.Sdk/4.1.0">
 
   <PropertyGroup>
     <!-- Enable Microsoft.Testing.Platform, this is an opt-in feature -->
