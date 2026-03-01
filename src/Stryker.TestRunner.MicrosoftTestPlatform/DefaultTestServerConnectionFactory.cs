@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
 using CliWrap;
+using Microsoft.Extensions.Logging;
 using StreamJsonRpc;
 using Stryker.Abstractions.Options;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
@@ -65,7 +66,7 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
         return new CliTestServerProcess(cliProcess, outputStream);
     }
 
-    public ITestingPlatformClient CreateClient(Stream stream, IProcessHandle processHandle, bool enableDiagnostic)
+    public ITestingPlatformClient CreateClient(Stream stream, IProcessHandle processHandle, ILogger logger, string? rpcLogFilePath)
     {
         var rpc = new JsonRpc(new HeaderDelimitedMessageHandler(stream, stream, new SystemTextJsonFormatter
         {
@@ -73,7 +74,7 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
         }));
 
         var tcpClient = new TcpClient();
-        return new TestingPlatformClient(rpc, tcpClient, processHandle, enableDiagnostic);
+        return new TestingPlatformClient(rpc, tcpClient, processHandle, logger, rpcLogFilePath);
     }
 
     private sealed class TcpTestServerListener(TcpListener listener) : ITestServerListener
@@ -99,7 +100,7 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
 
         public void Dispose()
         {
-            commandTask.Dispose();
+            _processHandle.Dispose();
             outputStream.Dispose();
         }
     }

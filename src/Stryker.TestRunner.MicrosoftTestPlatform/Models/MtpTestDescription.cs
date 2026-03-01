@@ -28,7 +28,13 @@ public sealed class MtpTestDescription : IFrameworkTestDescription
 
     public int NbSubCases => Math.Max(1, _initialResults.Count);
 
-    public void RegisterInitialTestResult(ITestResult result) => _initialResults.Add(result);
+    public void RegisterInitialTestResult(ITestResult result)
+    {
+        if (_initialResults.Count == 0)
+        {
+            _initialResults.Add(result);
+        }
+    }
 
     public void AddSubCase()
     {

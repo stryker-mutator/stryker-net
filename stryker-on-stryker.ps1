@@ -69,7 +69,9 @@ function Invoke-Stryker {
     $ToolParameters |
       Where-Object { $_ -is [string] -and $_.Trim().Length -gt 0 }
   )
-  $effectiveToolParameters += '-V trace'
+  $effectiveToolParameters += '--verbosity debug'
+  $effectiveToolParameters += '--log-to-file'
+  $effectiveToolParameters += '--open-report:dashboard'
 
   Push-Location $RunDirectory
   Write-Info ("Current working directory: " + (Get-Location))
