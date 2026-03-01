@@ -255,6 +255,7 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
             }
 
             projectAnalyzerResultMock.Setup(x => x.SourceFiles).Returns(sourceFiles);
+            projectAnalyzerResultMock.Setup(x => x.PackageReferences).Returns(new Dictionary<string, IReadOnlyDictionary<string, string>>());
             projectAnalyzerResultMock.Setup(x => x.PreprocessorSymbols).Returns(["NET"]);
             specificProperties.Add("TargetRefPath", projectBin);
             specificProperties.Add("TargetDir", projectUnderTestBin);
