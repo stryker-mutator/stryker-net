@@ -422,7 +422,7 @@ public class AssemblyTestServerTests
         using var server = CreateServer();
         await server.StartAsync();
 
-        await Should.NotThrowAsync(server.StopAsync);
+        await Should.NotThrowAsync(() => server.StopAsync());
     }
 
     [TestMethod]
@@ -430,7 +430,7 @@ public class AssemblyTestServerTests
     {
         using var server = CreateServer();
 
-        await Should.NotThrowAsync(server.StopAsync);
+        await Should.NotThrowAsync(() => server.StopAsync());
     }
 
     [TestMethod]

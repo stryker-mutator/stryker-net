@@ -334,7 +334,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             _logger.LogDebug("{RunnerId}: Restarting test server for {Assembly} after timeout", RunnerId, Path.GetFileName(assembly));
             try
             {
-                await server.RestartAsync().ConfigureAwait(false);
+                await server.RestartAsync(force: true).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

@@ -174,15 +174,20 @@ internal sealed class AssemblyTestServer : IDisposable
         return (testResults.ToList(), false);
     }
 
-    public async Task RestartAsync()
+    public async Task RestartAsync(bool force = false)
     {
-        await StopAsync().ConfigureAwait(false);
+        await StopAsync(force).ConfigureAwait(false);
         await StartAsync().ConfigureAwait(false);
     }
 
-    public async Task StopAsync()
+    public async Task StopAsync(bool force = false)
     {
-        if (_client is not null)
+        if (force)
+        {
+            _logger.LogDebug("{RunnerId}: Force-killing test server process for {Assembly}", _runnerId, _assembly);
+            _process?.ProcessHandle.Kill();
+        }
+        else if (_client is not null)
         {
             try
             {
@@ -193,8 +198,8 @@ internal sealed class AssemblyTestServer : IDisposable
             }
             catch (TimeoutException exception)
             {
-                _logger.LogDebug(exception, "{RunnerId}: Test server process for {Assembly} did not exit within the expected time. Killing forcefully.", _runnerId, _assembly);
-                _process?.ProcessHandle.Kill(); // Force kill if it doesn't exit gracefully
+                _logger.LogWarning(exception, "{RunnerId}: Test server process for {Assembly} did not exit within the expected time. Killing forcefully.", _runnerId, _assembly);
+                _process?.ProcessHandle.Kill();
             }
             catch (Exception exception)
             {
