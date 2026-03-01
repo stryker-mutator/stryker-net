@@ -332,7 +332,18 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         if (server is not null)
         {
             _logger.LogDebug("{RunnerId}: Restarting test server for {Assembly} after timeout", RunnerId, Path.GetFileName(assembly));
-            await server.RestartAsync().ConfigureAwait(false);
+            try
+            {
+                await server.RestartAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "{RunnerId}: Failed to restart test server for {Assembly} after timeout. Creating a new server on next use.", RunnerId, Path.GetFileName(assembly));
+                lock (_serverLock)
+                {
+                    _assemblyServers.Remove(assembly);
+                }
+            }
         }
     }
 

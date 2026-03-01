@@ -376,6 +376,22 @@ public class AssemblyTestServerTests
     }
 
     [TestMethod]
+    public async Task RunTestsAsync_WithTimeout_ShouldReturnTimedOutTrue_WhenRpcCallBlocks()
+    {
+        SetupSuccessfulConnection();
+
+        // RPC call that never returns (simulates server stuck in infinite loop)
+        _clientMock.Setup(c => c.RunTestsAsync(It.IsAny<Guid>(), It.IsAny<Func<TestNodeUpdate[], Task>>(), null))
+            .Returns(new TaskCompletionSource<ResponseListener>().Task);
+
+        using var server = CreateServer();
+        await server.StartAsync();
+        var (_, timedOut) = await server.RunTestsAsync(null, TimeSpan.FromMilliseconds(50));
+
+        timedOut.ShouldBeTrue();
+    }
+
+    [TestMethod]
     public async Task StopAsync_ShouldDisposeResources()
     {
         SetupSuccessfulConnection();

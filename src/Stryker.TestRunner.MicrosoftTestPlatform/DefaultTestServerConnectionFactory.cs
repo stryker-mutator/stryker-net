@@ -100,7 +100,7 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
 
         public void Dispose()
         {
-            commandTask.Dispose();
+            _processHandle.Dispose();
             outputStream.Dispose();
         }
     }

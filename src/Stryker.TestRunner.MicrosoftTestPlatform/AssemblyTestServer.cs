@@ -133,22 +133,44 @@ internal sealed class AssemblyTestServer : IDisposable
         var runId = Guid.NewGuid();
         var testResults = new System.Collections.Concurrent.ConcurrentBag<TestNodeUpdate>();
 
-        var executeTestsResponse = await _client.RunTestsAsync(runId, updates =>
+        Func<TestNodeUpdate[], Task> onUpdate = updates =>
         {
             foreach (var update in updates)
             {
                 testResults.Add(update);
             }
             return Task.CompletedTask;
-        }, testsToRun).ConfigureAwait(false);
+        };
 
         if (timeout.HasValue)
         {
-            var completed = await executeTestsResponse.WaitCompletionAsync(timeout.Value).ConfigureAwait(false);
+            var deadline = DateTime.UtcNow + timeout.Value;
+
+            ResponseListener executeTestsResponse;
+            try
+            {
+                // The RPC call itself can block when the server is stuck (e.g. infinite loop in mutated code)
+                executeTestsResponse = await _client.RunTestsAsync(runId, onUpdate, testsToRun)
+                    .WaitAsync(timeout.Value).ConfigureAwait(false);
+            }
+            catch (TimeoutException ex)
+            {
+                _logger.LogDebug(ex, "{RunnerId}: Test run RPC call timed out for {Assembly}", _runnerId, _assembly);
+                return (testResults.ToList(), true);
+            }
+
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero)
+            {
+                return (testResults.ToList(), true);
+            }
+
+            var completed = await executeTestsResponse.WaitCompletionAsync(remaining).ConfigureAwait(false);
             return (testResults.ToList(), !completed);
         }
 
-        await executeTestsResponse.WaitCompletionAsync().ConfigureAwait(false);
+        var response = await _client.RunTestsAsync(runId, onUpdate, testsToRun).ConfigureAwait(false);
+        await response.WaitCompletionAsync().ConfigureAwait(false);
         return (testResults.ToList(), false);
     }
 
@@ -171,7 +193,7 @@ internal sealed class AssemblyTestServer : IDisposable
             }
             catch (TimeoutException exception)
             {
-                _logger.LogWarning(exception, "{RunnerId}: Test server process for {Assembly} did not exit within the expected time. Killing forcefully.", _runnerId, _assembly);
+                _logger.LogDebug(exception, "{RunnerId}: Test server process for {Assembly} did not exit within the expected time. Killing forcefully.", _runnerId, _assembly);
                 _process?.ProcessHandle.Kill(); // Force kill if it doesn't exit gracefully
             }
             catch (Exception exception)
@@ -189,7 +211,14 @@ internal sealed class AssemblyTestServer : IDisposable
         _stream = null;
         _connection?.Dispose();
         _connection = null;
-        _process?.Dispose();
+        try
+        {
+            _process?.Dispose();
+        }
+        catch (Exception)
+        {
+            // Process disposal can fail if kill/cleanup didn't complete in time
+        }
         _process = null;
         _isInitialized = false;
     }

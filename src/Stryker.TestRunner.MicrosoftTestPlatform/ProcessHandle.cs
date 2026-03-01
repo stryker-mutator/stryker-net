@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using CliWrap;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
@@ -28,7 +29,15 @@ public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output
 
     public void Kill()
     {
-        Dispose();
+        try
+        {
+            var process = Process.GetProcessById(Id);
+            process.Kill(entireProcessTree: true);
+        }
+        catch (Exception)
+        {
+            // Process may have already exited
+        }
     }
 
     public Task<int> StopAsync()
@@ -62,7 +71,29 @@ public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output
 
         if (disposing)
         {
-            commandTask.Dispose();
+            // CliWrap's CommandTask.Dispose() throws if the task hasn't completed.
+            // Kill the process first, then wait briefly for the task to complete before disposing.
+            if (!commandTask.Task.IsCompleted)
+            {
+                Kill();
+                try
+                {
+                    commandTask.Task.Wait(TimeSpan.FromSeconds(5));
+                }
+                catch (Exception)
+                {
+                    // Process may not finish in time; proceed with disposal anyway
+                }
+            }
+
+            try
+            {
+                commandTask.Dispose();
+            }
+            catch (InvalidOperationException)
+            {
+                // Task may still not be in a completion state after kill
+            }
         }
         
         _disposed = true;
