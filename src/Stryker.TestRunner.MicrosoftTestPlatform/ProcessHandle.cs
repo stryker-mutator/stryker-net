@@ -31,7 +31,7 @@ public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output
     {
         try
         {
-            var process = Process.GetProcessById(Id);
+            using var process = Process.GetProcessById(Id);
             process.Kill(entireProcessTree: true);
         }
         catch (Exception)
