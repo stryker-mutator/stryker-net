@@ -332,7 +332,18 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         if (server is not null)
         {
             _logger.LogDebug("{RunnerId}: Restarting test server for {Assembly} after timeout", RunnerId, Path.GetFileName(assembly));
-            await server.RestartAsync().ConfigureAwait(false);
+            try
+            {
+                await server.RestartAsync(force: true).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "{RunnerId}: Failed to restart test server for {Assembly} after timeout. Creating a new server on next use.", RunnerId, Path.GetFileName(assembly));
+                lock (_serverLock)
+                {
+                    _assemblyServers.Remove(assembly);
+                }
+            }
         }
     }
 
@@ -346,6 +357,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         private int _totalExecutedTests;
 
         public List<string> TimedOutTests { get; } = [];
+        public bool HasTimeout { get; set; }
         public TimeSpan TotalDuration { get; private set; }
 
         public void Aggregate(TestRunResult result, List<TestNode>? discoveredTests)
@@ -387,29 +399,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         public IEnumerable<string> Messages => _messages;
     }
 
-    internal async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> ProcessSingleAssemblyAsync(
-        string assembly,
-        ITimeoutValueCalculator? timeoutCalc)
-    {
-        if (!File.Exists(assembly))
-        {
-            return (null, false, null);
-        }
-
-        var discoveredTests = GetDiscoveredTests(assembly);
-        
-        TimeSpan? timeout = null;
-        if (timeoutCalc is not null && discoveredTests is not null)
-        {
-            timeout = CalculateAssemblyTimeout(discoveredTests, timeoutCalc, assembly);
-        }
-
-        var (testResults, timedOut) = await RunTestsInternalAsync(assembly, null, timeout).ConfigureAwait(false);
-        
-        return (testResults as TestRunResult, timedOut, discoveredTests);
-    }
-
-    private async Task<ITestRunResult> RunAllTestsAsync(
+    internal async Task<ITestRunResult> RunAllTestsAsync(
         IReadOnlyList<string> assemblies,
         int mutantId,
         IReadOnlyList<IMutant>? mutants,
@@ -424,7 +414,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
             foreach (var assembly in assemblies)
             {
-                var (result, timedOut, discoveredTests) = await ProcessSingleAssemblyAsync(assembly, timeoutCalc).ConfigureAwait(false);
+                var (result, timedOut, discoveredTests) = await RunAllTestsInternalAsync(assembly, timeoutCalc).ConfigureAwait(false);
 
                 if (discoveredTests is not null)
                 {
@@ -432,6 +422,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
                     if (timedOut)
                     {
+                        accumulator.HasTimeout = true;
                         await HandleAssemblyTimeoutAsync(assembly, discoveredTests, accumulator.TimedOutTests).ConfigureAwait(false);
                     }
                 }
@@ -457,6 +448,18 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
                 update.Invoke(mutants, failedTestIds, executedTests, timedOutTestIds);
             }
 
+            if (accumulator.HasTimeout)
+            {
+                return TestRunResult.TimedOut(
+                    testDescriptionValues,
+                    executedTests,
+                    failedTestIds,
+                    timedOutTestIds,
+                    accumulator.BuildErrorMessage(),
+                    accumulator.Messages,
+                    accumulator.TotalDuration);
+            }
+
             return new TestRunResult(
                 testDescriptionValues,
                 executedTests,
@@ -471,6 +474,28 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             _logger.LogDebug(ex, "{RunnerId}: Failed to run tests for mutant ID {MutantId}", RunnerId, mutantId);
             return new TestRunResult(false, ex.Message);
         }
+    }
+
+    internal virtual async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAllTestsInternalAsync(
+        string assembly,
+        ITimeoutValueCalculator? timeoutCalc)
+    {
+        if (!File.Exists(assembly))
+        {
+            return (null, false, null);
+        }
+
+        var discoveredTests = GetDiscoveredTests(assembly);
+        
+        TimeSpan? timeout = null;
+        if (timeoutCalc is not null && discoveredTests is not null)
+        {
+            timeout = CalculateAssemblyTimeout(discoveredTests, timeoutCalc, assembly);
+        }
+
+        var (testResults, timedOut) = await RunTestsInternalAsync(assembly, null, timeout).ConfigureAwait(false);
+        
+        return (testResults as TestRunResult, timedOut, discoveredTests);
     }
 
     internal async Task<(ITestRunResult Result, bool TimedOut)> RunTestsInternalAsync(
@@ -504,10 +529,15 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
             lock (_discoveryLock)
             {
+                // MTP doesn't report per-test timing, so approximate with the average
+                var perTestDuration = finishedTests.Count > 0
+                    ? TimeSpan.FromTicks(duration.Ticks / finishedTests.Count)
+                    : TimeSpan.Zero;
+
                 foreach (var testResult in finishedTests.Where(tr => _testDescriptions.ContainsKey(tr.Node.Uid)))
                 {
                     var testDescription = _testDescriptions[testResult.Node.Uid];
-                    testDescription.RegisterInitialTestResult(new MtpTestResult(duration));
+                    testDescription.RegisterInitialTestResult(new MtpTestResult(perTestDuration));
                 }
             }
 
