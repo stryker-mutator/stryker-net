@@ -38,6 +38,11 @@
         "resolved": "16.3.0",
         "contentHash": "SgMOdxbz8X65z8hraIs6hOEdnkH6hESTAIUa7viEngHOYaH+6q5XJmwr1+yb9vJpNQ19hCQY69xbFsLtXpobQA=="
       },
+      "AWSSDK.Core": {
+        "type": "Transitive",
+        "resolved": "4.0.3.12",
+        "contentHash": "/FyE96xV2qJLgJN++ZW8M7udRf2NBLoku9AkEHLQqpH9uv0r0QQK2sw2pF3OvzKnuKsyp+Mx5wYwgFXPLnBb9g=="
+      },
       "Azure.Core": {
         "type": "Transitive",
         "resolved": "1.50.0",
@@ -686,6 +691,7 @@
       "stryker": {
         "type": "Project",
         "dependencies": {
+          "AWSSDK.S3": "[4.0.18.6, )",
           "Azure.Storage.Files.Shares": "[12.25.0, )",
           "Buildalyzer": "[8.0.0, )",
           "DotNet.Glob": "[3.1.3, )",
@@ -708,14 +714,14 @@
           "Serilog.Sinks.Console": "[6.1.1, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.54.0, )",
-          "Stryker.Abstractions": "[4.13.0, )",
-          "Stryker.Configuration": "[4.13.0, )",
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.Configuration": "[1.0.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
-          "Stryker.RegexMutators": "[4.13.0, )",
-          "Stryker.Solutions": "[4.13.0, )",
-          "Stryker.TestRunner.MicrosoftTestPlatform": "[4.13.0, )",
-          "Stryker.TestRunner.VsTest": "[4.13.0, )",
-          "Stryker.Utilities": "[4.13.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
+          "Stryker.Solutions": "[1.0.0, )",
+          "Stryker.TestRunner.MicrosoftTestPlatform": "[1.0.0, )",
+          "Stryker.TestRunner.VsTest": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
         }
       },
@@ -738,8 +744,8 @@
           "Microsoft.CodeAnalysis.CSharp": "[5.0.0, )",
           "Microsoft.CodeAnalysis.Common": "[5.0.0, )",
           "Serilog": "[4.3.1, )",
-          "Stryker.Abstractions": "[4.13.0, )",
-          "Stryker.Utilities": "[4.13.0, )"
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )"
         }
       },
       "stryker.datacollector": {
@@ -765,7 +771,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.TestPlatform.ObjectModel": "[18.3.0, )",
-          "Stryker.Abstractions": "[4.13.0, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "stryker.testrunner.microsofttestplatform": {
@@ -774,8 +780,8 @@
           "CliWrap": "[3.10.0, )",
           "Microsoft.Testing.Platform": "[1.5.2, )",
           "StreamJsonRpc": "[2.24.84, )",
-          "Stryker.TestRunner": "[4.13.0, )",
-          "Stryker.Utilities": "[4.13.0, )"
+          "Stryker.TestRunner": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )"
         }
       },
       "stryker.testrunner.vstest": {
@@ -786,10 +792,10 @@
           "Microsoft.TestPlatform.ObjectModel": "[18.3.0, )",
           "Microsoft.TestPlatform.Portable": "[18.3.0, )",
           "Microsoft.TestPlatform.TranslationLayer": "[18.3.0, )",
-          "Stryker.Abstractions": "[4.13.0, )",
-          "Stryker.DataCollector": "[4.13.0, )",
-          "Stryker.TestRunner": "[4.13.0, )",
-          "Stryker.Utilities": "[4.13.0, )",
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.TestRunner": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
         }
       },
@@ -802,7 +808,16 @@
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.3, )",
           "Mono.Cecil": "[0.11.6, )",
           "ResXResourceReader.NetStandard": "[1.3.0, )",
-          "Stryker.Abstractions": "[4.13.0, )"
+          "Stryker.Abstractions": "[1.0.0, )"
+        }
+      },
+      "AWSSDK.S3": {
+        "type": "CentralTransitive",
+        "requested": "[4.0.18.6, )",
+        "resolved": "4.0.18.6",
+        "contentHash": "RJUZT6HN4/xpYnUrjES2wiH1XooR7+cha5+enUb+TXjYMIDhLDG9wmoH0An3wViFUjXKL/ih3hpZg9yC3RDQAw==",
+        "dependencies": {
+          "AWSSDK.Core": "[4.0.3.12, 5.0.0)"
         }
       },
       "Azure.Storage.Files.Shares": {

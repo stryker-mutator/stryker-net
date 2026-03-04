@@ -10,6 +10,8 @@ public interface IStrykerOptions
 {
     int AdditionalTimeout { get; init; }
     string AzureFileStorageSas { get; init; }
+    string AwsS3BucketName { get; init; }
+    string AwsS3Region { get; init; }
     string AzureFileStorageUrl { get; init; }
     BaselineProvider BaselineProvider { get; init; }
     bool BreakOnInitialTestFailure { get; set; }

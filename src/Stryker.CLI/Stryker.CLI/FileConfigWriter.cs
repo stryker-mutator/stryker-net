@@ -25,6 +25,8 @@ public static class FileConfigGenerator
                     Provider = inputs.BaselineProviderInput.SuppliedInput ?? inputs.BaselineProviderInput.Default,
                     FallbackVersion = inputs.FallbackVersionInput.SuppliedInput ?? inputs.FallbackVersionInput.Default,
                     AzureFileShareUrl = inputs.AzureFileStorageUrlInput.SuppliedInput ?? inputs.AzureFileStorageUrlInput.Default,
+                    AwsS3BucketName = inputs.AwsS3BucketNameInput.SuppliedInput ?? inputs.AwsS3BucketNameInput.Default,
+                    AwsS3Region = inputs.AwsS3RegionInput.SuppliedInput ?? inputs.AwsS3RegionInput.Default,
                 },
                 Since = new Since
                 {

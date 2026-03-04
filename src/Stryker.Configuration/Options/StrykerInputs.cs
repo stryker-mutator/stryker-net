@@ -8,6 +8,8 @@ namespace Stryker.Configuration.Options;
 public interface IStrykerInputs
 {
     AdditionalTimeoutInput AdditionalTimeoutInput { get; init; }
+    AwsS3BucketNameInput AwsS3BucketNameInput { get; init; }
+    AwsS3RegionInput AwsS3RegionInput { get; init; }
     AzureFileStorageSasInput AzureFileStorageSasInput { get; init; }
     AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; }
     BaselineProviderInput BaselineProviderInput { get; init; }
@@ -89,6 +91,8 @@ public class StrykerInputs : IStrykerInputs
     public BaselineProviderInput BaselineProviderInput { get; init; } = new();
     public AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; } = new();
     public AzureFileStorageSasInput AzureFileStorageSasInput { get; init; } = new();
+    public AwsS3BucketNameInput AwsS3BucketNameInput { get; init; } = new();
+    public AwsS3RegionInput AwsS3RegionInput { get; init; } = new();
     public DashboardUrlInput DashboardUrlInput { get; init; } = new();
     public DashboardApiKeyInput DashboardApiKeyInput { get; init; } = new();
     public ProjectNameInput ProjectNameInput { get; init; } = new();
@@ -164,6 +168,8 @@ public class StrykerInputs : IStrykerInputs
             DiffIgnoreChanges = DiffIgnoreChangesInput.Validate(),
             AzureFileStorageSas = AzureFileStorageSasInput.Validate(baselineProvider, withBaseline),
             AzureFileStorageUrl = AzureFileStorageUrlInput.Validate(baselineProvider, withBaseline),
+            AwsS3BucketName = AwsS3BucketNameInput.Validate(baselineProvider, withBaseline),
+            AwsS3Region = AwsS3RegionInput.Validate(baselineProvider, withBaseline),
             WithBaseline = withBaseline,
             BaselineProvider = baselineProvider,
             FallbackVersion = FallbackVersionInput.Validate(withBaseline, projectVersion, sinceTarget),

@@ -168,6 +168,10 @@ public class StrykerOptions : IStrykerOptions
     /// </summary>
     public string AzureFileStorageSas { get; init; }
 
+    public string AwsS3BucketName { get; init; }
+
+    public string AwsS3Region { get; init; }
+
     /// <summary>
     /// The url to connect to the dashboard API
     /// </summary>

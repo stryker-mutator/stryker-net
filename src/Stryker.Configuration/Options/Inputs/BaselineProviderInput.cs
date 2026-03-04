@@ -25,6 +25,7 @@ public class BaselineProviderInput : Input<string>
                     "disk" => BaselineProvider.Disk,
                     "dashboard" => BaselineProvider.Dashboard,
                     "azurefilestorage" => BaselineProvider.AzureFileStorage,
+                    "awss3" => BaselineProvider.AWSS3,
                     _ => throw new InputException($"Baseline storage provider '{SuppliedInput}' does not exist"),
                 };
             }
