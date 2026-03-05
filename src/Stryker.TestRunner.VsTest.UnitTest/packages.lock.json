@@ -828,7 +828,7 @@
           "Stryker.RegexMutators": "[4.13.0, )",
           "Stryker.Solutions": "[4.13.0, )",
           "Stryker.TestRunner.MicrosoftTestPlatform": "[4.13.0, )",
-          "Stryker.TestRunner.VsTest": "[1.0.0, )",
+          "Stryker.TestRunner.VsTest": "[4.13.0, )",
           "Stryker.Utilities": "[4.13.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
         }
