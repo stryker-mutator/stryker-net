@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -29,7 +31,53 @@ public static class IAnalyzerResultCSharpExtensions
         return compilationOptions;
     }
 
-    public static CSharpParseOptions GetParseOptions(this IAnalyzerResult analyzerResult, IStrykerOptions options) => new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.PreprocessorSymbols);
+    public static CSharpParseOptions GetParseOptions(this IAnalyzerResult analyzerResult, IStrykerOptions options)
+    {
+        var parseOptions = new CSharpParseOptions(
+            options.LanguageVersion,
+            DocumentationMode.None,
+            preprocessorSymbols: analyzerResult.PreprocessorSymbols
+        );
+
+        var features = ExtractCSharpFeatures(analyzerResult);
+
+        if (features.Count > 0)
+        {
+            parseOptions = parseOptions.WithFeatures(features);
+        }
+
+        return parseOptions;
+    }
+
+    private static List<KeyValuePair<string, string>> ExtractCSharpFeatures(IAnalyzerResult analyzerResult)
+    {
+        var features = new List<KeyValuePair<string, string>>();
+
+        var projectFeatures = analyzerResult.GetPropertyOrDefault("Features");
+        if (!string.IsNullOrWhiteSpace(projectFeatures))
+        {
+            foreach (var feature in projectFeatures.Split(';', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var trimmedFeature = feature.Trim();
+                if (!string.IsNullOrWhiteSpace(trimmedFeature))
+                {
+                    features.Add(new KeyValuePair<string, string>(trimmedFeature, "true"));
+                }
+            }
+        }
+
+        var interceptorsNamespaces = analyzerResult.GetPropertyOrDefault("InterceptorsNamespaces");
+        if (!string.IsNullOrWhiteSpace(interceptorsNamespaces))
+        {
+            if (!features.Any(f => f.Key == "InterceptorsPreview"))
+            {
+                features.Add(new KeyValuePair<string, string>("InterceptorsPreview", "true"));
+            }
+            features.Add(new KeyValuePair<string, string>("InterceptorsNamespaces", interceptorsNamespaces));
+        }
+
+        return features;
+    }
 
     private static NullableContextOptions GetNullableContextOptions(this IAnalyzerResult analyzerResult)
     {
