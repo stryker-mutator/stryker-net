@@ -62,7 +62,7 @@ public class S3BaselineProvider : IBaselineProvider
 
         try
         {
-            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(report.ToJson()));
+            await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(report.ToJson()));
 
             var request = new PutObjectRequest
             {
@@ -83,7 +83,7 @@ public class S3BaselineProvider : IBaselineProvider
 
     private string BuildObjectKey(string version) => $"{_outputPath}/{version}/{StrykerReportName}";
 
-    private static IAmazonS3 CreateS3Client(string region, string endpoint)
+    private static AmazonS3Client CreateS3Client(string region, string endpoint)
     {
         var config = new AmazonS3Config();
 
