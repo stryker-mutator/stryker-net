@@ -715,11 +715,11 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.54.0, )",
           "Stryker.Abstractions": "[4.13.0, )",
-          "Stryker.Configuration": "[1.0.0, )",
+          "Stryker.Configuration": "[4.13.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
-          "Stryker.RegexMutators": "[1.0.0, )",
-          "Stryker.Solutions": "[1.0.0, )",
-          "Stryker.TestRunner.MicrosoftTestPlatform": "[1.0.0, )",
+          "Stryker.RegexMutators": "[4.13.0, )",
+          "Stryker.Solutions": "[4.13.0, )",
+          "Stryker.TestRunner.MicrosoftTestPlatform": "[4.13.0, )",
           "Stryker.TestRunner.VsTest": "[1.0.0, )",
           "Stryker.Utilities": "[4.13.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
@@ -745,7 +745,7 @@
           "Microsoft.CodeAnalysis.Common": "[5.0.0, )",
           "Serilog": "[4.3.1, )",
           "Stryker.Abstractions": "[4.13.0, )",
-          "Stryker.Utilities": "[1.0.0, )"
+          "Stryker.Utilities": "[4.13.0, )"
         }
       },
       "stryker.datacollector": {
@@ -781,7 +781,7 @@
           "Microsoft.Testing.Platform": "[1.5.2, )",
           "StreamJsonRpc": "[2.24.84, )",
           "Stryker.TestRunner": "[4.13.0, )",
-          "Stryker.Utilities": "[1.0.0, )"
+          "Stryker.Utilities": "[4.13.0, )"
         }
       },
       "stryker.testrunner.vstest": {
@@ -793,7 +793,7 @@
           "Microsoft.TestPlatform.Portable": "[18.3.0, )",
           "Microsoft.TestPlatform.TranslationLayer": "[18.3.0, )",
           "Stryker.Abstractions": "[4.13.0, )",
-           "Stryker.DataCollector": "[4.13.0, )",
+          "Stryker.DataCollector": "[4.13.0, )",
           "Stryker.TestRunner": "[4.13.0, )",
           "Stryker.Utilities": "[4.13.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
