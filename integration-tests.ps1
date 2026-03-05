@@ -151,6 +151,12 @@ function Run-Category {
       if (Test-Path $mtpSolutionPath) { Run-Stryker -WorkingDirectory $mtpSolutionWd -Arguments @('--solution', $mtpSolutionPath, '--test-runner', 'mtp') } else { Write-Warn "MTP Solution not found at $mtpSolutionPath" }
       break
     }
+    'WebApiWithOpenApi' {
+      if ($Runtime -ne 'netcore') { throw "WebApiWithOpenApi only supports runtime 'netcore'." }
+      $webApiWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore\WebApiWithOpenApi'
+      if (Test-Path $webApiWd) { Run-Stryker -WorkingDirectory $webApiWd } else { Write-Warn "WebApiWithOpenApi folder not found at $webApiWd" }
+      break
+    }
     'Solution' {
       if ($Runtime -eq 'netcore') {
         $netcoreWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore'
@@ -196,8 +202,8 @@ if (${env:GITHUB_ACTIONS} -eq "true") {
   if (-not $category) { throw "In GitHub Actions the CATEGORY environment variable must be set." }
   if (-not $runtime) { throw "In GitHub Actions the RUNTIME environment variable must be set." }
 } else {
-  Write-Info "Not running in GitHub Actions; defaulting to category 'Solution' and runtime 'netcore'"
-  $category = 'Solution'
+  Write-Info "Not running in GitHub Actions; defaulting to category 'WebApiWithOpenApi' and runtime 'netcore'"
+  $category = 'WebApiWithOpenApi'
   $runtime = 'netcore'
 }
 
