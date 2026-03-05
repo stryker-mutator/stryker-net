@@ -90,6 +90,18 @@ public class BaselineProviderInputTests : TestBase
     }
 
     [TestMethod]
+    [DataRow("s3")]
+    [DataRow("S3")]
+    public void ShouldSetS3Storage(string value)
+    {
+        var target = new BaselineProviderInput { SuppliedInput = value };
+
+        var result = target.Validate(new[] { Reporter.Dashboard }, true);
+
+        result.ShouldBe(BaselineProvider.S3);
+    }
+
+    [TestMethod]
     public void ShouldThrowException_OnInvalidInput()
     {
         var target = new BaselineProviderInput { SuppliedInput = "invalid" };
