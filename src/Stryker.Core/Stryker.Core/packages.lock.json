@@ -932,7 +932,7 @@
           "Microsoft.TestPlatform.Portable": "[18.3.0, )",
           "Microsoft.TestPlatform.TranslationLayer": "[18.3.0, )",
           "Stryker.Abstractions": "[4.13.0, )",
-           "Stryker.DataCollector": "[4.13.0, )",
+          "Stryker.DataCollector": "[4.13.0, )",
           "Stryker.TestRunner": "[4.13.0, )",
           "Stryker.Utilities": "[4.13.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
