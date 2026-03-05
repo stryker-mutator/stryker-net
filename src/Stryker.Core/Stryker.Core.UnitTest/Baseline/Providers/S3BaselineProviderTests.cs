@@ -19,7 +19,7 @@ using Stryker.Core.UnitTest.Reporters;
 namespace Stryker.Core.UnitTest.Baseline.Providers;
 
 [TestClass]
-public class AwsS3BaselineProviderTests : TestBase
+public class S3BaselineProviderTests : TestBase
 {
     private const string BucketName = "my-stryker-bucket";
 
@@ -27,13 +27,13 @@ public class AwsS3BaselineProviderTests : TestBase
     public async Task Load_Returns_Null_When_Object_Not_Found()
     {
         var s3Mock = new Mock<IAmazonS3>();
-        var logger = Mock.Of<ILogger<AwsS3BaselineProvider>>();
+        var logger = Mock.Of<ILogger<S3BaselineProvider>>();
 
         s3Mock.Setup(s => s.GetObjectAsync(BucketName, "StrykerOutput/v1/stryker-report.json", default))
             .ThrowsAsync(new AmazonS3Exception("Not Found") { StatusCode = HttpStatusCode.NotFound });
 
-        var options = new StrykerOptions { AwsS3BucketName = BucketName };
-        var provider = new AwsS3BaselineProvider(options, s3Mock.Object, logger);
+        var options = new StrykerOptions { S3BucketName = BucketName };
+        var provider = new S3BaselineProvider(options, s3Mock.Object, logger);
 
         var report = await provider.Load("v1");
 
@@ -45,13 +45,13 @@ public class AwsS3BaselineProviderTests : TestBase
     public async Task Load_Returns_Null_On_S3_Error()
     {
         var s3Mock = new Mock<IAmazonS3>();
-        var logger = Mock.Of<ILogger<AwsS3BaselineProvider>>();
+        var logger = Mock.Of<ILogger<S3BaselineProvider>>();
 
         s3Mock.Setup(s => s.GetObjectAsync(BucketName, "StrykerOutput/v1/stryker-report.json", default))
             .ThrowsAsync(new AmazonS3Exception("Access Denied") { StatusCode = HttpStatusCode.Forbidden, ErrorCode = "AccessDenied" });
 
-        var options = new StrykerOptions { AwsS3BucketName = BucketName };
-        var provider = new AwsS3BaselineProvider(options, s3Mock.Object, logger);
+        var options = new StrykerOptions { S3BucketName = BucketName };
+        var provider = new S3BaselineProvider(options, s3Mock.Object, logger);
 
         var report = await provider.Load("v1");
 
@@ -63,7 +63,7 @@ public class AwsS3BaselineProviderTests : TestBase
     public async Task Load_Returns_Report_When_Object_Exists()
     {
         var s3Mock = new Mock<IAmazonS3>();
-        var options = new StrykerOptions { AwsS3BucketName = BucketName };
+        var options = new StrykerOptions { S3BucketName = BucketName };
 
         var json = JsonReport.Build(new StrykerOptions(), ReportTestHelper.CreateProjectWith(), It.IsAny<ITestProjectsInfo>()).ToJson();
         var responseStream = new MemoryStream(Encoding.UTF8.GetBytes(json));
@@ -72,7 +72,7 @@ public class AwsS3BaselineProviderTests : TestBase
         s3Mock.Setup(s => s.GetObjectAsync(BucketName, "StrykerOutput/v1/stryker-report.json", default))
             .ReturnsAsync(response);
 
-        var provider = new AwsS3BaselineProvider(options, s3Mock.Object);
+        var provider = new S3BaselineProvider(options, s3Mock.Object);
         var report = await provider.Load("v1");
 
         report.ShouldNotBeNull();
@@ -83,7 +83,7 @@ public class AwsS3BaselineProviderTests : TestBase
     public async Task Load_Uses_ProjectName_In_Key()
     {
         var s3Mock = new Mock<IAmazonS3>();
-        var options = new StrykerOptions { AwsS3BucketName = BucketName, ProjectName = "MyProject" };
+        var options = new StrykerOptions { S3BucketName = BucketName, ProjectName = "MyProject" };
 
         var json = JsonReport.Build(new StrykerOptions(), ReportTestHelper.CreateProjectWith(), It.IsAny<ITestProjectsInfo>()).ToJson();
         var responseStream = new MemoryStream(Encoding.UTF8.GetBytes(json));
@@ -92,7 +92,7 @@ public class AwsS3BaselineProviderTests : TestBase
         s3Mock.Setup(s => s.GetObjectAsync(BucketName, "StrykerOutput/MyProject/v1/stryker-report.json", default))
             .ReturnsAsync(response);
 
-        var provider = new AwsS3BaselineProvider(options, s3Mock.Object);
+        var provider = new S3BaselineProvider(options, s3Mock.Object);
         var report = await provider.Load("v1");
 
         report.ShouldNotBeNull();
@@ -103,8 +103,8 @@ public class AwsS3BaselineProviderTests : TestBase
     public async Task Save_Uploads_Report()
     {
         var s3Mock = new Mock<IAmazonS3>();
-        var logger = Mock.Of<ILogger<AwsS3BaselineProvider>>();
-        var options = new StrykerOptions { AwsS3BucketName = BucketName };
+        var logger = Mock.Of<ILogger<S3BaselineProvider>>();
+        var options = new StrykerOptions { S3BucketName = BucketName };
 
         s3Mock.Setup(s => s.PutObjectAsync(
                 It.Is<PutObjectRequest>(r =>
@@ -116,7 +116,7 @@ public class AwsS3BaselineProviderTests : TestBase
 
         var report = JsonReport.Build(new StrykerOptions(), ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
 
-        var provider = new AwsS3BaselineProvider(options, s3Mock.Object, logger);
+        var provider = new S3BaselineProvider(options, s3Mock.Object, logger);
         await provider.Save(report, "v1");
 
         s3Mock.VerifyAll();
@@ -127,15 +127,15 @@ public class AwsS3BaselineProviderTests : TestBase
     public async Task Save_Logs_Error_On_Failure()
     {
         var s3Mock = new Mock<IAmazonS3>();
-        var logger = Mock.Of<ILogger<AwsS3BaselineProvider>>();
-        var options = new StrykerOptions { AwsS3BucketName = BucketName };
+        var logger = Mock.Of<ILogger<S3BaselineProvider>>();
+        var options = new StrykerOptions { S3BucketName = BucketName };
 
         s3Mock.Setup(s => s.PutObjectAsync(It.IsAny<PutObjectRequest>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new AmazonS3Exception("Access Denied") { StatusCode = HttpStatusCode.Forbidden, ErrorCode = "AccessDenied" });
 
         var report = JsonReport.Build(new StrykerOptions(), ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
 
-        var provider = new AwsS3BaselineProvider(options, s3Mock.Object, logger);
+        var provider = new S3BaselineProvider(options, s3Mock.Object, logger);
         await provider.Save(report, "v1");
 
         Mock.Get(logger).Verify(LogLevel.Error, "Failed to save baseline to S3: AccessDenied - Access Denied");

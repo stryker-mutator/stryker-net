@@ -204,8 +204,9 @@ public class CommandLineConfigReader
         AddCliInput(inputs.ProjectVersionInput, "version", "v", category: InputCategory.Reporting);
         AddCliInput(inputs.DashboardApiKeyInput, "dashboard-api-key", null, category: InputCategory.Reporting);
         AddCliInput(inputs.AzureFileStorageSasInput, "azure-fileshare-sas", null, category: InputCategory.Reporting);
-        AddCliInput(inputs.AwsS3BucketNameInput, "aws-s3-bucket-name", null, category: InputCategory.Reporting);
-        AddCliInput(inputs.AwsS3RegionInput, "aws-s3-region", null, category: InputCategory.Reporting);
+        AddCliInput(inputs.S3BucketNameInput, "s3-bucket-name", null, category: InputCategory.Reporting);
+        AddCliInput(inputs.S3EndpointInput, "s3-endpoint", null, category: InputCategory.Reporting);
+        AddCliInput(inputs.S3RegionInput, "s3-region", null, category: InputCategory.Reporting);
         AddCliInput(inputs.OutputPathInput, "output", "O", optionType: CommandOptionType.SingleValue, category: InputCategory.Reporting);
         // Category: Misc
         AddCliInput(inputs.BreakOnInitialTestFailureInput, "break-on-initial-test-failure", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);

@@ -168,9 +168,20 @@ public class StrykerOptions : IStrykerOptions
     /// </summary>
     public string AzureFileStorageSas { get; init; }
 
-    public string AwsS3BucketName { get; init; }
+    /// <summary>
+    /// The S3 bucket name to use for baseline storage.
+    /// </summary>
+    public string S3BucketName { get; init; }
 
-    public string AwsS3Region { get; init; }
+    /// <summary>
+    /// Custom endpoint URL for S3-compatible storage (e.g. MinIO, Backblaze B2). When empty, the default AWS endpoint is used.
+    /// </summary>
+    public string S3Endpoint { get; init; }
+
+    /// <summary>
+    /// The region for the S3 bucket (e.g. us-east-1). When empty, the SDK resolves from environment or profile.
+    /// </summary>
+    public string S3Region { get; init; }
 
     /// <summary>
     /// The url to connect to the dashboard API
