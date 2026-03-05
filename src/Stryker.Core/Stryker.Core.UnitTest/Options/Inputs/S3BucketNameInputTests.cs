@@ -7,19 +7,19 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Stryker.Core.UnitTest.Options.Inputs;
 
 [TestClass]
-public class AwsS3BucketNameInputTests : TestBase
+public class S3BucketNameInputTests : TestBase
 {
     [TestMethod]
     public void ShouldHaveHelpText()
     {
-        var target = new AwsS3BucketNameInput();
+        var target = new S3BucketNameInput();
         target.HelpText.ShouldNotBeNullOrEmpty();
     }
 
     [TestMethod]
-    public void ShouldReturnDefault_WhenProviderNotAwsS3()
+    public void ShouldReturnDefault_WhenProviderNotS3()
     {
-        var target = new AwsS3BucketNameInput { SuppliedInput = null };
+        var target = new S3BucketNameInput { SuppliedInput = null };
 
         var result = target.Validate(BaselineProvider.Dashboard, true);
 
@@ -29,9 +29,9 @@ public class AwsS3BucketNameInputTests : TestBase
     [TestMethod]
     public void ShouldReturnDefault_WhenBaselineIsDisabled()
     {
-        var target = new AwsS3BucketNameInput { SuppliedInput = "my-bucket" };
+        var target = new S3BucketNameInput { SuppliedInput = "my-bucket" };
 
-        var result = target.Validate(BaselineProvider.AWSS3, false);
+        var result = target.Validate(BaselineProvider.S3, false);
 
         result.ShouldBe(string.Empty);
     }
@@ -39,9 +39,9 @@ public class AwsS3BucketNameInputTests : TestBase
     [TestMethod]
     public void ShouldReturnBucketName_WhenValid()
     {
-        var target = new AwsS3BucketNameInput { SuppliedInput = "my-stryker-bucket" };
+        var target = new S3BucketNameInput { SuppliedInput = "my-stryker-bucket" };
 
-        var result = target.Validate(BaselineProvider.AWSS3, true);
+        var result = target.Validate(BaselineProvider.S3, true);
 
         result.ShouldBe("my-stryker-bucket");
     }
@@ -52,10 +52,10 @@ public class AwsS3BucketNameInputTests : TestBase
     [DataRow("  ")]
     public void ShouldThrowException_WhenBucketNameMissing(string input)
     {
-        var target = new AwsS3BucketNameInput { SuppliedInput = input };
+        var target = new S3BucketNameInput { SuppliedInput = input };
 
-        var exception = Should.Throw<InputException>(() => target.Validate(BaselineProvider.AWSS3, true));
+        var exception = Should.Throw<InputException>(() => target.Validate(BaselineProvider.S3, true));
 
-        exception.Message.ShouldBe("The AWS S3 bucket name is required when AWSS3 is used as the baseline provider.");
+        exception.Message.ShouldBe("The S3 bucket name is required when S3 is used as the baseline provider.");
     }
 }

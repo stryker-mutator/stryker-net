@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -15,25 +14,25 @@ using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Baseline.Providers;
 
-public class AwsS3BaselineProvider : IBaselineProvider
+public class S3BaselineProvider : IBaselineProvider
 {
     private const string DefaultOutputDirectoryName = "StrykerOutput";
     private const string StrykerReportName = "stryker-report.json";
 
     private readonly IAmazonS3 _s3Client;
-    private readonly ILogger<AwsS3BaselineProvider> _logger;
+    private readonly ILogger<S3BaselineProvider> _logger;
     private readonly string _bucketName;
     private readonly string _outputPath;
 
-    public AwsS3BaselineProvider(IStrykerOptions options, IAmazonS3 s3Client = null, ILogger<AwsS3BaselineProvider> logger = null)
+    public S3BaselineProvider(IStrykerOptions options, IAmazonS3 s3Client = null, ILogger<S3BaselineProvider> logger = null)
     {
-        _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<AwsS3BaselineProvider>();
-        _bucketName = options.AwsS3BucketName;
+        _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<S3BaselineProvider>();
+        _bucketName = options.S3BucketName;
         _outputPath = string.IsNullOrWhiteSpace(options.ProjectName)
             ? DefaultOutputDirectoryName
             : $"{DefaultOutputDirectoryName}/{options.ProjectName}";
 
-        _s3Client = s3Client ?? CreateS3Client(options.AwsS3Region);
+        _s3Client = s3Client ?? CreateS3Client(options.S3Region, options.S3Endpoint);
     }
 
     public async Task<IJsonReport> Load(string version)
@@ -42,7 +41,7 @@ public class AwsS3BaselineProvider : IBaselineProvider
 
         try
         {
-            var response = await _s3Client.GetObjectAsync(_bucketName, key);
+            using var response = await _s3Client.GetObjectAsync(_bucketName, key);
             return await response.ResponseStream.DeserializeJsonReportAsync();
         }
         catch (AmazonS3Exception ex) when (ex.StatusCode == HttpStatusCode.NotFound)
@@ -84,13 +83,21 @@ public class AwsS3BaselineProvider : IBaselineProvider
 
     private string BuildObjectKey(string version) => $"{_outputPath}/{version}/{StrykerReportName}";
 
-    private static IAmazonS3 CreateS3Client(string region)
+    private static IAmazonS3 CreateS3Client(string region, string endpoint)
     {
+        var config = new AmazonS3Config();
+
         if (!string.IsNullOrWhiteSpace(region))
         {
-            return new AmazonS3Client(RegionEndpoint.GetBySystemName(region));
+            config.RegionEndpoint = RegionEndpoint.GetBySystemName(region);
         }
 
-        return new AmazonS3Client();
+        if (!string.IsNullOrWhiteSpace(endpoint))
+        {
+            config.ServiceURL = endpoint;
+            config.ForcePathStyle = true;
+        }
+
+        return new AmazonS3Client(config);
     }
 }

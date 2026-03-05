@@ -6,19 +6,19 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Stryker.Core.UnitTest.Options.Inputs;
 
 [TestClass]
-public class AwsS3RegionInputTests : TestBase
+public class S3RegionInputTests : TestBase
 {
     [TestMethod]
     public void ShouldHaveHelpText()
     {
-        var target = new AwsS3RegionInput();
+        var target = new S3RegionInput();
         target.HelpText.ShouldNotBeNullOrEmpty();
     }
 
     [TestMethod]
-    public void ShouldReturnDefault_WhenProviderNotAwsS3()
+    public void ShouldReturnDefault_WhenProviderNotS3()
     {
-        var target = new AwsS3RegionInput { SuppliedInput = "us-east-1" };
+        var target = new S3RegionInput { SuppliedInput = "us-east-1" };
 
         var result = target.Validate(BaselineProvider.Dashboard, true);
 
@@ -28,9 +28,9 @@ public class AwsS3RegionInputTests : TestBase
     [TestMethod]
     public void ShouldReturnDefault_WhenBaselineIsDisabled()
     {
-        var target = new AwsS3RegionInput { SuppliedInput = "us-east-1" };
+        var target = new S3RegionInput { SuppliedInput = "us-east-1" };
 
-        var result = target.Validate(BaselineProvider.AWSS3, false);
+        var result = target.Validate(BaselineProvider.S3, false);
 
         result.ShouldBe(string.Empty);
     }
@@ -38,9 +38,9 @@ public class AwsS3RegionInputTests : TestBase
     [TestMethod]
     public void ShouldReturnRegion_WhenValid()
     {
-        var target = new AwsS3RegionInput { SuppliedInput = "eu-west-1" };
+        var target = new S3RegionInput { SuppliedInput = "eu-west-1" };
 
-        var result = target.Validate(BaselineProvider.AWSS3, true);
+        var result = target.Validate(BaselineProvider.S3, true);
 
         result.ShouldBe("eu-west-1");
     }
@@ -51,9 +51,9 @@ public class AwsS3RegionInputTests : TestBase
     [DataRow("  ")]
     public void ShouldReturnDefault_WhenRegionNotProvided(string input)
     {
-        var target = new AwsS3RegionInput { SuppliedInput = input };
+        var target = new S3RegionInput { SuppliedInput = input };
 
-        var result = target.Validate(BaselineProvider.AWSS3, true);
+        var result = target.Validate(BaselineProvider.S3, true);
 
         result.ShouldBe(string.Empty);
     }

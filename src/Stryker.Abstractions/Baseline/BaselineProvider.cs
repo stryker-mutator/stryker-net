@@ -5,5 +5,5 @@ public enum BaselineProvider
     Dashboard,
     Disk,
     AzureFileStorage,
-    AWSS3
+    S3
 }
