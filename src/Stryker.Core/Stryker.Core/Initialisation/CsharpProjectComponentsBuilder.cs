@@ -54,7 +54,7 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {
         var inputFiles = new CsharpFolderComposite();
         var sourceProjectDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
-        var cSharpParseOptions = BuildCsharpParseOptions(analyzerResult, _options);
+        var cSharpParseOptions = analyzerResult.GetParseOptions(_options);
         foreach (var dir in ExtractProjectFolders(analyzerResult))
         {
             var folder = FileSystem.Path.Combine(Path.GetDirectoryName(sourceProjectDir), dir);
@@ -66,7 +66,7 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
     }
 
     public override void InjectHelpers(IReadOnlyProjectComponent inputFiles)
-        => InjectMutantHelpers((CsharpFolderComposite)inputFiles, BuildCsharpParseOptions(_projectInfo.AnalyzerResult, _options));
+        => InjectMutantHelpers((CsharpFolderComposite)inputFiles, _projectInfo.AnalyzerResult.GetParseOptions(_options));
 
     private CsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, IStrykerOptions options)
     {
@@ -230,14 +230,17 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
 
     private void InjectMutantHelpers(CsharpFolderComposite rootFolderComposite, CSharpParseOptions cSharpParseOptions)
     {
+        var allFeatures = cSharpParseOptions.Features.Select(f => $"{f.Key}:{f.Value}").ToList();
+        if (allFeatures.Count > 0)
+        {
+            _logger.LogDebug("Using following C# features for mutant helpers: {Features}", string.Join(",", allFeatures));
+        }
+
         foreach (var (name, code) in _projectInfo.CodeInjector.MutantHelpers)
         {
             rootFolderComposite.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32, options: cSharpParseOptions));
         }
     }
-
-    private static CSharpParseOptions BuildCsharpParseOptions(IAnalyzerResult analyzerResult, IStrykerOptions options) =>
-        new(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.PreprocessorSymbols);
 
     // get the FolderComposite object representing the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path
     private CsharpFolderComposite GetOrBuildFolderComposite(IDictionary<string, CsharpFolderComposite> cache, string targetFolder, string sourceProjectDir, ProjectComponent<SyntaxTree> inputFiles)
