@@ -127,6 +127,15 @@ public class Baseline : IExtraData
     [JsonPropertyName("azure-fileshare-url")]
     public string AzureFileShareUrl { get; init; }
 
+    [JsonPropertyName("s3-bucket-name")]
+    public string S3BucketName { get; init; }
+
+    [JsonPropertyName("s3-endpoint")]
+    public string S3Endpoint { get; init; }
+
+    [JsonPropertyName("s3-region")]
+    public string S3Region { get; init; }
+
     [JsonPropertyName("fallback-version")]
     public string FallbackVersion { get; init; }
 

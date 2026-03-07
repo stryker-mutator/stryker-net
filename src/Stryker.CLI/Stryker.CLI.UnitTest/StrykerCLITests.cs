@@ -471,6 +471,39 @@ Options:";
     }
 
     [TestMethod]
+    [DataRow("--s3-bucket-name", "my-bucket")]
+    public async Task ShouldSupplyS3BucketNameWhenPassed(params string[] argName)
+    {
+        await _target.RunAsync(argName);
+
+        _strykerRunnerMock.VerifyAll();
+
+        _inputs.S3BucketNameInput.SuppliedInput.ShouldBe("my-bucket");
+    }
+
+    [TestMethod]
+    [DataRow("--s3-endpoint", "https://minio.example.com:9000")]
+    public async Task ShouldSupplyS3EndpointWhenPassed(params string[] argName)
+    {
+        await _target.RunAsync(argName);
+
+        _strykerRunnerMock.VerifyAll();
+
+        _inputs.S3EndpointInput.SuppliedInput.ShouldBe("https://minio.example.com:9000");
+    }
+
+    [TestMethod]
+    [DataRow("--s3-region", "us-east-1")]
+    public async Task ShouldSupplyS3RegionWhenPassed(params string[] argName)
+    {
+        await _target.RunAsync(argName);
+
+        _strykerRunnerMock.VerifyAll();
+
+        _inputs.S3RegionInput.SuppliedInput.ShouldBe("us-east-1");
+    }
+
+    [TestMethod]
     [DataRow("--break-on-initial-test-failure")]
     public async Task ShouldSupplyBreakOnInitialTestFailureWhenPassed(params string[] argName)
     {
