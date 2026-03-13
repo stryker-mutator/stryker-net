@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using StreamJsonRpc;
 using Stryker.Abstractions.Options;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
+using Stryker.TestRunner.MicrosoftTestPlatform.RPC;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform;
 
