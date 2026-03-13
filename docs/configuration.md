@@ -593,6 +593,7 @@ Supported storage providers are:
 | Disk              | Disk   | Saves the baseline on disk to the `StrykerOutput` folder |
 | Stryker Dashboard | Dashboard | Saves the baseline to Stryker Dashboard |
 | Azure File Storage | AzureFileStorage | Saves the baseline to Azure File Storage |
+| S3-compatible storage | S3 | Saves the baseline to any S3-compatible object storage (AWS S3, MinIO, Backblaze B2, etc.) |
 
 For configuring the dashboard provider see [Dashboard Reporter Settings](./reporters.md#dashboard-reporter)
 
@@ -626,6 +627,34 @@ Allowed resource types: `Container`, `Object`
 Allowed permissions: `Read`, `Write`, `Create`
 
 For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
+
+### `s3-bucket-name` &lt;`string`&gt;
+
+Default: `null`  
+Command line: `--s3-bucket-name "my-stryker-baselines"`  
+Config file: `"baseline": { "s3-bucket-name": 'my-stryker-baselines' }`
+
+When using the S3 [provider](#baselineprovider-string) you must set the bucket name where baselines will be stored.
+
+The baseline reports are stored under the key `StrykerOutput/Baselines/<version>/stryker-report.json` within the bucket.
+
+### `s3-region` &lt;`string`&gt;
+
+Default: `null`  
+Command line: `--s3-region "us-east-1"`  
+Config file: `"baseline": { "s3-region": 'us-east-1' }`
+
+When using the S3 [provider](#baselineprovider-string) you must set the region of the S3 bucket.
+
+### `s3-endpoint` &lt;`string`&gt;
+
+Default: `null`  
+Command line: `--s3-endpoint "https://minio.example.com:9000"`  
+Config file: `"baseline": { "s3-endpoint": 'https://minio.example.com:9000' }`
+
+When using a non-AWS S3-compatible service (e.g. MinIO, Backblaze B2) you can set a custom endpoint URL. This is optional; when not set the default AWS S3 endpoint is used.
+
+Authentication uses the default AWS credential resolution chain (environment variables, shared credentials file, IAM role, etc.). For non-AWS services, set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
 
 ## Troubleshooting
 

@@ -1,3 +1,19 @@
+# [4.13.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.12.0...stryker@4.13.0) (2026-03-04)
+
+
+### Bug Fixes
+
+* **analysis:** Relax success criteria for test projects ([#3426](https://github.com/stryker-mutator/stryker-net/issues/3426)) ([a6f7c0c](https://github.com/stryker-mutator/stryker-net/commit/a6f7c0cadc55c7dbdff59ee3e63280c77e35d634))
+* propagate Platform to Buildalyzer for x64 builds ([#3432](https://github.com/stryker-mutator/stryker-net/issues/3432)) ([51dd201](https://github.com/stryker-mutator/stryker-net/commit/51dd20109dffe39742df68c8cf538e7757b3be93))
+
+
+### Features
+
+* **MTP Coverage analysis:** add coverage analysis to preview mtp testrunner ([#3418](https://github.com/stryker-mutator/stryker-net/issues/3418)) ([46f2752](https://github.com/stryker-mutator/stryker-net/commit/46f27522ac6f3e8902ee08c2aafbf33e390f3c61)), closes [#3449](https://github.com/stryker-mutator/stryker-net/issues/3449)
+* **testrunner:** Improve detection of test projects for MTP ([#3423](https://github.com/stryker-mutator/stryker-net/issues/3423)) ([45b0e7d](https://github.com/stryker-mutator/stryker-net/commit/45b0e7d77424c4ce3a01c1b6cc20f496dd545dfb)), closes [/github.com/stryker-mutator/stryker-net/pull/3423#issuecomment-3845798925](https://github.com//github.com/stryker-mutator/stryker-net/pull/3423/issues/issuecomment-3845798925)
+
+
+
 # [4.12.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.11.0...stryker@4.12.0) (2026-02-01)
 
 
