@@ -27,7 +27,7 @@ While developing on Stryker.NET we advise to work in [the latest Visual Studio](
 ### Visual Studio Setup
 
 *	Clone the repository `https://github.com/stryker-mutator/stryker-net.git`
-*	Open `Stryker.sln`
+*	Open `Stryker.slnx`
 *	On `Stryker.CLI` open `properties > Debug`
 *	Create a new Debug profile
 *	Set `Launch` as `Project`
