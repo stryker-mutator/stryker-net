@@ -30,6 +30,58 @@ While developing on Stryker.NET we advise to work in [the latest Visual Studio](
 *	Set `WorkingDirectory` as your local installation dir, pointing to a UnitTest project `example: (C:\Repos\MyProject\src\MyProject\MyProject.UnitTest)`. You can use the ready made projects in `.\integrationtest\TargetProjects` for this.
 *	Run the program with `Stryker.CLI` as the startup project with the newly created Debug profile
 
+### Visual Studio Code Setup
+If you prefer using Visual Studio Code instead of Visual Studio, follow these steps to set up Stryker.NET for debugging and testing:
+
+#### Prerequisites
+- Install the [C# Dev Kit extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp) or the [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.vscode-csharp)
+- Ensure you have .NET 8 SDK or later installed
+
+#### Configuration Setup
+1. **Copy configuration templates**:
+   - The repository includes example configuration files: `.vscode/launch.json.example` and `.vscode/tasks.json.example`
+   - Copy these to `.vscode/launch.json` and `.vscode/tasks.json` respectively:
+     ```bash
+     cp .vscode/launch.json.example .vscode/launch.json
+     cp .vscode/tasks.json.example .vscode/tasks.json
+     ```
+   - Or manually copy the contents if using Windows
+
+2. **Update launch configurations** (optional):
+   - The example configurations provide launch targets for:
+     - Integration test projects (NetCore and MicrosoftTestPlatform variants)
+     - Multiple test frameworks (MSTest, XUnit, NUnit, TUnit)
+   - You can customize the `cwd` (working directory) in `launch.json` to point to your own test project
+   - For your own project, add a new configuration block with your project's path
+
+3. **Update task commands** (optional on macOS/Linux):
+   - The tasks.json uses `dotnet` command which works on Windows with .NET SDKs installed globally
+   - **On macOS/Linux**: If `dotnet` is not in your PATH when VS Code runs tasks, update the `command` field to the full path:
+     - macOS default: `/usr/local/share/dotnet/dotnet`
+     - Or use: `which dotnet` in your terminal to find the exact path
+   - Alternatively, change `"type": "process"` to `"type": "shell"` to inherit your shell's PATH
+
+#### Running and Debugging
+1. **Build the CLI**:
+   - Use Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`)
+   - Select **"Tasks: Run Task"** → **"build-cli"** (or use **"build-solution"** for the complete solution)
+
+2. **Start debugging**:
+   - Select a launch configuration from the Run & Debug sidebar
+   - Press `F5` or click the **Start Debugging** button
+   - Stryker will launch with the working directory set to your target test project
+
+3. **Available debug targets**:
+   - **NetCore projects**: ExtraProject.XUnit, NetCoreTestProject.MSTest/NUnit/XUnit, etc.
+   - **MTP (Microsoft Test Platform) projects**: MTP.UnitTests.MSTest/NUnit/TUnit/XUnit
+   - Each target is pre-configured to run Stryker against the corresponding test project
+
+#### Troubleshooting
+- **Tasks not showing**: Make sure `.vscode/tasks.json` exists and is valid JSON
+- **"Command not found" errors**: Verify `dotnet` is available: run `dotnet --version` in your terminal
+- **Debug won't start**: Ensure the build-cli task completes successfully first
+- **Breakpoints not working**: Verify you're using Debug configuration (not Release) in the build task
+
 \* Running Stryker on itself doesn't work as the assemblies will be in use by Visual Studio. You can clone Stryker another time to use as a test project.
 
 #### Compiler Platform SDK
