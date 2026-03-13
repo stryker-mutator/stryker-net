@@ -230,11 +230,6 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
 
     private void InjectMutantHelpers(CsharpFolderComposite rootFolderComposite, CSharpParseOptions cSharpParseOptions)
     {
-        var allFeatures = cSharpParseOptions.Features.Select(f => $"{f.Key}:{f.Value}").ToList();
-        if (allFeatures.Count > 0)
-        {
-            _logger.LogDebug("Using following C# features for mutant helpers: {Features}", string.Join(",", allFeatures));
-        }
 
         foreach (var (name, code) in _projectInfo.CodeInjector.MutantHelpers)
         {
