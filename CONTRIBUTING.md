@@ -19,9 +19,7 @@ New features are welcome! Either as requests or proposals.
 Please read the [dedicated document](adding_a_mutator.md).
 
 ## Setup Stryker.NET locally
-While developing on Stryker.NET we advise to work in [the latest Visual Studio](https://www.visualstudio.com/downloads/) and to set Stryker up to run on a UnitTest project on your local disk.
-
-\* Running Stryker on itself doesn't work as stryker will try to write to the assemblies but they will be in use by Visual Studio (code). To run stryker on stryker use the dedicated `stryker on stryker` github action or clone Stryker another time to use as a test project locally.
+While developing on Stryker.NET we advise to work in [the latest Visual Studio](https://www.visualstudio.com/downloads/) or [VSCode]() and to set Stryker up to run on a project on your local disk.
 
 ### Visual Studio Setup
 
@@ -60,13 +58,18 @@ If you prefer using Visual Studio Code instead of Visual Studio, follow these st
 #### Troubleshooting
 
 - **"Command not found" errors**: Verify `dotnet` is available: run `dotnet --version` in your terminal
-   - **Update task commands** (optional on macOS/Linux):
-      - The tasks.json uses `dotnet` command which works on Windows with .NET SDKs installed globally
-      - **On macOS/Linux**: If `dotnet` is not in your PATH when VS Code runs tasks, update the `command` field to the full path:
-      - macOS default: `/usr/local/share/dotnet/dotnet`
-      - Or use: `which dotnet` in your terminal to find the exact path
-      - Alternatively, change `"type": "process"` to `"type": "shell"` to inherit your shell's PATH
+   - The tasks.json uses `dotnet` command which works on Windows with .NET SDKs installed globally
+   - **On macOS/Linux**: If `dotnet` is not in your PATH when VS Code runs tasks, update the `command` field to the full path:
+   - macOS default: `/usr/local/share/dotnet/dotnet`
+   - Or use: `which dotnet` in your terminal to find the exact path
+   - Alternatively, change `"type": "process"` to `"type": "shell"` to inherit your shell's PATH
 - **Breakpoints not working**: Verify you're using Debug configuration (not Release) in the build task
+
+### Running Stryker on Stryker
+
+Running Stryker on itself doesn't work as stryker will try to write to the assemblies but they will be in use by Visual Studio (Code). To run stryker on stryker use the dedicated `stryker on stryker` github action or use the `stryker-on-stryker.ps1` script locally.
+
+For debugging clone Stryker another time to use as a test project locally.
 
 #### Compiler Platform SDK
 We advise to use the `.NET Compiler Platform SDK` during development. The `Syntax Visualizer` can help to understand Abstract Syntax Trees and find out types of `SyntaxNodes` you need to target for certain mutators. The `.NET Compiler Platform SDK` is available as a component in the Visual Studio Installer.
