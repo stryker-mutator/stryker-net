@@ -21,6 +21,9 @@ Please read the [dedicated document](adding_a_mutator.md).
 ## Setup Stryker.NET locally
 While developing on Stryker.NET we advise to work in [the latest Visual Studio](https://www.visualstudio.com/downloads/) or [VSCode]() and to set Stryker up to run on a project on your local disk.
 
+## Prerequisites
+- Ensure you have .NET 8 SDK or later installed
+
 ### Visual Studio Setup
 
 *	Clone the repository `https://github.com/stryker-mutator/stryker-net.git`
@@ -34,12 +37,9 @@ While developing on Stryker.NET we advise to work in [the latest Visual Studio](
 ### Visual Studio Code Setup
 If you prefer using Visual Studio Code instead of Visual Studio, follow these steps to set up Stryker.NET for debugging and testing:
 
-#### Prerequisites
-- Install the [C# Dev Kit extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp) or the [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.vscode-csharp)
-- Ensure you have .NET 8 SDK or later installed
-
-#### Configuration Setup
-1. **Copy configuration templates**:
+- Open the `stryker-net.code-workspace`
+- Install the recommended extensions
+- Copy configuration templates:
    - The repository includes example configuration files: `.vscode/launch.json.example` and `.vscode/tasks.json.example`
    - Copy these to `.vscode/launch.json` and `.vscode/tasks.json` respectively:
      ```bash
@@ -48,20 +48,23 @@ If you prefer using Visual Studio Code instead of Visual Studio, follow these st
      ```
    - Or manually copy the contents if using Windows
 
-2. **Update launch configurations** (optional):
-   - The example configurations provide launch targets for:
-     - Integration test projects (NetCore and MicrosoftTestPlatform variants)
-     - Multiple test frameworks (MSTest, XUnit, NUnit, TUnit)
-   - You can customize the `cwd` (working directory) in `launch.json` to point to your own test project
-   - For your own project, add a new configuration block with your project's path
+#### About local vs. shared configurations
+
+- The example files (`.example`) are tracked in git and contain shared, tested configurations for all integration test projects
+- Your local `launch.json` (created from the example) is **not tracked by git** (it's in `.gitignore`)
+- You can safely customize your local `launch.json` with personal test targets without affecting the repository
+- To add a new shared configuration for all contributors, update `.vscode/launch.json.example` instead
+- The example configurations provide launch targets for:
+   - Integration test projects (NetCore and MicrosoftTestPlatform variants)
+   - Multiple test frameworks (MSTest, XUnit, NUnit, TUnit)
 
 #### Troubleshooting
 
 - **"Command not found" errors**: Verify `dotnet` is available: run `dotnet --version` in your terminal
    - The tasks.json uses `dotnet` command which works on Windows with .NET SDKs installed globally
    - **On macOS/Linux**: If `dotnet` is not in your PATH when VS Code runs tasks, update the `command` field to the full path:
-   - macOS default: `/usr/local/share/dotnet/dotnet`
-   - Or use: `which dotnet` in your terminal to find the exact path
+     - macOS default: `/usr/local/share/dotnet/dotnet`
+     - Or use: `which dotnet` in your terminal to find the exact path
    - Alternatively, change `"type": "process"` to `"type": "shell"` to inherit your shell's PATH
 - **Breakpoints not working**: Verify you're using Debug configuration (not Release) in the build task
 
