@@ -3,5 +3,12 @@
         {
             "path": "."
         }
-    ]
+    ],
+    "extensions": {
+        "recommendations": [
+            "ms-dotnettools.csdevkit",
+            "github.vscode-pull-request-github",
+            "ms-vscode.powershell"
+        ]
+    }
 }
