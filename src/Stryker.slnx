@@ -1,0 +1,41 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="../.editorconfig" />
+    <File Path="../.github/renovate.json" />
+    <File Path="../azure-pipelines.yml" />
+    <File Path="../integration-tests.ps1" />
+    <File Path="../README.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Folder Name="/Solution Items/.github/">
+    <File Path="../.github/renovate.json" />
+  </Folder>
+  <Folder Name="/Solution Items/.github/workflows/">
+    <File Path="../.github/workflows/integration-test.yaml" />
+  </Folder>
+  <Folder Name="/Solution Items/pipeline-templates/">
+    <File Path="../pipeline-templates/populate-cache-steps.yml" />
+    <File Path="../pipeline-templates/prepare-integration-test-steps.yml" />
+    <File Path="../pipeline-templates/run-integration-test-steps.yml" />
+    <File Path="../pipeline-templates/update-package-lock-files-stage.yml" />
+  </Folder>
+  <Project Path="Stryker.Abstractions/Stryker.Abstractions.csproj" />
+  <Project Path="Stryker.CLI/Stryker.CLI.UnitTest/Stryker.CLI.UnitTest.csproj" />
+  <Project Path="Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj" />
+  <Project Path="Stryker.Configuration/Stryker.Configuration.csproj" />
+  <Project Path="Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj" />
+  <Project Path="Stryker.Core/Stryker.Core/Stryker.Core.csproj" />
+  <Project Path="Stryker.DataCollector/Stryker.DataCollector.csproj" />
+  <Project Path="Stryker.RegexMutators/Stryker.RegexMutators.UnitTest/Stryker.RegexMutators.UnitTest.csproj" />
+  <Project Path="Stryker.RegexMutators/Stryker.RegexMutators/Stryker.RegexMutators.csproj" />
+  <Project Path="Stryker.Solutions.Test/Stryker.Solutions.Test.csproj" />
+  <Project Path="Stryker.Solutions/Stryker.Solutions.csproj" />
+  <Project Path="Stryker.TestRunner.MicrosoftTestPlatform.UnitTest/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest.csproj" />
+  <Project Path="Stryker.TestRunner.MicrosoftTestPlatform/Stryker.TestRunner.MicrosoftTestPlatform.csproj" />
+  <Project Path="Stryker.TestRunner.VsTest.UnitTest/Stryker.TestRunner.VsTest.UnitTest.csproj" />
+  <Project Path="Stryker.TestRunner.VsTest/Stryker.TestRunner.VsTest.csproj" />
+  <Project Path="Stryker.TestRunner/Stryker.TestRunner.csproj" />
+  <Project Path="Stryker.Utilities/Stryker.Utilities.csproj" />
+</Solution>
