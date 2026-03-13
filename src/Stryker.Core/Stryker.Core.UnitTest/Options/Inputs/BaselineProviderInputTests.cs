@@ -16,7 +16,7 @@ public class BaselineProviderInputTests : TestBase
     public void ShouldHaveHelpText()
     {
         var target = new BaselineProviderInput();
-        target.HelpText.ShouldBe("Choose a storage location for dashboard compare. Set to Dashboard provider when the dashboard reporter is turned on. | default: 'disk' | allowed: Dashboard, Disk, AzureFileStorage");
+        target.HelpText.ShouldBe("Choose a storage location for dashboard compare. Set to Dashboard provider when the dashboard reporter is turned on. | default: 'disk' | allowed: Dashboard, Disk, AzureFileStorage, S3");
     }
 
     [TestMethod]
@@ -87,6 +87,18 @@ public class BaselineProviderInputTests : TestBase
         var result = target.Validate(new[] { Reporter.Dashboard }, true);
 
         result.ShouldBe(BaselineProvider.AzureFileStorage);
+    }
+
+    [TestMethod]
+    [DataRow("s3")]
+    [DataRow("S3")]
+    public void ShouldSetS3Storage(string value)
+    {
+        var target = new BaselineProviderInput { SuppliedInput = value };
+
+        var result = target.Validate(new[] { Reporter.Dashboard }, true);
+
+        result.ShouldBe(BaselineProvider.S3);
     }
 
     [TestMethod]

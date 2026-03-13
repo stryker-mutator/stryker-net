@@ -13,6 +13,7 @@ public static class BaselineProviderFactory
             BaselineProvider.Dashboard => new DashboardBaselineProvider(options),
             BaselineProvider.Disk => new DiskBaselineProvider(options),
             BaselineProvider.AzureFileStorage => new AzureFileShareBaselineProvider(options),
+            BaselineProvider.S3 => new S3BaselineProvider(options),
             _ => new DiskBaselineProvider(options),
         };
     }

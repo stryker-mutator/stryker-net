@@ -40,6 +40,9 @@ public static class FileConfigReader
             inputs.BaselineProviderInput.SuppliedInput = config.Baseline.Provider;
             inputs.FallbackVersionInput.SuppliedInput = config.Baseline.FallbackVersion;
             inputs.AzureFileStorageUrlInput.SuppliedInput = config.Baseline.AzureFileShareUrl;
+            inputs.S3BucketNameInput.SuppliedInput = config.Baseline.S3BucketName;
+            inputs.S3EndpointInput.SuppliedInput = config.Baseline.S3Endpoint;
+            inputs.S3RegionInput.SuppliedInput = config.Baseline.S3Region;
         }
 
 
