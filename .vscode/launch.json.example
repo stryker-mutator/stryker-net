@@ -18,7 +18,7 @@
             "preLaunchTask": "build-cli",
             "program": "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/integrationtest/TargetProjects/NetCore/FullFrameworkApp.Test",
+            "cwd": "${workspaceFolder}/integrationtest/TargetProjects/NetFramework/FullFrameworkApp.Test",
             "console": "integratedTerminal"
         },
         {
