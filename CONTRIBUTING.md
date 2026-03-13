@@ -19,7 +19,7 @@ New features are welcome! Either as requests or proposals.
 Please read the [dedicated document](adding_a_mutator.md).
 
 ## Setup Stryker.NET locally
-While developing on Stryker.NET we advise to work in [the latest Visual Studio](https://www.visualstudio.com/downloads/) or [VSCode]() and to set Stryker up to run on a project on your local disk.
+While developing on Stryker.NET we advise to work in [the latest Visual Studio](https://www.visualstudio.com/downloads/) or [VSCode](https://code.visualstudio.com/Download) and to set Stryker up to run on a project on your local disk.
 
 ## Prerequisites
 - Ensure you have .NET 8 SDK or later installed
