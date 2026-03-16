@@ -57,7 +57,7 @@ public static class IAnalyzerResultCSharpExtensions
     /// It is not publicly documented by Microsoft as it is primarily intended for internal compiler development.
     /// Interceptors are a use case relying on this mechanism, using the features InterceptorsNamespaces and InterceptorsPreviewNamespaces.
     ///
-    /// About the Interceprots:
+    /// About the Interceptors:
     /// 
     /// This feature allow the user to specify namespaces that should be considered as containing interceptor types.
     /// This is necessary for the Roslyn compiler to properly handle them during compilation and enable the associated features and behaviors.
