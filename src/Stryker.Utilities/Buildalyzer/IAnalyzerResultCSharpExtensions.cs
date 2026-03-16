@@ -10,6 +10,9 @@ namespace Stryker.Utilities.Buildalyzer;
 
 public static class IAnalyzerResultCSharpExtensions
 {
+    private const string InterceptorsNamespacesKey = "InterceptorsNamespaces";
+    private const string InterceptorsPreviewNamespacesKey = "InterceptorsPreviewNamespaces";
+
     public static CSharpCompilationOptions GetCompilationOptions(this IAnalyzerResult analyzerResult)
     {
         var compilationOptions = new CSharpCompilationOptions(analyzerResult.GetOutputKind())
@@ -66,14 +69,16 @@ public static class IAnalyzerResultCSharpExtensions
             }
         }
 
-        var interceptorsNamespaces = analyzerResult.GetPropertyOrDefault("InterceptorsNamespaces");
-        if (!string.IsNullOrWhiteSpace(interceptorsNamespaces))
+        var interceptorsNamespaces = new List<string?>
         {
-            if (!features.Any(f => f.Key == "InterceptorsPreview"))
+            analyzerResult.GetPropertyOrDefault(InterceptorsNamespacesKey),
+            analyzerResult.GetPropertyOrDefault(InterceptorsPreviewNamespacesKey)
+        };
+        var combinedNamespaces = string.Join(";", interceptorsNamespaces.Where(ns => !string.IsNullOrWhiteSpace(ns)));
+
+        if (!string.IsNullOrWhiteSpace(combinedNamespaces))
             {
-                features.Add(new KeyValuePair<string, string>("InterceptorsPreview", "true"));
-            }
-            features.Add(new KeyValuePair<string, string>("InterceptorsNamespaces", interceptorsNamespaces));
+            features.Add(new KeyValuePair<string, string>(InterceptorsNamespacesKey, combinedNamespaces));
         }
 
         return features;

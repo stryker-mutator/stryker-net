@@ -197,7 +197,6 @@ public class AnalyzerResultExtensionsTests
     }
 
     [TestMethod]
-    [DataRow("InterceptorsNamespaces", "Microsoft.Extensions.DependencyInjection", "InterceptorsPreview", null)]
     [DataRow("Features", "InterceptorsPreview", "InterceptorsPreview", null)]
     [DataRow("Features", "InterceptorsPreview;FunctionPointers", "InterceptorsPreview", "FunctionPointers")]
     public void GetParseOptions_ShouldEnableFeatures_WhenPropertyIsSet(string propertyName, string propertyValue, string expectedFeature1, string expectedFeature2)
@@ -336,6 +335,61 @@ public class AnalyzerResultExtensionsTests
         parseOptions.Features.Count().ShouldBe(2);
         parseOptions.Features.ShouldContain(f => f.Key == "InterceptorsPreview");
         parseOptions.Features.ShouldContain(f => f.Key == "FunctionPointers");
+    }
+
+    [TestMethod]
+    public void GetParseOptions_ShouldCombineNamespaces_WhenBothInterceptorPropertiesAreSet()
+    {
+        // Arrange
+        var properties = new Dictionary<string, string>
+        {
+            { "InterceptorsNamespaces", "My.Namespace.A" },
+            { "InterceptorsPreviewNamespaces", "My.Namespace.B" }
+        };
+        var analyzerResult = CreateAnalyzerResultWithProperties(properties);
+
+        // Act
+        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+
+        // Assert
+        parseOptions.Features.ShouldContain(f =>
+            f.Key == "InterceptorsNamespaces" &&
+            f.Value == "My.Namespace.A;My.Namespace.B");
+        parseOptions.Features.Count().ShouldBe(1);
+    }
+
+    [TestMethod]
+    public void GetParseOptions_ShouldNotAddNamespace_WhenInterceptorPropertiesAreEmpty()
+    {
+        // Arrange
+        var properties = new Dictionary<string, string>
+        {
+            { "InterceptorsNamespaces", "" },
+            { "InterceptorsPreviewNamespaces", "" }
+        };
+        var analyzerResult = CreateAnalyzerResultWithProperties(properties);
+        // Act
+        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+        // Assert
+        parseOptions.Features.ShouldNotContain(f => f.Key == "InterceptorsNamespaces");
+    }
+
+    [TestMethod]
+    public void GetParseOptions_ShouldNotAddNamespace_WhenInterceptorPropertiesAreNull()
+    {
+        // Arrange
+        var properties = new Dictionary<string, string>
+        {
+            { "InterceptorsNamespaces", null },
+            { "InterceptorsPreviewNamespaces", null }
+        };
+        var analyzerResult = CreateAnalyzerResultWithProperties(properties);
+
+        // Act
+        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+
+        // Assert
+        parseOptions.Features.ShouldNotContain(f => f.Key == "InterceptorsNamespaces");
     }
 
     private static IAnalyzerResult CreateAnalyzerResultWithProperties(Dictionary<string, string> properties, string[] preprocessorSymbols = null)
