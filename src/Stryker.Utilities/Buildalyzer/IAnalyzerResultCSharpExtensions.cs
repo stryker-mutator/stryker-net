@@ -52,6 +52,22 @@ public static class IAnalyzerResultCSharpExtensions
         return parseOptions;
     }
 
+    /// <summary>
+    /// The <Features> MSBuild property is an internal Roslyn mechanism that passes a key-value dictionary directly to CSharpParseOptions.WithFeatures().
+    /// It is not publicly documented by Microsoft as it is primarily intended for internal compiler development.
+    /// Interceptors are a use case relying on this mechanism, using the features InterceptorsNamespaces and InterceptorsPreviewNamespaces.
+    ///
+    /// About the Interceprots:
+    /// 
+    /// This feature allow the user to specify namespaces that should be considered as containing interceptor types.
+    /// This is necessary for the Roslyn compiler to properly handle them during compilation and enable the associated features and behaviors.
+    /// 
+    /// Here is a doc explaining the interceptors feature:
+    /// https://github.com/dotnet/roslyn/blob/main/docs/features/interceptors.md.
+    /// 
+    /// And here is the part where the user configure the namespaces which are allowed to use interceptors in their project file:
+    /// https://github.com/dotnet/roslyn/blob/main/docs/features/interceptors.md#user-opt-in
+    /// </summary>
     private static List<KeyValuePair<string, string>> ExtractCSharpFeatures(IAnalyzerResult analyzerResult)
     {
         var features = new List<KeyValuePair<string, string>>();
@@ -77,7 +93,7 @@ public static class IAnalyzerResultCSharpExtensions
         var combinedNamespaces = string.Join(";", interceptorsNamespaces.Where(ns => !string.IsNullOrWhiteSpace(ns)));
 
         if (!string.IsNullOrWhiteSpace(combinedNamespaces))
-            {
+        {
             features.Add(new KeyValuePair<string, string>(InterceptorsNamespacesKey, combinedNamespaces));
         }
 
