@@ -1,3 +1,13 @@
+# [4.14.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.13.0...stryker@4.14.0) (2026-03-16)
+
+
+### Features
+
+* **baseline:** add S3-compatible storage as baseline provider ([#3470](https://github.com/stryker-mutator/stryker-net/issues/3470)) ([4ba8ba7](https://github.com/stryker-mutator/stryker-net/commit/4ba8ba71782fc96996efa383ef8f8491f9cbccef))
+* Support Roslyn Interceptors feature ([#3471](https://github.com/stryker-mutator/stryker-net/issues/3471)) ([c118cd5](https://github.com/stryker-mutator/stryker-net/commit/c118cd563a9aabd7b29130f3611e608ac287bb03)), closes [#3402](https://github.com/stryker-mutator/stryker-net/issues/3402) [#3402](https://github.com/stryker-mutator/stryker-net/issues/3402) [#3402](https://github.com/stryker-mutator/stryker-net/issues/3402)
+
+
+
 # [4.13.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.12.0...stryker@4.13.0) (2026-03-04)
 
 
