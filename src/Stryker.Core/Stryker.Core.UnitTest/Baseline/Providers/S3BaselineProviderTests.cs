@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -145,20 +146,40 @@ public class S3BaselineProviderTests : TestBase
     [TestMethod]
     public void Constructor_Uses_Endpoint_Without_Forcing_Path_Style()
     {
-        var options = new StrykerOptions
+        var originalAccessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
+        var originalSecretKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
+        var originalSessionToken = Environment.GetEnvironmentVariable("AWS_SESSION_TOKEN");
+        var originalMetadataDisabled = Environment.GetEnvironmentVariable("AWS_EC2_METADATA_DISABLED");
+
+        try
         {
-            S3BucketName = BucketName,
-            S3Endpoint = "https://minio.example.com:9000"
-        };
+            Environment.SetEnvironmentVariable("AWS_ACCESS_KEY_ID", "dummy-access-key");
+            Environment.SetEnvironmentVariable("AWS_SECRET_ACCESS_KEY", "dummy-secret-key");
+            Environment.SetEnvironmentVariable("AWS_SESSION_TOKEN", "dummy-session-token");
+            Environment.SetEnvironmentVariable("AWS_EC2_METADATA_DISABLED", "true");
 
-        var provider = new S3BaselineProvider(options);
-        var clientField = typeof(S3BaselineProvider).GetField("_s3Client", BindingFlags.Instance | BindingFlags.NonPublic);
-        clientField.ShouldNotBeNull();
+            var options = new StrykerOptions
+            {
+                S3BucketName = BucketName,
+                S3Endpoint = "https://minio.example.com:9000"
+            };
 
-        var s3Client = clientField.GetValue(provider).ShouldBeOfType<AmazonS3Client>();
-        s3Client.Config.ServiceURL.ShouldContain("minio.example.com:9000");
-        s3Client.Config.ShouldBeOfType<AmazonS3Config>().ForcePathStyle.ShouldBeFalse();
+            var provider = new S3BaselineProvider(options);
+            var clientField = typeof(S3BaselineProvider).GetField("_s3Client", BindingFlags.Instance | BindingFlags.NonPublic);
+            clientField.ShouldNotBeNull();
 
-        s3Client.Dispose();
+            var s3Client = clientField.GetValue(provider).ShouldBeOfType<AmazonS3Client>();
+            s3Client.Config.ServiceURL.ShouldContain("minio.example.com:9000");
+            s3Client.Config.ShouldBeOfType<AmazonS3Config>().ForcePathStyle.ShouldBeFalse();
+
+            s3Client.Dispose();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("AWS_ACCESS_KEY_ID", originalAccessKey);
+            Environment.SetEnvironmentVariable("AWS_SECRET_ACCESS_KEY", originalSecretKey);
+            Environment.SetEnvironmentVariable("AWS_SESSION_TOKEN", originalSessionToken);
+            Environment.SetEnvironmentVariable("AWS_EC2_METADATA_DISABLED", originalMetadataDisabled);
+        }
     }
 }
