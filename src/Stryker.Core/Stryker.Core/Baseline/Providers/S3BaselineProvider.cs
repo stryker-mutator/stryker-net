@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -24,7 +25,11 @@ public class S3BaselineProvider : IBaselineProvider
     private readonly string _bucketName;
     private readonly string _outputPath;
 
-    public S3BaselineProvider(IStrykerOptions options, IAmazonS3 s3Client = null, ILogger<S3BaselineProvider> logger = null)
+    public S3BaselineProvider(
+        IStrykerOptions options,
+        IAmazonS3 s3Client = null,
+        ILogger<S3BaselineProvider> logger = null,
+        Func<AmazonS3Config, IAmazonS3> s3ClientFactory = null)
     {
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<S3BaselineProvider>();
         _bucketName = options.S3BucketName;
@@ -32,7 +37,7 @@ public class S3BaselineProvider : IBaselineProvider
             ? DefaultOutputDirectoryName
             : $"{DefaultOutputDirectoryName}/{options.ProjectName}";
 
-        _s3Client = s3Client ?? CreateS3Client(options.S3Region, options.S3Endpoint);
+        _s3Client = s3Client ?? (s3ClientFactory?.Invoke(CreateS3Config(options.S3Region, options.S3Endpoint)) ?? CreateS3Client(options.S3Region, options.S3Endpoint));
     }
 
     public async Task<IJsonReport> Load(string version)
@@ -84,6 +89,9 @@ public class S3BaselineProvider : IBaselineProvider
     private string BuildObjectKey(string version) => $"{_outputPath}/{version}/{StrykerReportName}";
 
     private static AmazonS3Client CreateS3Client(string region, string endpoint)
+        => new(CreateS3Config(region, endpoint));
+
+    private static AmazonS3Config CreateS3Config(string region, string endpoint)
     {
         var config = new AmazonS3Config();
 
@@ -97,6 +105,6 @@ public class S3BaselineProvider : IBaselineProvider
             config.ServiceURL = endpoint;
         }
 
-        return new AmazonS3Client(config);
+        return config;
     }
 }
