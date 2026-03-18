@@ -1,5 +1,6 @@
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -139,5 +140,25 @@ public class S3BaselineProviderTests : TestBase
         await provider.Save(report, "v1");
 
         Mock.Get(logger).Verify(LogLevel.Error, "Failed to save baseline to S3: AccessDenied - Access Denied");
+    }
+
+    [TestMethod]
+    public void Constructor_Uses_Endpoint_Without_Forcing_Path_Style()
+    {
+        var options = new StrykerOptions
+        {
+            S3BucketName = BucketName,
+            S3Endpoint = "https://minio.example.com:9000"
+        };
+
+        var provider = new S3BaselineProvider(options);
+        var clientField = typeof(S3BaselineProvider).GetField("_s3Client", BindingFlags.Instance | BindingFlags.NonPublic);
+        clientField.ShouldNotBeNull();
+
+        var s3Client = clientField.GetValue(provider).ShouldBeOfType<AmazonS3Client>();
+        s3Client.Config.ServiceURL.ShouldContain("minio.example.com:9000");
+        s3Client.Config.ShouldBeOfType<AmazonS3Config>().ForcePathStyle.ShouldBeFalse();
+
+        s3Client.Dispose();
     }
 }

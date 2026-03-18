@@ -95,7 +95,6 @@ public class S3BaselineProvider : IBaselineProvider
         if (!string.IsNullOrWhiteSpace(endpoint))
         {
             config.ServiceURL = endpoint;
-            config.ForcePathStyle = true;
         }
 
         return new AmazonS3Client(config);

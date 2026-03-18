@@ -92,6 +92,9 @@ public class FileConfigReaderTests
         actualInputs.IgnoredMethodsInput.SuppliedInput.ShouldContain("Log*");
         actualInputs.TestCaseFilterInput.SuppliedInput.ShouldBe("(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1");
         actualInputs.DashboardUrlInput.SuppliedInput.ShouldBe("https://alternative-stryker-dashboard.io");
+        actualInputs.S3BucketNameInput.SuppliedInput.ShouldBe("my-bucket");
+        actualInputs.S3EndpointInput.SuppliedInput.ShouldBe("https://minio.example.com:9000");
+        actualInputs.S3RegionInput.SuppliedInput.ShouldBe("us-east-1");
         actualInputs.BreakOnInitialTestFailureInput.SuppliedInput.ShouldNotBeNull().ShouldBeFalse();
     }
 
@@ -139,6 +142,9 @@ public class FileConfigReaderTests
         actualInputs.IgnoredMethodsInput.SuppliedInput.ShouldContain("Log*");
         actualInputs.TestCaseFilterInput.SuppliedInput.ShouldBe("(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1");
         actualInputs.DashboardUrlInput.SuppliedInput.ShouldBe("https://alternative-stryker-dashboard.io");
+        actualInputs.S3BucketNameInput.SuppliedInput.ShouldBe("my-bucket");
+        actualInputs.S3EndpointInput.SuppliedInput.ShouldBe("https://minio.example.com:9000");
+        actualInputs.S3RegionInput.SuppliedInput.ShouldBe("us-east-1");
         actualInputs.BreakOnInitialTestFailureInput.SuppliedInput.ShouldNotBeNull().ShouldBeTrue();
     }
 }
