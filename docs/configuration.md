@@ -628,7 +628,7 @@ Allowed permissions: `Read`, `Write`, `Create`
 
 For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
 
-### `s3-bucket-name` &lt;`string`&gt;
+### `baseline.s3-bucket-name` &lt;`string`&gt;
 
 Default: `null`  
 Command line: `--s3-bucket-name "my-stryker-baselines"`  
@@ -636,17 +636,19 @@ Config file: `"baseline": { "s3-bucket-name": 'my-stryker-baselines' }`
 
 When using the S3 [provider](#baselineprovider-string) you must set the bucket name where baselines will be stored.
 
-The baseline reports are stored under the key `StrykerOutput/Baselines/<version>/stryker-report.json` within the bucket.
+The baseline reports are stored under the key `StrykerOutput/<version>/stryker-report.json` within the bucket by default.
+If a [project name](#project-infoname-string) is set, the key becomes `StrykerOutput/<projectName>/<version>/stryker-report.json`.
 
-### `s3-region` &lt;`string`&gt;
+### `baseline.s3-region` &lt;`string`&gt;
 
 Default: `null`  
 Command line: `--s3-region "us-east-1"`  
 Config file: `"baseline": { "s3-region": 'us-east-1' }`
 
-When using the S3 [provider](#baselineprovider-string) you must set the region of the S3 bucket.
+When using the S3 [provider](#baselineprovider-string), setting the region is optional.
+If not set, the AWS SDK resolves the region using its default configuration chain (for example environment variables or shared profiles).
 
-### `s3-endpoint` &lt;`string`&gt;
+### `baseline.s3-endpoint` &lt;`string`&gt;
 
 Default: `null`  
 Command line: `--s3-endpoint "https://minio.example.com:9000"`  
