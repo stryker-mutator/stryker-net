@@ -799,7 +799,7 @@
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "AWSSDK.S3": "[4.0.19.1, )",
+          "AWSSDK.S3": "[4.0.19.2, )",
           "Azure.Storage.Files.Shares": "[12.25.0, )",
           "Buildalyzer": "[8.0.0, )",
           "DotNet.Glob": "[3.1.3, )",
@@ -940,9 +940,9 @@
       },
       "AWSSDK.S3": {
         "type": "CentralTransitive",
-        "requested": "[4.0.19.1, )",
-        "resolved": "4.0.19.1",
-        "contentHash": "DCTFohRB53/g2kaz7cUX3ZTyFTbRErj5JvT4HrquKTvXvUpY/vUyUMGEVWoC0UXmxalYaPAR8tO7WgEJRJjM9w==",
+        "requested": "[4.0.19.2, )",
+        "resolved": "4.0.19.2",
+        "contentHash": "UWmkyCDrCc4E25K1htdRAprjMM5/dnkeFhmQ4fn9AqWk2H9dvceFVfrGOzAxTgfjdyl4PN7WhorKasN2BM2/Pw==",
         "dependencies": {
           "AWSSDK.Core": "[4.0.3.19, 5.0.0)"
         }
