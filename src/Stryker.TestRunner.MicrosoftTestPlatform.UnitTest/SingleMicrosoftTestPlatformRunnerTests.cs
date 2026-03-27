@@ -31,17 +31,17 @@ public class SingleMicrosoftTestPlatformRunnerTests
         new(id, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
     [TestMethod, Timeout(1000)]
-    public async Task InitialTestAsync_CallsRunTestsInternalAsync_AndHandlesServerCreationFailure()
+    public async Task InitialTestAsync_CallsRunAssemblyTestsAsync_AndHandlesServerCreationFailure()
     {
-        // Arrange - InitialTestAsync eventually calls RunTestsInternalAsync via RunAllTestsAsync
+        // Arrange - InitialTestAsync eventually calls RunAssemblyTestsAsync via RunAllTestsAsync
         var project = new Mock<IProjectAndTests>();
         var invalidAssembly = "/path/to/nonexistent.dll";
         project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { invalidAssembly });
 
         using var runner = CreateRunner(0);
 
-        // Act - This will call RunAllTestsAsync -> ProcessSingleAssemblyAsync -> RunTestsInternalAsync
-        // RunTestsInternalAsync will handle the exception when GetOrCreateServerAsync fails
+        // Act - This will call RunAllTestsAsync -> ProcessSingleAssemblyAsync -> RunAssemblyTestsAsync
+        // RunAssemblyTestsAsync will handle the exception when GetOrCreateServerAsync fails
         var result = await runner.InitialTestAsync(project.Object);
 
         // Assert
@@ -52,7 +52,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task TestMultipleMutantsAsync_CallsRunTestsInternalAsync_WithNonExistentAssembly()
+    public async Task TestMultipleMutantsAsync_CallsRunAssemblyTestsAsync_WithNonExistentAssembly()
     {
         // Arrange
         var project = new Mock<IProjectAndTests>();
@@ -65,17 +65,17 @@ public class SingleMicrosoftTestPlatformRunnerTests
 
         using var runner = CreateRunner(0);
 
-        // Act - Calls RunAllTestsAsync -> ProcessSingleAssemblyAsync -> RunTestsInternalAsync
+        // Act - Calls RunAllTestsAsync -> ProcessSingleAssemblyAsync -> RunAssemblyTestsAsync
         var result = await runner.TestMultipleMutantsAsync(project.Object, null, mutants, null);
 
-        // Assert - RunTestsInternalAsync catches exceptions and returns TestRunResult
+        // Assert - RunAssemblyTestsAsync catches exceptions and returns TestRunResult
         result.ShouldNotBeNull();
         result.ExecutedTests.ShouldNotBeNull();
         result.Duration.ShouldBeGreaterThanOrEqualTo(TimeSpan.Zero);
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task RunTestsInternalAsync_HandlesExceptionPath_WhenServerCreationFails()
+    public async Task RunAssemblyTestsAsync_HandlesExceptionPath_WhenServerCreationFails()
     {
         // Arrange
         var project = new Mock<IProjectAndTests>();
@@ -83,10 +83,10 @@ public class SingleMicrosoftTestPlatformRunnerTests
 
         using var runner = CreateRunner(0);
 
-        // Act - This exercises the exception handling in RunTestsInternalAsync
+        // Act - This exercises the exception handling in RunAssemblyTestsAsync
         var result = await runner.InitialTestAsync(project.Object);
 
-        // Assert - RunTestsInternalAsync returns TestRunResult(false, ex.Message) on exception
+        // Assert - RunAssemblyTestsAsync returns TestRunResult(false, ex.Message) on exception
         result.ShouldNotBeNull();
         var testRunResult = result as Stryker.TestRunner.Results.TestRunResult;
         testRunResult.ShouldNotBeNull();
@@ -306,11 +306,11 @@ public class SingleMicrosoftTestPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task RunTestsInternalAsync_ReturnsFailedResult_WhenServerCreationFails()
+    public async Task RunAssemblyTestsInternalAsync_ReturnsFailedResult_WhenServerCreationFails()
     {
         using var runner = CreateRunner();
 
-        var (result, timedOut) = await runner.RunTestsInternalAsync("/nonexistent/assembly.dll", null, null);
+        var (result, timedOut) = await runner.RunAssemblyTestsInternalAsync("/nonexistent/assembly.dll", null, null);
 
         timedOut.ShouldBeFalse();
         result.ShouldNotBeNull();
@@ -320,11 +320,11 @@ public class SingleMicrosoftTestPlatformRunnerTests
     [TestMethod, Timeout(1000)]
     [DataRow("/path/a.dll")]
     [DataRow("/another/path/b.dll")]
-    public async Task RunTestsInternalAsync_CatchesException_AndReturnsResult(string assembly)
+    public async Task RunAssemblyTestsInternalAsync_CatchesException_AndReturnsResult(string assembly)
     {
         using var runner = CreateRunner();
 
-        var (result, timedOut) = await runner.RunTestsInternalAsync(assembly, null, null);
+        var (result, timedOut) = await runner.RunAssemblyTestsInternalAsync(assembly, null, null);
 
         timedOut.ShouldBeFalse();
         result.ShouldBeOfType<TestRunResult>();
@@ -332,12 +332,12 @@ public class SingleMicrosoftTestPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task RunTestsInternalAsync_WithTimeout_StillReturnsResult_WhenServerFails()
+    public async Task RunAssemblyTestsInternalAsync_WithTimeout_StillReturnsResult_WhenServerFails()
     {
         using var runner = CreateRunner();
         var timeout = TimeSpan.FromMilliseconds(100);
 
-        var (result, timedOut) = await runner.RunTestsInternalAsync("/nonexistent.dll", null, timeout)!;
+        var (result, timedOut) = await runner.RunAssemblyTestsInternalAsync("/nonexistent.dll", null, timeout)!;
 
         timedOut.ShouldBeFalse();
         result.ShouldNotBeNull();
@@ -345,7 +345,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task RunTestsInternalAsync_WithTimeout_DoesNotHangOnRealAssembly()
+    public async Task RunAssemblyTestsAsync_WithTimeout_DoesNotHangOnRealAssembly()
     {
         // Arrange - This test ensures we don't try to start real servers that would hang
         var fakeAssemblyPath = "/path/to/fake/test.dll";
@@ -375,7 +375,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task RunTestsInternalAsync_RegistersTestResults_InTestDescriptions()
+    public async Task RunAssemblyTestsAsync_RegistersTestResults_InTestDescriptions()
     {
         // Arrange
         var testNode = new TestNode("test1", "TestMethod1", "passed", "passed");
@@ -396,7 +396,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task RunTestsInternalAsync_CalculatesDuration()
+    public async Task RunAssemblyTestsAsync_CalculatesDuration()
     {
         // Arrange
         var project = new Mock<IProjectAndTests>();
@@ -416,7 +416,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task RunTestsInternalAsync_WithMultipleMutants_UsesNegativeOneMutantId()
+    public async Task RunAssemblyTestsAsync_WithMultipleMutants_UsesNegativeOneMutantId()
     {
         // Arrange
         var project = new Mock<IProjectAndTests>();
@@ -439,7 +439,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task RunTestsInternalAsync_WithSingleMutant_UsesMutantId()
+    public async Task RunAssemblyTestsAsync_WithSingleMutant_UsesMutantId()
     {
         // Arrange
         var project = new Mock<IProjectAndTests>();
@@ -460,7 +460,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task RunTestsInternalAsync_IncludesResultMessage_OnError()
+    public async Task RunAssemblyTestsAsync_IncludesResultMessage_OnError()
     {
         // Arrange
         var project = new Mock<IProjectAndTests>();
@@ -1209,7 +1209,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
             ILogger logger)
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
-        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAllTestsInternalAsync(
+        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
             string assembly, ITimeoutValueCalculator? timeoutCalc)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
@@ -1236,7 +1236,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
             ILogger logger)
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
-        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAllTestsInternalAsync(
+        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
             string assembly, ITimeoutValueCalculator? timeoutCalc)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
