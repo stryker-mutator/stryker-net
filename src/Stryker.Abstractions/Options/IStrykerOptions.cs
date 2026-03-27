@@ -11,6 +11,9 @@ public interface IStrykerOptions
     int AdditionalTimeout { get; init; }
     string AzureFileStorageSas { get; init; }
     string AzureFileStorageUrl { get; init; }
+    string S3BucketName { get; init; }
+    string S3Endpoint { get; init; }
+    string S3Region { get; init; }
     BaselineProvider BaselineProvider { get; init; }
     bool BreakOnInitialTestFailure { get; set; }
     int Concurrency { get; init; }
