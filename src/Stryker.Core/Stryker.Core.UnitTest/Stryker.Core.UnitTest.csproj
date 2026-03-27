@@ -2,35 +2,6 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="TestResources\ExampleSourceFile.cs" />
-    <Compile Remove="TestResources\ExampleTestFileA.cs" />
-    <Compile Remove="TestResources\ExampleTestFileB.cs" />
-    <Compile Remove="TestResources\ExampleTestFilePreprocessorSymbols.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="TestResources\StrongNameKeyFile.snk" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="TestResources\ExampleTestFilePreprocessorSymbols.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestResources\ExampleTestFileB.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestResources\ExampleTestFileA.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestResources\StrongNameKeyFile.snk">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="TestResources\ExampleSourceFile.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="LaunchDarkly.EventSource" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" />
@@ -55,5 +26,30 @@
     <ProjectReference Include="..\..\Stryker.Abstractions\Stryker.Abstractions.csproj" />
     <ProjectReference Include="..\..\Stryker.TestRunner\Stryker.TestRunner.csproj" />
     <ProjectReference Include="..\..\Stryker.Utilities\Stryker.Utilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="TestResources\ExampleSourceFile.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="TestResources\ExampleTestFileA.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="TestResources\ExampleTestFileB.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="TestResources\ExampleTestFilePreprocessorSymbols.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Compile Remove="TestResources\ExampleTestFileA.cs" />
+    <Content Include="TestResources\ExampleTestFileA.cs" />
+    <Compile Remove="TestResources\ExampleTestFileB.cs" />
+    <Content Include="TestResources\ExampleTestFileB.cs" />
+    <Compile Remove="TestResources\ExampleTestFilePreprocessorSymbols.cs" />
+    <Content Include="TestResources\ExampleTestFilePreprocessorSymbols.cs" />
+    <None Remove="TestResources\StrongNameKeyFile.snk" />
+    <Content Include="TestResources\StrongNameKeyFile.snk">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>
