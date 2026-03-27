@@ -144,8 +144,6 @@ internal sealed class AssemblyTestServer : IDisposable
 
         if (timeout.HasValue)
         {
-            var deadline = DateTime.UtcNow + timeout.Value;
-
             ResponseListener executeTestsResponse;
             try
             {
@@ -159,13 +157,7 @@ internal sealed class AssemblyTestServer : IDisposable
                 return (testResults.ToList(), true);
             }
 
-            var remaining = deadline - DateTime.UtcNow;
-            if (remaining <= TimeSpan.Zero)
-            {
-                return (testResults.ToList(), true);
-            }
-
-            var completed = await executeTestsResponse.WaitCompletionAsync(remaining).ConfigureAwait(false);
+            var completed = await executeTestsResponse.WaitCompletionAsync(timeout.Value).ConfigureAwait(false);
             return (testResults.ToList(), !completed);
         }
 
