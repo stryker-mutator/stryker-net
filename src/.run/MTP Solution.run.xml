@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="MTP Solution" type="DotNetProject" factoryName=".NET Project">
     <option name="EXE_PATH" value="$PROJECT_DIR$/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI" />
-    <option name="PROGRAM_PARAMETERS" value="--testrunner mtp --solution ./MicrosoftTestPlatform.slnx" />
+    <option name="PROGRAM_PARAMETERS" value="--test-runner mtp --solution ./MicrosoftTestPlatform.slnx" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../integrationtest/TargetProjects/MicrosoftTestPlatform" />
     <option name="PASS_PARENT_ENVS" value="1" />
     <option name="ENV_FILE_PATHS" value="" />
