@@ -202,6 +202,26 @@ public class ValidateStrykerResults
     }
 
     [Fact]
+    [Trait("Category", value: "WebApiWithOpenApi")]
+    [Trait("Runtime", "netcore")]
+    public async Task CSharp_NetCore_WebApiWithOpenApi()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/WebApiWithOpenApi/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        CheckReportMutants(report, total: 11, ignored: 2, survived: 5, killed: 4, timeout: 0, nocoverage: 0);
+        CheckReportTestCounts(report, total: 3);
+    }
+
+    [Fact]
     [Trait("Category", "Solution")]
     [Trait("Runtime", "netcore")]
     public async Task CSharp_NetCore_SolutionRun()

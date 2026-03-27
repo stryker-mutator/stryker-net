@@ -140,4 +140,28 @@ public class S3BaselineProviderTests : TestBase
 
         Mock.Get(logger).Verify(LogLevel.Error, "Failed to save baseline to S3: AccessDenied - Access Denied");
     }
+
+    [TestMethod]
+    public void Constructor_Uses_Endpoint_Without_Forcing_Path_Style()
+    {
+        AmazonS3Config capturedConfig = null;
+        var s3Mock = new Mock<IAmazonS3>();
+        var options = new StrykerOptions
+        {
+            S3BucketName = BucketName,
+            S3Endpoint = "https://minio.example.com:9000"
+        };
+
+        _ = new S3BaselineProvider(
+            options,
+            s3ClientFactory: config =>
+            {
+                capturedConfig = config;
+                return s3Mock.Object;
+            });
+
+        capturedConfig.ShouldNotBeNull();
+        capturedConfig.ServiceURL.ShouldContain("minio.example.com:9000");
+        capturedConfig.ForcePathStyle.ShouldBeFalse();
+    }
 }
