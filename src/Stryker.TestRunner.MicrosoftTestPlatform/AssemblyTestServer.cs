@@ -231,7 +231,7 @@ internal sealed class AssemblyTestServer : IDisposable
         }
 
         var logsDirectory = Path.Combine(_options.OutputPath, "logs", "test-servers");
-        var fileName = $"rpc-{Path.GetFileNameWithoutExtension(_assembly)}-{_runnerId}-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}.log";
+        var fileName = $"rpc-{Path.GetFileNameWithoutExtension(_assembly)}-{_runnerId}-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss-fffffff}.log";
         return Path.Combine(logsDirectory, fileName);
     }
 
