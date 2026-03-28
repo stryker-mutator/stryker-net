@@ -97,7 +97,8 @@ public class InitialisationProcessTests : TestBase
 
         var projects = target.GetMutableProjectsInfo(options);
         target.BuildProjects(options, projects);
-        await Should.ThrowAsync<InputException>(async () => await target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object));
+        var inputs = target.GetMutationTestInputs(options, projects, testRunnerMock.Object);
+        await Should.ThrowAsync<InputException>(async () => await target.RunInitialTestsAsync(options, inputs));
         initialTestProcessMock.Verify(x => x.InitialTestAsync(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), testRunnerMock.Object), Times.Once);
     }
 
@@ -143,7 +144,8 @@ public class InitialisationProcessTests : TestBase
         };
         var projects = target.GetMutableProjectsInfo(options);
         target.BuildProjects(options, projects);
-        await Should.ThrowAsync<InputException>(async () => await target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object));
+        var inputs = target.GetMutationTestInputs(options, projects, testRunnerMock.Object);
+        await Should.ThrowAsync<InputException>(async () => await target.RunInitialTestsAsync(options, inputs));
         inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>()), Times.Once);
         initialTestProcessMock.Verify(x => x.InitialTestAsync(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), testRunnerMock.Object), Times.Once);
     }
@@ -194,15 +196,16 @@ public class InitialisationProcessTests : TestBase
         };
         var projects = target.GetMutableProjectsInfo(options);
         target.BuildProjects(options, projects);
+        var inputs = target.GetMutationTestInputs(options, projects, testRunnerMock.Object);
         if (breakOnInitialTestFailure)
         {
-            await Should.ThrowAsync<InputException>(async () => await target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object));
+            await Should.ThrowAsync<InputException>(async () => await target.RunInitialTestsAsync(options, inputs));
         }
         else
         {
-            var testInputs = await target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object);
+            var testRunResults = await target.RunInitialTestsAsync(options, inputs);
 
-            testInputs.ShouldNotBeEmpty();
+            testRunResults.ShouldNotBeEmpty();
         }
     }
 
@@ -240,7 +243,8 @@ public class InitialisationProcessTests : TestBase
 
         var projects = target.GetMutableProjectsInfo(options);
         target.BuildProjects(options, projects);
-        await target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object);
+        var inputs = target.GetMutationTestInputs(options, projects, testRunnerMock.Object);
+        await target.RunInitialTestsAsync(options, inputs);
 
         inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>()), Times.Once);
         initialTestProcessMock.Verify(x => x.InitialTestAsync(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), testRunnerMock.Object), Times.Once);
@@ -293,12 +297,13 @@ public class InitialisationProcessTests : TestBase
         };
         var projects = target.GetMutableProjectsInfo(options);
         target.BuildProjects(options, projects);
-        var exception = await Should.ThrowAsync<InputException>(async () => await target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object));
+        var inputs = target.GetMutationTestInputs(options, projects, testRunnerMock.Object);
+        var exception = await Should.ThrowAsync<InputException>(async () => await target.RunInitialTestsAsync(options, inputs));
         exception.Message.ShouldContain(libraryName);
     }
 
     [TestMethod]
-    public void InitialisationProcess_ShouldThrowOnWhenNoTestDetectedAndCorrectDependencies()
+    public async Task InitialisationProcess_ShouldThrowOnWhenNoTestDetectedAndCorrectDependencies()
     {
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
         var inputFileResolverMock = new Mock<IInputFileResolver>(MockBehavior.Strict);
@@ -344,7 +349,8 @@ public class InitialisationProcessTests : TestBase
         };
         var projects = target.GetMutableProjectsInfo(options);
         target.BuildProjects(options, projects);
-        Should.Throw<InputException>(async () => await target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object)).Message.ShouldContain("failed to deploy or run.");
+        var inputs = target.GetMutationTestInputs(options, projects, testRunnerMock.Object);
+        (await Should.ThrowAsync<InputException>(async () => await target.RunInitialTestsAsync(options, inputs))).Message.ShouldContain("failed to deploy or run.");
     }
 }
 

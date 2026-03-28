@@ -25,8 +25,17 @@ public interface IInitialisationProcess
 
     void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects);
 
-    Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
+    /// <summary>
+    /// Creates mutation test inputs for the given projects without running the initial tests.
+    /// </summary>
+    IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(IStrykerOptions options,
         IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner);
+
+    /// <summary>
+    /// Runs the initial tests for all mutation test inputs and returns a dictionary mapping the input to its test run result.
+    /// </summary>
+    Task<IReadOnlyDictionary<MutationTestInput, InitialTestRun>> RunInitialTestsAsync(IStrykerOptions options,
+        IReadOnlyCollection<MutationTestInput> inputs);
 }
 
 public class InitialisationProcess : IInitialisationProcess
@@ -114,24 +123,45 @@ public class InitialisationProcess : IInitialisationProcess
 
     private IFileSystem FileSystem => _inputFileResolver.FileSystem;
 
-    public async Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
-        IReadOnlyCollection<SourceProjectInfo> projects,
-        ITestRunner runner)
+    /// <inheritdoc/>
+    public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(IStrykerOptions options,
+        IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner)
     {
-        var getInputs = projects.Select(async info => new MutationTestInput {
+        foreach (var project in projects)
+        {
+            DiscoverTests(project, runner);
+        }
+
+        return projects.Select(info => new MutationTestInput
+        {
             SourceProjectInfo = info,
             TestProjectsInfo = info.TestProjectsInfo,
-            TestRunner = runner,
-            InitialTestRun = await InitialTestAsync(options, info, runner, projects.Count == 1)
+            TestRunner = runner
+        }).ToList();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyDictionary<MutationTestInput, InitialTestRun>> RunInitialTestsAsync(IStrykerOptions options,
+        IReadOnlyCollection<MutationTestInput> inputs)
+    {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var throwIfFails = inputs.Count == 1;
+        var tasks = inputs.Select(async input =>
+        {
+            var initialTestRun = await InitialTestAsync(options, input.SourceProjectInfo, input.TestRunner, throwIfFails);
+            return (input, initialTestRun);
         });
-        return await Task.WhenAll(getInputs);
+
+        var results = await Task.WhenAll(tasks);
+        stopwatch.Stop();
+        var numberOfTests = results.Sum(r => r.initialTestRun.Result.ExecutedTests.Count);
+        _logger.LogInformation("Initial testrun ran {NumberOfTests} tests in {ElapsedMilliseconds} ms", numberOfTests, stopwatch.ElapsedMilliseconds);
+        return results.ToDictionary(r => r.input, r => r.initialTestRun);
     }
 
     private async Task<InitialTestRun> InitialTestAsync(IStrykerOptions options, SourceProjectInfo projectInfo,
         ITestRunner testRunner, bool throwIfFails)
     {
-        DiscoverTests(projectInfo, testRunner);
-
         // initial test
         _logger.LogInformation(
             "Number of tests found: {TestCount} for project {ProjectFilePath}. Initial test run started.",
