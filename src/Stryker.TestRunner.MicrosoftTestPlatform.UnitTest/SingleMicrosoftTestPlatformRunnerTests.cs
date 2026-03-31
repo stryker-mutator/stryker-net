@@ -91,9 +91,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         var testRunResult = result as Stryker.TestRunner.Results.TestRunResult;
         testRunResult.ShouldNotBeNull();
         testRunResult.FailingTests.ShouldNotBeNull();
-        // Messages may be null from the simple constructor; aggregation must handle this gracefully
-        var messages = testRunResult.Messages ?? [];
-        messages.ShouldNotBeNull();
+        testRunResult.Messages.ShouldNotBeNull();
     }
 
     [TestMethod, Timeout(1000)]
@@ -1106,6 +1104,28 @@ public class SingleMicrosoftTestPlatformRunnerTests
                 return (bool)field!.GetValue(this)!;
             }
         }
+    }
+}
+
+[TestClass]
+public class TestRunResultTests
+{
+    [TestMethod]
+    public void SimpleConstructor_ShouldInitializeMessagesToEmpty()
+    {
+        var result = new TestRunResult(false, "some error");
+
+        result.Messages.ShouldNotBeNull();
+        result.Messages.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void SimpleConstructor_WithSuccessTrue_ShouldInitializeMessagesToEmpty()
+    {
+        var result = new TestRunResult(true);
+
+        result.Messages.ShouldNotBeNull();
+        result.Messages.ShouldBeEmpty();
     }
 }
 
