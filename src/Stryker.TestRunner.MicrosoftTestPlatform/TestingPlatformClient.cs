@@ -8,7 +8,10 @@ using Stryker.TestRunner.MicrosoftTestPlatform.RPC;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform;
 
-public sealed class TestingPlatformClient : IDisposable
+/// <summary>
+/// Represents an RPC client for the Microsoft Testing Platform, handling communication and process management.
+/// </summary>
+public sealed class TestingPlatformClient : ITestingPlatformClient
 {
     private readonly TcpClient _tcpClient;
     private readonly IProcessHandle _processHandler;

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 using Stryker.TestRunner.Results;
@@ -24,10 +25,13 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     private readonly object _discoveryLock;
     private readonly ILogger _logger;
     private readonly string _mutantFilePath;
+    private readonly string _coverageFilePath;
+    private readonly IStrykerOptions? _options;
 
     private readonly Dictionary<string, AssemblyTestServer> _assemblyServers = new();
     private readonly object _serverLock = new();
     private bool _disposed;
+    private bool _coverageMode;
 
     private string RunnerId => $"MtpRunner-{_id}";
 
@@ -37,7 +41,8 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         Dictionary<string, MtpTestDescription> testDescriptions,
         TestSet testSet,
         object discoveryLock,
-        ILogger logger)
+        ILogger logger,
+        IStrykerOptions? options = null)
     {
         _id = id;
         _testsByAssembly = testsByAssembly;
@@ -45,9 +50,11 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         _testSet = testSet;
         _discoveryLock = discoveryLock;
         _logger = logger;
+        _options = options;
 
-        // Create a unique file path for this runner to communicate the active mutant ID
+        // Create unique file paths for this runner to communicate with the test process
         _mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-{_id}.txt");
+        _coverageFilePath = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{_id}.txt");
 
         // Initialize with no active mutation
         WriteMutantIdToFile(-1);
@@ -116,11 +123,112 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
     private Dictionary<string, string?> BuildEnvironmentVariables()
     {
-        // Use file-based mutant control for process reuse
-        return new Dictionary<string, string?>
+        var envVars = new Dictionary<string, string?>
         {
             ["STRYKER_MUTANT_FILE"] = _mutantFilePath
         };
+
+        // Add coverage filename when in coverage mode (MutantControl will combine with temp path)
+        if (_coverageMode)
+        {
+            envVars["STRYKER_COVERAGE_FILE"] = Path.GetFileName(_coverageFilePath);
+        }
+
+        return envVars;
+    }
+
+    /// <summary>
+    /// Enables or disables coverage capture mode. When enabled, the test process will track
+    /// which mutations are covered and write the data to a file on process exit.
+    /// </summary>
+    public void SetCoverageMode(bool enabled)
+    {
+        lock (_serverLock)
+        {
+            if (_coverageMode == enabled)
+            {
+                // Already in the desired state; no action needed
+                return;
+            }
+
+            _coverageMode = enabled;
+            _logger.LogDebug("{RunnerId}: Coverage mode {Status}", RunnerId, enabled ? "enabled" : "disabled");
+
+            // Reset servers to apply the new environment variables
+            foreach (var server in _assemblyServers.Values)
+            {
+                server.Dispose();
+            }
+            _assemblyServers.Clear();
+        }
+
+        // Clean up any existing coverage file, even when enabling, to ensure we start fresh
+        DeleteCoverageFile();
+    }
+
+    /// <summary>
+    /// Reads coverage data from the coverage file written by the test process.
+    /// Returns the covered mutants and static mutants as separate lists.
+    /// </summary>
+    public (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants) ReadCoverageData()
+    {
+        if (!File.Exists(_coverageFilePath))
+        {
+            _logger.LogDebug("{RunnerId}: Coverage file not found at {Path}", RunnerId, _coverageFilePath);
+            return (Array.Empty<int>(), Array.Empty<int>());
+        }
+
+        try
+        {
+            var content = File.ReadAllText(_coverageFilePath).Trim();
+            _logger.LogDebug("{RunnerId}: Read coverage data: {Content}", RunnerId, content);
+
+            if (string.IsNullOrEmpty(content))
+            {
+                return (Array.Empty<int>(), Array.Empty<int>());
+            }
+
+            var parts = content.Split(';');
+            var coveredMutants = ParseMutantIds(parts.Length > 0 ? parts[0] : string.Empty);
+            var staticMutants = ParseMutantIds(parts.Length > 1 ? parts[1] : string.Empty);
+
+            return (coveredMutants, staticMutants);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "{RunnerId}: Failed to read coverage file at {Path}", RunnerId, _coverageFilePath);
+            return (Array.Empty<int>(), Array.Empty<int>());
+        }
+    }
+
+    private static IReadOnlyList<int> ParseMutantIds(string idString)
+    {
+        if (string.IsNullOrWhiteSpace(idString))
+        {
+            return Array.Empty<int>();
+        }
+
+        return idString
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => int.TryParse(s.Trim(), out var id) ? id : (int?)null)
+            .Where(id => id.HasValue)
+            .Select(id => id.Value)
+            .ToList();
+    }
+
+    private void DeleteCoverageFile()
+    {
+        try
+        {
+            if (File.Exists(_coverageFilePath))
+            {
+                File.Delete(_coverageFilePath);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "{RunnerId}: Failed to delete coverage file at {Path}", RunnerId, _coverageFilePath);
+        }
     }
 
     private async Task<AssemblyTestServer> GetOrCreateServerAsync(string assembly)
@@ -135,7 +243,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
 
         var environmentVariables = BuildEnvironmentVariables();
-        server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId);
+        server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options);
 
         var started = await server.StartAsync().ConfigureAwait(false);
         if (!started)
@@ -180,7 +288,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    private List<TestNode>? GetDiscoveredTests(string assembly)
+    internal List<TestNode>? GetDiscoveredTests(string assembly)
     {
         lock (_discoveryLock)
         {
@@ -188,7 +296,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    private TimeSpan? CalculateAssemblyTimeout(List<TestNode> discoveredTests, ITimeoutValueCalculator timeoutCalc, string assembly)
+    internal TimeSpan? CalculateAssemblyTimeout(List<TestNode> discoveredTests, ITimeoutValueCalculator timeoutCalc, string assembly)
     {
         var estimatedTimeMs = (int)discoveredTests
             .Where(t => _testDescriptions.TryGetValue(t.Uid, out _))
@@ -209,10 +317,10 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         return TimeSpan.FromMilliseconds(timeoutMs);
     }
 
-    private async Task HandleAssemblyTimeoutAsync(string assembly, List<TestNode> discoveredTests, List<string> allTimedOutTests)
+    internal async Task HandleAssemblyTimeoutAsync(string assembly, List<TestNode> discoveredTests, List<string> allTimedOutTests)
     {
         _logger.LogDebug("{RunnerId}: Test run timed out for {Assembly}", RunnerId, Path.GetFileName(assembly));
-        
+
         allTimedOutTests.AddRange(discoveredTests.Select(t => t.Uid));
         
         AssemblyTestServer? server;
@@ -228,38 +336,58 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    private void AggregateTestResults(
-        TestRunResult result,
-        List<TestNode>? discoveredTests,
-        List<string> allExecutedTests,
-        List<string> allFailedTests,
-        List<string> allMessages,
-        List<string> errorMessages,
-        ref int totalExecutedTests,
-        ref TimeSpan totalDuration)
+    private sealed class TestRunAccumulator
     {
-        if (result.ExecutedTests.IsEveryTest)
+        private readonly List<string> _executedTests = [];
+        private readonly List<string> _failedTests = [];
+        private readonly List<string> _messages = [];
+        private readonly List<string> _errorMessages = [];
+        private int _totalDiscoveredTests;
+        private int _totalExecutedTests;
+
+        public List<string> TimedOutTests { get; } = [];
+        public TimeSpan TotalDuration { get; private set; }
+
+        public void Aggregate(TestRunResult result, List<TestNode>? discoveredTests)
         {
-            totalExecutedTests += discoveredTests?.Count ?? 0;
-        }
-        else
-        {
-            var executedIds = result.ExecutedTests.GetIdentifiers().ToList();
-            allExecutedTests.AddRange(executedIds);
-            totalExecutedTests += executedIds.Count;
+            if (result.ExecutedTests.IsEveryTest)
+            {
+                _totalExecutedTests += discoveredTests?.Count ?? 0;
+            }
+            else
+            {
+                var executedIds = result.ExecutedTests.GetIdentifiers().ToList();
+                _executedTests.AddRange(executedIds);
+                _totalExecutedTests += executedIds.Count;
+            }
+
+            _failedTests.AddRange(result.FailingTests.GetIdentifiers());
+            TotalDuration += result.Duration;
+            _messages.AddRange(result.Messages);
+
+            if (!string.IsNullOrWhiteSpace(result.ResultMessage))
+            {
+                _errorMessages.Add(result.ResultMessage);
+            }
         }
 
-        allFailedTests.AddRange(result.FailingTests.GetIdentifiers());
-        totalDuration += result.Duration;
-        allMessages.AddRange(result.Messages);
-        
-        if (!string.IsNullOrWhiteSpace(result.ResultMessage))
-        {
-            errorMessages.Add(result.ResultMessage);
-        }
+        public void AddDiscoveredCount(int count) => _totalDiscoveredTests += count;
+
+        public ITestIdentifiers BuildExecutedTests() =>
+            _totalDiscoveredTests > 0 && _totalExecutedTests >= _totalDiscoveredTests
+                ? TestIdentifierList.EveryTest()
+                : new TestIdentifierList(_executedTests);
+
+        public ITestIdentifiers BuildFailedTests() => new TestIdentifierList(_failedTests);
+
+        public ITestIdentifiers BuildTimedOutTests() => new TestIdentifierList(TimedOutTests);
+
+        public string BuildErrorMessage() => string.Join(Environment.NewLine, _errorMessages);
+
+        public IEnumerable<string> Messages => _messages;
     }
 
-    private async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> ProcessSingleAssemblyAsync(
+    internal async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> ProcessSingleAssemblyAsync(
         string assembly,
         ITimeoutValueCalculator? timeoutCalc)
     {
@@ -292,39 +420,51 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         {
             WriteMutantIdToFile(mutantId);
 
-            var allExecutedTests = new List<string>();
-            var allFailedTests = new List<string>();
-            var allTimedOutTests = new List<string>();
-            var allMessages = new List<string>();
-            var totalDuration = TimeSpan.Zero;
-            var errorMessages = new List<string>();
-            var totalDiscoveredTests = 0;
-            var totalExecutedTests = 0;
+            var accumulator = new TestRunAccumulator();
 
             foreach (var assembly in assemblies)
             {
                 var (result, timedOut, discoveredTests) = await ProcessSingleAssemblyAsync(assembly, timeoutCalc).ConfigureAwait(false);
-                
+
                 if (discoveredTests is not null)
                 {
-                    totalDiscoveredTests += discoveredTests.Count;
-                }
+                    accumulator.AddDiscoveredCount(discoveredTests.Count);
 
-                if (timedOut && discoveredTests is not null)
-                {
-                    await HandleAssemblyTimeoutAsync(assembly, discoveredTests, allTimedOutTests).ConfigureAwait(false);
+                    if (timedOut)
+                    {
+                        await HandleAssemblyTimeoutAsync(assembly, discoveredTests, accumulator.TimedOutTests).ConfigureAwait(false);
+                    }
                 }
 
                 if (result is not null)
                 {
-                    AggregateTestResults(result, discoveredTests, allExecutedTests, allFailedTests, 
-                        allMessages, errorMessages, ref totalExecutedTests, ref totalDuration);
+                    accumulator.Aggregate(result, discoveredTests);
                 }
             }
 
-            return BuildFinalTestResult(allExecutedTests, allFailedTests, allTimedOutTests, 
-                allMessages, errorMessages, totalDuration, totalDiscoveredTests, totalExecutedTests, 
-                mutants, update);
+            var executedTests = accumulator.BuildExecutedTests();
+            var failedTestIds = accumulator.BuildFailedTests();
+            var timedOutTestIds = accumulator.BuildTimedOutTests();
+
+            IEnumerable<MtpTestDescription> testDescriptionValues;
+            lock (_discoveryLock)
+            {
+                testDescriptionValues = _testDescriptions.Values.ToList();
+            }
+
+            if (update is not null && mutants is not null)
+            {
+                update.Invoke(mutants, failedTestIds, executedTests, timedOutTestIds);
+            }
+
+            return new TestRunResult(
+                testDescriptionValues,
+                executedTests,
+                failedTestIds,
+                timedOutTestIds,
+                accumulator.BuildErrorMessage(),
+                accumulator.Messages,
+                accumulator.TotalDuration);
         }
         catch (Exception ex)
         {
@@ -333,52 +473,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    private ITestRunResult BuildFinalTestResult(
-        List<string> allExecutedTests,
-        List<string> allFailedTests,
-        List<string> allTimedOutTests,
-        List<string> allMessages,
-        List<string> errorMessages,
-        TimeSpan totalDuration,
-        int totalDiscoveredTests,
-        int totalExecutedTests,
-        IReadOnlyList<IMutant>? mutants,
-        TestUpdateHandler? update)
-    {
-        var executedTests = totalDiscoveredTests > 0 && totalExecutedTests >= totalDiscoveredTests
-            ? TestIdentifierList.EveryTest()
-            : new TestIdentifierList(allExecutedTests);
-
-        var failedTestIds = allFailedTests.Count > 0
-            ? new TestIdentifierList(allFailedTests)
-            : TestIdentifierList.NoTest();
-
-        var timedOutTestIds = allTimedOutTests.Count > 0
-            ? new TestIdentifierList(allTimedOutTests)
-            : TestIdentifierList.NoTest();
-
-        IEnumerable<MtpTestDescription> testDescriptionValues;
-        lock (_discoveryLock)
-        {
-            testDescriptionValues = _testDescriptions.Values.ToList();
-        }
-
-        if (update is not null && mutants is not null)
-        {
-            update.Invoke(mutants, failedTestIds, executedTests, timedOutTestIds);
-        }
-
-        return new TestRunResult(
-            testDescriptionValues,
-            executedTests,
-            failedTestIds,
-            timedOutTestIds,
-            string.Join(Environment.NewLine, errorMessages),
-            allMessages,
-            totalDuration);
-    }
-
-    private async Task<(ITestRunResult Result, bool TimedOut)> RunTestsInternalAsync(
+    internal async Task<(ITestRunResult Result, bool TimedOut)> RunTestsInternalAsync(
         string assembly,
         Func<TestNode, bool>? testUidFilter,
         TimeSpan? timeout = null)
@@ -429,9 +524,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
                 ? TestIdentifierList.EveryTest()
                 : new TestIdentifierList(finishedTests.Select(x => x.Node.Uid));
 
-            var failedTestIds = failedTests.Count > 0
-                ? new TestIdentifierList(failedTests)
-                : TestIdentifierList.NoTest();
+            var failedTestIds = new TestIdentifierList(failedTests);
 
 
             IEnumerable<MtpTestDescription> testDescriptionValues;
@@ -481,17 +574,22 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
                 _assemblyServers.Clear();
             }
 
-            // Clean up the mutant file
+            // Clean up temp files
             try
             {
                 if (File.Exists(_mutantFilePath))
                 {
                     File.Delete(_mutantFilePath);
                 }
+                if (File.Exists(_coverageFilePath))
+                {
+                    File.Delete(_coverageFilePath);
+                }
             }
-            catch
+            catch (Exception ex)
             {
                 // Ignore cleanup errors
+                _logger.LogWarning(ex, "{RunnerId}: Failed to clean up temp files", RunnerId);
             }
         }
         _disposed = true;

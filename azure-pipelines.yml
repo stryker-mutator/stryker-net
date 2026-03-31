@@ -23,8 +23,8 @@ pr:
     - '.github/*'
 
 variables:
-  PackageVersion: '4.12.0'
-  VersionBuildNumber: $[counter('4.12.0', 1)]
+  PackageVersion: '4.14.0'
+  VersionBuildNumber: $[counter('4.14.0', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   ForkIntegrationNugetFeedUri: https://f.feedz.io/stryker/stryker-net/nuget/index.json
@@ -79,7 +79,7 @@ stages:
       displayName: 'Build Stryker'
       inputs:
         command: 'build'
-        projects: 'src/Stryker.sln'
+        projects: 'src/Stryker.slnx'
     - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage collect "dotnet test" -f xml -o "$(Agent.BuildDirectory)\TestResults\coverage.xml"'
       displayName: 'Run unit tests'
       workingDirectory: 'src'
@@ -87,6 +87,7 @@ stages:
     - task: SonarCloudPublish@4
       inputs:
         pollingTimeoutSec: '300'
+        
 - stage: PublishIntegrationtestPackage
   displayName: Publish Integrationtest Package
   dependsOn: UpdatePackageLockFiles

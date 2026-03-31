@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest;
@@ -44,9 +46,9 @@ public class IgnoreIfAttribute : Attribute
 /// for an [IgnoreIf] attribute. If one or more are found, they are each evaluated, if the attribute
 /// returns `true`, evaluation is short-circuited, and the test method is skipped.
 /// </summary>
-public class TestMethodWithIgnoreIfSupportAttribute : TestMethodAttribute
+public class TestMethodWithIgnoreIfSupportAttribute([CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = -1) : TestMethodAttribute(callerFilePath, callerLineNumber)
 {
-    public override TestResult[] Execute(ITestMethod testMethod)
+    public override Task<TestResult[]> ExecuteAsync(ITestMethod testMethod)
     {
         var ignoreAttributes = FindAttributes(testMethod);
 
@@ -56,24 +58,24 @@ public class TestMethodWithIgnoreIfSupportAttribute : TestMethodAttribute
             if (ignoreAttribute.ShouldIgnore(testMethod))
             {
                 var message = $"Test not executed. Conditional ignore method '{ignoreAttribute.IgnoreCriteriaMethodName}' evaluated to 'true'.";
-                return new[]
+                return Task.FromResult(new[]
                 {
                     new TestResult
                     {
                         Outcome = UnitTestOutcome.Inconclusive,
                         TestFailureException = new AssertInconclusiveException(message)
                     }
-                };
+                });
             }
         }
-        return base.Execute(testMethod);
+        return base.ExecuteAsync(testMethod);
     }
 
     private IEnumerable<IgnoreIfAttribute> FindAttributes(ITestMethod testMethod)
     {
         // Look for an [IgnoreIf] on the method, including any virtuals this method overrides
         var ignoreAttributes = new List<IgnoreIfAttribute>();
-        ignoreAttributes.AddRange(testMethod.GetAttributes<IgnoreIfAttribute>(inherit: true));
+        ignoreAttributes.AddRange(testMethod.GetAttributes<IgnoreIfAttribute>());
 
         // Walk the class hierarchy looking for an [IgnoreIf] attribute
         var type = testMethod.MethodInfo.DeclaringType;

@@ -54,7 +54,7 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {
         var inputFiles = new CsharpFolderComposite();
         var sourceProjectDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
-        var cSharpParseOptions = BuildCsharpParseOptions(analyzerResult, _options);
+        var cSharpParseOptions = analyzerResult.GetParseOptions(_options);
         foreach (var dir in ExtractProjectFolders(analyzerResult))
         {
             var folder = FileSystem.Path.Combine(Path.GetDirectoryName(sourceProjectDir), dir);
@@ -66,7 +66,7 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
     }
 
     public override void InjectHelpers(IReadOnlyProjectComponent inputFiles)
-        => InjectMutantHelpers((CsharpFolderComposite)inputFiles, BuildCsharpParseOptions(_projectInfo.AnalyzerResult, _options));
+        => InjectMutantHelpers((CsharpFolderComposite)inputFiles, _projectInfo.AnalyzerResult.GetParseOptions(_options));
 
     private CsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, IStrykerOptions options)
     {
@@ -235,9 +235,6 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
             rootFolderComposite.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32, options: cSharpParseOptions));
         }
     }
-
-    private static CSharpParseOptions BuildCsharpParseOptions(IAnalyzerResult analyzerResult, IStrykerOptions options) =>
-        new(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.PreprocessorSymbols);
 
     // get the FolderComposite object representing the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path
     private CsharpFolderComposite GetOrBuildFolderComposite(IDictionary<string, CsharpFolderComposite> cache, string targetFolder, string sourceProjectDir, ProjectComponent<SyntaxTree> inputFiles)

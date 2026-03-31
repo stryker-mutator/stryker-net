@@ -1,3 +1,21 @@
+# [4.14.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.13.0...dotnet-stryker@4.14.0) (2026-03-16)
+
+
+### Features
+
+* **baseline:** add S3-compatible storage as baseline provider ([#3470](https://github.com/stryker-mutator/stryker-net/issues/3470)) ([4ba8ba7](https://github.com/stryker-mutator/stryker-net/commit/4ba8ba71782fc96996efa383ef8f8491f9cbccef))
+
+
+
+# [4.13.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.12.0...dotnet-stryker@4.13.0) (2026-03-04)
+
+
+### Features
+
+* **MTP Coverage analysis:** add coverage analysis to preview mtp testrunner ([#3418](https://github.com/stryker-mutator/stryker-net/issues/3418)) ([46f2752](https://github.com/stryker-mutator/stryker-net/commit/46f27522ac6f3e8902ee08c2aafbf33e390f3c61)), closes [#3449](https://github.com/stryker-mutator/stryker-net/issues/3449)
+
+
+
 # [4.12.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.11.0...dotnet-stryker@4.12.0) (2026-02-01)
 
 
