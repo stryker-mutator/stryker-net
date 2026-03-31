@@ -266,6 +266,7 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
             projectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns(csprojPathName);
             projectAnalyzerResultMock.Setup(x => x.TargetFramework).Returns(framework);
             projectAnalyzerResultMock.Setup(x => x.Succeeded).Returns(success);
+            projectAnalyzerResultMock.Setup(x => x.Command).Returns($"build command for {csprojPathName} with {framework}");
 
             projectAnalyzerResultMock.Setup(x => x.Analyzer).Returns<AnalyzerManager>(null);
             projectAnalyzerResults[framework] = projectAnalyzerResultMock.Object;
