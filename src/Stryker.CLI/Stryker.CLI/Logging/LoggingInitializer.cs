@@ -38,7 +38,7 @@ public class LoggingInitializer : ILoggingInitializer
         ApplicationLogging.ConfigureLogger(logLevel, logToFile, diagnoseMode, outputPath);
     }
 
-    private string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)
+    private static string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)
     {
         var outputPath = inputs.OutputPathInput.SuppliedInput ?? Path.Combine("StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
 
