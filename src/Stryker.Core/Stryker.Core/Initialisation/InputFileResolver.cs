@@ -40,7 +40,6 @@ public class InputFileResolver(
     private readonly ISolutionProvider _solutionProvider = solutionProvider ?? throw new ArgumentNullException(nameof(solutionProvider));
 
     private readonly INugetRestoreProcess _nugetRestoreProcess = nugetRestoreProcess ?? throw new ArgumentNullException(nameof(nugetRestoreProcess));
-    private readonly Dictionary<string, string> _buildLogs = [];
 
     public IFileSystem FileSystem { get; } = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
 
@@ -350,7 +349,6 @@ public class InputFileResolver(
         _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
 
         var buildResult = project.Analyze();
-        _buildLogs[projectLogName] = project.LastBuildLog;
         var buildResultOverallSuccess = project.HasValidResults();
 
         // retry if it failed
@@ -358,7 +356,7 @@ public class InputFileResolver(
         {
             if (options.DiagMode)
             {
-                _logger.LogWarning("Project {ProjectFilePath} analysis failed. The MsBuild log is: {Log}", projectLogName, _buildLogs[projectLogName]);
+                _logger.LogWarning("Project {ProjectFilePath} analysis failed. The MsBuild log is: {Log}", projectLogName, project.LastBuildLog);
             }
 
             // if this is a full framework project, we can retry after a nuget restore
@@ -374,8 +372,6 @@ public class InputFileResolver(
                 buildResultOverallSuccess = project.HasValidResults();
             }
 
-            // store the build log
-            _buildLogs[projectLogName] = project.LastBuildLog;
         }
 
         if (options.DiagMode || _logger.IsEnabled(LogLevel.Debug))
@@ -396,7 +392,7 @@ public class InputFileResolver(
 
         if (options.DiagMode)
         {
-            _logger.LogWarning("Project {ProjectFilePath} analysis failed. The MsBuild log is: {Log}", projectLogName, _buildLogs[projectLogName]);
+            _logger.LogWarning("Project {ProjectFilePath} analysis failed. The MsBuild log is: {Log}", projectLogName, project.LastBuildLog);
         }
 
         return buildResult;

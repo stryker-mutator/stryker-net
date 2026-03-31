@@ -169,7 +169,7 @@ public static class IAnalyzerResultExtensions
     private static bool IsValidFor(this IAnalyzerResult br, string framework) => br.IsValid() && br.TargetFramework == framework;
 
     /// <summary>
-    /// Checks is a project analysis is valid for all given target frameworks. If no target frameworks are given, it checks if the overall analysis was successful.
+    /// Checks if a project analysis is valid for all given target frameworks. If no target frameworks are given, it checks if the overall analysis was successful.
     /// </summary>
     /// <param name="br">Analysis results.</param>
     /// <param name="targetFrameworks">list of frameworks to check for</param>

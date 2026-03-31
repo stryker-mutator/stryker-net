@@ -155,7 +155,11 @@ public class SolutionFile
     {
         buildType = GetEffectiveBuildType(buildType);
         platform ??= DefaultPlatform;
-        return _configurations[(buildType, platform)]
+        if (!_configurations.TryGetValue((buildType, platform), out var projects))
+        {
+            return [];
+        }
+        return projects
             .Select(p => (p.Key, p.Value.buildType, p.Value.platform))
             .Distinct()
             .ToImmutableList();
