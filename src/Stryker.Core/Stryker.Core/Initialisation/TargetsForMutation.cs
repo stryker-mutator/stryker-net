@@ -115,7 +115,7 @@ public class TargetsForMutation
         {
             (configuration, platform) = (Configuration, Platform);
         }
-        return new ProjectAnalyzerContext(_buildalyzerProvider, projectFile, _options.MsBuildPath, configuration,
-            platform, _options.TargetFramework, _logger, this);
+        return new ProjectAnalyzerContext(_buildalyzerProvider, projectFile, _options.MsBuildPath, (configuration,
+            platform, _options.TargetFramework), _logger, this);
     }
 }

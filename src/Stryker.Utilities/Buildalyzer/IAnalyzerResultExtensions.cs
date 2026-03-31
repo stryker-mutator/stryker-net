@@ -166,14 +166,7 @@ public static class IAnalyzerResultExtensions
     /// <param name="br">analyzer result used for determination</param>
     /// <param name="framework">framework to test for</param>
     /// <returns>true if result is complete enough</returns>
-    public static bool IsValidFor(this IAnalyzerResult br, string framework) => br.IsValid() && br.TargetFramework == framework;
-
-    /// <summary>
-    /// Checks if a project analysis is at least partially successful
-    /// </summary>
-    /// <param name="br">Analysis results</param>
-    /// <returns>true if analysis was successful</returns>
-    public static bool HasValidResult(this IAnalyzerResults br) => br.OverallSuccess || br.Results.Any(IsValid);
+    private static bool IsValidFor(this IAnalyzerResult br, string framework) => br.IsValid() && br.TargetFramework == framework;
 
     /// <summary>
     /// Checks is a project analysis is valid for all given target frameworks. If no target frameworks are given, it checks if the overall analysis was successful.

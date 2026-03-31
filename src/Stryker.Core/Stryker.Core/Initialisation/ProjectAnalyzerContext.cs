@@ -27,9 +27,9 @@ public class ProjectAnalyzerContext
     public ProjectAnalyzerContext(IBuildalyzerProvider buildalyzerProvider,
         string projectFile,
         string msBuildPath,
-        string configuration,
+        (string configuration,
         string platform,
-        string? framework,
+        string? framework) target,
         ILogger logger,
         TargetsForMutation targetsForMutation)
     {
@@ -41,9 +41,9 @@ public class ProjectAnalyzerContext
         ProjectFileName = projectFile;
         _targetsForMutation = targetsForMutation;
         _msBuildPath = msBuildPath;
-        _configuration = configuration;
-        _platform = platform;
-        _framework = framework;
+        _configuration = target.configuration;
+        _platform = target.platform;
+        _framework = target.framework;
         _logger = logger;
     }
 
@@ -93,12 +93,12 @@ public class ProjectAnalyzerContext
             if (!string.IsNullOrEmpty(_framework))
             {
                 projectFileTargetFrameworks=[_framework];
-                _logger.LogWarning("Failed to identify target frameworks for project {ProjectFilePath}. Assuming selected framework ({framework}) is present.", ProjectFileName, _framework);
+                _logger.LogWarning("Failed to identify target frameworks for project {ProjectFilePath}. Assuming selected framework ({Framework}) is present.", ProjectFileName, _framework);
             }
             else
             {
                 projectFileTargetFrameworks = AnalyzerLastResults.Select(br => br.TargetFramework).ToArray();
-                _logger.LogWarning("Failed to identify target frameworks for project {ProjectFilePath}. Using analysis results: {frameworks}", ProjectFileName, string.Join(',', projectFileTargetFrameworks));
+                _logger.LogWarning("Failed to identify target frameworks for project {ProjectFilePath}. Using analysis results: {Frameworks}", ProjectFileName, string.Join(',', projectFileTargetFrameworks));
             }
         }
 
@@ -180,46 +180,7 @@ public class ProjectAnalyzerContext
             // dump all properties as it can help diagnosing build issues for user project.
             foreach (var analyzerResult in AnalyzerLastResults)
             {
-                log.AppendLine($"TargetFramework: {analyzerResult.TargetFramework}");
-                log.AppendLine($"Succeeded: {analyzerResult.Succeeded}");
-                log.AppendLine($"Compiler command: {analyzerResult.Command}");
-
-                var properties = analyzerResult.Properties;
-                foreach (var property in ImportantProperties)
-                {
-                    log.AppendLine($"Property {property}={properties.GetValueOrDefault(property) ?? "\"'undefined'\""}");
-                }
-                if (analyzerResult.SourceFiles.Length == 0)
-                {
-                    log.AppendLine("** No source files identified **");
-                }
-                else
-                {
-                    log.AppendLine(
-                        $"{analyzerResult.SourceFiles.Length} source files: {string.Join(',', analyzerResult.SourceFiles)}");
-                }
-                if (analyzerResult.References.Length == 0)
-                {
-                    log.AppendLine("** No references Identified **");
-                }
-                else
-                {
-                    foreach (var reference in analyzerResult.References)
-                    {
-                        log.AppendLine($"References: {Path.GetFileName(reference)} (in {Path.GetDirectoryName(reference)})");
-                    }
-                }
-
-                if (_logger.IsEnabled(LogLevel.Trace))
-                {
-                    // dumps all other properties as well, as they can be useful for diagnosing build issues
-                    foreach (var property in properties.Where( p => !ImportantProperties.Contains(p.Key) ))
-                    {
-                        log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
-                    }
-                }
-
-                log.AppendLine();
+                DumpTestAnalyzerResult(log, analyzerResult);
             }
         }
         finally
@@ -227,6 +188,50 @@ public class ProjectAnalyzerContext
             log.AppendLine("**** End Buildalyzer result ****");
             _logger.LogDebug(log.ToString());
         }
+    }
+
+    private void DumpTestAnalyzerResult(StringBuilder log, IAnalyzerResult analyzerResult)
+    {
+        log.AppendLine($"TargetFramework: {analyzerResult.TargetFramework}");
+        log.AppendLine($"Succeeded: {analyzerResult.Succeeded}");
+        log.AppendLine($"Compiler command: {analyzerResult.Command}");
+
+        var properties = analyzerResult.Properties;
+        foreach (var property in ImportantProperties)
+        {
+            log.AppendLine($"Property {property}={properties.GetValueOrDefault(property) ?? "\"'undefined'\""}");
+        }
+        if (analyzerResult.SourceFiles.Length == 0)
+        {
+            log.AppendLine("** No source files identified **");
+        }
+        else
+        {
+            log.AppendLine(
+                $"{analyzerResult.SourceFiles.Length} source files: {string.Join(',', analyzerResult.SourceFiles)}");
+        }
+        if (analyzerResult.References.Length == 0)
+        {
+            log.AppendLine("** No references Identified **");
+        }
+        else
+        {
+            foreach (var reference in analyzerResult.References)
+            {
+                log.AppendLine($"References: {Path.GetFileName(reference)} (in {Path.GetDirectoryName(reference)})");
+            }
+        }
+
+        if (_logger.IsEnabled(LogLevel.Trace))
+        {
+            // dumps all other properties as well, as they can be useful for diagnosing build issues
+            foreach (var property in properties.Where( p => !ImportantProperties.Contains(p.Key) ))
+            {
+                log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
+            }
+        }
+
+        log.AppendLine();
     }
 
     public bool BuildsAnAssembly() => AnalyzerLastResults?.Any(p => p.BuildsAnAssembly()) == true;

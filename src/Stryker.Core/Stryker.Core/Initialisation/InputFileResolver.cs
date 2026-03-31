@@ -93,12 +93,12 @@ public class InputFileResolver(
     private IReadOnlyCollection<SourceProjectInfo> FindProjectsInSolutionMode(IStrykerOptions options, TargetsForMutation solutionInfo,
         string normalizedProjectUnderTestNameFilter)
     {
-        _logger.LogInformation("Identifying projects to mutate in {solution}. This can take a while.",
+        _logger.LogInformation("Identifying projects to mutate in {Solution}. This can take a while.",
             FileSystem.Path.GetFileNameWithoutExtension(solutionInfo.SolutionFilePath));
 
         // analyze all projects
         solutionInfo.SelectAllProjects();
-        _logger.LogDebug("Analyzing {numProjects} projects.", solutionInfo.ProjectCount);
+        _logger.LogDebug("Analyzing {ProjectsCount} projects.", solutionInfo.ProjectCount);
         // we analyze every project in the solution
         var mutableProjectsAnalyzerResults = AnalyzeAllNeededProjects(solutionInfo,
             normalizedProjectUnderTestNameFilter,
@@ -207,7 +207,7 @@ public class InputFileResolver(
     public string FindTestProject(string path)
     {
         var projectFile = FindProjectFile(path);
-        _logger.LogDebug("Using {filename} as test project", projectFile);
+        _logger.LogDebug("Using {Filename} as test project", projectFile);
         return projectFile;
     }
 
@@ -246,7 +246,7 @@ public class InputFileResolver(
         // keep only projects with one or more test projects
         // we must select projects according to framework settings if any
         var projectInfos = suitableCandidates.Where(p => p.Targets.Count > 0)
-            .Select(analyzerResult => analyzerResult.Targets.First().BuildSourceProjectInfo(options, solutionInfo, FileSystem))
+            .Select(analyzerResult => analyzerResult.Targets[0].BuildSourceProjectInfo(options, solutionInfo, FileSystem))
             .ToList();
 
         if (projectInfos.Count != 0)
