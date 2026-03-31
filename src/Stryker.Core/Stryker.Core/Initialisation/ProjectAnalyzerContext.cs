@@ -6,7 +6,6 @@ using System.Text;
 using Buildalyzer;
 using Buildalyzer.Environment;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Exceptions;
 using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.Initialisation;
@@ -116,52 +115,6 @@ public class ProjectAnalyzerContext
 
     public IEnumerable<string> GetProjectReferences() => AnalyzerLastResults?.SelectMany(r => r.ProjectReferences).Distinct();
 
-    public IAnalyzerResult SelectAnalyzerResult()
-    {
-        var validResults = AnalyzerLastResults.ToList();
-        if (validResults.Count == 0)
-        {
-            throw new InputException($"No valid project analysis results could be found for '{ProjectFileName}'.");
-        }
-
-        if (_framework is null)
-        {
-            // we try to avoid desktop versions
-            return PickFrameworkVersion();
-        }
-
-        var resultForRequestedFramework = validResults.Find(a => a.TargetFramework == _framework);
-        if (resultForRequestedFramework is not null)
-        {
-            return resultForRequestedFramework;
-        }
-        // if there is only one available framework version, we log an info
-        if (validResults.Count == 1)
-        {
-            var singleAnalyzerResult = validResults[0];
-            _logger.LogInformation(
-                "Could not find a valid analysis for target {0} for project '{1}'. Selected version is {2}.",
-                _framework, ProjectFileName, singleAnalyzerResult.TargetFramework);
-            return singleAnalyzerResult;
-        }
-
-        var firstAnalyzerResult = PickFrameworkVersion();
-        var availableFrameworks = validResults.Select(a => a.TargetFramework).Distinct();
-        _logger.LogWarning(
-            """
-            Could not find a valid analysis for target {0} for project '{1}'.
-            The available target frameworks are: {2}.
-                 selected version is {3}.
-            """, _framework, ProjectFileName, string.Join(',', availableFrameworks), firstAnalyzerResult.TargetFramework);
-
-        return firstAnalyzerResult;
-
-        IAnalyzerResult PickFrameworkVersion()
-        {
-            return validResults.Find(a => a.IsValid() && !a.TargetsFullFramework()) ?? validResults[0];
-        }
-    }
-
     private static readonly HashSet<string> ImportantProperties =
         ["Configuration", "Platform", "AssemblyName", "Configurations", "TargetPath", "OS"];
 
@@ -236,7 +189,7 @@ public class ProjectAnalyzerContext
 
     public bool BuildsAnAssembly() => AnalyzerLastResults?.Any(p => p.BuildsAnAssembly()) == true;
 
-    public bool FindMatchingVariant(string assemblyPath, out IAnalyzerResult analyzerResult)
+    public bool FindMatchingVariant(string assemblyPath, out IAnalyzerResult? analyzerResult)
     {
         if (AnalyzerLastResults == null)
         {

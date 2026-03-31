@@ -371,7 +371,6 @@ public class InputFileResolver(
                 buildResult = project.Analyze(forceFramework: true);
                 buildResultOverallSuccess = project.HasValidResults();
             }
-
         }
 
         if (options.DiagMode || _logger.IsEnabled(LogLevel.Debug))

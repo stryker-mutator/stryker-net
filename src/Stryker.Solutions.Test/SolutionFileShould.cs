@@ -45,7 +45,7 @@ public sealed class SolutionFileShould
         // Arrange
         List<string> projects = ["Project.csproj", "Test.csproj"];
         // Act
-        var solution = SolutionFile.BuildFromProjectList( projects, [platform]);
+        var solution = SolutionFile.BuildFromProjectList( projects, [platform], [platform]);
 
         // Assert
         solution.GetProjectsWithDetails("Debug").ShouldBe(projects.Select(p => (p, "Debug", platform)));

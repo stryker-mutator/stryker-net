@@ -173,7 +173,7 @@ public class SolutionFile
     /// <param name="configuration">requested configuration</param>
     /// <param name="platform">requested platform</param>
     /// <returns></returns>
-    public (string configuration, string platform) GetProjectConfiguration(string filename, string configuration, string platform)
+    public (string configuration, string platform) GetProjectConfiguration(string filename, string? configuration, string? platform)
     {
         configuration = GetEffectiveBuildType(configuration);
         platform ??= DefaultPlatform;
@@ -189,28 +189,57 @@ public class SolutionFile
     /// </summary>
     /// <param name="projects">list of csproj filenames</param>
     /// <param name="platforms">list of declared platforms. Default to AnyCpu and x86</param>
+    /// <param name="solutionPlatforms">list of solution level platforms</param>
     /// <returns>a solution instance</returns>
     /// <remarks>This method is used for testing purposes. It is mandatory as the underlying solution parser does not support any form of mocking</remarks>
-    public static SolutionFile BuildFromProjectList(List<string> projects, string[]? platforms = null)
+    public static SolutionFile BuildFromProjectList(List<string> projects, string[]? platforms = null
+        , string[]? solutionPlatforms = null)
     {
         var result = new SolutionFile();
+        solutionPlatforms = DefineSolutionPlatforms(platforms, solutionPlatforms);
         platforms ??= [ "AnyCPU", "x86" ];
+        if (platforms.Length != solutionPlatforms.Length)
+        {
+            throw new ArgumentException("The number of platforms should be the same as the number of solution platforms, if specified.");
+        }
         // default to Debug|Any CPU
         string[] buildTypes = ["Debug", "Release"];
         foreach (var buildType in buildTypes)
         {
-            foreach (var platform in platforms)
+            for (var index = 0; index < platforms.Length; index++)
             {
+                var platform = platforms[index];
                 var projectDict = new Dictionary<string, (string buildType, string platform)>();
                 foreach (var project in projects)
                 {
                     projectDict[project] = (buildType, platform);
                 }
-                var solutionPlatform = platform == "AnyCPU" ? "Any CPU" : platform;
-                result._configurations.Add((buildType, solutionPlatform), projectDict);
+
+                result._configurations.Add((buildType, solutionPlatforms[index]), projectDict);
             }
         }
         return result;
+    }
+
+    private static string[] DefineSolutionPlatforms(string[]? platforms, string[]? solutionPlatforms)
+    {
+        if (solutionPlatforms == null)
+        {
+            if (platforms == null)
+            {
+                solutionPlatforms = [ "Any CPU", "x86" ];
+            }
+            else
+            {
+                solutionPlatforms = new string[platforms.Length];
+                for (var i = 0; i < platforms.Length; i++)
+                {
+                    solutionPlatforms[i] = platforms[i] == DefaultProjectBuildType ? DefaultSolutionType : platforms[i];
+                }
+            }
+        }
+
+        return solutionPlatforms;
     }
 
     private static SolutionFile AnalyzeSolution(string solutionPath, SolutionModel solution)
