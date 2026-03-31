@@ -18,19 +18,18 @@ public class ProjectAnalyzerContext
     private readonly string _msBuildPath;
     private readonly string _configuration;
     private readonly string _platform;
-    private readonly string _framework;
+    private readonly string? _framework;
     private readonly ILogger _logger;
     private readonly StringWriter _buildLogger;
-    public IAnalyzerResults AnalyzerLastResults { get; private set; }
-    private IEnumerable<IAnalyzerResults> _filteredResults;
-    private string[] _targetFrameworks;
+    public IAnalyzerResults? AnalyzerLastResults { get; private set; }
+    private string[] _targetFrameworks=[];
 
     public ProjectAnalyzerContext(IBuildalyzerProvider buildalyzerProvider,
         string projectFile,
         string msBuildPath,
         string configuration,
         string platform,
-        string framework,
+        string? framework,
         ILogger logger,
         TargetsForMutation targetsForMutation)
     {
@@ -234,8 +233,14 @@ public class ProjectAnalyzerContext
 
     public bool FindMatchingVariant(string assemblyPath, out IAnalyzerResult analyzerResult)
     {
+        if (AnalyzerLastResults == null)
+        {
+            analyzerResult = null;
+            return false;
+        }
+
         analyzerResult= AnalyzerLastResults.FirstOrDefault( r=>
-                            string.Compare(assemblyPath, r.GetAssemblyFileName(), StringComparison.OrdinalIgnoreCase) == 0
+                            string.Compare(assemblyPath, r.GetAssemblyPath(), StringComparison.OrdinalIgnoreCase) == 0
                 || string.Compare(assemblyPath, r.GetReferenceAssemblyPath(), StringComparison.OrdinalIgnoreCase) == 0);
         return analyzerResult != null;
     }

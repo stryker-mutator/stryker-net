@@ -48,7 +48,7 @@ public class InputFileResolver(
     /// Identifies the project(s) to mutate and their associated test project(s) according to provided options, and returns a collection of <see cref="SourceProjectInfo"/> describing them.
     /// </summary>
     /// <param name="options">Stryker options</param>
-    /// <returns>a collection of <see cref="FindProjectInTargetProjectMode"/> describing mutable project</returns>
+    /// <returns>a collection of <see cref="SourceProjectInfo"/> describing mutable project</returns>
     /// <exception cref="InputException">Thrown if the method fails during analysis.</exception>
     public IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(IStrykerOptions options)
     {
@@ -172,7 +172,7 @@ public class InputFileResolver(
                 }
                 else
                 {
-                    _logger.LogError("No project could be found as a project referenced by the provi ded test projects.");
+                    _logger.LogError("No project could be found as a project referenced by the provided test projects.");
                 }
 
                 return result;
@@ -569,7 +569,7 @@ public class InputFileResolver(
             {
                 if (!_cache.TryAdd(entry, true))
                 {
-                    return;
+                    continue;
                 }
                 _queue.Enqueue(entry);
             }

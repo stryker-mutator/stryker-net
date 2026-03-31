@@ -75,7 +75,7 @@ internal class MutableProjectTree(ProjectAnalyzerContext project, ILogger logger
     {
         _logger.LogInformation("Project {ProjectPath} overall analysis {Result}.",
             Project.ProjectFileName,
-            IsValidTarget ? "succeeded" : "failed hence can't   be mutated");
+            IsValidTarget ? "succeeded" : "failed hence can't be mutated");
         foreach (var target in Targets)
         {
             target.DumpForAnalysis();

@@ -135,6 +135,7 @@ public class SolutionFile
             .ToImmutableList();
     }
 
+    // returns the appropriate default build type if the provided one is null or whitespace, otherwise returns the provided one
     private string GetEffectiveBuildType(string? buildType)
     {
         if (!string.IsNullOrWhiteSpace(buildType))
@@ -154,23 +155,27 @@ public class SolutionFile
     {
         buildType = GetEffectiveBuildType(buildType);
         platform ??= DefaultPlatform;
-        return _configurations
-            .Where(entry => entry.Key.buildType == buildType && entry.Key.platform == platform)
-            .SelectMany(entry => entry.Value).Select(p => (p.Key, p.Value.buildType, p.Value.platform))
+        return _configurations[(buildType, platform)]
+            .Select(p => (p.Key, p.Value.buildType, p.Value.platform))
             .Distinct()
             .ToImmutableList();
     }
 
+    /// <summary>
+    /// Gets the appropriate configuration and platform for a given project based on the solution configuration and platform provided as parameters.
+    /// If the project is not included in the solution configuration, it will return the provided configuration and platform or the defaults if they are not provided.
+    /// </summary>
+    /// <param name="filename">project file name</param>
+    /// <param name="configuration">requested configuration</param>
+    /// <param name="platform">requested platform</param>
+    /// <returns></returns>
     public (string configuration, string platform) GetProjectConfiguration(string filename, string configuration, string platform)
     {
         configuration = GetEffectiveBuildType(configuration);
         platform ??= DefaultPlatform;
-        foreach (var entry in _configurations)
+        if (_configurations.TryGetValue((configuration, platform), out var projects) && projects.TryGetValue(filename, out var projectConfig))
         {
-            if (entry.Value.TryGetValue(filename, out var projectConfig))
-            {
-                return (projectConfig.buildType, projectConfig.platform);
-            }
+            return (projectConfig.buildType, projectConfig.platform);
         }
         return (configuration, platform);
     }

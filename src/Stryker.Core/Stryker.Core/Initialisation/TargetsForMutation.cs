@@ -19,7 +19,7 @@ public class TargetsForMutation
     private readonly IBuildalyzerProvider _buildalyzerProvider;
     private readonly ILogger _logger;
 
-    public TargetsForMutation(SolutionFile file, IStrykerOptions options, IBuildalyzerProvider buildalyzerProvider ,ILogger logger, INugetRestoreProcess nugetRestoreProcess)
+    public TargetsForMutation(SolutionFile? file, IStrykerOptions options, IBuildalyzerProvider buildalyzerProvider ,ILogger logger, INugetRestoreProcess nugetRestoreProcess)
     {
         _options = options;
         _buildalyzerProvider = buildalyzerProvider;
