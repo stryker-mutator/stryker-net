@@ -363,7 +363,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
             _failedTests.AddRange(result.FailingTests.GetIdentifiers());
             TotalDuration += result.Duration;
-            _messages.AddRange(result.Messages);
+            _messages.AddRange(result.Messages ?? []);
 
             if (!string.IsNullOrWhiteSpace(result.ResultMessage))
             {
