@@ -1,11 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Buildalyzer;
 using Buildalyzer.Environment;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Options;
 using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.Initialisation;
@@ -14,18 +15,19 @@ public class ProjectAnalyzerContext
 {
     private readonly IProjectAnalyzer _analyzer;
     private readonly TargetsForMutation _targetsForMutation;
-    private readonly IStrykerOptions _options;
+    private readonly string _msBuildPath;
     private readonly string _configuration;
     private readonly string _platform;
     private readonly string _framework;
     private readonly ILogger _logger;
     private readonly StringWriter _buildLogger;
-    private IAnalyzerResults _analyzerLastResults;
+    public IAnalyzerResults AnalyzerLastResults { get; private set; }
+    private IEnumerable<IAnalyzerResults> _filteredResults;
     private string[] _targetFrameworks;
 
     public ProjectAnalyzerContext(IBuildalyzerProvider buildalyzerProvider,
         string projectFile,
-        IStrykerOptions options,
+        string msBuildPath,
         string configuration,
         string platform,
         string framework,
@@ -39,7 +41,7 @@ public class ProjectAnalyzerContext
         _analyzer = analyzer;
         ProjectFileName = projectFile;
         _targetsForMutation = targetsForMutation;
-        _options = options;
+        _msBuildPath = msBuildPath;
         _configuration = configuration;
         _platform = platform;
         _framework = framework;
@@ -52,19 +54,19 @@ public class ProjectAnalyzerContext
 
     public IAnalyzerResults Analyze(bool withRestore = false, bool forceFramework = false)
     {
-        if (withRestore && _analyzerLastResults?.Any(ar => ar.TargetsFullFramework()) == true)
+        if (withRestore && AnalyzerLastResults?.Any(ar => ar.TargetsFullFramework()) == true)
         {
-            _targetsForMutation.RestoreSolution(_analyzerLastResults);
+            _targetsForMutation.RestoreSolution(AnalyzerLastResults);
         }
         _buildLogger.GetStringBuilder().Clear();
         var env = new EnvironmentOptions
         {
             Restore = withRestore
         };
-        if (!string.IsNullOrEmpty(_options.MsBuildPath))
+        if (!string.IsNullOrEmpty(_msBuildPath))
         {
             // we need to forward this path to buildalyzer
-            env.EnvironmentVariables[EnvironmentVariables.MSBUILD_EXE_PATH] = _options.MsBuildPath;
+            env.EnvironmentVariables[EnvironmentVariables.MSBUILD_EXE_PATH] = _msBuildPath;
         }
         if (!string.IsNullOrEmpty(_configuration))
         {
@@ -75,9 +77,9 @@ public class ProjectAnalyzerContext
             env.GlobalProperties["Platform"] = _platform;
         }
 
-        _analyzerLastResults = forceFramework ? _analyzer.Build(_options.TargetFramework, env) : _analyzer.Build(env);
+        AnalyzerLastResults = forceFramework ? _analyzer.Build(_framework, env) : _analyzer.Build(env);
         InitializeTargetFrameworks();
-        return _analyzerLastResults;
+        return AnalyzerLastResults;
     }
 
     private void InitializeTargetFrameworks()
@@ -89,14 +91,14 @@ public class ProjectAnalyzerContext
         }
         else
         {
-            if (!string.IsNullOrEmpty(_options.TargetFramework))
+            if (!string.IsNullOrEmpty(_framework))
             {
-                projectFileTargetFrameworks=[_options.TargetFramework];
-                _logger.LogWarning("Failed to identify target frameworks for project {ProjectFilePath}. Assuming selected framework ({framework}) is present.", ProjectFileName, _options.TargetFramework);
+                projectFileTargetFrameworks=[_framework];
+                _logger.LogWarning("Failed to identify target frameworks for project {ProjectFilePath}. Assuming selected framework ({framework}) is present.", ProjectFileName, _framework);
             }
             else
             {
-                projectFileTargetFrameworks = _analyzerLastResults.Select(br => br.TargetFramework).ToArray();
+                projectFileTargetFrameworks = AnalyzerLastResults.Select(br => br.TargetFramework).ToArray();
                 _logger.LogWarning("Failed to identify target frameworks for project {ProjectFilePath}. Using analysis results: {frameworks}", ProjectFileName, string.Join(',', projectFileTargetFrameworks));
             }
         }
@@ -105,25 +107,31 @@ public class ProjectAnalyzerContext
     }
 
     public IEnumerable<string> FailedFrameworks => _targetFrameworks.Where(tf =>
-        !_analyzerLastResults.Any( ar => ar.TargetFramework == tf && ar.IsValid()));
+        !AnalyzerLastResults.Any( ar => ar.TargetFramework == tf && ar.IsValid()));
 
-    public bool HasValidResults() => _analyzerLastResults != null && _analyzerLastResults.IsValidFor(_targetFrameworks);
+    public bool IsTest => AnalyzerLastResults?.IsTestProject() == true;
 
-    private IAnalyzerResult SelectAnalyzerResult(IEnumerable<IAnalyzerResult> analyzerResults, string targetFramework)
+    public bool HasValidResults() => AnalyzerLastResults != null && AnalyzerLastResults.IsValidFor(_targetFrameworks);
+
+    public bool IsTestProject() => AnalyzerLastResults != null && AnalyzerLastResults.IsTestProject();
+
+    public IEnumerable<string> GetProjectReferences() => AnalyzerLastResults?.SelectMany(r => r.ProjectReferences).Distinct();
+
+    public IAnalyzerResult SelectAnalyzerResult()
     {
-        var validResults = analyzerResults.ToList();
+        var validResults = AnalyzerLastResults.ToList();
         if (validResults.Count == 0)
         {
             throw new InputException($"No valid project analysis results could be found for '{ProjectFileName}'.");
         }
 
-        if (targetFramework is null)
+        if (_framework is null)
         {
             // we try to avoid desktop versions
             return PickFrameworkVersion();
         }
 
-        var resultForRequestedFramework = validResults.Find(a => a.TargetFramework == targetFramework);
+        var resultForRequestedFramework = validResults.Find(a => a.TargetFramework == _framework);
         if (resultForRequestedFramework is not null)
         {
             return resultForRequestedFramework;
@@ -134,7 +142,7 @@ public class ProjectAnalyzerContext
             var singleAnalyzerResult = validResults[0];
             _logger.LogInformation(
                 "Could not find a valid analysis for target {0} for project '{1}'. Selected version is {2}.",
-                targetFramework, ProjectFileName, singleAnalyzerResult.TargetFramework);
+                _framework, ProjectFileName, singleAnalyzerResult.TargetFramework);
             return singleAnalyzerResult;
         }
 
@@ -145,7 +153,7 @@ public class ProjectAnalyzerContext
             Could not find a valid analysis for target {0} for project '{1}'.
             The available target frameworks are: {2}.
                  selected version is {3}.
-            """, targetFramework, ProjectFileName, string.Join(',', availableFrameworks), firstAnalyzerResult.TargetFramework);
+            """, _framework, ProjectFileName, string.Join(',', availableFrameworks), firstAnalyzerResult.TargetFramework);
 
         return firstAnalyzerResult;
 
@@ -155,4 +163,80 @@ public class ProjectAnalyzerContext
         }
     }
 
+    private static readonly HashSet<string> ImportantProperties =
+        ["Configuration", "Platform", "AssemblyName", "Configurations", "TargetPath", "OS"];
+
+    public void LogAnalyzerResult()
+    {
+        var log = new StringBuilder();
+        try
+        {
+            log.AppendLine("**** Buildalyzer result ****");
+            log.AppendLine($"Project: {ProjectFileName}");
+            if (AnalyzerLastResults.Count == 0)
+            {
+                _logger.LogTrace("No analyzer results to log. This indicates an early failure in analysis, check build log for details.");
+                return;
+            }
+            // dump all properties as it can help diagnosing build issues for user project.
+            foreach (var analyzerResult in AnalyzerLastResults)
+            {
+                log.AppendLine($"TargetFramework: {analyzerResult.TargetFramework}");
+                log.AppendLine($"Succeeded: {analyzerResult.Succeeded}");
+                log.AppendLine($"Compiler command: {analyzerResult.Command}");
+
+                var properties = analyzerResult.Properties;
+                foreach (var property in ImportantProperties)
+                {
+                    log.AppendLine($"Property {property}={properties.GetValueOrDefault(property) ?? "\"'undefined'\""}");
+                }
+                if (analyzerResult.SourceFiles.Length == 0)
+                {
+                    log.AppendLine("** No source files identified **");
+                }
+                else
+                {
+                    log.AppendLine(
+                        $"{analyzerResult.SourceFiles.Length} source files: {string.Join(',', analyzerResult.SourceFiles)}");
+                }
+                if (analyzerResult.References.Length == 0)
+                {
+                    log.AppendLine("** No references Identified **");
+                }
+                else
+                {
+                    foreach (var reference in analyzerResult.References)
+                    {
+                        log.AppendLine($"References: {Path.GetFileName(reference)} (in {Path.GetDirectoryName(reference)})");
+                    }
+                }
+
+                if (_logger.IsEnabled(LogLevel.Trace))
+                {
+                    // dumps all other properties as well, as they can be useful for diagnosing build issues
+                    foreach (var property in properties.Where( p => !ImportantProperties.Contains(p.Key) ))
+                    {
+                        log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
+                    }
+                }
+
+                log.AppendLine();
+            }
+        }
+        finally
+        {
+            log.AppendLine("**** End Buildalyzer result ****");
+            _logger.LogDebug(log.ToString());
+        }
+    }
+
+    public bool BuildsAnAssembly() => AnalyzerLastResults?.Any(p => p.BuildsAnAssembly()) == true;
+
+    public bool FindMatchingVariant(string assemblyPath, out IAnalyzerResult analyzerResult)
+    {
+        analyzerResult= AnalyzerLastResults.FirstOrDefault( r=>
+                            string.Compare(assemblyPath, r.GetAssemblyFileName(), StringComparison.OrdinalIgnoreCase) == 0
+                || string.Compare(assemblyPath, r.GetReferenceAssemblyPath(), StringComparison.OrdinalIgnoreCase) == 0);
+        return analyzerResult != null;
+    }
 }

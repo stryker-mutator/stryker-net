@@ -29,6 +29,7 @@ public class TargetsForMutation
         SelectConfiguration();
     }
 
+
     private SolutionFile Solution { get; init; }
 
     public string SolutionFilePath => Solution?.FileName;
@@ -96,6 +97,11 @@ public class TargetsForMutation
         _solutionRestored = true;
     }
 
+    /// <summary>
+    /// Gets a project analysis context for the given project file, using the configuration and platform from the solution if available, otherwise using the configuration and platform from the options.
+    /// </summary>
+    /// <param name="projectFile">target project file</param>
+    /// <returns>a <see cref="ProjectAnalyzerContext"/> instance for <param name="projectFile">.</param></returns>
     public ProjectAnalyzerContext GetProjectAnalysisContext(string projectFile)
     {
         string configuration;
@@ -109,6 +115,7 @@ public class TargetsForMutation
         {
             (configuration, platform) = (Configuration, Platform);
         }
-        return new ProjectAnalyzerContext(_buildalyzerProvider, projectFile, _options, configuration, platform, _options.TargetFramework, _logger, this);
+        return new ProjectAnalyzerContext(_buildalyzerProvider, projectFile, _options.MsBuildPath, configuration,
+            platform, _options.TargetFramework, _logger, this);
     }
 }

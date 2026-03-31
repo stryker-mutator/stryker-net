@@ -1089,15 +1089,69 @@ Please specify a test project name filter that results in one project.
     }
 
     [TestMethod]
-    [DataRow("net3.0,net462", "net461,net2.0", null, "net3.0", "net2.0")]
-    [DataRow("net3.0,net2.0", "net2.0,net3.0", null, "net3.0", "net3.0")]
-    [DataRow("net3.0,net462", "net461,net2.0", "net2.0", "net3.0", "net2.0")]
-    [DataRow("net3.0,net462", "net461,net2.0", "net3.0", "net3.0", "net2.0")]
-    [DataRow("net3.0,net462", "net461,net2.0", "net461", "net3.0", "net2.0")]
-    [DataRow("net3.0,net462", "net461,net2.0", "net462", "net462", "net461")]
-    public void ShouldSelectFrameworkBasedOnTestProject(string testFrameworks, string projectFrameworks
+    [DataRow("netcoreapp3.0,net462", "netcoreapp2.0,net461", null, "netcoreapp3.0", "netcoreapp2.0")]
+    [DataRow("netcoreapp3.0,netcoreapp2.0", "netcoreapp3.0,netcoreapp2.0", null, "netcoreapp3.0", "netcoreapp3.0")]
+    [DataRow("netcoreapp3.0,net462", "netcoreapp2.0,net461", "netcoreapp2.0", "netcoreapp3.0", "netcoreapp2.0")]
+    [DataRow("netcoreapp3.0,net462", "netcoreapp2.0,net461", "netcoreapp3.0", "netcoreapp3.0", "netcoreapp2.0")]
+    [DataRow("netcoreapp3.0,net462", "netcoreapp2.0,net461", "net461", "net462", "net461")]
+    [DataRow("netcoreapp3.0,net462", "netcoreapp2.0,net461", "net462", "net462", "net461")]
+    public void ShouldSelectFrameworkBasedOnTestProject(string testFrameworks
+        , string projectFrameworks
         , string targetFramework
-        , string expectedTestFramework,string expectedFramework)
+        , string expectedTestFramework,
+        string expectedFramework)
+    {
+        // Arrange
+        var basePath = Path.Combine(_sourcePath, "ExampleProject");
+        var testProjectPath = Path.Combine(_sourcePath, "TestProjectFolder", "TestProject.csproj");
+        var sourceProjectPath = Path.Combine(_sourcePath, "ExampleProject", "ExampleProject.csproj");
+        var sourceProjectNameFilter = "ExampleProject.csproj";
+
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { sourceProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+            { testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+            { Path.Combine(_sourcePath, "Recursive.cs"), new MockFileData("content")}
+        });
+
+        var options = new StrykerOptions()
+        {
+            ProjectPath = basePath,
+            SourceProjectName = sourceProjectNameFilter,
+            TestProjects = new List<string> { testProjectPath },
+            TargetFramework = targetFramework
+        };
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(sourceProjectPath,
+            fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray(), null,  projectFrameworks.Split(','));
+        var testProjectManagerMock = TestProjectAnalyzerMock(testProjectPath, sourceProjectPath, frameworks: testFrameworks.Split(','));
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+
+        var target = BuildTestResolver(fileSystem);
+
+        // Act
+        var result = target.ResolveSourceProjectInfos(options).First();
+
+        // Assert
+        result.AnalyzerResult.TargetFramework.ShouldBe(expectedFramework);
+        result.TestProjectsInfo.AnalyzerResults.First().TargetFramework.ShouldBe(expectedTestFramework);
+    }
+
+    // Stryker will ignore NetFramework target when runnning on non windows platforms
+    [TestMethodWithIgnoreIfSupport]
+    [IgnoreIf(nameof(Is.NotWindows))]
+    [DataRow("net462,netcoreapp3.0", "net461,netcoreapp2.0", null, "net462", "net461")]
+    public void ShouldSelectFrameworkBasedOnTestProjectOnWindows(string testFrameworks
+        , string projectFrameworks
+        , string targetFramework
+        , string expectedTestFramework,
+        string expectedFramework)
     {
         // Arrange
         var basePath = Path.Combine(_sourcePath, "ExampleProject");
@@ -1321,7 +1375,7 @@ Please specify a test project name filter that results in one project.
 
         // Assert
         var ex = result.ShouldThrow<InputException>();
-        ex.Message.ShouldContain("Test project contains more than one project reference. Please set the project option");
+        ex.Message.ShouldContain("Multiple projects identified as potential candidate for mutation testing. Please set the project option");
         ex.Message.ShouldContain("Choose one of the following references:");
     }
 
@@ -1482,7 +1536,7 @@ Please specify a test project name filter that results in one project.
 
         var options = new StrykerOptions { SourceProjectName = shouldMatchMoreThanOne, ProjectPath = _testPath };
         var result = () => target.ResolveSourceProjectInfos(options);
-        result.ShouldThrow<InputException>().Message.ShouldContain("more than one project");
+        result.ShouldThrow<InputException>().Message.ShouldContain("Multiple projects identified");
     }
 
     [TestMethod]
