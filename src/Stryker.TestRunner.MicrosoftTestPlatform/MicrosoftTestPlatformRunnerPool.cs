@@ -97,9 +97,21 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project)
     {
-        _logger.LogInformation("Starting coverage capture for MTP runner");
+        if (_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+        {
+            var confidence = _options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest)
+                ? CoverageConfidence.Exact
+                : CoverageConfidence.Normal;
+            return CaptureCoverageTestByTest(project, confidence);
+        }
 
-        // Enable coverage mode on all runners
+        return CaptureCoverageInOneGo(project);
+    }
+
+    private IEnumerable<ICoverageRunResult> CaptureCoverageInOneGo(IProjectAndTests project)
+    {
+        _logger.LogInformation("Starting aggregate coverage capture for MTP runner");
+
         foreach (var runner in _availableRunners)
         {
             runner.SetCoverageMode(true);
@@ -107,7 +119,6 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
         try
         {
-            // Run all tests with coverage tracking enabled
             var testResult = RunThisAsync(runner => runner.InitialTestAsync(project)).GetAwaiter().GetResult();
 
             if (testResult.FailingTests.IsEveryTest)
@@ -115,10 +126,8 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
                 _logger.LogWarning("Coverage test run failed: {Message}", testResult.ResultMessage);
             }
 
-            // Reset test processes to trigger coverage file flush (process exit writes coverage)
             ResetTestProcesses();
 
-            // Aggregate coverage data from all runners
             var allCoveredMutants = new HashSet<int>();
             var allStaticMutants = new HashSet<int>();
 
@@ -135,12 +144,9 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
                 }
             }
 
-            _logger.LogInformation("Coverage capture complete: {CoveredCount} mutations covered, {StaticCount} static mutations",
+            _logger.LogInformation("Aggregate coverage capture complete: {CoveredCount} mutations covered, {StaticCount} static mutations",
                 allCoveredMutants.Count, allStaticMutants.Count);
 
-            // For cumulative coverage, we return a single coverage result that applies to all tests
-            // Each test is assumed to cover all the mutations that were covered during the full test run
-            // Static mutants are marked as such for proper handling during mutation testing
             return _testDescriptions.Values.Select(testDescription =>
                 CoverageRunResult.Create(
                     testDescription.Id,
@@ -151,12 +157,18 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         }
         finally
         {
-            // Disable coverage mode on all runners for subsequent mutation testing
             foreach (var runner in _availableRunners)
             {
                 runner.SetCoverageMode(false);
             }
         }
+    }
+
+    // Stub: real implementation added in Task 6
+    private IEnumerable<ICoverageRunResult> CaptureCoverageTestByTest(
+        IProjectAndTests project, CoverageConfidence confidence)
+    {
+        throw new NotImplementedException("CaptureCoverageTestByTest will be implemented in Task 6");
     }
 
     public async Task<ITestRunResult> TestMultipleMutantsAsync(
