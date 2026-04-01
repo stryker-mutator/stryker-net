@@ -260,6 +260,10 @@ public class SolutionFile
                         continue;
                     }
 
+                    if (projectPlatform == DefaultSolutionType)
+                    {
+                        projectPlatform = DefaultProjectBuildType;
+                    }
                     projects[solutionProject.FilePath] = (projectBuildType, projectPlatform);
                 }
                 if (projects.Count == 0)

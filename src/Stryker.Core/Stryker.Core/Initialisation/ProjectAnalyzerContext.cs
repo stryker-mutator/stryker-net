@@ -148,7 +148,6 @@ public class ProjectAnalyzerContext
         log.AppendLine($"TargetFramework: {analyzerResult.TargetFramework}");
         log.AppendLine($"Simulated build: {(analyzerResult.Succeeded ? "succeeded": "failed")}");
         log.AppendLine($"Stryker analysis: {(analyzerResult.IsValid() ? "succeeded": "failed")}");
-        log.AppendLine($"Compiler command: {analyzerResult.Command}");
 
         var properties = analyzerResult.Properties;
         foreach (var property in ImportantProperties)
@@ -172,18 +171,18 @@ public class ProjectAnalyzerContext
         {
             foreach (var reference in analyzerResult.References)
             {
-                log.AppendLine($"References: {Path.GetFileName(reference)} (in {Path.GetDirectoryName(reference)})");
+                var aliasText = string.Empty;
+                if (analyzerResult.ReferenceAliases.TryGetValue(reference, out var aliases) && aliases.Length > 0)
+                {
+                    aliasText = $" aliases: {string.Join(", ", aliases)}";
+                }
+                log.AppendLine($"References: {Path.GetFileName(reference)}{aliasText} (in {Path.GetDirectoryName(reference)})");
             }
         }
 
-        if (analyzerResult.ReferenceAliases.Count > 0)
-        {
-            foreach (var (alias, assemblies) in analyzerResult.ReferenceAliases)
-            {
-                log.AppendLine($"Aliases: {alias} =>  {string.Join(", ", assemblies)}");
-            }
-        }
-        if (_logger.IsEnabled(LogLevel.Trace))
+        log.AppendLine($"Compiler command: {analyzerResult.Command}");
+
+        if (_logger.IsEnabled(LogLevel.Trace) && false)
         {
             // dumps all other properties as well, as they can be useful for diagnosing build issues
             foreach (var property in properties.Where( p => !ImportantProperties.Contains(p.Key) ))
