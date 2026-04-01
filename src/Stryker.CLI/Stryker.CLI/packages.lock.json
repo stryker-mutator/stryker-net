@@ -40,8 +40,8 @@
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "4.0.3.24",
-        "contentHash": "Bq3mONgVTGheBWfqiVxPDgy/qpcEbsHuH9ColyGFgIiW4Smr/zizfPWI5OjUmxFJ2wlsX/Ooa5654C9bZh2wvg=="
+        "resolved": "4.0.3.25",
+        "contentHash": "ug/C6csm8/GcRrMij9EtTA6k2MtRFV9EibhWNRFTISR8AGXQnSoxUKnddMpHah6ax/Tjg1GW0zk1i0/wcvEqmg=="
       },
       "Azure.Core": {
         "type": "Transitive",
@@ -691,7 +691,7 @@
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "AWSSDK.S3": "[4.0.20, )",
+          "AWSSDK.S3": "[4.0.20.1, )",
           "Azure.Storage.Files.Shares": "[12.25.0, )",
           "Buildalyzer": "[8.0.0, )",
           "DotNet.Glob": "[3.1.3, )",
@@ -813,11 +813,11 @@
       },
       "AWSSDK.S3": {
         "type": "CentralTransitive",
-        "requested": "[4.0.20, )",
-        "resolved": "4.0.20",
-        "contentHash": "ibvoio5mNEbYqTtX2NY/csUHZ744fMLRK8YSXvMGQ/FR20UOieZyv5/9bJoiOQOz0fdkOHew5MIU+umIpvB1Fg==",
+        "requested": "[4.0.20.1, )",
+        "resolved": "4.0.20.1",
+        "contentHash": "UH2ozA9bQe/dOwxClI7h1BEmpt45hk5rrzwQgDFLdt5bpP5o46gHAAHiM6dbiBLzD81Q0YQHMiJ9nWeO5AG5FQ==",
         "dependencies": {
-          "AWSSDK.Core": "[4.0.3.24, 5.0.0)"
+          "AWSSDK.Core": "[4.0.3.25, 5.0.0)"
         }
       },
       "Azure.Storage.Files.Shares": {
