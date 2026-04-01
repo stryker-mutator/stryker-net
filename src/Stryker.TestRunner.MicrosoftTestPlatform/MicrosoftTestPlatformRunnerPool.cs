@@ -242,30 +242,33 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         const int maxWaitTimeSeconds = 300;
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(maxWaitTimeSeconds));
 
-        try
+        // Single CTS shared across retries so the timeout is a hard upper bound
+        while (true)
         {
-            await _runnerAvailable.WaitAsync(cts.Token).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw new TimeoutException($"Timed out waiting for an available test runner after {maxWaitTimeSeconds} seconds. Available runners: {_availableRunners.Count}, Total runners: {_countOfRunners}");
-        }
+            try
+            {
+                await _runnerAvailable.WaitAsync(cts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                throw new TimeoutException($"Timed out waiting for an available test runner after {maxWaitTimeSeconds} seconds. Available runners: {_availableRunners.Count}, Total runners: {_countOfRunners}");
+            }
 
-        if (!_availableRunners.TryTake(out var runner))
-        {
-            // Another thread grabbed the runner between the semaphore release and our TryTake; re-wait
-            _runnerAvailable.Release();
-            return await RunThisAsync(task).ConfigureAwait(false);
-        }
+            if (!_availableRunners.TryTake(out var runner))
+            {
+                _runnerAvailable.Release();
+                continue;
+            }
 
-        try
-        {
-            return await task(runner).ConfigureAwait(false);
-        }
-        finally
-        {
-            _availableRunners.Add(runner);
-            _runnerAvailable.Release();
+            try
+            {
+                return await task(runner).ConfigureAwait(false);
+            }
+            finally
+            {
+                _availableRunners.Add(runner);
+                _runnerAvailable.Release();
+            }
         }
     }
 
