@@ -83,7 +83,8 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     public async Task<ITestRunResult> InitialTestAsync(IProjectAndTests project)
     {
         var assemblies = project.GetTestAssemblies();
-        if (!assemblies.Any())
+        ArgumentNullException.ThrowIfNull(assemblies);
+        if (assemblies.Count == 0)
         {
             return new TestRunResult(false, "No test assemblies found");
         }
@@ -229,7 +230,8 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         TestUpdateHandler? update)
     {
         var assemblies = project.GetTestAssemblies();
-        if (!assemblies.Any())
+        ArgumentNullException.ThrowIfNull(assemblies);
+        if (assemblies.Count == 0)
         {
             return new TestRunResult(false, "No test assemblies found");
         }
