@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
@@ -254,6 +255,7 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
                     Select( iar => GetProjectResult(iar, framework).GetAssemblyPath()).Union(rawReferences).ToArray());
             }
 
+            projectAnalyzerResultMock.Setup(x => x.ReferenceAliases).Returns(new Dictionary<string, ImmutableArray<string>>().ToImmutableDictionary());
             projectAnalyzerResultMock.Setup(x => x.SourceFiles).Returns(sourceFiles);
             projectAnalyzerResultMock.Setup(x => x.PackageReferences).Returns(new Dictionary<string, IReadOnlyDictionary<string, string>>());
             projectAnalyzerResultMock.Setup(x => x.PreprocessorSymbols).Returns(["NET"]);
