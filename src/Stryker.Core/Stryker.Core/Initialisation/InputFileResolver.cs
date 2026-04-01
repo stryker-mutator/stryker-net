@@ -320,6 +320,7 @@ public class InputFileResolver(
                         }
 
                         mutableProjectsAnalyzerResults.Add(projectAnalysisContext);
+                        // recursively scan dependencies only if enabled and current project is a test project
                         if (mode == ScanMode.NoScan
                             || (mode == ScanMode.ScanTestProjectReferences && !projectAnalysisContext.IsTestProject()))
                         {

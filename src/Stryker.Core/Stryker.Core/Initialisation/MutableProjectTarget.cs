@@ -64,11 +64,10 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
 
     public void DumpForAnalysis()
     {
-        var targetProjectTarget = ProjectTarget;
         logger.LogInformation(" target {TargetFramework} analysis {Result}, simulated build {BuildResult}.",
-            targetProjectTarget.TargetFramework,
-            targetProjectTarget.IsValid() ? "succeeded" : "failed",
-            targetProjectTarget.Succeeded ? "succeeded" : "failed"
+            ProjectTarget.TargetFramework,
+            ProjectTarget.IsValid() ? "succeeded" : "failed",
+            ProjectTarget.Succeeded ? "succeeded" : "failed"
         );
         if (TestProjects.Count == 0)
         {

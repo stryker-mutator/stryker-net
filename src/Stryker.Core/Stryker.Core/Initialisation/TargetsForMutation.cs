@@ -32,7 +32,7 @@ public class TargetsForMutation
 
     private SolutionFile Solution { get; init; }
 
-    public string SolutionFilePath => Solution?.FileName;
+    public string? SolutionFilePath => Solution?.FileName;
 
     public string Configuration { get; private set; }
 

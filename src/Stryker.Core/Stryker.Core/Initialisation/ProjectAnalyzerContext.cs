@@ -146,7 +146,8 @@ public class ProjectAnalyzerContext
     private void DumpTestAnalyzerResult(StringBuilder log, IAnalyzerResult analyzerResult)
     {
         log.AppendLine($"TargetFramework: {analyzerResult.TargetFramework}");
-        log.AppendLine($"Succeeded: {analyzerResult.Succeeded}");
+        log.AppendLine($"Simulated build: {(analyzerResult.Succeeded ? "succeeded": "failed")}");
+        log.AppendLine($"Stryker analysis: {(analyzerResult.IsValid() ? "succeeded": "failed")}");
         log.AppendLine($"Compiler command: {analyzerResult.Command}");
 
         var properties = analyzerResult.Properties;
@@ -175,6 +176,13 @@ public class ProjectAnalyzerContext
             }
         }
 
+        if (analyzerResult.ReferenceAliases.Count > 0)
+        {
+            foreach (var (alias, assemblies) in analyzerResult.ReferenceAliases)
+            {
+                log.AppendLine($"Aliases: {alias} =>  {string.Join(", ", assemblies)}");
+            }
+        }
         if (_logger.IsEnabled(LogLevel.Trace))
         {
             // dumps all other properties as well, as they can be useful for diagnosing build issues
