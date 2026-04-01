@@ -164,11 +164,61 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         }
     }
 
-    // Stub: real implementation added in Task 6
     private IEnumerable<ICoverageRunResult> CaptureCoverageTestByTest(
         IProjectAndTests project, CoverageConfidence confidence)
     {
-        throw new NotImplementedException("CaptureCoverageTestByTest will be implemented in Task 6");
+        _logger.LogInformation("Starting per-test coverage capture for MTP runner");
+
+        foreach (var runner in _availableRunners)
+        {
+            runner.SetCoverageMode(true);
+        }
+
+        try
+        {
+            var allTests = new List<(string Assembly, TestNode Test, string TestId)>();
+            foreach (var (assembly, tests) in _testsByAssembly)
+            {
+                foreach (var test in tests)
+                {
+                    if (_testDescriptions.TryGetValue(test.Uid, out var desc))
+                    {
+                        allTests.Add((assembly, test, desc.Id));
+                    }
+                }
+            }
+
+            _logger.LogInformation("Capturing per-test coverage for {TestCount} tests across {AssemblyCount} assemblies",
+                allTests.Count, _testsByAssembly.Count);
+
+            var results = new ConcurrentBag<ICoverageRunResult>();
+
+            Parallel.ForEach(allTests,
+                new ParallelOptions { MaxDegreeOfParallelism = _countOfRunners },
+                testInfo =>
+                {
+                    var result = RunThisAsync(async runner =>
+                        await runner.RunSingleTestForCoverageAsync(
+                            testInfo.Assembly, testInfo.Test, testInfo.TestId, confidence)
+                            .ConfigureAwait(false))
+                        .GetAwaiter().GetResult();
+
+                    results.Add(result);
+                });
+
+            _logger.LogInformation(
+                "Per-test coverage capture complete: {TestCount} tests captured",
+                results.Count);
+
+            return results;
+        }
+        finally
+        {
+            foreach (var runner in _availableRunners)
+            {
+                runner.SetCoverageMode(false);
+            }
+        }
     }
 
     public async Task<ITestRunResult> TestMultipleMutantsAsync(
