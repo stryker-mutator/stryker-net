@@ -40,7 +40,15 @@ internal class TestableRunner : SingleMicrosoftTestPlatformRunner
     {
         if (_coverageHandler is not null)
         {
-            return await _coverageHandler(assembly, test, testId, confidence).ConfigureAwait(false);
+            try
+            {
+                return await _coverageHandler(assembly, test, testId, confidence).ConfigureAwait(false);
+            }
+            catch
+            {
+                return CoverageRunResult.Create(testId, CoverageConfidence.Dubious,
+                    Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
+            }
         }
 
         return CoverageRunResult.Create(testId, confidence, Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
