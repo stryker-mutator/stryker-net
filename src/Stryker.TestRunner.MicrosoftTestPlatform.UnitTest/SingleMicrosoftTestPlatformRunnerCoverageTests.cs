@@ -485,4 +485,87 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         var serversAfter = (Dictionary<string, AssemblyTestServer>)serversField.GetValue(runner)!;
         serversAfter.ShouldBeEmpty("all servers should be disposed and removed after reset");
     }
+
+    [TestMethod]
+    public async Task StopAndRemoveServerAsync_ShouldRemoveServerFromDictionary()
+    {
+        var runnerId = 610;
+        using var runner = new SingleMicrosoftTestPlatformRunner(
+            runnerId,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+        await runner.DiscoverTestsAsync(testAssembly);
+
+        var serversField = typeof(SingleMicrosoftTestPlatformRunner)
+            .GetField("_assemblyServers", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+
+        var serversBefore = (Dictionary<string, AssemblyTestServer>)serversField.GetValue(runner)!;
+        serversBefore.ShouldNotBeEmpty("servers should exist after discovery");
+
+        var method = typeof(SingleMicrosoftTestPlatformRunner)
+            .GetMethod("StopAndRemoveServerAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        await (Task)method.Invoke(runner, new object[] { testAssembly })!;
+
+        var serversAfter = (Dictionary<string, AssemblyTestServer>)serversField.GetValue(runner)!;
+        serversAfter.ContainsKey(testAssembly).ShouldBeFalse("server should be removed after stop");
+    }
+
+    [TestMethod]
+    public async Task RunSingleTestForCoverageAsync_ShouldReturnCoverageFromFile()
+    {
+        var runnerId = 620;
+        var coverageFilePath = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{runnerId}.txt");
+
+        try
+        {
+            using var runner = new SingleMicrosoftTestPlatformRunner(
+                runnerId,
+                _testsByAssembly,
+                _testDescriptions,
+                _testSet,
+                _discoveryLock,
+                NullLogger.Instance);
+
+            File.WriteAllText(coverageFilePath, "1,2,3;10");
+
+            var result = runner.ReadCoverageData();
+
+            result.CoveredMutants.Count.ShouldBe(3);
+            result.CoveredMutants.ShouldContain(1);
+            result.CoveredMutants.ShouldContain(2);
+            result.CoveredMutants.ShouldContain(3);
+            result.StaticMutants.Count.ShouldBe(1);
+            result.StaticMutants.ShouldContain(10);
+        }
+        finally
+        {
+            if (File.Exists(coverageFilePath))
+            {
+                File.Delete(coverageFilePath);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void RunSingleTestForCoverageAsync_ShouldReturnDubious_WhenNoCoverageFile()
+    {
+        var runnerId = 621;
+        using var runner = new SingleMicrosoftTestPlatformRunner(
+            runnerId,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        var result = runner.ReadCoverageData();
+
+        result.CoveredMutants.ShouldBeEmpty();
+        result.StaticMutants.ShouldBeEmpty();
+    }
 }

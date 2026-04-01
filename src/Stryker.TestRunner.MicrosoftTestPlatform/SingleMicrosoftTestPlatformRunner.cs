@@ -106,6 +106,71 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         await Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Stops and removes the server for a specific assembly. This triggers ProcessExit
+    /// in the test process, causing MutantControl.FlushCoverageToFile() to be called.
+    /// The server is removed from the cache so a fresh one is created on next use.
+    /// </summary>
+    internal async Task StopAndRemoveServerAsync(string assembly)
+    {
+        AssemblyTestServer? server;
+        lock (_serverLock)
+        {
+            _assemblyServers.TryGetValue(assembly, out server);
+            _assemblyServers.Remove(assembly);
+        }
+
+        if (server is not null)
+        {
+            await server.StopAsync().ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Runs a single test in isolation to capture its per-test coverage data.
+    /// The flow is: start server → run one test → stop server (triggers coverage flush) → read coverage file.
+    /// This is used by the pool's CaptureCoverageTestByTest method.
+    /// </summary>
+    internal virtual async Task<ICoverageRunResult> RunSingleTestForCoverageAsync(
+        string assembly, TestNode test, string testId, CoverageConfidence confidence)
+    {
+        try
+        {
+            DeleteCoverageFile();
+
+            var server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
+            await server.RunTestsAsync(new[] { test }).ConfigureAwait(false);
+            await StopAndRemoveServerAsync(assembly).ConfigureAwait(false);
+
+            var (coveredMutants, staticMutants) = ReadCoverageData();
+
+            _logger.LogDebug(
+                "{RunnerId}: Test {TestId} covers {CoveredCount} mutants ({StaticCount} static)",
+                RunnerId, testId, coveredMutants.Count, staticMutants.Count);
+
+            DeleteCoverageFile();
+
+            return CoverageRunResult.Create(
+                testId,
+                confidence,
+                coveredMutants,
+                staticMutants,
+                Array.Empty<int>());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex,
+                "{RunnerId}: Failed to capture coverage for test {TestId}", RunnerId, testId);
+
+            return CoverageRunResult.Create(
+                testId,
+                CoverageConfidence.Dubious,
+                Array.Empty<int>(),
+                Array.Empty<int>(),
+                Array.Empty<int>());
+        }
+    }
+
     private void WriteMutantIdToFile(int mutantId)
     {
         try
