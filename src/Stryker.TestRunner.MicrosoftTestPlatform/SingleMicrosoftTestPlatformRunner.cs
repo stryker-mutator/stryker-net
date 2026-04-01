@@ -144,11 +144,26 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
             var (coveredMutants, staticMutants) = ReadCoverageData();
 
+            DeleteCoverageFile();
+
+            // Empty coverage likely means the process was force-killed before FlushCoverageToFile ran
+            if (coveredMutants.Count == 0 && staticMutants.Count == 0)
+            {
+                _logger.LogWarning(
+                    "{RunnerId}: No coverage data captured for test {TestId} — coverage file was empty or missing. Marking as Dubious.",
+                    RunnerId, testId);
+
+                return CoverageRunResult.Create(
+                    testId,
+                    CoverageConfidence.Dubious,
+                    coveredMutants,
+                    staticMutants,
+                    Array.Empty<int>());
+            }
+
             _logger.LogDebug(
                 "{RunnerId}: Test {TestId} covers {CoveredCount} mutants ({StaticCount} static)",
                 RunnerId, testId, coveredMutants.Count, staticMutants.Count);
-
-            DeleteCoverageFile();
 
             return CoverageRunResult.Create(
                 testId,
