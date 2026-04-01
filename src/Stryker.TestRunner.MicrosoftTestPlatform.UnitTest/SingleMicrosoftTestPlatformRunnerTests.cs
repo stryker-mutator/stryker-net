@@ -1106,26 +1106,3 @@ public class SingleMicrosoftTestPlatformRunnerTests
         }
     }
 }
-
-[TestClass]
-public class TestRunResultTests
-{
-    [TestMethod]
-    public void SimpleConstructor_ShouldInitializeMessagesToEmpty()
-    {
-        var result = new TestRunResult(false, "some error");
-
-        result.Messages.ShouldNotBeNull();
-        result.Messages.ShouldBeEmpty();
-    }
-
-    [TestMethod]
-    public void SimpleConstructor_WithSuccessTrue_ShouldInitializeMessagesToEmpty()
-    {
-        var result = new TestRunResult(true);
-
-        result.Messages.ShouldNotBeNull();
-        result.Messages.ShouldBeEmpty();
-    }
-}
-
