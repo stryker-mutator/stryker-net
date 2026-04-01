@@ -373,6 +373,11 @@ public class InputFileResolver(
                 buildResultOverallSuccess = project.HasValidResults();
             }
         }
+        else if (!buildResult.OverallSuccess)
+        {
+            _logger.LogInformation("Project {ProjectFilePath} simulated build failed. The MsBuild log is: {Log}", projectLogName, project.LastBuildLog);
+        }
+
 
         if (options.DiagMode || _logger.IsEnabled(LogLevel.Debug))
         {

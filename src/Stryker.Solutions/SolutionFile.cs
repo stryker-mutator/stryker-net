@@ -85,7 +85,7 @@ public class SolutionFile
                 return (currentBuildType, currentPlatform);
             }
 
-            var thisScore = -1;
+            int thisScore;
             // evaluate the buildType match
             if (buildType != null && buildType == currentBuildType)
             {
@@ -259,7 +259,7 @@ public class SolutionFile
                     {
                         continue;
                     }
-
+                    // workaround for a bug in SolutionPersistence which does not properly handle default platform naming.
                     if (projectPlatform == DefaultSolutionType)
                     {
                         projectPlatform = DefaultProjectBuildType;
