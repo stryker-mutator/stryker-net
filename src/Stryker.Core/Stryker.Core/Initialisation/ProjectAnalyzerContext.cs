@@ -104,8 +104,8 @@ public class ProjectAnalyzerContext
         _targetFrameworks = projectFileTargetFrameworks;
     }
 
-    public IEnumerable<string> FailedFrameworks => _targetFrameworks.Where(tf =>
-        !AnalyzerLastResults.Any( ar => ar.TargetFramework == tf && ar.IsValid()));
+    public IEnumerable<string> FailedFrameworks => _targetFrameworks?.Where(tf =>
+        AnalyzerLastResults?.Any( ar => ar.TargetFramework == tf && ar.IsValid())== false) ?? [];
 
     public bool IsTest => AnalyzerLastResults?.IsTestProject() == true;
 

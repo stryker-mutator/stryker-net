@@ -31,11 +31,11 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
     /// Builds a <see cref="SourceProjectInfo"/> instance describing a project its associated test project(s)
     /// </summary>
     /// <param name="options">Stryker options</param>
-    /// <param name="solutionInfo"></param>
+    /// <param name="targetsForMutation"></param>
     /// <param name="fileSystem">filesystem</param>
     /// <returns></returns>
     public SourceProjectInfo BuildSourceProjectInfo(IStrykerOptions options,
-        TargetsForMutation solutionInfo, IFileSystem fileSystem )
+        TargetsForMutation targetsForMutation, IFileSystem fileSystem )
     {
         var targetProjectInfo = new SourceProjectInfo
         {
@@ -53,7 +53,7 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
         builder.InjectHelpers(inputFiles);
         targetProjectInfo.OnProjectBuilt = builder.PostBuildAction();
         targetProjectInfo.ProjectContents = inputFiles;
-        targetProjectInfo.TargetsForMutation = solutionInfo;
+        targetProjectInfo.TargetsForMutation = targetsForMutation;
         logger.LogInformation("Found project {ProjectFileName} to mutate.", ProjectTarget.ProjectFilePath);
         targetProjectInfo.TestProjectsInfo = new TestProjectsInfo(fileSystem)
         {

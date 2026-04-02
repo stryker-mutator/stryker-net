@@ -352,10 +352,11 @@ public class InputFileResolver(
         var buildResult = project.Analyze();
         var buildResultOverallSuccess = project.HasValidResults();
 
-        // retry if it failed
+        // if buildalyzer failed, we can try again with a nuget restore, as missing packages is a common cause of
+        // buildalyzer failure, especially for full framework projects
         if (!buildResult.OverallSuccess)
         {
-            _logger.LogWarning("Project {ProjectFilePath} analysis failed. Trying again with a nugget restore.", projectLogName);
+            _logger.LogWarning("Project {ProjectFilePath} analysis failed. Trying again with a nuget restore.", projectLogName);
 
             // if this is a full framework project, we can retry after a nuget restore
             buildResult = project.Analyze(withRestore: true);
@@ -383,7 +384,8 @@ public class InputFileResolver(
 
         if (buildResultOverallSuccess)
         {
-            _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", projectLogName);
+            _logger.LogDebug("Analysis of project {ProjectFilePath} succeeded{Extra}", projectLogName,
+                buildResult.OverallSuccess ? "." : " but simulated build failed, Stryker may fail later.");
             return buildResult;
         }
 
