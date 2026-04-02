@@ -80,30 +80,30 @@ public sealed class SolutionFileShould
     {
         // Arrange
         // Act
-        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","Stryker.slnx"));
+        var solution = SolutionFile.GetSolution(Path.GetFullPath(Path.Combine("..","..","..","..","Stryker.slnx")));
         // Assert
         solution.ConfigurationExists("Debug", "Any CPU").ShouldBeTrue();
-
+        var solutionPath = Path.GetDirectoryName(solution.FileName);
         // it should report all projects that are built in Stryker's Debug configuration
         var expectedProjects = new List<string>
         {
-            Path.Combine("Stryker.CLI", "Stryker.CLI", "Stryker.CLI.csproj"),
-            Path.Combine("Stryker.CLI", "Stryker.CLI.UnitTest", "Stryker.CLI.UnitTest.csproj"),
-            Path.Combine("Stryker.Core", "Stryker.Core", "Stryker.Core.csproj"),
-            Path.Combine("Stryker.Core", "Stryker.Core.UnitTest", "Stryker.Core.UnitTest.csproj"),
-            Path.Combine("Stryker.DataCollector", "Stryker.DataCollector.csproj"),
-            Path.Combine("Stryker.RegexMutators", "Stryker.RegexMutators", "Stryker.RegexMutators.csproj"),
-            Path.Combine("Stryker.RegexMutators", "Stryker.RegexMutators.UnitTest", "Stryker.RegexMutators.UnitTest.csproj"),
-            Path.Combine("Stryker.Abstractions", "Stryker.Abstractions.csproj"),
-            Path.Combine("Stryker.Configuration", "Stryker.Configuration.csproj"),
-            Path.Combine("Stryker.Utilities", "Stryker.Utilities.csproj"),
-            Path.Combine("Stryker.TestRunner", "Stryker.TestRunner.csproj"),
-            Path.Combine("Stryker.TestRunner.VsTest", "Stryker.TestRunner.VsTest.csproj"),
-            Path.Combine("Stryker.TestRunner.VsTest.UnitTest", "Stryker.TestRunner.VsTest.UnitTest.csproj"),
-            Path.Combine("Stryker.Solutions", "Stryker.Solutions.csproj"),
-            Path.Combine("Stryker.Solutions.Test", "Stryker.Solutions.Test.csproj"),
-            Path.Combine("Stryker.TestRunner.MicrosoftTestPlatform", "Stryker.TestRunner.MicrosoftTestPlatform.csproj"),
-            Path.Combine("Stryker.TestRunner.MicrosoftTestPlatform.UnitTest", "Stryker.TestRunner.MicrosoftTestPlatform.UnitTest.csproj"),
+            Path.Combine(solutionPath, "Stryker.CLI", "Stryker.CLI", "Stryker.CLI.csproj"),
+            Path.Combine(solutionPath, "Stryker.CLI", "Stryker.CLI.UnitTest", "Stryker.CLI.UnitTest.csproj"),
+            Path.Combine(solutionPath, "Stryker.Core", "Stryker.Core", "Stryker.Core.csproj"),
+            Path.Combine(solutionPath, "Stryker.Core", "Stryker.Core.UnitTest", "Stryker.Core.UnitTest.csproj"),
+            Path.Combine(solutionPath, "Stryker.DataCollector", "Stryker.DataCollector.csproj"),
+            Path.Combine(solutionPath, "Stryker.RegexMutators", "Stryker.RegexMutators", "Stryker.RegexMutators.csproj"),
+            Path.Combine(solutionPath, "Stryker.RegexMutators", "Stryker.RegexMutators.UnitTest", "Stryker.RegexMutators.UnitTest.csproj"),
+            Path.Combine(solutionPath, "Stryker.Abstractions", "Stryker.Abstractions.csproj"),
+            Path.Combine(solutionPath, "Stryker.Configuration", "Stryker.Configuration.csproj"),
+            Path.Combine(solutionPath, "Stryker.Utilities", "Stryker.Utilities.csproj"),
+            Path.Combine(solutionPath, "Stryker.TestRunner", "Stryker.TestRunner.csproj"),
+            Path.Combine(solutionPath, "Stryker.TestRunner.VsTest", "Stryker.TestRunner.VsTest.csproj"),
+            Path.Combine(solutionPath, "Stryker.TestRunner.VsTest.UnitTest", "Stryker.TestRunner.VsTest.UnitTest.csproj"),
+            Path.Combine(solutionPath, "Stryker.Solutions", "Stryker.Solutions.csproj"),
+            Path.Combine(solutionPath, "Stryker.Solutions.Test", "Stryker.Solutions.Test.csproj"),
+            Path.Combine(solutionPath, "Stryker.TestRunner.MicrosoftTestPlatform", "Stryker.TestRunner.MicrosoftTestPlatform.csproj"),
+            Path.Combine(solutionPath, "Stryker.TestRunner.MicrosoftTestPlatform.UnitTest", "Stryker.TestRunner.MicrosoftTestPlatform.UnitTest.csproj"),
         };
         solution.GetProjects("Debug").ShouldBe(expectedProjects, ignoreOrder: true);
     }
@@ -115,17 +115,18 @@ public sealed class SolutionFileShould
     {
         // Arrange
         // Act
-        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","..","integrationtest","TargetProjects",solutionFile));
+        var solution = SolutionFile.GetSolution( Path.GetFullPath(Path.Combine("..","..","..","..","..","integrationtest","TargetProjects",solutionFile)));
+        var solutionPath = Path.GetDirectoryName(solution.FileName);
 
         // Assert
         var expectedProjects = new List<string>
         {
-            Path.Combine("NetCore", "TargetProject", "TargetProject.csproj"),
-            Path.Combine("NetCore", "Library", "Library.csproj"),
-            Path.Combine("MicrosoftTestPlatform", "UnitTests.MSTest", "UnitTests.MSTest.csproj"),
-            Path.Combine("MicrosoftTestPlatform", "UnitTests.XUnit", "UnitTests.XUnit.csproj"),
-            Path.Combine("MicrosoftTestPlatform", "UnitTests.NUnit", "UnitTests.NUnit.csproj"),
-            Path.Combine("MicrosoftTestPlatform", "UnitTests.TUnit", "UnitTests.TUnit.csproj"),
+            Path.Combine(solutionPath, "NetCore", "TargetProject", "TargetProject.csproj"),
+            Path.Combine(solutionPath, "NetCore", "Library", "Library.csproj"),
+            Path.Combine(solutionPath, "MicrosoftTestPlatform", "UnitTests.MSTest", "UnitTests.MSTest.csproj"),
+            Path.Combine(solutionPath, "MicrosoftTestPlatform", "UnitTests.XUnit", "UnitTests.XUnit.csproj"),
+            Path.Combine(solutionPath, "MicrosoftTestPlatform", "UnitTests.NUnit", "UnitTests.NUnit.csproj"),
+            Path.Combine(solutionPath, "MicrosoftTestPlatform", "UnitTests.TUnit", "UnitTests.TUnit.csproj"),
         };
         solution.GetProjects("Debug").ShouldBe(expectedProjects, ignoreOrder: true);
 
