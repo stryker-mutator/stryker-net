@@ -353,7 +353,7 @@ public class InputFileResolver(
         var buildResultOverallSuccess = project.HasValidResults();
 
         // retry if it failed
-        if (!buildResultOverallSuccess)
+        if (!buildResult.OverallSuccess)
         {
             _logger.LogWarning("Project {ProjectFilePath} analysis failed. Trying again with a nugget restore.", projectLogName);
 
