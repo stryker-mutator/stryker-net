@@ -355,10 +355,7 @@ public class InputFileResolver(
         // retry if it failed
         if (!buildResultOverallSuccess)
         {
-            if (options.DiagMode)
-            {
-                _logger.LogWarning("Project {ProjectFilePath} analysis failed. The MsBuild log is: {Log}", projectLogName, project.LastBuildLog);
-            }
+            _logger.LogWarning("Project {ProjectFilePath} analysis failed. Trying again with a nugget restore.", projectLogName);
 
             // if this is a full framework project, we can retry after a nuget restore
             buildResult = project.Analyze(withRestore: true);
@@ -369,11 +366,12 @@ public class InputFileResolver(
             if (!buildResultOverallSuccess && !string.IsNullOrEmpty(options.TargetFramework))
             {
                 // still failed, we can try using target framework option
+                _logger.LogWarning("Project {ProjectFilePath} analysis failed. Last attempt, forcing the target framework.", projectLogName);
                 buildResult = project.Analyze(forceFramework: true);
                 buildResultOverallSuccess = project.HasValidResults();
             }
         }
-        else if (!buildResult.OverallSuccess)
+        if (!buildResult.OverallSuccess)
         {
             _logger.LogInformation("Project {ProjectFilePath} simulated build failed. The MsBuild log is: {Log}", projectLogName, project.LastBuildLog);
         }

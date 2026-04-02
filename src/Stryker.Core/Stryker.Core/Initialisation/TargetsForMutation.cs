@@ -90,7 +90,12 @@ public class TargetsForMutation
         if (Environment.OSVersion.Platform == PlatformID.Win32NT)
         {
             _logger.LogWarning("Project  analysis failed. Stryker will retry after a solution level nuget restore");
-            _nugetRestoreProcess.RestorePackages(_options.SolutionPath, _options.MsBuildPath ?? results.First().MsBuildPath());
+            var optionsMsBuildPath = _options.MsBuildPath ?? results.First().MsBuildPath();
+            if (string.IsNullOrEmpty(optionsMsBuildPath))
+            {
+                _logger.LogWarning("Failed to find MSBuild path from analysis results. Nuget restore may fail if MSBuild is not in PATH.");
+            }
+            _nugetRestoreProcess.RestorePackages(_options.SolutionPath, optionsMsBuildPath);
         }
 
         _solutionRestored = true;

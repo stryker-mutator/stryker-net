@@ -21,7 +21,7 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
 {
     public IAnalyzerResult ProjectTarget { get; } = target;
 
-    public List<IAnalyzerResult> TestProjects { get; } = [];
+    public HashSet<IAnalyzerResult> TestProjects { get; } = [];
 
     public bool IsValidTarget => ProjectTarget.IsValid() && TestProjects.Count>0 && TestProjects.Any(tp => tp.IsValid());
 
