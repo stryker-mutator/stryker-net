@@ -378,7 +378,6 @@ public class InputFileResolver(
             _logger.LogInformation("Project {ProjectFilePath} simulated build failed. The MsBuild log is: {Log}", projectLogName, project.LastBuildLog);
         }
 
-
         if (options.DiagMode || _logger.IsEnabled(LogLevel.Debug))
         {
             project.LogAnalyzerResult();
@@ -457,6 +456,7 @@ public class InputFileResolver(
         }
         return foundOneProject;
     }
+
     private static bool ScanProjectReferences(Dictionary<ProjectAnalyzerContext, MutableProjectTree> mutableToTestMap,
         ProjectAnalyzerContext[] mutableProjects, ProjectAnalyzerContext testProject)
     {
@@ -488,9 +488,6 @@ public class InputFileResolver(
 
         return foundOneProject;
     }
-
-
-
 
     private string FindProjectFile(string path)
     {

@@ -154,6 +154,25 @@ public class ProjectAnalyzerContext
         {
             log.AppendLine($"Property {property}={properties.GetValueOrDefault(property) ?? "\"'undefined'\""}");
         }
+        DumpSourceFiles(log, analyzerResult);
+        DumpReferences(log, analyzerResult);
+
+        log.AppendLine($"Compiler command: {analyzerResult.Command}");
+
+        if (_logger.IsEnabled(LogLevel.Trace))
+        {
+            // dumps all other properties as well, as they can be useful for diagnosing build issues
+            foreach (var property in properties.Where( p => !ImportantProperties.Contains(p.Key) ))
+            {
+                log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
+            }
+        }
+
+        log.AppendLine();
+    }
+
+    private static void DumpSourceFiles(StringBuilder log, IAnalyzerResult analyzerResult)
+    {
         if (analyzerResult.SourceFiles.Length == 0)
         {
             log.AppendLine("** No source files identified **");
@@ -163,6 +182,10 @@ public class ProjectAnalyzerContext
             log.AppendLine(
                 $"{analyzerResult.SourceFiles.Length} source files: {string.Join(',', analyzerResult.SourceFiles)}");
         }
+    }
+
+    private static void DumpReferences(StringBuilder log, IAnalyzerResult analyzerResult)
+    {
         if (analyzerResult.References.Length == 0)
         {
             log.AppendLine("** No references Identified **");
@@ -179,19 +202,6 @@ public class ProjectAnalyzerContext
                 log.AppendLine($"References: {Path.GetFileName(reference)}{aliasText} (in {Path.GetDirectoryName(reference)})");
             }
         }
-
-        log.AppendLine($"Compiler command: {analyzerResult.Command}");
-
-        if (_logger.IsEnabled(LogLevel.Trace) && false)
-        {
-            // dumps all other properties as well, as they can be useful for diagnosing build issues
-            foreach (var property in properties.Where( p => !ImportantProperties.Contains(p.Key) ))
-            {
-                log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
-            }
-        }
-
-        log.AppendLine();
     }
 
     public bool BuildsAnAssembly() => AnalyzerLastResults?.Any(p => p.BuildsAnAssembly()) == true;

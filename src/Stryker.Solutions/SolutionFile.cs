@@ -250,22 +250,7 @@ public class SolutionFile
         {
             foreach (var solutionPlatform in solution.Platforms)
             {
-                var projects = new Dictionary<string, (string buildType, string platform)>();
-                // add all projects that are built with this configuration
-                foreach (var solutionProject in solution.SolutionProjects)
-                {
-                    var (projectBuildType, projectPlatform, isBuilt, _) = solutionProject.GetProjectConfiguration(buildType, solutionPlatform);
-                    if (!isBuilt || projectBuildType == null || projectPlatform == null)
-                    {
-                        continue;
-                    }
-                    // workaround for a bug in SolutionPersistence which does not properly handle default platform naming.
-                    if (projectPlatform == DefaultSolutionType)
-                    {
-                        projectPlatform = DefaultProjectBuildType;
-                    }
-                    projects[solutionProject.FilePath] = (projectBuildType, projectPlatform);
-                }
+                var projects = ExtractProjectForGivenConfiguration(solution, buildType, solutionPlatform);
                 if (projects.Count == 0)
                 {
                     continue;
@@ -275,6 +260,29 @@ public class SolutionFile
         }
 
         return result;
+    }
+
+    private static Dictionary<string, (string buildType, string platform)> ExtractProjectForGivenConfiguration(SolutionModel solution, string buildType,
+        string solutionPlatform)
+    {
+        var projects = new Dictionary<string, (string buildType, string platform)>();
+        // add all projects that are built with this configuration
+        foreach (var solutionProject in solution.SolutionProjects)
+        {
+            var (projectBuildType, projectPlatform, isBuilt, _) = solutionProject.GetProjectConfiguration(buildType, solutionPlatform);
+            if (!isBuilt || projectBuildType == null || projectPlatform == null)
+            {
+                continue;
+            }
+            // workaround for a bug in SolutionPersistence which does not properly handle default platform naming.
+            if (projectPlatform == DefaultSolutionType)
+            {
+                projectPlatform = DefaultProjectBuildType;
+            }
+            projects[solutionProject.FilePath] = (projectBuildType, projectPlatform);
+        }
+
+        return projects;
     }
 
     /// <summary>
