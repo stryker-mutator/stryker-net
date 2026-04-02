@@ -54,7 +54,6 @@ public class TargetsForMutation
         {
             // we use the solution to determine the configuration and platform to use, as the project files may not contain all configurations and platforms that are defined in the solution
             (Configuration, Platform) = Solution.GetMatching(configuration, platform);
-            _logger.LogDebug("Using solution configuration/platform '{Configuration}|{Platform}'.", Configuration, Platform);
             if ((!string.IsNullOrEmpty(configuration) && configuration != Configuration) ||
                 (!string.IsNullOrEmpty(platform) && platform != Platform))
             {
@@ -71,7 +70,7 @@ public class TargetsForMutation
             Configuration = configuration;
             // "Any CPU" is default platform at solution level, but in project files it is "AnyCPU", so we need to convert it to match the project files
             Platform = platform == "Any CPU" ? "AnyCPU" : platform;
-            _logger.LogDebug("Using project configuration/platform '{Configuration}|{Platform}'.", Configuration, Platform);
+            _logger.LogInformation("Using project configuration/platform '{Configuration}|{Platform}'.", Configuration??"`default`", Platform ?? "`default`");
         }
     }
 

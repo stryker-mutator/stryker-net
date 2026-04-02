@@ -223,19 +223,21 @@ public class SolutionFile
 
     private static string[] DefineSolutionPlatforms(string[]? platforms, string[]? solutionPlatforms)
     {
-        if (solutionPlatforms == null)
+        if (solutionPlatforms != null)
         {
-            if (platforms == null)
+            return solutionPlatforms;
+        }
+
+        if (platforms == null)
+        {
+            solutionPlatforms = [ "Any CPU", "x86" ];
+        }
+        else
+        {
+            solutionPlatforms = new string[platforms.Length];
+            for (var i = 0; i < platforms.Length; i++)
             {
-                solutionPlatforms = [ "Any CPU", "x86" ];
-            }
-            else
-            {
-                solutionPlatforms = new string[platforms.Length];
-                for (var i = 0; i < platforms.Length; i++)
-                {
-                    solutionPlatforms[i] = platforms[i] == DefaultProjectBuildType ? DefaultSolutionType : platforms[i];
-                }
+                solutionPlatforms[i] = platforms[i] == DefaultProjectBuildType ? DefaultSolutionType : platforms[i];
             }
         }
 
@@ -246,11 +248,12 @@ public class SolutionFile
     {
         // extract needed information
         var result = new SolutionFile{ FileName = solutionPath };
+        var referencePath = Path.GetDirectoryName(Path.GetFullPath(solutionPath));
         foreach (var buildType in solution.BuildTypes)
         {
             foreach (var solutionPlatform in solution.Platforms)
             {
-                var projects = ExtractProjectForGivenConfiguration(solution, buildType, solutionPlatform);
+                var projects = ExtractProjectForGivenConfiguration(solution, referencePath, buildType, solutionPlatform);
                 if (projects.Count == 0)
                 {
                     continue;
@@ -262,13 +265,16 @@ public class SolutionFile
         return result;
     }
 
-    private static Dictionary<string, (string buildType, string platform)> ExtractProjectForGivenConfiguration(SolutionModel solution, string buildType,
+    private static Dictionary<string, (string buildType, string platform)> ExtractProjectForGivenConfiguration(SolutionModel solution,
+        string path,
+        string buildType,
         string solutionPlatform)
     {
         var projects = new Dictionary<string, (string buildType, string platform)>();
         // add all projects that are built with this configuration
         foreach (var solutionProject in solution.SolutionProjects)
         {
+            var fullPath = Path.Combine(path, solutionProject.FilePath);
             var (projectBuildType, projectPlatform, isBuilt, _) = solutionProject.GetProjectConfiguration(buildType, solutionPlatform);
             if (!isBuilt || projectBuildType == null || projectPlatform == null)
             {
@@ -279,7 +285,7 @@ public class SolutionFile
             {
                 projectPlatform = DefaultProjectBuildType;
             }
-            projects[solutionProject.FilePath] = (projectBuildType, projectPlatform);
+            projects[fullPath] = (projectBuildType, projectPlatform);
         }
 
         return projects;
