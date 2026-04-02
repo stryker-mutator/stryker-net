@@ -30,7 +30,7 @@ public class TargetsForMutation
     }
 
 
-    private SolutionFile Solution { get; init; }
+    private SolutionFile? Solution { get; }
 
     public string? SolutionFilePath => Solution?.FileName;
 
@@ -38,7 +38,7 @@ public class TargetsForMutation
 
     public string Platform { get; private set; }
 
-    public string TargetFramework { get; set; }
+    public string? TargetFramework { get; set; }
 
     public int ProjectCount => _selectedProjects.Count;
 
@@ -82,23 +82,27 @@ public class TargetsForMutation
     // the method is at solution level because it needs only be called once
     internal void RestoreSolution(IAnalyzerResults results)
     {
-        if (_solutionRestored)
+        lock (_nugetRestoreProcess)
         {
-            return;
-        }
-
-        if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-        {
-            _logger.LogWarning("Project  analysis failed. Stryker will retry after a solution level nuget restore");
-            var optionsMsBuildPath = _options.MsBuildPath ?? results.First().MsBuildPath();
-            if (string.IsNullOrEmpty(optionsMsBuildPath))
+            if (_solutionRestored)
             {
-                _logger.LogWarning("Failed to find MSBuild path from analysis results. Nuget restore may fail if MSBuild is not in PATH.");
+                return;
             }
-            _nugetRestoreProcess.RestorePackages(_options.SolutionPath, optionsMsBuildPath);
-        }
 
-        _solutionRestored = true;
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                _logger.LogWarning("Project  analysis failed. Stryker will retry after a solution level nuget restore");
+                var optionsMsBuildPath = _options.MsBuildPath ?? results.First().MsBuildPath();
+                if (string.IsNullOrEmpty(optionsMsBuildPath))
+                {
+                    _logger.LogWarning("Failed to find MSBuild path from analysis results. Nuget restore may fail if MSBuild is not in PATH.");
+                }
+                _nugetRestoreProcess.RestorePackages(_options.SolutionPath, optionsMsBuildPath);
+            }
+
+            _solutionRestored = true;
+
+        }
     }
 
     /// <summary>

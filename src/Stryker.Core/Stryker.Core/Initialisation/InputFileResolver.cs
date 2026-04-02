@@ -432,6 +432,10 @@ public class InputFileResolver(
     private static bool ScanAssemblyReferences(Dictionary<ProjectAnalyzerContext, MutableProjectTree> mutableToTestMap,
         ProjectAnalyzerContext[] mutableProjects, ProjectAnalyzerContext testProject)
     {
+        if (testProject.AnalyzerLastResults == null)
+        {
+            throw new InvalidOperationException($"You must analyze the test project {testProject.ProjectFileName} before trying to find its references.");
+        }
         var foundOneProject = false;
         // we do the work for each available target
         foreach (var variant in testProject.AnalyzerLastResults)
@@ -458,6 +462,10 @@ public class InputFileResolver(
     private static bool ScanProjectReferences(Dictionary<ProjectAnalyzerContext, MutableProjectTree> mutableToTestMap,
         ProjectAnalyzerContext[] mutableProjects, ProjectAnalyzerContext testProject)
     {
+        if (testProject.AnalyzerLastResults == null)
+        {
+            throw new InvalidOperationException($"You must analyze the test project {testProject.ProjectFileName} before trying to find its references.");
+        }
         var foundOneProject = false;
         foreach (var variant in testProject.AnalyzerLastResults)
         {
