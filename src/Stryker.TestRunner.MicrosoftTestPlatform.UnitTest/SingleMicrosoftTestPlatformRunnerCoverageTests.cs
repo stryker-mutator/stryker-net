@@ -1,6 +1,12 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
+using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
@@ -484,5 +490,198 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
 
         var serversAfter = (Dictionary<string, AssemblyTestServer>)serversField.GetValue(runner)!;
         serversAfter.ShouldBeEmpty("all servers should be disposed and removed after reset");
+    }
+
+    [TestMethod]
+    public async Task StopAndRemoveServerAsync_ShouldRemoveServerFromDictionary()
+    {
+        var runnerId = 610;
+        using var runner = new SingleMicrosoftTestPlatformRunner(
+            runnerId,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+        await runner.DiscoverTestsAsync(testAssembly);
+
+        var serversField = typeof(SingleMicrosoftTestPlatformRunner)
+            .GetField("_assemblyServers", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+
+        var serversBefore = (Dictionary<string, AssemblyTestServer>)serversField.GetValue(runner)!;
+        serversBefore.ShouldNotBeEmpty("servers should exist after discovery");
+
+        var method = typeof(SingleMicrosoftTestPlatformRunner)
+            .GetMethod("StopAndRemoveServerAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        await (Task)method.Invoke(runner, new object[] { testAssembly })!;
+
+        var serversAfter = (Dictionary<string, AssemblyTestServer>)serversField.GetValue(runner)!;
+        serversAfter.ContainsKey(testAssembly).ShouldBeFalse("server should be removed after stop");
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldReturnCoveredAndStaticMutants_FromFile()
+    {
+        var runnerId = 620;
+        var coverageFilePath = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{runnerId}.txt");
+
+        try
+        {
+            using var runner = new SingleMicrosoftTestPlatformRunner(
+                runnerId,
+                _testsByAssembly,
+                _testDescriptions,
+                _testSet,
+                _discoveryLock,
+                NullLogger.Instance);
+
+            File.WriteAllText(coverageFilePath, "1,2,3;10");
+
+            var result = runner.ReadCoverageData();
+
+            result.CoveredMutants.Count.ShouldBe(3);
+            result.CoveredMutants.ShouldContain(1);
+            result.CoveredMutants.ShouldContain(2);
+            result.CoveredMutants.ShouldContain(3);
+            result.StaticMutants.Count.ShouldBe(1);
+            result.StaticMutants.ShouldContain(10);
+        }
+        finally
+        {
+            if (File.Exists(coverageFilePath))
+            {
+                File.Delete(coverageFilePath);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldReturnEmpty_WhenNoCoverageFile()
+    {
+        var runnerId = 621;
+        using var runner = new SingleMicrosoftTestPlatformRunner(
+            runnerId,
+            _testsByAssembly,
+            _testDescriptions,
+            _testSet,
+            _discoveryLock,
+            NullLogger.Instance);
+
+        var result = runner.ReadCoverageData();
+
+        result.CoveredMutants.ShouldBeEmpty();
+        result.StaticMutants.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void CaptureCoverageTestByTest_ShouldReturnDubious_WhenHandlerThrows()
+    {
+        var options = new Mock<IStrykerOptions>();
+        options.Setup(x => x.Concurrency).Returns(1);
+        options.Setup(x => x.OptimizationMode).Returns(OptimizationModes.CoverageBasedTest);
+
+        var testNode = new TestNode("test-1", "ThrowingTest", "test", "discovered");
+        var testsByAssembly = new Dictionary<string, List<TestNode>>
+        {
+            ["assembly.dll"] = [testNode]
+        };
+        var testDescriptions = new Dictionary<string, MtpTestDescription>
+        {
+            ["test-1"] = new(testNode)
+        };
+
+        var runnerFactory = new Mock<ISingleRunnerFactory>();
+        runnerFactory.Setup(x => x.CreateRunner(
+                It.IsAny<int>(),
+                It.IsAny<Dictionary<string, List<TestNode>>>(),
+                It.IsAny<Dictionary<string, MtpTestDescription>>(),
+                It.IsAny<TestSet>(),
+                It.IsAny<object>(),
+                It.IsAny<ILogger>(),
+                It.IsAny<IStrykerOptions>()))
+            .Returns<int, Dictionary<string, List<TestNode>>, Dictionary<string, MtpTestDescription>, TestSet, object, ILogger, IStrykerOptions>(
+                (id, tba, td, ts, dl, logger, opts) =>
+                {
+                    if (tba.Count == 0)
+                    {
+                        foreach (var kvp in testsByAssembly)
+                            tba[kvp.Key] = kvp.Value;
+                        foreach (var kvp in testDescriptions)
+                            td[kvp.Key] = kvp.Value;
+                    }
+                    return new TestableRunner(id, tba, td, ts, dl,
+                        () => { },
+                        coverageHandler: (_, _, _, _) =>
+                            throw new InvalidOperationException("Server startup failed"));
+                });
+
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(new[] { "assembly.dll" });
+
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance, runnerFactory.Object);
+
+        var coverage = pool.CaptureCoverage(project.Object).ToList();
+
+        coverage.Count.ShouldBe(1);
+        coverage[0].Confidence.ShouldBe(CoverageConfidence.Dubious);
+        coverage[0].MutationsCovered.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void CaptureCoverageTestByTest_ShouldReturnDubious_WhenCoverageIsEmpty()
+    {
+        var options = new Mock<IStrykerOptions>();
+        options.Setup(x => x.Concurrency).Returns(1);
+        options.Setup(x => x.OptimizationMode).Returns(OptimizationModes.CoverageBasedTest);
+
+        var testNode = new TestNode("test-1", "NoCoverageTest", "test", "discovered");
+        var testsByAssembly = new Dictionary<string, List<TestNode>>
+        {
+            ["assembly.dll"] = [testNode]
+        };
+        var testDescriptions = new Dictionary<string, MtpTestDescription>
+        {
+            ["test-1"] = new(testNode)
+        };
+
+        var runnerFactory = new Mock<ISingleRunnerFactory>();
+        runnerFactory.Setup(x => x.CreateRunner(
+                It.IsAny<int>(),
+                It.IsAny<Dictionary<string, List<TestNode>>>(),
+                It.IsAny<Dictionary<string, MtpTestDescription>>(),
+                It.IsAny<TestSet>(),
+                It.IsAny<object>(),
+                It.IsAny<ILogger>(),
+                It.IsAny<IStrykerOptions>()))
+            .Returns<int, Dictionary<string, List<TestNode>>, Dictionary<string, MtpTestDescription>, TestSet, object, ILogger, IStrykerOptions>(
+                (id, tba, td, ts, dl, logger, opts) =>
+                {
+                    if (tba.Count == 0)
+                    {
+                        foreach (var kvp in testsByAssembly)
+                            tba[kvp.Key] = kvp.Value;
+                        foreach (var kvp in testDescriptions)
+                            td[kvp.Key] = kvp.Value;
+                    }
+                    return new TestableRunner(id, tba, td, ts, dl,
+                        () => { },
+                        coverageHandler: (_, _, testId, _) =>
+                            Task.FromResult<ICoverageRunResult>(
+                                CoverageRunResult.Create(testId, CoverageConfidence.Dubious,
+                                    Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>())));
+                });
+
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(new[] { "assembly.dll" });
+
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance, runnerFactory.Object);
+
+        var coverage = pool.CaptureCoverage(project.Object).ToList();
+
+        coverage.Count.ShouldBe(1);
+        coverage[0].Confidence.ShouldBe(CoverageConfidence.Dubious);
+        coverage[0].MutationsCovered.ShouldBeEmpty();
     }
 }

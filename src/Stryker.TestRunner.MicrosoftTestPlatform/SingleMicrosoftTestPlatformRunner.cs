@@ -29,7 +29,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     private readonly IStrykerOptions? _options;
 
     private readonly Dictionary<string, AssemblyTestServer> _assemblyServers = new();
-    private readonly object _serverLock = new();
+    private readonly SemaphoreSlim _serverLock = new(1, 1);
     private bool _disposed;
     private bool _coverageMode;
 
@@ -93,7 +93,8 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     {
         _logger.LogDebug("{RunnerId}: Resetting test servers to reload assemblies", RunnerId);
         
-        lock (_serverLock)
+        await _serverLock.WaitAsync().ConfigureAwait(false);
+        try
         {
             foreach (var server in _assemblyServers.Values)
             {
@@ -101,9 +102,97 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             }
             _assemblyServers.Clear();
         }
+        finally
+        {
+            _serverLock.Release();
+        }
         
         _logger.LogDebug("{RunnerId}: Test servers reset complete", RunnerId);
-        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Stops and removes the server for a specific assembly. This triggers ProcessExit
+    /// in the test process, causing MutantControl.FlushCoverageToFile() to be called.
+    /// The server is removed from the cache so a fresh one is created on next use.
+    /// </summary>
+    internal async Task StopAndRemoveServerAsync(string assembly)
+    {
+        AssemblyTestServer? server;
+        await _serverLock.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            _assemblyServers.TryGetValue(assembly, out server);
+            _assemblyServers.Remove(assembly);
+        }
+        finally
+        {
+            _serverLock.Release();
+        }
+
+        if (server is not null)
+        {
+            await server.StopAsync().ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Runs a single test in isolation to capture its per-test coverage data.
+    /// The flow is: start server → run one test → stop server (triggers coverage flush) → read coverage file.
+    /// This is used by the pool's CaptureCoverageTestByTest method.
+    /// </summary>
+    internal virtual async Task<ICoverageRunResult> RunSingleTestForCoverageAsync(
+        string assembly, TestNode test, string testId, CoverageConfidence confidence)
+    {
+        try
+        {
+            DeleteCoverageFile();
+
+            var server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
+            await server.RunTestsAsync(new[] { test }).ConfigureAwait(false);
+            await StopAndRemoveServerAsync(assembly).ConfigureAwait(false);
+
+            var (coveredMutants, staticMutants) = ReadCoverageData();
+
+            DeleteCoverageFile();
+
+            // Empty coverage likely means the process was force-killed before FlushCoverageToFile ran
+            if (coveredMutants.Count == 0 && staticMutants.Count == 0)
+            {
+                _logger.LogWarning(
+                    "{RunnerId}: No coverage data captured for test {TestId} — coverage file was empty or missing. Marking as Dubious.",
+                    RunnerId, testId);
+
+                return CoverageRunResult.Create(
+                    testId,
+                    CoverageConfidence.Dubious,
+                    coveredMutants,
+                    staticMutants,
+                    Array.Empty<int>());
+            }
+
+            _logger.LogDebug(
+                "{RunnerId}: Test {TestId} covers {CoveredCount} mutants ({StaticCount} static)",
+                RunnerId, testId, coveredMutants.Count, staticMutants.Count);
+
+            return CoverageRunResult.Create(
+                testId,
+                confidence,
+                coveredMutants,
+                staticMutants,
+                Array.Empty<int>());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex,
+                "{RunnerId}: Failed to capture coverage for test {TestId}", RunnerId, testId);
+
+            return CoverageRunResult.Create(
+                testId,
+                CoverageConfidence.Dubious,
+                Array.Empty<int>(),
+                Array.Empty<int>(),
+                Array.Empty<int>());
+        }
     }
 
     private void WriteMutantIdToFile(int mutantId)
@@ -143,23 +232,26 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     /// </summary>
     public void SetCoverageMode(bool enabled)
     {
-        lock (_serverLock)
+        _serverLock.Wait();
+        try
         {
             if (_coverageMode == enabled)
             {
-                // Already in the desired state; no action needed
                 return;
             }
 
             _coverageMode = enabled;
             _logger.LogDebug("{RunnerId}: Coverage mode {Status}", RunnerId, enabled ? "enabled" : "disabled");
 
-            // Reset servers to apply the new environment variables
             foreach (var server in _assemblyServers.Values)
             {
                 server.Dispose();
             }
             _assemblyServers.Clear();
+        }
+        finally
+        {
+            _serverLock.Release();
         }
 
         // Clean up any existing coverage file, even when enabling, to ensure we start fresh
@@ -233,30 +325,30 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
     private async Task<AssemblyTestServer> GetOrCreateServerAsync(string assembly)
     {
-        AssemblyTestServer? server;
-        lock (_serverLock)
+        await _serverLock.WaitAsync().ConfigureAwait(false);
+        try
         {
-            if (_assemblyServers.TryGetValue(assembly, out server) && server.IsInitialized)
+            if (_assemblyServers.TryGetValue(assembly, out var existing) && existing.IsInitialized)
             {
-                return server;
+                return existing;
             }
-        }
 
-        var environmentVariables = BuildEnvironmentVariables();
-        server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options);
+            var environmentVariables = BuildEnvironmentVariables();
+            var server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options);
 
-        var started = await server.StartAsync().ConfigureAwait(false);
-        if (!started)
-        {
-            throw new InvalidOperationException($"Failed to start test server for {assembly}");
-        }
+            var started = await server.StartAsync().ConfigureAwait(false);
+            if (!started)
+            {
+                throw new InvalidOperationException($"Failed to start test server for {assembly}");
+            }
 
-        lock (_serverLock)
-        {
             _assemblyServers[assembly] = server;
+            return server;
         }
-
-        return server;
+        finally
+        {
+            _serverLock.Release();
+        }
     }
 
     private async Task<bool> DiscoverTestsInternalAsync(string assembly)
@@ -298,17 +390,17 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
     internal TimeSpan? CalculateAssemblyTimeout(List<TestNode> discoveredTests, ITimeoutValueCalculator timeoutCalc, string assembly)
     {
+        Dictionary<string, MtpTestDescription> descriptionsSnapshot;
+        lock (_discoveryLock)
+        {
+            descriptionsSnapshot = new Dictionary<string, MtpTestDescription>(_testDescriptions);
+        }
+
         var estimatedTimeMs = (int)discoveredTests
-            .Where(t => _testDescriptions.TryGetValue(t.Uid, out _))
-            .Sum(t =>
-            {
-                lock (_discoveryLock)
-                {
-                    return _testDescriptions.TryGetValue(t.Uid, out var desc)
-                        ? desc.InitialRunTime.TotalMilliseconds
-                        : 0;
-                }
-            });
+            .Where(t => descriptionsSnapshot.ContainsKey(t.Uid))
+            .Sum(t => descriptionsSnapshot.TryGetValue(t.Uid, out var desc)
+                ? desc.InitialRunTime.TotalMilliseconds
+                : 0);
         
         var timeoutMs = timeoutCalc.CalculateTimeoutValue(estimatedTimeMs);
         _logger.LogDebug("{RunnerId}: Using {TimeoutMs} ms as test run timeout for {Assembly}",
@@ -324,9 +416,14 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         allTimedOutTests.AddRange(discoveredTests.Select(t => t.Uid));
         
         AssemblyTestServer? server;
-        lock (_serverLock)
+        await _serverLock.WaitAsync().ConfigureAwait(false);
+        try
         {
             _assemblyServers.TryGetValue(assembly, out server);
+        }
+        finally
+        {
+            _serverLock.Release();
         }
         
         if (server is not null)
@@ -565,13 +662,19 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
         if (disposing)
         {
-            lock (_serverLock)
+            _serverLock.Wait();
+            try
             {
                 foreach (var server in _assemblyServers.Values)
                 {
                     server.Dispose();
                 }
                 _assemblyServers.Clear();
+            }
+            finally
+            {
+                _serverLock.Release();
+                _serverLock.Dispose();
             }
 
             // Clean up temp files
