@@ -48,13 +48,15 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
         console.log(`Updating version numbers in ${pckg.csproj}`);
         replaceVersionNumber(pckg.csproj, `<VersionPrefix>${oldVersionPrefix}</VersionPrefix>`, `<VersionPrefix>${versionPrefix}</VersionPrefix>`);
         replaceVersionNumber(pckg.csproj, `<VersionSuffix>${oldVersionSuffix}</VersionSuffix>`, `<VersionSuffix>${versionSuffix}</VersionSuffix>`);
-
-        if (!versionSuffix) {
-            console.log(`Updating changelog for ${pckg.name}`);
-            commitMessageLines.push(`- ${pckg.name}@${newVersionNumber}`);
-            exec(`npx conventional-changelog-cli -p angular --infile "${pckg.path}/CHANGELOG.md" --same-file --commit-path ${pckg.path} --tag-prefix "${pckg.name}@"`);
-        }
     });
+
+    let releaseNotes = '';
+    if (!versionSuffix) {
+        console.log(`Updating changelog`);
+        commitMessageLines.push(`- dotnet-stryker@${newVersionNumber}`);
+        releaseNotes = execSync(`npx conventional-changelog-cli -p angular --tag-prefix "dotnet-stryker@"`, { encoding: 'utf8' }).trim();
+        exec(`npx conventional-changelog-cli -p angular --infile "./CHANGELOG.md" --same-file --tag-prefix "dotnet-stryker@"`);
+    }
 
     console.log('Updating azure-pipelines.yml');
     replaceVersionNumber('./azure-pipelines.yml', `VersionBuildNumber: $[counter('${oldVersion}', 1)]`, `VersionBuildNumber: $[counter('${versionPrefix}', 1)]`);
@@ -62,7 +64,10 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
 
     if (!versionSuffix) {
         console.log('Tagging commit');
-        packages.forEach(pckg => exec(`git tag -a ${pckg.name}@${newVersionNumber} -m "${pckg.name}@${newVersionNumber}"`));
+        const tmpTagFile = '.release-notes.md';
+        fs.writeFileSync(tmpTagFile, releaseNotes);
+        exec(`git tag -a dotnet-stryker@${newVersionNumber} -F ${tmpTagFile}`);
+        fs.unlinkSync(tmpTagFile);
     }
 
     console.log(`Creating commit`);
@@ -71,6 +76,15 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
 
     console.log(`Pushing commit ${versionSuffix?'':' and tags'}`);
     exec('git push --follow-tags');
+    if (!versionSuffix) {
+        try {
+            const execSync = require('child_process').execSync;
+            execSync(`gh release create dotnet-stryker@${newVersionNumber} --title "dotnet-stryker@${newVersionNumber}" --notes-from-tag`);
+            console.log(`Created GitHub release for dotnet-stryker@${newVersionNumber}`);
+        } catch (e) {
+            console.warn('Failed to create GitHub release:', e.message);
+        }
+    }
     rl.close();
 });
 
