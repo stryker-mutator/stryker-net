@@ -55,7 +55,13 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
         console.log(`Updating changelog`);
         commitMessageLines.push(`- dotnet-stryker@${newVersionNumber}`);
         releaseNotes = execSync(`npx conventional-changelog-cli -p angular --tag-prefix "dotnet-stryker@"`, { encoding: 'utf8' }).trim();
-        exec(`npx conventional-changelog-cli -p angular --infile "./CHANGELOG.md" --same-file --tag-prefix "dotnet-stryker@"`);
+        const changelogPath = './CHANGELOG.md';
+        const changelog = fs.readFileSync(changelogPath, { encoding: 'UTF-8' });
+        const marker = '<!-- changelog -->';
+        if (!changelog.includes(marker)) {
+            throw new Error(`${changelogPath} is missing the '${marker}' insertion marker`);
+        }
+        fs.writeFileSync(changelogPath, changelog.replace(marker, `${marker}\n\n${releaseNotes}`), { encoding: 'UTF-8' });
     }
 
     console.log('Updating azure-pipelines.yml');
