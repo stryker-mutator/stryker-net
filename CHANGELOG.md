@@ -1,6 +1,10 @@
 # Change Log
 
-All notable changes to this project will be documented in a package specific changelog file:
+All notable changes will be documented in this file.
 
-* [Change log for stryker](/src/Stryker.Core/CHANGELOG.md)
-* [Change log for dotnet-stryker](/src/Stryker.CLI/CHANGELOG.md)
+For historical release notes prior to the consolidated changelog, see the package-specific files:
+
+* [Historical change log for stryker](/src/Stryker.Core/CHANGELOG.md)
+* [Historical change log for dotnet-stryker](/src/Stryker.CLI/CHANGELOG.md)
+
+<!-- changelog -->
