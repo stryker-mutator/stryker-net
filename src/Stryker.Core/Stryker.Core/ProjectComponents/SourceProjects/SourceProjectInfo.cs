@@ -3,17 +3,11 @@ using System.Collections.Generic;
 using Buildalyzer;
 using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
+using Stryker.Core.Initialisation;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.ProjectComponents.SourceProjects;
-
-public class SolutionInfo(string file, string configuration, string platform)
-{
-    public string SolutionFilePath { get; init; } = file;
-    public string Configuration { get; init; } = configuration;
-    public string Platform { get; init; } = platform;
-}
 
 public class SourceProjectInfo : IProjectAndTests
 {
@@ -21,7 +15,7 @@ public class SourceProjectInfo : IProjectAndTests
 
     public Action OnProjectBuilt { get; set; }
 
-    public SolutionInfo SolutionInfo { get; set; }
+    public TargetsForMutation TargetsForMutation { get; set; }
 
     public IAnalyzerResult AnalyzerResult { get; init; }
 

@@ -66,7 +66,7 @@ public class InitialisationProcess : IInitialisationProcess
     /// <inheritdoc/>
     public void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects)
     {
-        var solutionInfo = projects.First().SolutionInfo;
+        var solutionInfo = projects.First().TargetsForMutation;
         // pick configuration and platform from solution if available
         var configuration = solutionInfo?.Configuration ?? options.Configuration;
         var platform = solutionInfo?.Platform ?? options.Platform;
