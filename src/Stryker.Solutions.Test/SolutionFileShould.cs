@@ -45,7 +45,7 @@ public sealed class SolutionFileShould
         // Arrange
         List<string> projects = ["Project.csproj", "Test.csproj"];
         // Act
-        var solution = SolutionFile.BuildFromProjectList( projects, [platform], [platform]);
+        var solution = SolutionFile.BuildFromProjectList("Solution.sln", projects, [platform], [platform]);
 
         // Assert
         solution.GetProjectsWithDetails("Debug").ShouldBe(projects.Select(p => (p, "Debug", platform)));
@@ -57,7 +57,7 @@ public sealed class SolutionFileShould
         // Arrange
         List<string> projects = ["Project.csproj", "Test.csproj"];
         // Act
-        var solution = SolutionFile.BuildFromProjectList( projects, ["Z80", "Any CPU"]);
+        var solution = SolutionFile.BuildFromProjectList("Solution.sln", projects, ["Z80", "Any CPU"]);
 
         // Assert
         solution.GetProjectsWithDetails("Debug").ShouldBe(projects.Select(p => (p, "Debug", "Any CPU")));
@@ -69,7 +69,7 @@ public sealed class SolutionFileShould
         // Arrange
         List<string> projects = ["Project.csproj", "Test.csproj"];
         // Act
-        var solution = SolutionFile.BuildFromProjectList( projects, ["Z80", "6502"]);
+        var solution = SolutionFile.BuildFromProjectList("Solution.sln",  projects, ["Z80", "6502"]);
 
         // Assert
         solution.GetProjectsWithDetails("Debug").ShouldBe(projects.Select(p => (p, "Debug", "Z80")));
@@ -140,7 +140,7 @@ public sealed class SolutionFileShould
     public void PickExactMatch()
     {
         // Arrange
-        var solution = SolutionFile.BuildFromProjectList(["Project.csproj", "Test.csproj"], ["x86", "x64"]);
+        var solution = SolutionFile.BuildFromProjectList("Solution.sln", ["Project.csproj", "Test.csproj"], ["x86", "x64"]);
 
         var match = solution.GetMatching("Debug", "x64");
         // Assert
@@ -151,7 +151,7 @@ public sealed class SolutionFileShould
     public void FallBackOnDebug()
     {
         // Arrange
-        var solution = SolutionFile.BuildFromProjectList(["Project.csproj", "Test.csproj"], ["x86", "x64"]);
+        var solution = SolutionFile.BuildFromProjectList("Solution.sln", ["Project.csproj", "Test.csproj"], ["x86", "x64"]);
 
         var match = solution.GetMatching("Stryker", "x64");
         // Assert
@@ -162,7 +162,7 @@ public sealed class SolutionFileShould
     public void FallBackOnAnyCPU()
     {
         // Arrange
-        var solution = SolutionFile.BuildFromProjectList(["Project.csproj", "Test.csproj"], ["AnyCPU"]);
+        var solution = SolutionFile.BuildFromProjectList("Solution.sln", ["Project.csproj", "Test.csproj"], ["AnyCPU"]);
 
         var match = solution.GetMatching("Debug", "x64");
         // Assert
@@ -173,7 +173,7 @@ public sealed class SolutionFileShould
     public void PickFirstIfNoMatch()
     {
         // Arrange
-        var solution = SolutionFile.BuildFromProjectList(["Project.csproj", "Test.csproj"], ["AnyCPU"]);
+        var solution = SolutionFile.BuildFromProjectList("Solution.sln", ["Project.csproj", "Test.csproj"], ["AnyCPU"]);
 
         var match = solution.GetMatching("Stryker", "x64");
         // Assert

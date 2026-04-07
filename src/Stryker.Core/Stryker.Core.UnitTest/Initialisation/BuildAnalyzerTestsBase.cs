@@ -333,6 +333,6 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
         {
             throw new InvalidOperationException($"Solution file {solutionPath} does not exist in the file system.");
         }
-        return SolutionFile.BuildFromProjectList(_projectCache.Keys.ToList());
+        return SolutionFile.BuildFromProjectList(solutionPath, _projectCache.Keys.ToList());
     }
 }

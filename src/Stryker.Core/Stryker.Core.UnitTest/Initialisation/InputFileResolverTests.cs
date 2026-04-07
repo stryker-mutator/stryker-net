@@ -1679,7 +1679,7 @@ Please specify a test project name filter that results in one project.
         var managerMock = BuildBuildAnalyzerMock(analyzerResults);
 
         // Build a solution that assigns x64 platform to projects
-        var solution = SolutionFile.BuildFromProjectList(
+        var solution = SolutionFile.BuildFromProjectList(solutionPath,
             [_sourceProjectFilePath, _testProjectFilePath], ["x64"]);
 
         var target = BuildTestResolverWithSolutionProvider(fileSystem,
@@ -1755,7 +1755,7 @@ Please specify a test project name filter that results in one project.
         var analyzerManagerMock = BuildBuildAnalyzerMock(analyzerResults);
 
         // Build a solution with only Release|x86 available
-        var solution = SolutionFile.BuildFromProjectList(
+        var solution = SolutionFile.BuildFromProjectList(solutionPath,
             [_sourceProjectFilePath, _testProjectFilePath], ["x86"]);
 
         var target = BuildTestResolverWithSolutionProvider(fileSystem,

@@ -187,15 +187,16 @@ public class SolutionFile
     /// <summary>
     /// Create a solution file from a list of projects having two build types, Debug and Release, and the provided platforms.
     /// </summary>
+    /// <param name="filePath">solution file name</param>
     /// <param name="projects">list of csproj filenames</param>
     /// <param name="platforms">list of declared platforms. Default to AnyCpu and x86</param>
     /// <param name="solutionPlatforms">list of solution level platforms</param>
     /// <returns>a solution instance</returns>
     /// <remarks>This method is used for testing purposes. It is mandatory as the underlying solution parser does not support any form of mocking</remarks>
-    public static SolutionFile BuildFromProjectList(List<string> projects, string[]? platforms = null
+    public static SolutionFile BuildFromProjectList(string filePath, List<string> projects, string[]? platforms = null
         , string[]? solutionPlatforms = null)
     {
-        var result = new SolutionFile();
+        var result = new SolutionFile {FileName = filePath};
         solutionPlatforms = DefineSolutionPlatforms(platforms, solutionPlatforms);
         platforms ??= [ "AnyCPU", "x86" ];
         if (platforms.Length != solutionPlatforms.Length)
