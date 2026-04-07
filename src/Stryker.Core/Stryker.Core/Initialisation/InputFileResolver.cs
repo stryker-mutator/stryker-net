@@ -412,7 +412,6 @@ public class InputFileResolver(
         IEnumerable<ProjectSimulatedBuildHandler> mutableProjectsAnalyzerResults)
     {
         // separate test projects from mutable projects, and keep only analyzer results building an assembly (exclude solution folders and such)
-        var scan = mutableProjectsAnalyzerResults.Where(p=> p.BuildsAnAssembly()).GroupBy(p => p.IsTest);
         var testProjects = new List<ProjectSimulatedBuildHandler>();
         var mutableProjects = new List<ProjectSimulatedBuildHandler>();
         foreach (var project in mutableProjectsAnalyzerResults)
@@ -585,9 +584,9 @@ public class InputFileResolver(
 
         public bool Empty => _queue.IsEmpty;
 
-        public void Add(IEnumerable<T> where)
+        public void Add(IEnumerable<T> entries)
         {
-            foreach (var entry in where)
+            foreach (var entry in entries)
             {
                 if (!_cache.TryAdd(entry, true))
                 {

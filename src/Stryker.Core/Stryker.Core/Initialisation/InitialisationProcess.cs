@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
@@ -100,8 +99,6 @@ public class InitialisationProcess : IInitialisationProcess
             project.OnProjectBuilt?.Invoke();
         }
     }
-
-    private IFileSystem FileSystem => _inputFileResolver.FileSystem;
 
     public async Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
         IReadOnlyCollection<SourceProjectInfo> projects,

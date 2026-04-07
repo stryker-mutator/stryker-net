@@ -62,7 +62,7 @@ public class ProjectSimulatedBuildHandler
             throw new InvalidOperationException("Cannot force framework when no framework is specified in options.");
         }
 
-        if (withRestore && AnalyzerLastResults.Any(ar => ar.TargetsFullFramework()) == true)
+        if (withRestore && AnalyzerLastResults.Any(ar => ar.TargetsFullFramework()))
         {
             _projectsTracker.RestoreSolution(AnalyzerLastResults);
             withRestore= false;
@@ -118,13 +118,15 @@ public class ProjectSimulatedBuildHandler
     public bool IsNetFramework => _analyzer.ProjectFile.RequiresNetFramework;
 
     public IEnumerable<string> FailedFrameworks => _targetFrameworks?.Where(tf =>
-        AnalyzerLastResults.Any( ar => ar.TargetFramework == tf && ar.IsValid())== false) ?? [];
+        !AnalyzerLastResults.Any( ar => ar.TargetFramework == tf && ar.IsValid())) ?? [];
 
-    public bool IsTest => AnalyzerLastResults.IsTestProject() == true;
+    public bool IsTest => AnalyzerLastResults.IsTestProject();
 
     public bool HasValidResults() => AnalyzerLastResults.IsValidFor(_targetFrameworks);
 
     public bool IsTestProject() => AnalyzerLastResults.IsTestProject();
+
+    public bool BuildsAnAssembly() => AnalyzerLastResults.Any(p => p.BuildsAnAssembly());
 
     public IEnumerable<string> GetProjectReferences() => AnalyzerLastResults.SelectMany(r => r.ProjectReferences).Distinct();
 
@@ -214,8 +216,6 @@ public class ProjectSimulatedBuildHandler
             }
         }
     }
-
-    public bool BuildsAnAssembly() => AnalyzerLastResults.Any(p => p.BuildsAnAssembly()) == true;
 
     public bool FindMatchingVariant(string assemblyPath, out IAnalyzerResult? analyzerResult)
     {
