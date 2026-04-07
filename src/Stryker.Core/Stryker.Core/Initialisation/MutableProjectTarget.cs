@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using Buildalyzer;
@@ -31,11 +32,11 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
     /// Builds a <see cref="SourceProjectInfo"/> instance describing a project its associated test project(s)
     /// </summary>
     /// <param name="options">Stryker options</param>
-    /// <param name="targetsForMutation"></param>
+    /// <param name="projectsTracker"></param>
     /// <param name="fileSystem">filesystem</param>
     /// <returns></returns>
     public SourceProjectInfo BuildSourceProjectInfo(IStrykerOptions options,
-        TargetsForMutation targetsForMutation, IFileSystem fileSystem )
+        ProjectsTracker projectsTracker, IFileSystem fileSystem )
     {
         var targetProjectInfo = new SourceProjectInfo
         {
@@ -44,7 +45,7 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
 
         var language = targetProjectInfo.AnalyzerResult.GetLanguage();
 
-        ProjectComponentsBuilder builder = language == Language.Csharp
+        var builder = language == Language.Csharp
             ? new CsharpProjectComponentsBuilder(targetProjectInfo, options, FoldersToExclude, logger,
                 fileSystem)
             : throw new NotSupportedException($"Language not supported: {language}");
@@ -53,7 +54,7 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
         builder.InjectHelpers(inputFiles);
         targetProjectInfo.OnProjectBuilt = builder.PostBuildAction();
         targetProjectInfo.ProjectContents = inputFiles;
-        targetProjectInfo.TargetsForMutation = targetsForMutation;
+        targetProjectInfo.ProjectsTracker = projectsTracker;
         logger.LogInformation("Found project {ProjectFileName} to mutate.", ProjectTarget.ProjectFilePath);
         targetProjectInfo.TestProjectsInfo = new TestProjectsInfo(fileSystem)
         {
@@ -81,20 +82,19 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
         foreach (var testProject in TestProjects)
         {
             logger.LogInformation("  referenced by test project {ProjectName}, analysis {Result}.",
-                testProject.ProjectFilePath,
+                Path.GetFileName(testProject.ProjectFilePath),
                 testProject.IsValid() ? "succeeded" : "failed");
-
         }
 
         // dump associated test projects
         // provide synthetic status
         if (TestProjects.Any(r => r.IsValid()))
         {
-            logger.LogInformation("  can be mutated.");
+            logger.LogInformation(ProjectTarget.IsValid() ? "  can be mutated." : " can't be mutated because its simulated build failed.");
         }
         else
         {
-            logger.LogWarning("  can't be mutated because all referencing test projects' analysis failed.");
+            logger.LogWarning("  can't be mutated because all referencing test projects' simulated build failed.");
         }
     }
 }

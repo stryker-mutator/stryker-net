@@ -10,27 +10,30 @@ using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.Initialisation;
 
-public class ProjectAnalyzerContext
+/// <summary>
+/// Encapsulates the context of a project analysis, including the project analyzer, the last analysis results
+///  for said project. It also provides reference discovery methods
+/// </summary>
+public class ProjectSimulatedBuildHandler
 {
     private readonly IProjectAnalyzer _analyzer;
-    private readonly TargetsForMutation _targetsForMutation;
+    private readonly ProjectsTracker _projectsTracker;
     private readonly string _msBuildPath;
     private readonly string _configuration;
     private readonly string _platform;
     private readonly string? _framework;
     private readonly ILogger _logger;
     private readonly StringWriter _buildLogger;
-    public IAnalyzerResults? AnalyzerLastResults { get; private set; }
     private string[] _targetFrameworks=[];
 
-    public ProjectAnalyzerContext(IBuildalyzerProvider buildalyzerProvider,
+    public ProjectSimulatedBuildHandler(IBuildalyzerProvider buildalyzerProvider,
         string projectFile,
         string msBuildPath,
         (string configuration,
         string platform,
         string? framework) target,
         ILogger logger,
-        TargetsForMutation targetsForMutation)
+        ProjectsTracker projectsTracker)
     {
         _buildLogger = new StringWriter();
         var manager = buildalyzerProvider.Provide(new AnalyzerManagerOptions{LogWriter = _buildLogger});
@@ -38,7 +41,7 @@ public class ProjectAnalyzerContext
 
         _analyzer = analyzer;
         ProjectFileName = projectFile;
-        _targetsForMutation = targetsForMutation;
+        _projectsTracker = projectsTracker;
         _msBuildPath = msBuildPath;
         _configuration = target.configuration;
         _platform = target.platform;
@@ -46,15 +49,23 @@ public class ProjectAnalyzerContext
         _logger = logger;
     }
 
+    public IAnalyzerResults AnalyzerLastResults { get; private set; } = new AnalyzerResults();
+
     public string LastBuildLog => _buildLogger.ToString();
 
     public string ProjectFileName { get; }
 
     public IAnalyzerResults Analyze(bool withRestore = false, bool forceFramework = false)
     {
-        if (withRestore && AnalyzerLastResults?.Any(ar => ar.TargetsFullFramework()) == true)
+        if (forceFramework && string.IsNullOrEmpty(_framework))
         {
-            _targetsForMutation.RestoreSolution(AnalyzerLastResults);
+            throw new InvalidOperationException("Cannot force framework when no framework is specified in options.");
+        }
+
+        if (withRestore && AnalyzerLastResults.Any(ar => ar.TargetsFullFramework()) == true)
+        {
+            _projectsTracker.RestoreSolution(AnalyzerLastResults);
+            withRestore= false;
         }
         _buildLogger.GetStringBuilder().Clear();
         var env = new EnvironmentOptions
@@ -104,16 +115,18 @@ public class ProjectAnalyzerContext
         _targetFrameworks = projectFileTargetFrameworks;
     }
 
+    public bool IsNetFramework => _analyzer.ProjectFile.RequiresNetFramework;
+
     public IEnumerable<string> FailedFrameworks => _targetFrameworks?.Where(tf =>
-        AnalyzerLastResults?.Any( ar => ar.TargetFramework == tf && ar.IsValid())== false) ?? [];
+        AnalyzerLastResults.Any( ar => ar.TargetFramework == tf && ar.IsValid())== false) ?? [];
 
-    public bool IsTest => AnalyzerLastResults?.IsTestProject() == true;
+    public bool IsTest => AnalyzerLastResults.IsTestProject() == true;
 
-    public bool HasValidResults() => AnalyzerLastResults != null && AnalyzerLastResults.IsValidFor(_targetFrameworks);
+    public bool HasValidResults() => AnalyzerLastResults.IsValidFor(_targetFrameworks);
 
-    public bool IsTestProject() => AnalyzerLastResults != null && AnalyzerLastResults.IsTestProject();
+    public bool IsTestProject() => AnalyzerLastResults.IsTestProject();
 
-    public IEnumerable<string> GetProjectReferences() => AnalyzerLastResults?.SelectMany(r => r.ProjectReferences).Distinct();
+    public IEnumerable<string> GetProjectReferences() => AnalyzerLastResults.SelectMany(r => r.ProjectReferences).Distinct();
 
     private static readonly HashSet<string> ImportantProperties =
         ["Configuration", "Platform", "AssemblyName", "Configurations", "TargetPath", "OS"];
@@ -162,10 +175,8 @@ public class ProjectAnalyzerContext
         if (_logger.IsEnabled(LogLevel.Trace))
         {
             // dumps all other properties as well, as they can be useful for diagnosing build issues
-            foreach (var property in properties.Where( p => !ImportantProperties.Contains(p.Key) ))
-            {
-                log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
-            }
+            log.AppendLine($"Other properties: {
+                string.Join(", ", properties.Where(p => !ImportantProperties.Contains(p.Key)).Select(p => $"{p.Key}={p.Value.Replace(Environment.NewLine, "\\n")}"))}.");
         }
 
         log.AppendLine();
@@ -204,16 +215,10 @@ public class ProjectAnalyzerContext
         }
     }
 
-    public bool BuildsAnAssembly() => AnalyzerLastResults?.Any(p => p.BuildsAnAssembly()) == true;
+    public bool BuildsAnAssembly() => AnalyzerLastResults.Any(p => p.BuildsAnAssembly()) == true;
 
     public bool FindMatchingVariant(string assemblyPath, out IAnalyzerResult? analyzerResult)
     {
-        if (AnalyzerLastResults == null)
-        {
-            analyzerResult = null;
-            return false;
-        }
-
         analyzerResult= AnalyzerLastResults.FirstOrDefault( r=>
                             string.Compare(assemblyPath, r.GetAssemblyPath(), StringComparison.OrdinalIgnoreCase) == 0
                 || string.Compare(assemblyPath, r.GetReferenceAssemblyPath(), StringComparison.OrdinalIgnoreCase) == 0);

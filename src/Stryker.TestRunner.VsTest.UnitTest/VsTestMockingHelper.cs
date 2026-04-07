@@ -547,7 +547,6 @@ public class VsTestMockingHelper : TestBase
             SourceProjectInfo = sourceProject ?? SourceProjectInfo,
             TestRunner = runner,
             InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500)),
-            TestProjectsInfo = _testProjectsInfo
         };
         var mutator = new CsharpMutationProcess(_fileSystem, TestLoggerFactory.CreateLogger<CsharpMutationProcess>());
         var executor = new MutationTestExecutor(TestLoggerFactory.CreateLogger<MutationTestExecutor>());
@@ -568,7 +567,5 @@ public class VsTestMockingHelper : TestBase
         public int LaunchTestHost(VsTestObjModel.TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         public bool IsDebug { get; }
-
-        public int ErrorCode { get; }
     }
 }

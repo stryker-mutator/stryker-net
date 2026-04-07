@@ -15,7 +15,7 @@ public class SourceProjectInfo : IProjectAndTests
 
     public Action OnProjectBuilt { get; set; }
 
-    public TargetsForMutation TargetsForMutation { get; set; }
+    public ProjectsTracker ProjectsTracker { get; set; }
 
     public IAnalyzerResult AnalyzerResult { get; init; }
 
@@ -42,4 +42,8 @@ public class SourceProjectInfo : IProjectAndTests
         _warnings.Add(error);
         return error;
     }
+
+    public void BackupOriginalAssembly(IAnalyzerResult analyzerResult) => TestProjectsInfo.BackupOriginalAssembly(analyzerResult);
+
+    public void RestoreOriginalAssembly(IAnalyzerResult analyzerResult) => TestProjectsInfo.RestoreOriginalAssembly(analyzerResult);
 }

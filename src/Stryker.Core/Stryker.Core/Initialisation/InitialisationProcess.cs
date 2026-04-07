@@ -66,23 +66,12 @@ public class InitialisationProcess : IInitialisationProcess
     /// <inheritdoc/>
     public void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects)
     {
-        var solutionInfo = projects.First().TargetsForMutation;
+        var solutionInfo = projects.First().ProjectsTracker;
         // pick configuration and platform from solution if available
-        var configuration = solutionInfo?.Configuration ?? options.Configuration;
-        var platform = solutionInfo?.Platform ?? options.Platform;
-        var solutionFilePath = solutionInfo?.SolutionFilePath ?? options.SolutionPath;
         // we build the whole solution if we have a solution file path, even in project mode
-        if (!string.IsNullOrEmpty(solutionFilePath))
+        if (!string.IsNullOrEmpty(solutionInfo.SolutionFilePath))
         {
-            var framework = projects.Any(p => p.IsFullFramework);
-            // Build the complete solution
-            _logger.LogInformation("Building solution {SolutionPathName}.", FileSystem.Path.GetRelativePath(options.WorkingDirectory, solutionFilePath));
-
-            _initialBuildProcess.InitialBuild(
-                framework,
-                _inputFileResolver.FileSystem.Path.GetDirectoryName(solutionFilePath),
-                solutionFilePath, configuration, platform,
-                options.TargetFramework, options.MsBuildPath);
+            solutionInfo.BuildSolution(_initialBuildProcess, projects.Select(p => p.AnalyzerResult));
         }
         else
         {
@@ -120,7 +109,6 @@ public class InitialisationProcess : IInitialisationProcess
     {
         var getInputs = projects.Select(async info => new MutationTestInput {
             SourceProjectInfo = info,
-            TestProjectsInfo = info.TestProjectsInfo,
             TestRunner = runner,
             InitialTestRun = await InitialTestAsync(options, info, runner, projects.Count == 1)
         });

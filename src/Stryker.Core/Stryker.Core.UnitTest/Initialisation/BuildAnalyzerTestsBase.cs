@@ -290,6 +290,7 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
         projectFileMock.Setup(x => x.Path).Returns(csprojPathName);
         projectFileMock.Setup(x => x.Name).Returns(FileSystem.Path.GetFileName(csprojPathName));
         projectFileMock.Setup(x=> x.TargetFrameworks).Returns(frameworks.ToArray() );
+        projectFileMock.Setup(x => x.RequiresNetFramework).Returns(frameworks.Any(f => f.StartsWith("net") && !f.StartsWith("netcoreapp") && !f.StartsWith("netstandard")));
         return projectAnalyzerMock;
     }
 

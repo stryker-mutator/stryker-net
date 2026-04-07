@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO.Abstractions;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
@@ -9,26 +10,32 @@ using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.Initialisation;
 
-public class TargetsForMutation
+/// <summary>
+/// This class is used to keep track of the solution and the projects that are selected for mutation during the initialization process.
+/// </summary>
+public class ProjectsTracker
 {
     private List<string> _selectedProjects = [];
     private bool _solutionRestored;
+    private bool _solutionBuilt;
 
     private readonly IStrykerOptions _options;
     private readonly INugetRestoreProcess _nugetRestoreProcess;
+    private readonly IFileSystem _fileSystem;
     private readonly IBuildalyzerProvider _buildalyzerProvider;
     private readonly ILogger _logger;
 
-    public TargetsForMutation(SolutionFile? file, IStrykerOptions options, IBuildalyzerProvider buildalyzerProvider ,ILogger logger, INugetRestoreProcess nugetRestoreProcess)
+    public ProjectsTracker(SolutionFile file, IStrykerOptions options, IBuildalyzerProvider buildalyzerProvider,
+        INugetRestoreProcess nugetRestoreProcess, IFileSystem fileSystem, ILogger logger)
     {
         _options = options;
         _buildalyzerProvider = buildalyzerProvider;
         _logger = logger;
         _nugetRestoreProcess = nugetRestoreProcess;
+        _fileSystem = fileSystem;
         Solution = file;
         SelectConfiguration();
     }
-
 
     private SolutionFile? Solution { get; }
 
@@ -84,14 +91,14 @@ public class TargetsForMutation
     {
         lock (_nugetRestoreProcess)
         {
-            if (_solutionRestored)
+            if (_solutionRestored || string.IsNullOrEmpty(SolutionFilePath))
             {
                 return;
             }
 
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                _logger.LogWarning("Project  analysis failed. Stryker will retry after a solution level nuget restore");
+                _logger.LogWarning("Project analysis failed. Stryker will retry after a solution level nuget restore");
                 var optionsMsBuildPath = _options.MsBuildPath ?? results.First().MsBuildPath();
                 if (string.IsNullOrEmpty(optionsMsBuildPath))
                 {
@@ -101,7 +108,30 @@ public class TargetsForMutation
             }
 
             _solutionRestored = true;
+        }
+    }
 
+    internal void BuildSolution(IInitialBuildProcess buildProcess, IEnumerable<IAnalyzerResult> results)
+    {
+        lock (_nugetRestoreProcess)
+        {
+            if (_solutionBuilt || string.IsNullOrEmpty(SolutionFilePath))
+            {
+                return;
+            }
+
+            var framework = results.Any(p => p.TargetsFullFramework());
+            // Build the complete solution
+            _logger.LogInformation("Building solution {SolutionPathName}.",
+                _fileSystem.Path.GetRelativePath(_options.WorkingDirectory, SolutionFilePath));
+
+            buildProcess.InitialBuild(
+                framework,
+                _fileSystem.Path.GetDirectoryName(SolutionFilePath),
+                SolutionFilePath, Configuration, Platform,
+                TargetFramework, _options.MsBuildPath ?? results.First().MsBuildPath()
+                );
+            _solutionBuilt = true;
         }
     }
 
@@ -109,8 +139,8 @@ public class TargetsForMutation
     /// Gets a project analysis context for the given project file, using the configuration and platform from the solution if available, otherwise using the configuration and platform from the options.
     /// </summary>
     /// <param name="projectFile">target project file</param>
-    /// <returns>a <see cref="ProjectAnalyzerContext"/> instance for <param name="projectFile">.</param></returns>
-    public ProjectAnalyzerContext GetProjectAnalysisContext(string projectFile)
+    /// <returns>a <see cref="ProjectSimulatedBuildHandler"/> instance for <param name="projectFile">.</param></returns>
+    public ProjectSimulatedBuildHandler GetProjectAnalysisContext(string projectFile)
     {
         string configuration;
         string platform;
@@ -123,7 +153,7 @@ public class TargetsForMutation
         {
             (configuration, platform) = (Configuration, Platform);
         }
-        return new ProjectAnalyzerContext(_buildalyzerProvider, projectFile, _options.MsBuildPath, (configuration,
+        return new ProjectSimulatedBuildHandler(_buildalyzerProvider, projectFile, _options.MsBuildPath, (configuration,
             platform, _options.TargetFramework), _logger, this);
     }
 }

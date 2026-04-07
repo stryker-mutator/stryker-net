@@ -83,13 +83,13 @@ public class InputFileResolver(
             }
         }
 
-        var solutionInfo = new TargetsForMutation(solution, options, _analyzerProvider ,_logger, _nugetRestoreProcess)
+        var solutionInfo = new ProjectsTracker(solution, options, _analyzerProvider, _nugetRestoreProcess, FileSystem, _logger)
             { TargetFramework = options.TargetFramework };
         return options.IsSolutionContext ? FindProjectsInSolutionMode(options, solutionInfo, normalizedProjectUnderTestNameFilter)
             : FindProjectInTargetProjectMode(options, solutionInfo, normalizedProjectUnderTestNameFilter);
     }
 
-    private IReadOnlyCollection<SourceProjectInfo> FindProjectsInSolutionMode(IStrykerOptions options, TargetsForMutation solutionInfo,
+    private IReadOnlyCollection<SourceProjectInfo> FindProjectsInSolutionMode(IStrykerOptions options, ProjectsTracker solutionInfo,
         string normalizedProjectUnderTestNameFilter)
     {
         _logger.LogInformation("Identifying projects to mutate in {Solution}. This can take a while.",
@@ -105,7 +105,7 @@ public class InputFileResolver(
             ScanMode.NoScan);
         // we identify target projects and their associated test projects
         var (findMutableAnalyzerResults, orphanedProjects) =
-            FindMutableAnalyzerResults(mutableProjectsAnalyzerResults);
+            ExtractMutableProjectTrees(mutableProjectsAnalyzerResults);
         // we keep only suitable candidates
         return AnalyzeAndIdentifyProjects(options, solutionInfo, findMutableAnalyzerResults, orphanedProjects);
     }
@@ -118,7 +118,7 @@ public class InputFileResolver(
     /// <param name="solution">solution file if any</param>
     /// <param name="normalizedProjectUnderTestNameFilter">name filter to apply to the mutated projects</param>
     /// <returns>identified mutable projects matching the provided name filter (when provided). Can be empty</returns>
-    private List<SourceProjectInfo> FindProjectInTargetProjectMode(IStrykerOptions options, TargetsForMutation solution,
+    private List<SourceProjectInfo> FindProjectInTargetProjectMode(IStrykerOptions options, ProjectsTracker solution,
         string normalizedProjectUnderTestNameFilter)
     {
         // we analyze the test project(s) and identify the project to be mutated
@@ -150,7 +150,7 @@ public class InputFileResolver(
         var analyzeAllNeededProjects = AnalyzeAllNeededProjects(solution,
             normalizedProjectUnderTestNameFilter, options, ScanMode.ScanTestProjectReferences);
         // we match test projects to mutable projects
-        var (findMutableAnalyzerResults, orphans) = FindMutableAnalyzerResults(analyzeAllNeededProjects);
+        var (findMutableAnalyzerResults, orphans) = ExtractMutableProjectTrees(analyzeAllNeededProjects);
 
         var result = AnalyzeAndIdentifyProjects(options, solution, findMutableAnalyzerResults, orphans);
         return SelectSingleProject(normalizedProjectUnderTestNameFilter, result, targetProjectMode, testProjectFileNames);
@@ -219,9 +219,9 @@ public class InputFileResolver(
     // analyze projects, do same for their upstream dependencies if activated, and identify which one(s)
     // to proceed with
     private List<SourceProjectInfo> AnalyzeAndIdentifyProjects(IStrykerOptions options,
-        TargetsForMutation solutionInfo,
+        ProjectsTracker solutionInfo,
         List<MutableProjectTree> findMutableAnalyzerResults,
-        List<ProjectAnalyzerContext> unusedTestProjects)
+        List<ProjectSimulatedBuildHandler> unusedTestProjects)
     {
         // build all projects
         _logger.LogDebug("Scanning {Count} possible targets.", findMutableAnalyzerResults.Count);
@@ -259,14 +259,14 @@ public class InputFileResolver(
 
     // Log the analysis results
     private void LogAnalysis(List<MutableProjectTree> findMutableAnalyzerResults,
-        List<ProjectAnalyzerContext> unusedTestProjects, bool optionsDiagMode)
+        List<ProjectSimulatedBuildHandler> unusedTestProjects, bool optionsDiagMode)
     {
         if (findMutableAnalyzerResults.Count == 0)
         {
             _logger.LogWarning( optionsDiagMode ? "No project found, check settings and ensure project file is not corrupted.":
                                """
                                No project found, check settings and ensure project file is not corrupted.
-                               Use --diag option to have the analysis logs in the log file.
+                               Use --diag option to have the simulated build logs.
                                """);
             return;
         }
@@ -277,7 +277,7 @@ public class InputFileResolver(
         // dump test projects that do not reference any mutable project
         foreach (var unusedTestProject in unusedTestProjects)
         {
-            _logger.LogInformation("Test project {ProjectName} does not appear to test any mutable project, analysis {Result}.",
+            _logger.LogInformation("Test project {ProjectName} does not appear to test any mutable project, simulated build {Result}.",
                 unusedTestProject.ProjectFileName,
                 unusedTestProject.HasValidResults() ? "succeeded" : "failed");
         }
@@ -288,12 +288,12 @@ public class InputFileResolver(
         }
     }
 
-    private ConcurrentBag<ProjectAnalyzerContext> AnalyzeAllNeededProjects(
-        TargetsForMutation solutionInfo,
+    private ConcurrentBag<ProjectSimulatedBuildHandler> AnalyzeAllNeededProjects(
+        ProjectsTracker solutionInfo,
         string normalizedProjectUnderTestNameFilter,
         IStrykerOptions options, ScanMode mode)
     {
-        var mutableProjectsAnalyzerResults = new ConcurrentBag<ProjectAnalyzerContext>();
+        var mutableProjectsAnalyzerResults = new ConcurrentBag<ProjectSimulatedBuildHandler>();
 
         var list = new DynamicEnumerableQueue<string>(solutionInfo.SelectedProjects);
         try
@@ -344,7 +344,7 @@ public class InputFileResolver(
         return mutableProjectsAnalyzerResults;
     }
 
-    private IAnalyzerResults AnalyzeSingleProject(ProjectAnalyzerContext project, IStrykerOptions options)
+    private IAnalyzerResults AnalyzeSingleProject(ProjectSimulatedBuildHandler project, IStrykerOptions options)
     {
         var projectLogName = FileSystem.Path.GetRelativePath(options.WorkingDirectory, project.ProjectFileName);
         _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
@@ -354,9 +354,15 @@ public class InputFileResolver(
 
         // if buildalyzer failed, we can try again with a nuget restore, as missing packages is a common cause of
         // buildalyzer failure, especially for full framework projects
-        if (!buildResult.OverallSuccess)
+        if (buildResult.All(ar=>!ar.Succeeded))
         {
-            _logger.LogWarning("Project {ProjectFilePath} analysis failed. Trying again with a nuget restore.", projectLogName);
+            if (project.IsNetFramework && Environment.OSVersion.Platform!=PlatformID.Win32NT)
+            {
+                _logger.LogWarning("Project {ProjectFilePath} is a .NET Framework project. It requires Windows for mutation testing. Discarding.", projectLogName);
+                return buildResult;
+            }
+
+            _logger.LogWarning("Project {ProjectFilePath} simulated build failed. Trying again with a nuget restore.", projectLogName);
 
             // if this is a full framework project, we can retry after a nuget restore
             buildResult = project.Analyze(withRestore: true);
@@ -367,7 +373,7 @@ public class InputFileResolver(
             if (!buildResultOverallSuccess && !string.IsNullOrEmpty(options.TargetFramework))
             {
                 // still failed, we can try using target framework option
-                _logger.LogWarning("Project {ProjectFilePath} analysis failed. Last attempt, forcing the target framework.", projectLogName);
+                _logger.LogWarning("Project {ProjectFilePath} simulated build failed again. Last attempt, forcing the target framework.", projectLogName);
                 buildResult = project.Analyze(forceFramework: true);
                 buildResultOverallSuccess = project.HasValidResults();
             }
@@ -396,24 +402,35 @@ public class InputFileResolver(
 
         if (options.DiagMode)
         {
-            _logger.LogWarning("Project {ProjectFilePath} analysis failed. The MsBuild log is: {Log}", projectLogName, project.LastBuildLog);
+            _logger.LogWarning("{ProjectFilePath}'s build log is: {Log}", projectLogName, project.LastBuildLog);
         }
 
         return buildResult;
     }
 
-    private (List<MutableProjectTree>, List<ProjectAnalyzerContext>) FindMutableAnalyzerResults(
-        IEnumerable<ProjectAnalyzerContext> mutableProjectsAnalyzerResults)
+    private (List<MutableProjectTree>, List<ProjectSimulatedBuildHandler>) ExtractMutableProjectTrees(
+        IEnumerable<ProjectSimulatedBuildHandler> mutableProjectsAnalyzerResults)
     {
         // separate test projects from mutable projects, and keep only analyzer results building an assembly (exclude solution folders and such)
-        var analyzerTestProjects = mutableProjectsAnalyzerResults.Where(p => p.IsTest && p.BuildsAnAssembly());
-        var mutableProjects = mutableProjectsAnalyzerResults.Where(p => !p.IsTest && p.BuildsAnAssembly()).ToArray();
-
+        var scan = mutableProjectsAnalyzerResults.Where(p=> p.BuildsAnAssembly()).GroupBy(p => p.IsTest);
+        var testProjects = new List<ProjectSimulatedBuildHandler>();
+        var mutableProjects = new List<ProjectSimulatedBuildHandler>();
+        foreach (var project in mutableProjectsAnalyzerResults)
+        {
+            if (project.IsTestProject())
+            {
+                testProjects.Add(project);
+            }
+            else if (project.BuildsAnAssembly())
+            {
+                mutableProjects.Add(project);
+            }
+        }
         var mutableToTestMap = mutableProjects.ToDictionary(p =>p, p => new MutableProjectTree(p, _logger));
-        var unusedTestProjects = new List<ProjectAnalyzerContext>();
+        var unusedTestProjects = new List<ProjectSimulatedBuildHandler>();
 
         // for each test project
-        foreach (var testProject in analyzerTestProjects)
+        foreach (var testProject in testProjects)
         {
             if (ScanAssemblyReferences(mutableToTestMap, mutableProjects, testProject))
             {
@@ -431,10 +448,10 @@ public class InputFileResolver(
         return (mutableToTestMap.Values.ToList(), unusedTestProjects);
     }
 
-    private static bool ScanAssemblyReferences(Dictionary<ProjectAnalyzerContext, MutableProjectTree> mutableToTestMap,
-        ProjectAnalyzerContext[] mutableProjects, ProjectAnalyzerContext testProject)
+    private static bool ScanAssemblyReferences(Dictionary<ProjectSimulatedBuildHandler, MutableProjectTree> mutableToTestMap,
+        List<ProjectSimulatedBuildHandler> mutableProjects, ProjectSimulatedBuildHandler testProject)
     {
-        if (testProject.AnalyzerLastResults == null)
+        if (testProject.AnalyzerLastResults.Count == 0)
         {
             throw new InvalidOperationException($"You must analyze the test project {testProject.ProjectFileName} before trying to find its references.");
         }
@@ -461,10 +478,10 @@ public class InputFileResolver(
         return foundOneProject;
     }
 
-    private static bool ScanProjectReferences(Dictionary<ProjectAnalyzerContext, MutableProjectTree> mutableToTestMap,
-        ProjectAnalyzerContext[] mutableProjects, ProjectAnalyzerContext testProject)
+    private static bool ScanProjectReferences(Dictionary<ProjectSimulatedBuildHandler, MutableProjectTree> mutableToTestMap,
+        List<ProjectSimulatedBuildHandler> mutableProjects, ProjectSimulatedBuildHandler testProject)
     {
-        if (testProject.AnalyzerLastResults == null)
+        if (testProject.AnalyzerLastResults.Count == 0)
         {
             throw new InvalidOperationException($"You must analyze the test project {testProject.ProjectFileName} before trying to find its references.");
         }
@@ -474,8 +491,7 @@ public class InputFileResolver(
             foreach (var projectReference in variant.ProjectReferences)
             {
                 var candidateProject = mutableProjects.FirstOrDefault(p => p.ProjectFileName == projectReference);
-                var candidateProjectVariants = candidateProject
-                    ?.AnalyzerLastResults;
+                var candidateProjectVariants = candidateProject?.AnalyzerLastResults;
                 if (candidateProjectVariants == null)
                 {
                     // probably another test project

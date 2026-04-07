@@ -84,16 +84,16 @@ namespace ExtraProject.XUnit
             SourceProjectInfo = new Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo()
             {
                 AnalyzerResult = analyzerResult,
-                ProjectContents = folder
-            },
-            TestProjectsInfo = new TestProjectsInfo(_fileSystemMock)
-            {
-                TestProjects = new List<TestProject>
+                ProjectContents = folder,
+                TestProjectsInfo = new TestProjectsInfo(_fileSystemMock)
                 {
-                    new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
-                        projectFilePath: "c:\\testproject.csproj",
-                        targetFramework: "netcoreapp3.1",
-                        sourceFiles: new [] { _testFilePath }).Object)
+                    TestProjects = new List<TestProject>
+                    {
+                        new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
+                            projectFilePath: "c:\\testproject.csproj",
+                            targetFramework: "netcoreapp3.1",
+                            sourceFiles: [_testFilePath]).Object)
+                    }
                 }
             }
         };
@@ -126,7 +126,7 @@ namespace ExtraProject.XUnit
             executedTests: new TestIdentifierList(failedTest, successfulTest),
             failedTests: new TestIdentifierList(failedTest),
             timedOutTest: TestIdentifierList.NoTest(),
-            message: "testrun succesful",
+            message: "testrun successful",
             Enumerable.Empty<string>(),
             timeSpan: TimeSpan.FromSeconds(2));
 
@@ -138,7 +138,7 @@ namespace ExtraProject.XUnit
 
         // assert
         result.ShouldNotBeNull();
-        var testFile = _mutationTestInput.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
+        var testFile = _mutationTestInput.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
         testFile.Tests.Count.ShouldBe(2);
     }
 }

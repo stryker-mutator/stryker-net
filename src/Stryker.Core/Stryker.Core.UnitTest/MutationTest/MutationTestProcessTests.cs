@@ -68,8 +68,7 @@ public class MutationTestProcessTests : TestBase
                     }).Object,
                 ProjectContents = Folder,
                 TestProjectsInfo = testProjectsInfo
-            },
-            TestProjectsInfo = testProjectsInfo,
+            }
         };
     }
 

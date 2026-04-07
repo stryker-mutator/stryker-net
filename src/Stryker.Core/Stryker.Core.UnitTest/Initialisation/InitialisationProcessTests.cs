@@ -73,12 +73,12 @@ public class InitialisationProcessTests : TestBase
         var folder = new CsharpFolderComposite();
         folder.Add(new CsharpFileLeaf());
 
+        var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
+        var projectTracker = new ProjectsTracker(null, new StrykerOptions(), null, null, null, loggerMock.Object);
         inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>())).Returns(
-            new[] {new SourceProjectInfo() {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    references: Array.Empty<string>()).Object,
-                TestProjectsInfo = new TestProjectsInfo(new MockFileSystem())
-            }});
+        [new SourceProjectInfo { AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(references: []).Object,
+            TestProjectsInfo = new TestProjectsInfo(new MockFileSystem()), ProjectsTracker = projectTracker}
+        ]);
 
         inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
         initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(),
@@ -88,7 +88,6 @@ public class InitialisationProcessTests : TestBase
         testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
         initialTestProcessMock.Setup(x => x.InitialTestAsync(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>())).ThrowsAsync(new InputException("")); // failing test
 
-        var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
@@ -113,9 +112,12 @@ public class InitialisationProcessTests : TestBase
         var folder = new CsharpFolderComposite();
         folder.Add(new CsharpFileLeaf());
 
-
+        var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
+        var projectTracker = new ProjectsTracker(null, new StrykerOptions(), null, null, null, loggerMock.Object);
         inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>())).Returns(
-            new[] { new SourceProjectInfo { AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(references: Array.Empty<string>()).Object, TestProjectsInfo = new TestProjectsInfo(new MockFileSystem()) } });
+        [new SourceProjectInfo { AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(references: []).Object,
+            TestProjectsInfo = new TestProjectsInfo(new MockFileSystem()), ProjectsTracker = projectTracker}
+        ]);
 
         inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(fileSystemMock);
         initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(),
@@ -135,7 +137,6 @@ public class InitialisationProcessTests : TestBase
             new InitialTestRun(
             new TestRunResult(Array.Empty<VsTestDescription>(), ranTests, failedTests, TestIdentifierList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), new TimeoutValueCalculator(0))); // failing test
 
-        var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
@@ -161,18 +162,17 @@ public class InitialisationProcessTests : TestBase
         var folder = new CsharpFolderComposite();
         folder.Add(new CsharpFileLeaf());
 
-
+        var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
+        var projectTracker = new ProjectsTracker(null, new StrykerOptions(), null, null, null, loggerMock.Object);
         inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>())).Returns(
-            new[] {new SourceProjectInfo {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    references: Array.Empty<string>()).Object,
-                TestProjectsInfo = new TestProjectsInfo(new MockFileSystem())
-            }});
+        [new SourceProjectInfo { AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(references: []).Object,
+            TestProjectsInfo = new TestProjectsInfo(new MockFileSystem()), ProjectsTracker = projectTracker}
+        ]);
 
         inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
         initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(),
             It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<string>()));
-        var failedTest = "testid";
+        const string failedTest = "testid";
         var ranTests = new TestIdentifierList(failedTest, "othertest", "anothertest");
         var testSet = new TestSet();
         foreach (var ranTest in ranTests.GetIdentifiers())
@@ -185,7 +185,6 @@ public class InitialisationProcessTests : TestBase
         initialTestProcessMock.Setup(x => x.InitialTestAsync(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>())).ReturnsAsync(new InitialTestRun(
             new TestRunResult(Array.Empty<VsTestDescription>(), ranTests, failedTests, TestIdentifierList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), new TimeoutValueCalculator(0))); // failing test
 
-        var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
@@ -218,8 +217,11 @@ public class InitialisationProcessTests : TestBase
         var folder = new CsharpFolderComposite();
         folder.Add(new CsharpFileLeaf());
 
+        var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
+        var projectTracker = new ProjectsTracker(null, new StrykerOptions(), null, null, null, loggerMock.Object);
         inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>())).Returns(
-            new[] { new SourceProjectInfo() { AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(references: Array.Empty<string>()).Object, TestProjectsInfo = new TestProjectsInfo(new MockFileSystem()) } });
+            [new SourceProjectInfo { AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(references: []).Object, TestProjectsInfo = new TestProjectsInfo(new MockFileSystem()), ProjectsTracker = projectTracker}
+            ]);
 
         inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
         initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(),
@@ -231,7 +233,6 @@ public class InitialisationProcessTests : TestBase
         initialTestProcessMock.Setup(x => x.InitialTestAsync(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>()))
             .Returns(Task.FromResult(new InitialTestRun(new TestRunResult(true), null))); // failing test
 
-        var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",

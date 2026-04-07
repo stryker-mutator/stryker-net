@@ -122,11 +122,12 @@ public static class IAnalyzerResultExtensions
 
     public static NuGetFramework? GetNuGetFramework(this IAnalyzerResult analyzerResult)
     {
-        if (string.IsNullOrEmpty(analyzerResult.TargetFramework))
+        var frameworkText = analyzerResult.TargetFramework;
+        if (string.IsNullOrEmpty(frameworkText))
         {
             return null;
         }
-        var framework = NuGetFramework.Parse(analyzerResult.TargetFramework);
+        var framework = NuGetFramework.Parse(frameworkText);
         if (framework != NuGetFramework.UnsupportedFramework)
         {
             return framework;
@@ -136,7 +137,7 @@ public static class IAnalyzerResultExtensions
             ? ""
             : $" at '{analyzerResult.ProjectFilePath}'";
         var message =
-            $"The target framework '{analyzerResult.TargetFramework}' is not supported. Please fix the target framework in the csproj{atPath}.";
+            $"The target framework '{frameworkText}' is not supported. Please fix the target framework in the csproj{atPath}.";
         throw new InputException(message);
     }
 

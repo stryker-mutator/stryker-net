@@ -95,7 +95,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         var requiresProjectInformation = dashboardReporterEnabled || dashboardBaselineEnabled;
         var missingProjectName = string.IsNullOrEmpty(options.ProjectName);
         var missingProjectVersion = string.IsNullOrEmpty(options.ProjectVersion);
-        if (!requiresProjectInformation || !missingProjectVersion && !missingProjectName)
+        if (!requiresProjectInformation || (!missingProjectVersion && !missingProjectName))
         {
             return;
         }

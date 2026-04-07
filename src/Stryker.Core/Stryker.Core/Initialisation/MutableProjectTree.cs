@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
@@ -12,12 +13,8 @@ namespace Stryker.Core.Initialisation;
 /// It allows us to keep track of the targets that are valid for mutation and to keep track of the project analyzer context.
 /// </summary>
 /// <param name="project"></param>
-internal class MutableProjectTree(ProjectAnalyzerContext project, ILogger logger)
+internal class MutableProjectTree(ProjectSimulatedBuildHandler project, ILogger logger)
 {
-    private readonly ILogger _logger = logger;
-
-    public ProjectAnalyzerContext Project { get; } = project;
-
     public List<MutableProjectTarget> Targets { get; } = [];
 
     public bool IsValidTarget => Targets.Any(t => t.IsValidTarget);
@@ -31,7 +28,7 @@ internal class MutableProjectTree(ProjectAnalyzerContext project, ILogger logger
             {
                 return existingTarget;
             }
-            var newTarget = new MutableProjectTarget(target, _logger);
+            var newTarget = new MutableProjectTarget(target, logger);
             Targets.Add(newTarget);
             return newTarget;
         }
@@ -57,24 +54,24 @@ internal class MutableProjectTree(ProjectAnalyzerContext project, ILogger logger
                 Targets.Add(targetToKeep);
                 return;
             }
-            _logger.LogWarning("Failed to find a valid {Framework} target for project {Project}. ", optionsTargetFramework, Project.ProjectFileName);
+            logger.LogWarning("Failed to find a valid {Framework} target for project {Project}. ", optionsTargetFramework, project.ProjectFileName);
         }
 
         targetToKeep = Targets.Where(t => t.IsValidTarget).FirstOrDefault( t => OperatingSystem.IsWindows() || !t.ProjectTarget.TargetsFullFramework());
         Targets.Clear();
         if (targetToKeep == null)
         {
-            _logger.LogWarning("Failed to find a valid target for project {Project}. ", Project.ProjectFileName);
+            logger.LogWarning("Failed to find a valid target for project {Project}. ", project.ProjectFileName);
             return;
         }
-        _logger.LogInformation("Picking {Framework} for project {Project}. ", targetToKeep.ProjectTarget.TargetFramework, Project.ProjectFileName);
+        logger.LogInformation("Picking {Framework} for project {Project}. ", targetToKeep.ProjectTarget.TargetFramework, project.ProjectFileName);
         Targets.Add(targetToKeep);
     }
 
     public void DumpForAnalysis()
     {
-        _logger.LogInformation("Project {ProjectPath} overall analysis {Result}.",
-            Project.ProjectFileName,
+        logger.LogInformation("Project {ProjectPath} overall analysis {Result}.",
+            Path.GetFileName(project.ProjectFileName),
             IsValidTarget ? "succeeded" : "failed hence can't be mutated");
         foreach (var target in Targets)
         {
