@@ -157,7 +157,8 @@ public static class IAnalyzerResultExtensions
     /// </summary>
     /// <param name="br">analyzer result used for determination</param>
     /// <returns>true if result is complete enough</returns>
-    public static bool IsValid(this IAnalyzerResult br) => br.Succeeded || (br.SourceFiles.Length > 0 && br.References.Length > 0);
+    public static bool IsValid(this IAnalyzerResult br) => br.Succeeded || (br.SourceFiles.Length > 0 && br.References.Length > 0)
+    || (br.IsTestProject() && br.Properties.ContainsKey("TargetDir") && br.ProjectReferences.Any());
 
     /// <summary>
     /// checks if an analyzer result is valid for a specific framework

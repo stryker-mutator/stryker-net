@@ -248,7 +248,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 
         var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath,
             fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
-        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"], success: false);
+        var testProjectManagerMock = TestProjectFailedAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"]);
 
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
@@ -264,6 +264,36 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
     }
 
     [TestMethod]
+    public void ShouldSupportTestProjectFailedAnalysis()
+    {
+        // Stryker should go on if testproject analysis fails as long as we have enough information from
+        // said analysis (and the source project analysis is ok)
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectFilePath, new MockFileData(_defaultTestProjectFileContents) },
+            { _testProjectFilePath, new MockFileData(_defaultTestProjectFileContents)},
+            { Path.Combine(_sourcePath, "Recursive.cs"), new MockFileData(_sourceFile) },
+            { Path.Combine(_sourcePath, "Plain.cs"), new MockFileData(_sourceFile) },
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath,
+            fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"], false);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+
+        var target = BuildTestResolver(fileSystem);
+
+        var action = () => target.ResolveSourceProjectInfos(_options).First();
+        action.ShouldNotThrow();
+    }
+
+    [TestMethod]
     public void ShouldFailIfSolutionNotFound()
     {
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -276,7 +306,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 
         var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath,
             fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
-        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"], success: false);
+        var testProjectManagerMock = TestProjectFailedAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"]);
 
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
@@ -307,7 +337,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 
         var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath,
             fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
-        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"], success: false);
+        var testProjectManagerMock = TestProjectFailedAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"]);
 
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
@@ -334,7 +364,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 
         var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath,
             fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
-        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"], success: false);
+        var testProjectManagerMock = TestProjectFailedAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"]);
 
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
