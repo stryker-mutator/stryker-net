@@ -871,7 +871,7 @@
           "Stryker.Regex.Parser": "[1.0.0, )",
           "Stryker.TestRunner": "[4.14.0, )",
           "Stryker.Utilities": "[4.14.0, )",
-          "TestableIO.System.IO.Abstractions.TestingHelpers": "[22.1.0, )",
+          "TestableIO.System.IO.Abstractions.TestingHelpers": "[22.1.1, )",
           "stryker": "[4.14.0, )"
         }
       },
@@ -1263,12 +1263,12 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "CentralTransitive",
-        "requested": "[22.1.0, )",
-        "resolved": "22.1.0",
-        "contentHash": "320o0GORJV6VDFyKL7e7At+CTBFciFKKwgFYthCAPNKnlZLqyY68NKGQ+h4xTVf5y6qBtIsV3ap+Qog7VzF65g==",
+        "requested": "[22.1.1, )",
+        "resolved": "22.1.1",
+        "contentHash": "To7oYx68nrl0tu8duRSO9SyRHrNOVYSYIUlvfqNnoX9X2X9thIdJGmM3W3ZINtT4xqKuSy1Tb4hJK35Umhtfqg==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions.Wrappers": "22.1.0",
-          "Testably.Abstractions.FileSystem.Interface": "10.0.0"
+          "TestableIO.System.IO.Abstractions.Wrappers": "22.1.1",
+          "Testably.Abstractions.FileSystem.Interface": "10.1.0"
         }
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
