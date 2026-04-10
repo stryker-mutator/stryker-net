@@ -71,7 +71,7 @@ public sealed class VsTestContextInformation : IDisposable
         Options = options;
         _ownVsTestHelper = helper == null;
         _fileSystem = fileSystem ?? new FileSystem();
-        _vsTestHelper = helper ?? new VsTestHelper(_fileSystem, logger);
+        _vsTestHelper = helper ?? VsTestHelper.CreateInstance(_fileSystem, logger);
         _wrapperBuilder = builder ?? BuildActualVsTestWrapper;
         var devMode = options.DiagMode;
         _hostBuilder = hostBuilder ?? (name => new StrykerVsTestHostLauncher(name, devMode));
