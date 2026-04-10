@@ -77,7 +77,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         }
 
         var initialTestRunTask = _initializationProcess.RunInitialTestsAsync(options, inputs);
-        var mutationTask =  Task.FromResult(MutateProjects(options, reporters, inputs).ToList());
+        var mutationTask =  Task.Run(() => MutateProjects(options, reporters, inputs).ToList());
 
         // Run initial test and mutation in parallel for better performance
         await Task.WhenAll(initialTestRunTask, mutationTask);
