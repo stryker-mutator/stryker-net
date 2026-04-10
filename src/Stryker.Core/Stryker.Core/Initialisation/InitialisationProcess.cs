@@ -127,10 +127,10 @@ public class InitialisationProcess : IInitialisationProcess
     public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(IStrykerOptions options,
         IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner)
     {
-        foreach (var project in projects)
+        Parallel.ForEach(projects, project =>
         {
             DiscoverTests(project, runner);
-        }
+        });
 
         return projects.Select(info => new MutationTestInput
         {
