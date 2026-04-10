@@ -4,6 +4,9 @@
             "path": "."
         }
     ],
+    "settings": {
+        "dotnet.defaultSolution": "src/Stryker.slnx"
+    },
     "extensions": {
         "recommendations": [
             "ms-dotnettools.csdevkit",
