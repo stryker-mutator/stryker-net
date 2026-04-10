@@ -106,17 +106,17 @@ public class VsTestMockingHelper : TestBase
     {
         var content = new CsharpFolderComposite();
         content.Add(new CsharpFileLeaf { Mutants = mutants ?? new[] { Mutant, OtherMutant } });
-        return new SourceProjectInfo
-        {
-            AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+        return new SourceProjectInfo(
+            TestHelper.SetupProjectAnalyzerResult(
                 properties: new Dictionary<string, string>
                 {
                     { "TargetDir", Path.Combine(_filesystemRoot, "app", "bin", "Debug") },
                     { "TargetFileName", "AppToTest.dll" },
                     { "Language", "C#" }
                 }, targetFramework: "netcoreapp2.1").Object,
+            _testProjectsInfo)
+        {
             ProjectContents = content,
-            TestProjectsInfo = _testProjectsInfo
         };
     }
 

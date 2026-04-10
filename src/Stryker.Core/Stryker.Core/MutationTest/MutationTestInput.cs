@@ -1,4 +1,3 @@
-using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Testing;
 using Stryker.Core.Initialisation;
 using Stryker.Core.ProjectComponents.SourceProjects;

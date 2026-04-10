@@ -11,11 +11,9 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Configuration.Options;
-using Stryker.Core.MutationTest;
 using Stryker.Utilities.Buildalyzer;
 using Stryker.Utilities.EmbeddedResources;
 using Stryker.Utilities.Logging;
@@ -35,12 +33,12 @@ public interface ICSharpCompilingProcess
 public class CsharpCompilingProcess : ICSharpCompilingProcess
 {
     private const int MaxAttempt = 50;
-    private readonly MutationTestInput _input;
+    private readonly IAnalyzerResult _input;
     private readonly IStrykerOptions _options;
     private readonly ICSharpRollbackProcess _rollbackProcess;
     private readonly ILogger _logger;
 
-    public CsharpCompilingProcess(MutationTestInput input,
+    public CsharpCompilingProcess(IAnalyzerResult input,
         ICSharpRollbackProcess rollbackProcess = null,
         IStrykerOptions options = null)
     {
@@ -51,7 +49,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
     }
 
     private string AssemblyName =>
-        _input.SourceProjectInfo.AnalyzerResult.GetAssemblyName();
+        _input.GetAssemblyName();
 
     /// <summary>
     /// Compiles the given input onto the memory stream
@@ -117,11 +115,11 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
     // Can't test or mock code generators, so we exclude them from coverage
     [ExcludeFromCodeCoverage]
-    private CSharpCompilation RunSourceGenerators(IAnalyzerResult analyzerResult, Compilation compilation)
+    private CSharpCompilation RunSourceGenerators(Compilation compilation)
     {
-        var generators = analyzerResult.GetSourceGenerators(_logger);
+        var generators = _input.GetSourceGenerators(_logger);
         _ = CSharpGeneratorDriver
-            .Create(generators, parseOptions: analyzerResult.GetParseOptions(_options), optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult))
+            .Create(generators, parseOptions: _input.GetParseOptions(_options), optionsProvider: new SimpleAnalyserConfigOptionsProvider(_input))
             .RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
 
         var errors = diagnostics.Where(diagnostic => IgnoredErrors.Contains(diagnostic.Id) || (diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None)).ToList();
@@ -151,15 +149,14 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
     private CSharpCompilation GetCSharpCompilation(IEnumerable<SyntaxTree> syntaxTrees)
     {
-        var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
 
         var compilation = CSharpCompilation.Create(AssemblyName,
             syntaxTrees.ToList(),
-            _input.SourceProjectInfo.AnalyzerResult.LoadReferences(),
-            analyzerResult.GetCompilationOptions());
+            _input.LoadReferences(),
+            _input.GetCompilationOptions());
 
         // C# source generators must be executed before compilation
-        return RunSourceGenerators(analyzerResult, compilation);
+        return RunSourceGenerators(compilation);
     }
 
     private (CSharpRollbackProcessResult, EmitResult, int) TryCompilation(
@@ -175,9 +172,9 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
         _logger.LogDebug("Trying compilation for the {retryCount} time.", ReadableNumber(retryCount));
 
         var emitOptions = symbolStream == null ? null : new EmitOptions(false, DebugInformationFormat.PortablePdb,
-            _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
+            _input.GetSymbolFileName());
         EmitResult emitResult = null;
-        var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger);
+        var resourceDescriptions = _input.GetResources(_logger);
         while (emitResult == null)
         {
             if (previousEmitResult != null)
@@ -231,7 +228,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
                 using var ms = new MemoryStream();
                 local.Emit(
                     ms,
-                    manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
+                    manifestResources: _input.GetResources(_logger),
                     options: null);
             }
             catch (Exception e)

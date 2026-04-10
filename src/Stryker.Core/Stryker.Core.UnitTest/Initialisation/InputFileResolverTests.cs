@@ -156,7 +156,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 
         var target = BuildTestResolver(fileSystem);
 
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
     }
@@ -191,7 +191,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 
         var target = BuildTestResolver(fileSystem);
 
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         result.ProjectContents.GetAllFiles().Count().ShouldBe(5);
     }
@@ -230,7 +230,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
         var target = BuildTestResolver(fileSystem);
 
         var options = new StrykerOptions { MsBuildPath = "\\msbuild.exe",ProjectPath = _testPath };
-        var result = target.ResolveSourceProjectInfos(options).First();
+        var result = target.ResolveSourceProjectInfos(options).SourceProjectInfos.First();
 
         result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
     }
@@ -260,7 +260,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 
         var target = BuildTestResolver(fileSystem);
 
-        var action = () => target.ResolveSourceProjectInfos(_options).First();
+        var action = () => target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
         action.ShouldThrow<InputException>();
     }
 
@@ -290,7 +290,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 
         var target = BuildTestResolver(fileSystem);
 
-        var action = () => target.ResolveSourceProjectInfos(_options).First();
+        var action = () => target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
         action.ShouldNotThrow();
     }
 
@@ -322,7 +322,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
         };
         var target = BuildTestResolver(fileSystem);
 
-        var action = () => target.ResolveSourceProjectInfos(options).First();
+        var action = () => target.ResolveSourceProjectInfos(options).SourceProjectInfos.First();
         action.ShouldThrow<InvalidOperationException>();
     }
 
@@ -355,7 +355,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
         var target =  BuildTestResolverWithSolutionProvider(fileSystem,
             new CustomSolutionProvider(_ => throw new IOException("Failed to read solution")));
 
-        target.ResolveSourceProjectInfos(options).ShouldBeEmpty();
+        target.ResolveSourceProjectInfos(options).SourceProjectInfos.ShouldBeEmpty();
     }
 
     [TestMethod]
@@ -381,7 +381,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
         var target = BuildTestResolverWithSolutionProvider(fileSystem,
             new CustomSolutionProvider(_ => throw new UnauthorizedAccessException("Access forbidden")));
 
-        target.ResolveSourceProjectInfos(options).ShouldBeEmpty();
+        target.ResolveSourceProjectInfos(options).SourceProjectInfos.ShouldBeEmpty();
     }
 
     [TestMethod]
@@ -409,7 +409,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 
         var target = BuildTestResolver(fileSystem);
 
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         result.ProjectContents.GetAllFiles().Count().ShouldBe(5);
     }
@@ -459,7 +459,7 @@ using System.Reflection;
 
         var target = BuildTestResolver(fileSystem);
 
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
         var mutatedFile = ((ProjectComponent<SyntaxTree>)result.ProjectContents).CompilationSyntaxTrees.First(s => s != null && s.FilePath.Contains("AssemblyInfo.cs"));
@@ -516,7 +516,7 @@ using System.Reflection;
 
         var target = BuildTestResolver(fileSystem);
 
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         ((ProjectComponent<SyntaxTree>)result.ProjectContents).CompilationSyntaxTrees.FirstOrDefault(s => s != null && s.FilePath.Contains("AssemblyInfo.cs")).
              ShouldBeSemantically(CSharpSyntaxTree.ParseText(textContents));
@@ -545,7 +545,7 @@ using System.Reflection;
 
         var target = BuildTestResolver(fileSystem);
 
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
     }
@@ -602,7 +602,7 @@ using System.Reflection;
 
         var target = BuildTestResolver(fileSystem);
 
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
     }
@@ -648,7 +648,7 @@ using System.Reflection;
 
         var target = BuildTestResolver(fileSystem);
 
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
     }
@@ -718,7 +718,7 @@ using System.Reflection;
         BuildBuildAnalyzerMock(analyzerResults);
 
         var target = BuildTestResolver(fileSystem);
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
     }
@@ -817,7 +817,7 @@ using System.Reflection;
         BuildBuildAnalyzerMock(analyzerResults);
 
         var target = BuildTestResolver(fileSystem);
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         var allFiles = result.ProjectContents.GetAllFiles();
 
@@ -901,7 +901,7 @@ using System.Reflection;
 
         var target = BuildTestResolver(fileSystem);
 
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         ((CsharpFolderComposite)result.ProjectContents).Children.Count().ShouldBe(1);
 
@@ -1082,7 +1082,7 @@ Please specify a test project name filter that results in one project.
         var target = BuildTestResolver(fileSystem);
 
         // Act
-        var result = target.ResolveSourceProjectInfos(options).First();
+        var result = target.ResolveSourceProjectInfos(options).SourceProjectInfos.First();
 
         // Assert
         result.AnalyzerResult.TargetFramework.ShouldBe(DefaultFramework);
@@ -1136,7 +1136,7 @@ Please specify a test project name filter that results in one project.
         var target = BuildTestResolver(fileSystem);
 
         // Act
-        var result = target.ResolveSourceProjectInfos(options).First();
+        var result = target.ResolveSourceProjectInfos(options).SourceProjectInfos.First();
 
         // Assert
         result.AnalyzerResult.TargetFramework.ShouldBe(expectedFramework);
@@ -1188,7 +1188,7 @@ Please specify a test project name filter that results in one project.
         var target = BuildTestResolver(fileSystem);
 
         // Act
-        var result = target.ResolveSourceProjectInfos(options).First();
+        var result = target.ResolveSourceProjectInfos(options).SourceProjectInfos.First();
 
         // Assert
         result.AnalyzerResult.TargetFramework.ShouldBe(expectedFramework);
@@ -1244,7 +1244,7 @@ Please specify a test project name filter that results in one project.
         var target = BuildTestResolver(fileSystem);
 
         // Act
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
     }
@@ -1288,7 +1288,7 @@ Please specify a test project name filter that results in one project.
 
         var target = BuildTestResolver(fileSystem);
         // Act
-        var result = target.ResolveSourceProjectInfos(options).First();
+        var result = target.ResolveSourceProjectInfos(options).SourceProjectInfos.First();
 
         // Assert
         result.ProjectContents.GetAllFiles().Count().ShouldBe(1);
@@ -1316,7 +1316,7 @@ Please specify a test project name filter that results in one project.
 
         var target = BuildTestResolver(fileSystem);
 
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectFilePath);
     }
@@ -1416,7 +1416,7 @@ Please specify a test project name filter that results in one project.
             WorkingDirectory = test2Path
         };
         // Act
-        var result = target.ResolveSourceProjectInfos(options).First();
+        var result = target.ResolveSourceProjectInfos(options).SourceProjectInfos.First();
 
         // Assert
         result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectFilePath);
@@ -1459,7 +1459,7 @@ Please specify a test project name filter that results in one project.
             WorkingDirectory = _sourcePath
         };
         // Act
-        var result = target.ResolveSourceProjectInfos(options).First();
+        var result = target.ResolveSourceProjectInfos(options).SourceProjectInfos.First();
 
         // Assert
         result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectFilePath);
@@ -1498,7 +1498,7 @@ Please specify a test project name filter that results in one project.
         var target = BuildTestResolver(fileSystem);
 
         var options = new StrykerOptions { SourceProjectName = shouldMatch, ProjectPath = _testPath };
-        var result = target.ResolveSourceProjectInfos(options).First();
+        var result = target.ResolveSourceProjectInfos(options).SourceProjectInfos.First();
 
         result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectFilePath);
     }
@@ -1588,7 +1588,7 @@ Please specify a test project name filter that results in one project.
 
         var target = BuildTestResolver(fileSystem);
 
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectFilePath);
     }
@@ -1725,7 +1725,7 @@ Please specify a test project name filter that results in one project.
         var target = BuildTestResolver(fileSystem);
 
         var options = new StrykerOptions { SourceProjectName = shouldMatch, ProjectPath = _testPath };
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectFilePath);
     }

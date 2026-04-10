@@ -35,13 +35,13 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
     /// <param name="projectsTracker"></param>
     /// <param name="fileSystem">filesystem</param>
     /// <returns></returns>
-    public SourceProjectInfo BuildSourceProjectInfo(IStrykerOptions options,
-        ProjectsTracker projectsTracker, IFileSystem fileSystem )
+    public SourceProjectInfo BuildSourceProjectInfo(IStrykerOptions options, IFileSystem fileSystem )
     {
-        var targetProjectInfo = new SourceProjectInfo
+        var testProjectInfo = new TestProjectsInfo(fileSystem)
         {
-            AnalyzerResult = ProjectTarget
+            TestProjects = TestProjects.Select(testProjectAnalyzerResult => new TestProject(fileSystem, testProjectAnalyzerResult)).ToList()
         };
+        var targetProjectInfo = new SourceProjectInfo(ProjectTarget , testProjectInfo);
 
         var language = targetProjectInfo.AnalyzerResult.GetLanguage();
 
@@ -54,12 +54,7 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
         builder.InjectHelpers(inputFiles);
         targetProjectInfo.OnProjectBuilt = builder.PostBuildAction();
         targetProjectInfo.ProjectContents = inputFiles;
-        targetProjectInfo.ProjectsTracker = projectsTracker;
         logger.LogInformation("Found project {ProjectFileName} to mutate.", ProjectTarget.ProjectFilePath);
-        targetProjectInfo.TestProjectsInfo = new TestProjectsInfo(fileSystem)
-        {
-            TestProjects = TestProjects.Select(testProjectAnalyzerResult => new TestProject(fileSystem, testProjectAnalyzerResult)).ToList()
-        };
         return targetProjectInfo;
     }
 

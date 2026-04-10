@@ -28,10 +28,10 @@ public class ProjectsTracker
     public ProjectsTracker(SolutionFile file, IStrykerOptions options, IBuildalyzerProvider buildalyzerProvider,
         INugetRestoreProcess nugetRestoreProcess, IFileSystem fileSystem, ILogger logger)
     {
-        _options = options;
-        _buildalyzerProvider = buildalyzerProvider;
-        _logger = logger;
-        _nugetRestoreProcess = nugetRestoreProcess;
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _buildalyzerProvider = buildalyzerProvider ?? throw new ArgumentNullException(nameof(buildalyzerProvider));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _nugetRestoreProcess = nugetRestoreProcess ?? throw new ArgumentNullException(nameof(nugetRestoreProcess));
         _fileSystem = fileSystem;
         Solution = file;
         SelectConfiguration();
@@ -41,11 +41,11 @@ public class ProjectsTracker
 
     public string? SolutionFilePath => Solution?.FileName;
 
-    public string Configuration { get; private set; }
+    private string Configuration { get; set; }
 
-    public string Platform { get; private set; }
+    private string Platform { get; set; }
 
-    public string? TargetFramework { get; set; }
+    public string? TargetFramework { get; init; }
 
     public int ProjectCount => _selectedProjects.Count;
 

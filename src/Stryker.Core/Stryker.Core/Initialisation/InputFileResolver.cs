@@ -18,7 +18,7 @@ namespace Stryker.Core.Initialisation;
 
 public interface IInputFileResolver
 {
-    IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(IStrykerOptions options);
+    RelatedSourceProjectsInfo ResolveSourceProjectInfos(IStrykerOptions options);
     IFileSystem FileSystem { get; }
 }
 
@@ -49,7 +49,7 @@ public class InputFileResolver(
     /// <param name="options">Stryker options</param>
     /// <returns>a collection of <see cref="SourceProjectInfo"/> describing mutable project</returns>
     /// <exception cref="InputException">Thrown if the method fails during analysis.</exception>
-    public IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(IStrykerOptions options)
+    public RelatedSourceProjectsInfo ResolveSourceProjectInfos(IStrykerOptions options)
     {
         var normalizedProjectUnderTestNameFilter = NormalizePath(options.SourceProjectName);
 
@@ -69,24 +69,25 @@ public class InputFileResolver(
             catch (IOException e)
             {
                 _logger.LogCritical(e, "Failed to load solution file {SolutionFile}.", options.SolutionPath);
-                return [];
+                return new RelatedSourceProjectsInfo(null, []);
             }
             catch (UnauthorizedAccessException e)
             {
                 _logger.LogCritical(e, "Failed to access solution file {SolutionFile}.", options.SolutionPath);
-                return [];
+                return new RelatedSourceProjectsInfo(null, []);
             }
             catch (AggregateException e) // Handles exceptions from .Result on Task
             {
                 _logger.LogCritical(e, "Failed to load solution file {SolutionFile}.", options.SolutionPath);
-                return [];
+                return new RelatedSourceProjectsInfo(null, []);
             }
         }
 
         var solutionInfo = new ProjectsTracker(solution, options, _analyzerProvider, _nugetRestoreProcess, FileSystem, _logger)
             { TargetFramework = options.TargetFramework };
-        return options.IsSolutionContext ? FindProjectsInSolutionMode(options, solutionInfo, normalizedProjectUnderTestNameFilter)
+        var sourceProjectInfos =  options.IsSolutionContext ? FindProjectsInSolutionMode(options, solutionInfo, normalizedProjectUnderTestNameFilter)
             : FindProjectInTargetProjectMode(options, solutionInfo, normalizedProjectUnderTestNameFilter);
+        return new RelatedSourceProjectsInfo(solutionInfo, sourceProjectInfos);
     }
 
     private IReadOnlyCollection<SourceProjectInfo> FindProjectsInSolutionMode(IStrykerOptions options, ProjectsTracker solutionInfo,
@@ -245,7 +246,7 @@ public class InputFileResolver(
         // keep only projects with one or more test projects
         // we must select projects according to framework settings if any
         var projectInfos = suitableCandidates.Where(p => p.Targets.Count > 0)
-            .Select(analyzerResult => analyzerResult.Targets[0].BuildSourceProjectInfo(options, solutionInfo, FileSystem))
+            .Select(analyzerResult => analyzerResult.Targets[0].BuildSourceProjectInfo(options, FileSystem))
             .ToList();
 
         if (projectInfos.Count != 0)

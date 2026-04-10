@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -20,35 +19,28 @@ public interface IInitialisationProcess
     /// </summary>
     /// <param name="options">stryker options</param>
     /// <returns>an enumeration of <see cref="SourceProjectInfo"/>, one for each found project (if any).</returns>
-    IReadOnlyCollection<SourceProjectInfo> GetMutableProjectsInfo(IStrykerOptions options);
+    RelatedSourceProjectsInfo GetMutableProjectsInfo(IStrykerOptions options);
 
-    void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects);
+    void BuildProjects(IStrykerOptions options, RelatedSourceProjectsInfo projects);
 
     Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
-        IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner);
+        RelatedSourceProjectsInfo projects, ITestRunner runner);
 }
 
-public class InitialisationProcess : IInitialisationProcess
+public class InitialisationProcess(
+    IInputFileResolver inputFileResolver,
+    IInitialBuildProcess initialBuildProcess,
+    IInitialTestProcess initialTestProcess,
+    ILogger<InitialisationProcess> logger = null)
+    : IInitialisationProcess
 {
-    private readonly IInputFileResolver _inputFileResolver;
-    private readonly IInitialBuildProcess _initialBuildProcess;
-    private readonly IInitialTestProcess _initialTestProcess;
-    private readonly ILogger _logger;
-
-    public InitialisationProcess(
-        IInputFileResolver inputFileResolver,
-        IInitialBuildProcess initialBuildProcess,
-        IInitialTestProcess initialTestProcess,
-        ILogger<InitialisationProcess> logger = null)
-    {
-        _inputFileResolver = inputFileResolver ?? throw new ArgumentNullException(nameof(inputFileResolver));
-        _initialBuildProcess = initialBuildProcess ?? throw new ArgumentNullException(nameof(initialBuildProcess));
-        _initialTestProcess = initialTestProcess ?? throw new ArgumentNullException(nameof(initialTestProcess));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    private readonly IInputFileResolver _inputFileResolver = inputFileResolver ?? throw new ArgumentNullException(nameof(inputFileResolver));
+    private readonly IInitialBuildProcess _initialBuildProcess = initialBuildProcess ?? throw new ArgumentNullException(nameof(initialBuildProcess));
+    private readonly IInitialTestProcess _initialTestProcess = initialTestProcess ?? throw new ArgumentNullException(nameof(initialTestProcess));
+    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<SourceProjectInfo> GetMutableProjectsInfo(IStrykerOptions options)
+    public RelatedSourceProjectsInfo GetMutableProjectsInfo(IStrykerOptions options)
     {
         _logger.LogInformation("Analysis starting.");
         try
@@ -63,19 +55,19 @@ public class InitialisationProcess : IInitialisationProcess
     }
 
     /// <inheritdoc/>
-    public void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects)
+    public void BuildProjects(IStrykerOptions options, RelatedSourceProjectsInfo projects)
     {
-        var solutionInfo = projects.First().ProjectsTracker;
+        var solutionInfo = projects.Tracker;
         // pick configuration and platform from solution if available
         // we build the whole solution if we have a solution file path, even in project mode
         if (!string.IsNullOrEmpty(solutionInfo.SolutionFilePath))
         {
-            solutionInfo.BuildSolution(_initialBuildProcess, projects.Select(p => p.AnalyzerResult));
+            solutionInfo.BuildSolution(_initialBuildProcess, projects.SourceProjectInfos.Select(p => p.AnalyzerResult));
         }
         else
         {
             // build every test projects
-            var testProjects = projects.SelectMany(p => p.TestProjectsInfo.AnalyzerResults).Distinct().ToList();
+            var testProjects = projects.SourceProjectInfos.SelectMany(p => p.TestProjectsInfo.AnalyzerResults).Distinct().ToList();
             for (var i = 0; i < testProjects.Count; i++)
             {
                 _logger.LogInformation(
@@ -94,20 +86,20 @@ public class InitialisationProcess : IInitialisationProcess
         }
 
         // perform post build update (to capture some content files in C# project for example)
-        foreach (var project in projects)
+        foreach (var project in projects.SourceProjectInfos)
         {
             project.OnProjectBuilt?.Invoke();
         }
     }
 
     public async Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
-        IReadOnlyCollection<SourceProjectInfo> projects,
+        RelatedSourceProjectsInfo projects,
         ITestRunner runner)
     {
-        var getInputs = projects.Select(async info => new MutationTestInput {
+        var getInputs = projects.SourceProjectInfos.Select(async info => new MutationTestInput {
             SourceProjectInfo = info,
             TestRunner = runner,
-            InitialTestRun = await InitialTestAsync(options, info, runner, projects.Count == 1)
+            InitialTestRun = await InitialTestAsync(options, info, runner, projects.SourceProjectInfos.Count == 1)
         });
         return await Task.WhenAll(getInputs);
     }

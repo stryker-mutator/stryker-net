@@ -17,9 +17,7 @@ using Stryker.Configuration.Options;
 using Stryker.Core.Compiling;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
-using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
-using Stryker.Core.ProjectComponents.SourceProjects;
 
 namespace Stryker.Core.UnitTest.Mutators;
 
@@ -473,27 +471,21 @@ public class CollectionExpressionMutatorTests : TestBase
             ..Assembly.GetEntryAssembly()?.GetReferencedAssemblies().Select(a => Assembly.Load(a).Location) ?? []
         ];
 
-        var input = new MutationTestInput
-        {
-            SourceProjectInfo = new SourceProjectInfo
-            {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/project.csproj",
-                                                                       properties: new Dictionary<string, string>
-                                                                       {
-                                                                           { "TargetDir", "" },
-                                                                           { "AssemblyName", "AssemblyName" },
-                                                                           {
-                                                                               "TargetFileName",
-                                                                               "TargetFileName.dll"
-                                                                           }
-                                                                       },
-                                                                       references: references.ToArray()
-                                                                      )
-                                           .Object
-            }
-        };
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/project.csproj",
+                properties: new Dictionary<string, string>
+                {
+                    { "TargetDir", "" },
+                    { "AssemblyName", "AssemblyName" },
+                    {
+                        "TargetFileName",
+                        "TargetFileName.dll"
+                    }
+                },
+                references: references.ToArray()
+            )
+            .Object;
 
-        var target = new CsharpCompilingProcess(input);
+        var target = new CsharpCompilingProcess(analyzerResult);
 
         try
         {

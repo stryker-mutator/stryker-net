@@ -79,22 +79,21 @@ namespace ExtraProject.XUnit
             SyntaxTree = CSharpSyntaxTree.ParseText("class TestClass { }")
         });
 
+        var testProjectsInfo = new TestProjectsInfo(_fileSystemMock)
+        {
+            TestProjects = new List<TestProject>
+            {
+                new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
+                    projectFilePath: "c:\\testproject.csproj",
+                    targetFramework: "netcoreapp3.1",
+                    sourceFiles: [_testFilePath]).Object)
+            }
+        };
         _mutationTestInput = new MutationTestInput()
         {
-            SourceProjectInfo = new Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo()
+            SourceProjectInfo = new Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo(analyzerResult, testProjectsInfo)
             {
-                AnalyzerResult = analyzerResult,
                 ProjectContents = folder,
-                TestProjectsInfo = new TestProjectsInfo(_fileSystemMock)
-                {
-                    TestProjects = new List<TestProject>
-                    {
-                        new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
-                            projectFilePath: "c:\\testproject.csproj",
-                            targetFramework: "netcoreapp3.1",
-                            sourceFiles: [_testFilePath]).Object)
-                    }
-                }
             }
         };
     }
