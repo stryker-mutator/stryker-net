@@ -1,12 +1,6 @@
-using System.Net;
-using System.Net.Sockets;
-using CliWrap;
 using Microsoft.Extensions.Logging;
-using Serilog.Events;
-using StreamJsonRpc;
 using Stryker.Abstractions.Options;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
-using Stryker.TestRunner.MicrosoftTestPlatform.RPC;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform;
 
@@ -21,22 +15,29 @@ internal sealed class AssemblyTestServer : IDisposable
     private readonly ILogger _logger;
     private readonly string _runnerId;
     private readonly IStrykerOptions? _options;
-    private TcpListener? _listener;
-    private TcpClient? _tcpClient;
-    private NetworkStream? _stream;
-    private JsonRpc? _rpc;
-    private TestingPlatformClient? _client;
-    private MemoryStream? _outputStream;
+    private readonly ITestServerConnectionFactory _connectionFactory;
+    private ITestServerListener? _listener;
+    private ITestServerProcess? _process;
+    private Stream? _stream;
+    private IDisposable? _connection;
+    private ITestingPlatformClient? _client;
     private bool _isInitialized;
     private bool _disposed;
 
-    public AssemblyTestServer(string assembly, Dictionary<string, string?> environmentVariables, ILogger logger, string runnerId, IStrykerOptions? options = null)
+    public AssemblyTestServer(
+        string assembly,
+        Dictionary<string, string?> environmentVariables,
+        ILogger logger,
+        string runnerId,
+        IStrykerOptions? options = null,
+        ITestServerConnectionFactory? connectionFactory = null)
     {
         _assembly = assembly;
         _environmentVariables = environmentVariables;
         _logger = logger;
         _runnerId = runnerId;
         _options = options;
+        _connectionFactory = connectionFactory ?? new DefaultTestServerConnectionFactory(options);
     }
 
     public bool IsInitialized => _isInitialized;
@@ -50,25 +51,14 @@ internal sealed class AssemblyTestServer : IDisposable
 
         try
         {
-            _listener = new TcpListener(new IPEndPoint(IPAddress.Any, 0));
-            _listener.Start();
+            var (listener, port) = _connectionFactory.CreateListener();
+            _listener = listener;
 
-            var port = ((IPEndPoint)_listener.LocalEndpoint).Port;
+            _process = _connectionFactory.StartProcess(_assembly, port, _environmentVariables);
 
-            _outputStream = new MemoryStream();
-            var outputPipe = PipeTarget.ToStream(_outputStream);
-
-            var _cliProcess = Cli.Wrap("dotnet")
-                .WithWorkingDirectory(Path.GetDirectoryName(_assembly) ?? string.Empty)
-                .WithArguments([_assembly, "--server", "--client-port", port.ToString()])
-                .WithEnvironmentVariables(_environmentVariables)
-                .WithStandardOutputPipe(outputPipe)
-                .WithStandardErrorPipe(outputPipe)
-                .ExecuteAsync(cancellationToken: cancellationToken);
-
-            var tcpClientTask = _listener.AcceptTcpClientAsync(cancellationToken).AsTask();
+            var acceptTask = _listener.AcceptConnectionAsync(cancellationToken);
             var connectionTimeout = Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
-            var completedTask = await Task.WhenAny(_cliProcess.Task, tcpClientTask, connectionTimeout).ConfigureAwait(false);
+            var completedTask = await Task.WhenAny(_process.WaitForExitAsync(), acceptTask, connectionTimeout).ConfigureAwait(false);
 
             if (completedTask == connectionTimeout)
             {
@@ -77,22 +67,17 @@ internal sealed class AssemblyTestServer : IDisposable
                 return false;
             }
 
-            if (completedTask == _cliProcess.Task)
+            if (_process.HasExited)
             {
                 _logger.LogDebug("{RunnerId}: Test process exited prematurely for {Assembly}", _runnerId, _assembly);
                 await StopAsync().ConfigureAwait(false);
                 return false;
             }
 
-            _tcpClient = await tcpClientTask.ConfigureAwait(false);
-            _stream = _tcpClient.GetStream();
+            (_stream, _connection) = await acceptTask.ConfigureAwait(false);
 
-            _rpc = new JsonRpc(new HeaderDelimitedMessageHandler(_stream, _stream, new SystemTextJsonFormatter
-            {
-                JsonSerializerOptions = RpcJsonSerializerOptions.Default
-            }));
-
-            _client = new TestingPlatformClient(_rpc, _tcpClient, new ProcessHandle(_cliProcess, _outputStream), enableDiagnostic: _options?.LogOptions.LogLevel == LogEventLevel.Verbose);
+            var rpcLogFilePath = BuildRpcLogFilePath();
+            _client = _connectionFactory.CreateClient(_stream, _process.ProcessHandle, _logger, rpcLogFilePath);
 
             await _client.InitializeAsync().ConfigureAwait(false);
             _isInitialized = true;
@@ -148,58 +133,106 @@ internal sealed class AssemblyTestServer : IDisposable
         var runId = Guid.NewGuid();
         var testResults = new System.Collections.Concurrent.ConcurrentBag<TestNodeUpdate>();
 
-        var executeTestsResponse = await _client.RunTestsAsync(runId, updates =>
+        Func<TestNodeUpdate[], Task> onUpdate = updates =>
         {
             foreach (var update in updates)
             {
                 testResults.Add(update);
             }
             return Task.CompletedTask;
-        }, testsToRun).ConfigureAwait(false);
+        };
 
         if (timeout.HasValue)
         {
+            ResponseListener executeTestsResponse;
+            try
+            {
+                // The RPC call itself can block when the server is stuck (e.g. infinite loop in mutated code)
+                executeTestsResponse = await _client.RunTestsAsync(runId, onUpdate, testsToRun)
+                    .WaitAsync(timeout.Value).ConfigureAwait(false);
+            }
+            catch (TimeoutException ex)
+            {
+                _logger.LogDebug(ex, "{RunnerId}: Test run RPC call timed out for {Assembly}", _runnerId, _assembly);
+                return (testResults.ToList(), true);
+            }
+
             var completed = await executeTestsResponse.WaitCompletionAsync(timeout.Value).ConfigureAwait(false);
             return (testResults.ToList(), !completed);
         }
 
-        await executeTestsResponse.WaitCompletionAsync().ConfigureAwait(false);
+        var response = await _client.RunTestsAsync(runId, onUpdate, testsToRun).ConfigureAwait(false);
+        await response.WaitCompletionAsync().ConfigureAwait(false);
         return (testResults.ToList(), false);
     }
 
-    public async Task RestartAsync()
+    public async Task RestartAsync(bool force = false)
     {
-        await StopAsync().ConfigureAwait(false);
+        await StopAsync(force).ConfigureAwait(false);
         await StartAsync().ConfigureAwait(false);
     }
 
-    public async Task StopAsync()
+    public async Task StopAsync(bool force = false)
     {
-        if (_client is not null)
+        if (force)
+        {
+            _logger.LogDebug("{RunnerId}: Force-killing test server process for {Assembly}", _runnerId, _assembly);
+            _process?.ProcessHandle.Kill();
+        }
+        else if (_client is not null)
         {
             try
             {
                 await _client.ExitAsync().ConfigureAwait(false);
+                // Coverage data must be flushed before disposing resources
+                var timeout = TimeSpan.FromSeconds(30);
+                await _client.WaitServerProcessExitAsync().WaitAsync(timeout).ConfigureAwait(false);
             }
-            catch
+            catch (TimeoutException exception)
             {
-                // Ignore errors during graceful shutdown
+                _logger.LogWarning(exception, "{RunnerId}: Test server process for {Assembly} did not exit within the expected time. Killing forcefully.", _runnerId, _assembly);
+                _process?.ProcessHandle.Kill();
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning(exception, "{RunnerId}: Test server process for {Assembly} could not be stopped gracefully.", _runnerId, _assembly);
             }
         }
 
         _listener?.Stop();
+        _listener?.Dispose();
         _listener = null;
         _client?.Dispose();
         _client = null;
-        _rpc?.Dispose();
-        _rpc = null;
         _stream?.Dispose();
         _stream = null;
-        _tcpClient?.Dispose();
-        _tcpClient = null;
-        _outputStream?.Dispose();
-        _outputStream = null;
+        _connection?.Dispose();
+        _connection = null;
+        try
+        {
+            _process?.Dispose();
+        }
+        catch (Exception)
+        {
+            // Process disposal can fail if kill/cleanup didn't complete in time
+        }
+        _process = null;
         _isInitialized = false;
+    }
+
+    /// <summary>
+    /// Returns a per-instance RPC trace log path when log-to-file is enabled, or null otherwise.
+    /// </summary>
+    private string? BuildRpcLogFilePath()
+    {
+        if (_options?.LogOptions.LogToFile != true || string.IsNullOrEmpty(_options.OutputPath))
+        {
+            return null;
+        }
+
+        var logsDirectory = Path.Combine(_options.OutputPath, "logs", "test-servers");
+        var fileName = $"rpc-{Path.GetFileNameWithoutExtension(_assembly)}-{_runnerId}-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss-fffffff}.log";
+        return Path.Combine(logsDirectory, fileName);
     }
 
     public void Dispose()

@@ -1,0 +1,114 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "ExtraProject.XUnit",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-cli",
+            "program": "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/integrationtest/TargetProjects/NetCore/ExtraProject.XUnit",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "FullFrameworkApp.Test",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-cli",
+            "program": "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/integrationtest/TargetProjects/NetFramework/FullFrameworkApp.Test",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "NetCoreTestProject.MSTest",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-cli",
+            "program": "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/integrationtest/TargetProjects/NetCore/NetCoreTestProject.MSTest",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "NetCoreTestProject.NUnit",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-cli",
+            "program": "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/integrationtest/TargetProjects/NetCore/NetCoreTestProject.NUnit",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "NetCoreTestProject.XUnit",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-cli",
+            "program": "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/integrationtest/TargetProjects/NetCore/NetCoreTestProject.XUnit",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "MTP.UnitTests.MSTest",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-cli",
+            "program": "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI.dll",
+            "args": ["--test-runner=mtp"],
+            "cwd": "${workspaceFolder}/integrationtest/TargetProjects/MicrosoftTestPlatform/UnitTests.MSTest",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "MTP.UnitTests.NUnit",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-cli",
+            "program": "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI.dll",
+            "args": ["--test-runner=mtp"],
+            "cwd": "${workspaceFolder}/integrationtest/TargetProjects/MicrosoftTestPlatform/UnitTests.NUnit",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "MTP.UnitTests.TUnit",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-cli",
+            "program": "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI.dll",
+            "args": ["--test-runner=mtp"],
+            "cwd": "${workspaceFolder}/integrationtest/TargetProjects/MicrosoftTestPlatform/UnitTests.TUnit",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "MTP.UnitTests.XUnit",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-cli",
+            "program": "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI.dll",
+            "args": ["--test-runner=mtp"],
+            "cwd": "${workspaceFolder}/integrationtest/TargetProjects/MicrosoftTestPlatform/UnitTests.XUnit",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "MTP Solution",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-cli",
+            "program": "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI.dll",
+            "args": ["--test-runner=mtp", "--solution=./MicrosoftTestPlatform.slnx"],
+            "cwd": "${workspaceFolder}/integrationtest/TargetProjects",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Stryker.TestRunner.MicrosoftTestPlatform.UnitTest",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest/bin/Debug/net8.0/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest/bin/Debug/net8.0",
+            "console": "integratedTerminal"
+        }
+    ]
+}

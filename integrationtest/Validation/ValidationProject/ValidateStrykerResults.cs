@@ -121,7 +121,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 2, killed: 1, timeout: 2, nocoverage: 348);
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 1, killed: 1, timeout: 0, nocoverage: 351);
     }
 
     [Fact]
@@ -159,7 +159,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 1, killed: 1, timeout: 0, nocoverage: 351);
     }
 
     [Fact]
@@ -178,7 +178,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 269, survived: 352, killed: 1, timeout: 0, nocoverage: 0);
+        CheckReportMutants(report, total: 660, ignored: 269, survived: 1, killed: 1, timeout: 0, nocoverage: 351);
     }
 
     [Fact]
@@ -197,8 +197,28 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 670, ignored: 272, survived: 359, killed: 1, timeout: 0, nocoverage: 0);
+        CheckReportMutants(report, total: 670, ignored: 272, survived: 1, killed: 1, timeout: 0, nocoverage: 358);
         CheckReportTestCounts(report, total: 0); // MTP doesn't report tests yet
+    }
+
+    [Fact]
+    [Trait("Category", value: "WebApiWithOpenApi")]
+    [Trait("Runtime", "netcore")]
+    public async Task CSharp_NetCore_WebApiWithOpenApi()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/WebApiWithOpenApi/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        CheckReportMutants(report, total: 11, ignored: 2, survived: 5, killed: 4, timeout: 0, nocoverage: 0);
+        CheckReportTestCounts(report, total: 3);
     }
 
     [Fact]

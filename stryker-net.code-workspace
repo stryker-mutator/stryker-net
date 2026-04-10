@@ -1,0 +1,17 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "dotnet.defaultSolution": "src/Stryker.slnx"
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-dotnettools.csdevkit",
+            "github.vscode-pull-request-github",
+            "ms-vscode.powershell"
+        ]
+    }
+}
