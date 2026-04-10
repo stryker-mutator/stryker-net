@@ -15,6 +15,7 @@ public class TestRunResult : ITestRunResult
         ExecutedTests = TestIdentifierList.EveryTest();
         TimedOutTests = TestIdentifierList.NoTest();
         ResultMessage = message;
+        Messages = [];
         Duration = TimeSpan.Zero;
     }
 

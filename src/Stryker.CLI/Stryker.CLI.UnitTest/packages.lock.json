@@ -10,12 +10,12 @@
       },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
-        "requested": "[18.3.0, )",
-        "resolved": "18.3.0",
-        "contentHash": "xW3kXuWRQtgoxJp4J+gdhHSQyK+6Wb/AZDSd7lMvuMRYlZ1tnpkojyfZlWilB5G4dmZ0Y0ZxU/M23TlubndNkw==",
+        "requested": "[18.4.0, )",
+        "resolved": "18.4.0",
+        "contentHash": "w49iZdL4HL6V25l41NVQLXWQ+e71GvSkKVteMrOL02gP/PUkcnO/1yEb2s9FntU4wGmJWfKnyrRAhcMHd9ZZNA==",
         "dependencies": {
-          "Microsoft.CodeCoverage": "18.3.0",
-          "Microsoft.TestPlatform.TestHost": "18.3.0"
+          "Microsoft.CodeCoverage": "18.4.0",
+          "Microsoft.TestPlatform.TestHost": "18.4.0"
         }
       },
       "Moq": {
@@ -61,18 +61,18 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[22.1.0, )",
-        "resolved": "22.1.0",
-        "contentHash": "320o0GORJV6VDFyKL7e7At+CTBFciFKKwgFYthCAPNKnlZLqyY68NKGQ+h4xTVf5y6qBtIsV3ap+Qog7VzF65g==",
+        "requested": "[22.1.1, )",
+        "resolved": "22.1.1",
+        "contentHash": "To7oYx68nrl0tu8duRSO9SyRHrNOVYSYIUlvfqNnoX9X2X9thIdJGmM3W3ZINtT4xqKuSy1Tb4hJK35Umhtfqg==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions.Wrappers": "22.1.0",
-          "Testably.Abstractions.FileSystem.Interface": "10.0.0"
+          "TestableIO.System.IO.Abstractions.Wrappers": "22.1.1",
+          "Testably.Abstractions.FileSystem.Interface": "10.1.0"
         }
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "4.0.3.25",
-        "contentHash": "ug/C6csm8/GcRrMij9EtTA6k2MtRFV9EibhWNRFTISR8AGXQnSoxUKnddMpHah6ax/Tjg1GW0zk1i0/wcvEqmg=="
+        "resolved": "4.0.3.28",
+        "contentHash": "OKvL+4Z/SFpOo7lbDbsT7bgcZY03fZkIQNFVV5LDZAt9hVhpX9z1Xn2MsGKSpXo4hwxXeiINv2j5Bb4n1KrVaQ=="
       },
       "Azure.Core": {
         "type": "Transitive",
@@ -201,8 +201,8 @@
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
-        "resolved": "18.3.0",
-        "contentHash": "23BNy/vziREC20Wwhb50K7+kZe0m07KlLWDQv4qjJ9tt3QjpDpDIqJFrhYHmMEo9xDkuSp55U/8h4bMF7MiB+g=="
+        "resolved": "18.4.0",
+        "contentHash": "9O0BtCfzCWrkAmK187ugKdq72HHOXoOUjuWFDVc2LsZZ0pOnA9bTt+Sg9q4cF+MoAaUU+MuWtvBuFsnduviJow=="
       },
       "Microsoft.DiaSymReader": {
         "type": "Transitive",
@@ -325,10 +325,10 @@
       },
       "Microsoft.TestPlatform.TestHost": {
         "type": "Transitive",
-        "resolved": "18.3.0",
-        "contentHash": "twmsoelXnp1uWMU3VGip9f0Jr1mZ0PZqgJdF35CIrdYgYrkHIJMV1m8uKyhcdjLdsQDESHAgkR7KhS9i1qpJag==",
+        "resolved": "18.4.0",
+        "contentHash": "gZsCHI+zOmZCcKZieIL4Jg14qKD2OGZOmX5DehuIk1EA9BN6Crm0+taXQNEuajOH1G9CCyBxw8VWR4t5tumcng==",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "18.3.0",
+          "Microsoft.TestPlatform.ObjectModel": "18.4.0",
           "Newtonsoft.Json": "13.0.3"
         }
       },
@@ -848,23 +848,23 @@
       },
       "Testably.Abstractions.FileSystem.Interface": {
         "type": "Transitive",
-        "resolved": "10.0.0",
-        "contentHash": "tZOXFLGjkh8TxgMgKeEcM2HAlz9DwndGl6TFLo6ISHcszFX3FkuPMrtVbmqVjhooWNXrgJ/a9cH9ym5MZL1LAg=="
+        "resolved": "10.1.0",
+        "contentHash": "0R+m7DvS2QuDcFOfDGtyGErRrgXOl4/z2tbNLX2RfvlYJjlVcKG+wMIBfZO8vxGtTNwNxffTG4ibFRwd0jkM7w=="
       },
       "dotnet-stryker": {
         "type": "Project",
         "dependencies": {
-          "McMaster.Extensions.CommandLineUtils": "[5.0.1, )",
+          "McMaster.Extensions.CommandLineUtils": "[5.1.0, )",
           "Microsoft.Extensions.DependencyInjection": "[10.0.5, )",
           "NuGet.Protocol": "[7.3.0, )",
-          "YamlDotNet": "[16.3.0, )",
+          "YamlDotNet": "[17.0.0, )",
           "stryker": "[4.14.0, )"
         }
       },
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "AWSSDK.S3": "[4.0.20.1, )",
+          "AWSSDK.S3": "[4.0.21, )",
           "Azure.Storage.Files.Shares": "[12.25.0, )",
           "Buildalyzer": "[8.0.0, )",
           "DotNet.Glob": "[3.1.3, )",
@@ -874,10 +874,10 @@
           "Microsoft.CodeAnalysis.Common": "[5.3.0, )",
           "Microsoft.Extensions.DependencyInjection": "[10.0.5, )",
           "Microsoft.Extensions.Logging": "[10.0.5, )",
-          "Microsoft.TestPlatform": "[18.3.0, )",
-          "Microsoft.TestPlatform.ObjectModel": "[18.3.0, )",
-          "Microsoft.TestPlatform.Portable": "[18.3.0, )",
-          "Microsoft.TestPlatform.TranslationLayer": "[18.3.0, )",
+          "Microsoft.TestPlatform": "[18.4.0, )",
+          "Microsoft.TestPlatform.ObjectModel": "[18.4.0, )",
+          "Microsoft.TestPlatform.Portable": "[18.4.0, )",
+          "Microsoft.TestPlatform.TranslationLayer": "[18.4.0, )",
           "Microsoft.Web.LibraryManager.Build": "[3.0.71, )",
           "Mono.Cecil": "[0.11.6, )",
           "NuGet.Frameworks": "[7.3.0, )",
@@ -895,7 +895,7 @@
           "Stryker.TestRunner.MicrosoftTestPlatform": "[1.0.0, )",
           "Stryker.TestRunner.VsTest": "[1.0.0, )",
           "Stryker.Utilities": "[1.0.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.1, )"
         }
       },
       "stryker.abstractions": {
@@ -905,9 +905,9 @@
           "DotNet.Glob": "[3.1.3, )",
           "Microsoft.CodeAnalysis.CSharp": "[5.3.0, )",
           "Microsoft.CodeAnalysis.Common": "[5.3.0, )",
-          "Microsoft.TestPlatform.ObjectModel": "[18.3.0, )",
+          "Microsoft.TestPlatform.ObjectModel": "[18.4.0, )",
           "Serilog": "[4.3.1, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.1, )"
         }
       },
       "stryker.configuration": {
@@ -924,8 +924,8 @@
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "[18.3.0, )",
-          "Microsoft.TestPlatform.Portable": "[18.3.0, )"
+          "Microsoft.TestPlatform.ObjectModel": "[18.4.0, )",
+          "Microsoft.TestPlatform.Portable": "[18.4.0, )"
         }
       },
       "stryker.regexmutators": {
@@ -943,7 +943,7 @@
       "stryker.testrunner": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "[18.3.0, )",
+          "Microsoft.TestPlatform.ObjectModel": "[18.4.0, )",
           "Stryker.Abstractions": "[1.0.0, )"
         }
       },
@@ -961,15 +961,15 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.5, )",
-          "Microsoft.TestPlatform": "[18.3.0, )",
-          "Microsoft.TestPlatform.ObjectModel": "[18.3.0, )",
-          "Microsoft.TestPlatform.Portable": "[18.3.0, )",
-          "Microsoft.TestPlatform.TranslationLayer": "[18.3.0, )",
+          "Microsoft.TestPlatform": "[18.4.0, )",
+          "Microsoft.TestPlatform.ObjectModel": "[18.4.0, )",
+          "Microsoft.TestPlatform.Portable": "[18.4.0, )",
+          "Microsoft.TestPlatform.TranslationLayer": "[18.4.0, )",
           "Stryker.Abstractions": "[1.0.0, )",
           "Stryker.DataCollector": "[1.0.0, )",
           "Stryker.TestRunner": "[1.0.0, )",
           "Stryker.Utilities": "[1.0.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.1, )"
         }
       },
       "stryker.utilities": {
@@ -986,11 +986,11 @@
       },
       "AWSSDK.S3": {
         "type": "CentralTransitive",
-        "requested": "[4.0.20.1, )",
-        "resolved": "4.0.20.1",
-        "contentHash": "UH2ozA9bQe/dOwxClI7h1BEmpt45hk5rrzwQgDFLdt5bpP5o46gHAAHiM6dbiBLzD81Q0YQHMiJ9nWeO5AG5FQ==",
+        "requested": "[4.0.21, )",
+        "resolved": "4.0.21",
+        "contentHash": "ZAdrBxqtD0kzuOT05apaWeOn9cEmhuAMiocv2yvCC34HjpXIWKmuIqO2+T7e2E3hNb3EP5lbA16B6tmQMFkHpg==",
         "dependencies": {
-          "AWSSDK.Core": "[4.0.3.25, 5.0.0)"
+          "AWSSDK.Core": "[4.0.3.28, 5.0.0)"
         }
       },
       "Azure.Storage.Files.Shares": {
@@ -1049,9 +1049,9 @@
       },
       "McMaster.Extensions.CommandLineUtils": {
         "type": "CentralTransitive",
-        "requested": "[5.0.1, )",
-        "resolved": "5.0.1",
-        "contentHash": "dXerCHdnTrlpoQjdpxBISv9OIqqziJph1bKOTK95nPG0m7yDyMyVmQDcE1Z10ZZlQeaod1C8zewOW+MQOgPWhw=="
+        "requested": "[5.1.0, )",
+        "resolved": "5.1.0",
+        "contentHash": "YceiKmxdsBrlkAJpmJ2N8XkLyAH01xLsm4VLfjNp5MvtAom2wflZtEBz3CLMQret6Z7jSh3oBO1ULF1Is0tNxA=="
       },
       "Microsoft.CodeAnalysis.Common": {
         "type": "CentralTransitive",
@@ -1123,30 +1123,30 @@
       },
       "Microsoft.TestPlatform": {
         "type": "CentralTransitive",
-        "requested": "[18.3.0, )",
-        "resolved": "18.3.0",
-        "contentHash": "ukQjd18w551hCBEbInfTd6q9nhsJevIfKJTiUMJzX0B2po2ZGgAHtXpNA9nk5+TXVCzKntvnEc2/SxG5b1Lmvg=="
+        "requested": "[18.4.0, )",
+        "resolved": "18.4.0",
+        "contentHash": "ba0T/ipIjqANjInJtXY08xe1aFLVCAy6AnfpuIDHSRMNompJGCamLZ6ADs3uQvvNIN8VQJMmmNHWIScL4OPHoQ=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "CentralTransitive",
-        "requested": "[18.3.0, )",
-        "resolved": "18.3.0",
-        "contentHash": "AEIEX2aWdPO9XbtR96eBaJxmXRD9vaI9uQ1T/JbPEKlTAZwYx0ZrMzKyULMdh/HH9Sg03kXCoN7LszQ90o6nPQ==",
+        "requested": "[18.4.0, )",
+        "resolved": "18.4.0",
+        "contentHash": "4L6m2kS2pY5uJ9cpeRxzW22opr6ttScIRqsOpMDQpgENp/ZwxkkQCcmc6LRSURo2dFaaSW5KVflQZvroiJ7Wzg==",
         "dependencies": {
           "System.Reflection.Metadata": "8.0.0"
         }
       },
       "Microsoft.TestPlatform.Portable": {
         "type": "CentralTransitive",
-        "requested": "[18.3.0, )",
-        "resolved": "18.3.0",
-        "contentHash": "vqLOV+5DGaFUX64yL15n3kNAh6wa2ji1ncZ6i2T/YsmBmty5R+g50AR6aDpWDuwup+kyTtBjzslNM0tI9y8iDw=="
+        "requested": "[18.4.0, )",
+        "resolved": "18.4.0",
+        "contentHash": "5gji+bY2Rdli6WuhXvhwNFh5L2nlaEP1+j8bJMfnkcJt/nKlQ7D4iUbUO0kFgsgoomzu6ykGldcGdQu+qQvhLg=="
       },
       "Microsoft.TestPlatform.TranslationLayer": {
         "type": "CentralTransitive",
-        "requested": "[18.3.0, )",
-        "resolved": "18.3.0",
-        "contentHash": "lpWDWGmaLKTqY0e8ozA52boFxz7j8yrwKL3gKnwDIpObge4LuUunhYKPbgpJFRLZcigsS+vKrYwvUFRUG9pY0w==",
+        "requested": "[18.4.0, )",
+        "resolved": "18.4.0",
+        "contentHash": "Ns11xW4IfWwj8lwTRnlgCvyHhI+7YPcOBoK4Sv0A3FIdDIP9ucrA5SOkCzAOQA1alGDnr4gIh9uKb7Y+5xmBgA==",
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }
@@ -1278,18 +1278,18 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[22.1.0, )",
-        "resolved": "22.1.0",
-        "contentHash": "IsW3jQqIiTN4GwdWFx+dzgRL5XR75UDTFVGuuIackPf2d7eH0KKyrx4wuIoASa1XnS9zhgLP39FKwJq6nbbx1w==",
+        "requested": "[22.1.1, )",
+        "resolved": "22.1.1",
+        "contentHash": "J91zmSwuMY75ybtkqAFMC3vDNMkLJ/kiDDLhORITEwTKNhEwEYfxAQGv+f0jGYZg/H0YbnGcx5Ky0FgFJwrrWQ==",
         "dependencies": {
-          "Testably.Abstractions.FileSystem.Interface": "10.0.0"
+          "Testably.Abstractions.FileSystem.Interface": "10.1.0"
         }
       },
       "YamlDotNet": {
         "type": "CentralTransitive",
-        "requested": "[16.3.0, )",
-        "resolved": "16.3.0",
-        "contentHash": "SgMOdxbz8X65z8hraIs6hOEdnkH6hESTAIUa7viEngHOYaH+6q5XJmwr1+yb9vJpNQ19hCQY69xbFsLtXpobQA=="
+        "requested": "[17.0.0, )",
+        "resolved": "17.0.0",
+        "contentHash": "mqRrb+XA8PMI53nP3JqgElUuRB79r6ySYulfPG/O/NvavZZZdv6IjwlhjeeGyOv6rLSSygyzDnSL4qpKaHWfKQ=="
       }
     }
   }
