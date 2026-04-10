@@ -1,6 +1,9 @@
 const { execSync } = require('child_process');
+const { promisify } = require('util');
 const readline = require('readline');
 const fs = require('fs');
+const semver = require('semver');
+const conventionalRecommendedBump = require('conventional-recommended-bump');
 const packagejson = require('./package.json');
 
 const exec = (command) => execSync(command, { stdio: [0, 1, 2] });
@@ -22,14 +25,29 @@ const packages = [
 
 const oldVersionPrefix = packagejson.versionPrefix;
 const oldVersionSuffix = packagejson.versionSuffix;
-const oldVersion = oldVersionPrefix + (oldVersionSuffix ?'-':'') + oldVersionSuffix;
-console.log(`Current package version is ${oldVersionPrefix}${oldVersionSuffix?'-':''}${oldVersionSuffix}`);
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
+const oldVersion = oldVersionPrefix + (oldVersionSuffix ? '-' : '') + oldVersionSuffix;
 
-rl.question('What should the new package version be? ', (newVersionNumber) => {
+const bump = promisify(conventionalRecommendedBump);
+
+(async () => {
+    const recommendation = await bump({ preset: 'angular', tagPrefix: 'dotnet-stryker@' });
+    const releaseType = recommendation.releaseType ?? 'patch';
+    const suggestedVersion = semver.inc(oldVersionPrefix, releaseType);
+
+    console.log(`Current package version is ${oldVersion}`);
+    if (recommendation.releaseType) {
+        console.log(`Suggested next version: ${suggestedVersion} (${releaseType} bump based on conventional commits)`);
+    } else {
+        console.log(`No conventional commits found since last tag. Defaulting to patch bump: ${suggestedVersion}`);
+    }
+
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    rl.question(`What should the new package version be? [${suggestedVersion}] `, (input) => {
+        const newVersionNumber = input.trim() || suggestedVersion;
     let commitMessageLines = ['Publish', '', ''];
     let versionPrefix = newVersionNumber;
     let versionSuffix = '';
@@ -92,5 +110,5 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
         }
     }
     rl.close();
-});
-
+    });
+})().catch(console.error);

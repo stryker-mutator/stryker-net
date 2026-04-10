@@ -90,6 +90,25 @@
             "args": ["--test-runner=mtp"],
             "cwd": "${workspaceFolder}/integrationtest/TargetProjects/MicrosoftTestPlatform/UnitTests.XUnit",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "MTP Solution",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-cli",
+            "program": "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI.dll",
+            "args": ["--test-runner=mtp", "--solution=./MicrosoftTestPlatform.slnx"],
+            "cwd": "${workspaceFolder}/integrationtest/TargetProjects",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Stryker.TestRunner.MicrosoftTestPlatform.UnitTest",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest/bin/Debug/net8.0/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest/bin/Debug/net8.0",
+            "console": "integratedTerminal"
         }
     ]
 }

@@ -41,7 +41,7 @@ public class InputFileResolver : IInputFileResolver
         ["Configuration", "Platform", "AssemblyName", "Configurations"];
 
     private readonly INugetRestoreProcess _nugetRestoreProcess;
-    private readonly Dictionary<string, string> _buildLogs = [];
+    private readonly ConcurrentDictionary<string, string> _buildLogs = new();
 
     public InputFileResolver(IFileSystem fileSystem,
         IBuildalyzerProvider analyzerProvider,

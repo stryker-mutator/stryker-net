@@ -1,6 +1,3 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TargetProject.Constructs;
-using TargetProject.Defects;
 using TargetProject.StrykerFeatures;
 
 namespace NetCoreTestProject.MSTest.MTP;
@@ -18,5 +15,13 @@ public class SampleTests
         var result = sut.IsExpiredBool();
 
         Assert.IsTrue(expired == result);
+    }
+
+    [TestMethod]
+    public void TestTimeout()
+    {
+        var sut = new TargetProject.StrykerFeatures.Timeout();
+
+        sut.SomeLoop();
     }
 }

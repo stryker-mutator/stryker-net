@@ -15,6 +15,7 @@ public class TestRunResult : ITestRunResult
         ExecutedTests = TestIdentifierList.EveryTest();
         TimedOutTests = TestIdentifierList.NoTest();
         ResultMessage = message;
+        Messages = [];
         Duration = TimeSpan.Zero;
     }
 
@@ -50,7 +51,7 @@ public class TestRunResult : ITestRunResult
     public ITestIdentifiers TimedOutTests { get; }
     public bool SessionTimedOut { get; private init; }
     public string ResultMessage { get; }
-    public IEnumerable<string> Messages { get; }
+    public IEnumerable<string> Messages { get; } = [];
     public TimeSpan Duration { get; }
     public IEnumerable<IFrameworkTestDescription> TestDescriptions { get; }
 }
