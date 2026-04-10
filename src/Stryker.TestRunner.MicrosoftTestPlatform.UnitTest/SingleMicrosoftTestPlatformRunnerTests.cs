@@ -70,6 +70,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         // Assert - RunTestsInternalAsync catches exceptions and returns TestRunResult
         result.ShouldNotBeNull();
         result.ExecutedTests.ShouldNotBeNull();
+        result.Messages.ShouldNotBeNull(); // Aggregate must handle null Messages without throwing
         result.Duration.ShouldBeGreaterThanOrEqualTo(TimeSpan.Zero);
     }
 
@@ -90,6 +91,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         var testRunResult = result as Stryker.TestRunner.Results.TestRunResult;
         testRunResult.ShouldNotBeNull();
         testRunResult.FailingTests.ShouldNotBeNull();
+        testRunResult.Messages.ShouldNotBeNull();
     }
 
     [TestMethod, Timeout(1000)]
@@ -1104,4 +1106,3 @@ public class SingleMicrosoftTestPlatformRunnerTests
         }
     }
 }
-
