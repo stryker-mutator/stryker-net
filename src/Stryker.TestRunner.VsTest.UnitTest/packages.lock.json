@@ -33,8 +33,8 @@
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "4.0.3.28",
-        "contentHash": "OKvL+4Z/SFpOo7lbDbsT7bgcZY03fZkIQNFVV5LDZAt9hVhpX9z1Xn2MsGKSpXo4hwxXeiINv2j5Bb4n1KrVaQ=="
+        "resolved": "4.0.3.29",
+        "contentHash": "y07n9BHBVRDe3fDAjitnOBPwDwJ5NZ4oOh6ZvOizYWEsJnYcs34FQtTJ70Gt17qTCH86ma5kJdyMZ2lixm/dqg=="
       },
       "Azure.Core": {
         "type": "Transitive",
@@ -793,13 +793,13 @@
       },
       "Testably.Abstractions.FileSystem.Interface": {
         "type": "Transitive",
-        "resolved": "10.0.0",
-        "contentHash": "tZOXFLGjkh8TxgMgKeEcM2HAlz9DwndGl6TFLo6ISHcszFX3FkuPMrtVbmqVjhooWNXrgJ/a9cH9ym5MZL1LAg=="
+        "resolved": "10.1.0",
+        "contentHash": "0R+m7DvS2QuDcFOfDGtyGErRrgXOl4/z2tbNLX2RfvlYJjlVcKG+wMIBfZO8vxGtTNwNxffTG4ibFRwd0jkM7w=="
       },
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "AWSSDK.S3": "[4.0.21, )",
+          "AWSSDK.S3": "[4.0.21.1, )",
           "Azure.Storage.Files.Shares": "[12.25.0, )",
           "Buildalyzer": "[8.0.0, )",
           "DotNet.Glob": "[3.1.3, )",
@@ -822,15 +822,15 @@
           "Serilog.Sinks.Console": "[6.1.1, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.54.0, )",
-          "Stryker.Abstractions": "[4.14.0, )",
-          "Stryker.Configuration": "[4.14.0, )",
+          "Stryker.Abstractions": "[4.14.1, )",
+          "Stryker.Configuration": "[4.14.1, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
-          "Stryker.RegexMutators": "[4.14.0, )",
-          "Stryker.Solutions": "[4.14.0, )",
-          "Stryker.TestRunner.MicrosoftTestPlatform": "[4.14.0, )",
-          "Stryker.TestRunner.VsTest": "[4.14.0, )",
-          "Stryker.Utilities": "[4.14.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
+          "Stryker.RegexMutators": "[4.14.1, )",
+          "Stryker.Solutions": "[4.14.1, )",
+          "Stryker.TestRunner.MicrosoftTestPlatform": "[4.14.1, )",
+          "Stryker.TestRunner.VsTest": "[4.14.1, )",
+          "Stryker.Utilities": "[4.14.1, )",
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.1, )"
         }
       },
       "stryker.abstractions": {
@@ -842,7 +842,7 @@
           "Microsoft.CodeAnalysis.Common": "[5.3.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[18.4.0, )",
           "Serilog": "[4.3.1, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.1, )"
         }
       },
       "stryker.configuration": {
@@ -852,8 +852,8 @@
           "Microsoft.CodeAnalysis.CSharp": "[5.3.0, )",
           "Microsoft.CodeAnalysis.Common": "[5.3.0, )",
           "Serilog": "[4.3.1, )",
-          "Stryker.Abstractions": "[4.14.0, )",
-          "Stryker.Utilities": "[4.14.0, )"
+          "Stryker.Abstractions": "[4.14.1, )",
+          "Stryker.Utilities": "[4.14.1, )"
         }
       },
       "stryker.core.unittest": {
@@ -866,13 +866,13 @@
           "Moq": "[4.20.72, )",
           "Shouldly": "[4.3.0, )",
           "Spectre.Console.Testing": "[0.54.0, )",
-          "Stryker.Abstractions": "[4.14.0, )",
-          "Stryker.Configuration": "[4.14.0, )",
+          "Stryker.Abstractions": "[4.14.1, )",
+          "Stryker.Configuration": "[4.14.1, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
-          "Stryker.TestRunner": "[4.14.0, )",
-          "Stryker.Utilities": "[4.14.0, )",
-          "TestableIO.System.IO.Abstractions.TestingHelpers": "[22.1.0, )",
-          "stryker": "[4.14.0, )"
+          "Stryker.TestRunner": "[4.14.1, )",
+          "Stryker.Utilities": "[4.14.1, )",
+          "TestableIO.System.IO.Abstractions.TestingHelpers": "[22.1.1, )",
+          "stryker": "[4.14.1, )"
         }
       },
       "stryker.datacollector": {
@@ -898,7 +898,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.TestPlatform.ObjectModel": "[18.4.0, )",
-          "Stryker.Abstractions": "[4.14.0, )"
+          "Stryker.Abstractions": "[4.14.1, )"
         }
       },
       "stryker.testrunner.microsofttestplatform": {
@@ -907,8 +907,8 @@
           "CliWrap": "[3.10.1, )",
           "Microsoft.Testing.Platform": "[1.5.2, )",
           "StreamJsonRpc": "[2.24.84, )",
-          "Stryker.TestRunner": "[4.14.0, )",
-          "Stryker.Utilities": "[4.14.0, )"
+          "Stryker.TestRunner": "[4.14.1, )",
+          "Stryker.Utilities": "[4.14.1, )"
         }
       },
       "stryker.testrunner.vstest": {
@@ -919,11 +919,11 @@
           "Microsoft.TestPlatform.ObjectModel": "[18.4.0, )",
           "Microsoft.TestPlatform.Portable": "[18.4.0, )",
           "Microsoft.TestPlatform.TranslationLayer": "[18.4.0, )",
-          "Stryker.Abstractions": "[4.14.0, )",
-          "Stryker.DataCollector": "[4.14.0, )",
-          "Stryker.TestRunner": "[4.14.0, )",
-          "Stryker.Utilities": "[4.14.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.0, )"
+          "Stryker.Abstractions": "[4.14.1, )",
+          "Stryker.DataCollector": "[4.14.1, )",
+          "Stryker.TestRunner": "[4.14.1, )",
+          "Stryker.Utilities": "[4.14.1, )",
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.1, )"
         }
       },
       "stryker.utilities": {
@@ -935,16 +935,16 @@
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.5, )",
           "Mono.Cecil": "[0.11.6, )",
           "ResXResourceReader.NetStandard": "[1.3.0, )",
-          "Stryker.Abstractions": "[4.14.0, )"
+          "Stryker.Abstractions": "[4.14.1, )"
         }
       },
       "AWSSDK.S3": {
         "type": "CentralTransitive",
-        "requested": "[4.0.21, )",
-        "resolved": "4.0.21",
-        "contentHash": "ZAdrBxqtD0kzuOT05apaWeOn9cEmhuAMiocv2yvCC34HjpXIWKmuIqO2+T7e2E3hNb3EP5lbA16B6tmQMFkHpg==",
+        "requested": "[4.0.21.1, )",
+        "resolved": "4.0.21.1",
+        "contentHash": "SCXThk+p+32EqsJIQDtz4Ni0ny9MRV2o0UvorVbqQuUt7MUVgpm+fwouZ6rG4AUg2U+h8/Ixx22WUg0dP2bsBA==",
         "dependencies": {
-          "AWSSDK.Core": "[4.0.3.28, 5.0.0)"
+          "AWSSDK.Core": "[4.0.3.29, 5.0.0)"
         }
       },
       "Azure.Storage.Files.Shares": {
@@ -1263,21 +1263,21 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "CentralTransitive",
-        "requested": "[22.1.0, )",
-        "resolved": "22.1.0",
-        "contentHash": "320o0GORJV6VDFyKL7e7At+CTBFciFKKwgFYthCAPNKnlZLqyY68NKGQ+h4xTVf5y6qBtIsV3ap+Qog7VzF65g==",
+        "requested": "[22.1.1, )",
+        "resolved": "22.1.1",
+        "contentHash": "To7oYx68nrl0tu8duRSO9SyRHrNOVYSYIUlvfqNnoX9X2X9thIdJGmM3W3ZINtT4xqKuSy1Tb4hJK35Umhtfqg==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions.Wrappers": "22.1.0",
-          "Testably.Abstractions.FileSystem.Interface": "10.0.0"
+          "TestableIO.System.IO.Abstractions.Wrappers": "22.1.1",
+          "Testably.Abstractions.FileSystem.Interface": "10.1.0"
         }
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[22.1.0, )",
-        "resolved": "22.1.0",
-        "contentHash": "IsW3jQqIiTN4GwdWFx+dzgRL5XR75UDTFVGuuIackPf2d7eH0KKyrx4wuIoASa1XnS9zhgLP39FKwJq6nbbx1w==",
+        "requested": "[22.1.1, )",
+        "resolved": "22.1.1",
+        "contentHash": "J91zmSwuMY75ybtkqAFMC3vDNMkLJ/kiDDLhORITEwTKNhEwEYfxAQGv+f0jGYZg/H0YbnGcx5Ky0FgFJwrrWQ==",
         "dependencies": {
-          "Testably.Abstractions.FileSystem.Interface": "10.0.0"
+          "Testably.Abstractions.FileSystem.Interface": "10.1.0"
         }
       }
     }
