@@ -110,7 +110,7 @@ public class InputFileResolver(
         var (findMutableAnalyzerResults, orphanedProjects) =
             ExtractMutableProjectTrees(mutableProjectsAnalyzerResults);
         // we keep only suitable candidates
-        return AnalyzeAndIdentifyProjects(options, solutionInfo, findMutableAnalyzerResults, orphanedProjects);
+        return AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphanedProjects);
     }
 
     /// <summary>
@@ -155,7 +155,7 @@ public class InputFileResolver(
         // we match test projects to mutable projects
         var (findMutableAnalyzerResults, orphans) = ExtractMutableProjectTrees(analyzeAllNeededProjects);
 
-        var result = AnalyzeAndIdentifyProjects(options, solution, findMutableAnalyzerResults, orphans);
+        var result = AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphans);
         return SelectSingleProject(normalizedProjectUnderTestNameFilter, result, targetProjectMode, testProjectFileNames);
     }
 
@@ -222,7 +222,6 @@ public class InputFileResolver(
     // analyze projects, do same for their upstream dependencies if activated, and identify which one(s)
     // to proceed with
     private List<SourceProjectInfo> AnalyzeAndIdentifyProjects(IStrykerOptions options,
-        ProjectsTracker solutionInfo,
         List<MutableProjectTree> findMutableAnalyzerResults,
         List<ProjectSimulatedBuildHandler> unusedTestProjects)
     {
