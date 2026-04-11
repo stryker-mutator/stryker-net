@@ -95,7 +95,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
     public async Task ResetServerAsync()
     {
-        _logger.LogDebug("{_runnerId}: Resetting test servers to reload assemblies", _runnerId);
+        _logger.LogDebug("{RunnerId}: Resetting test servers to reload assemblies", _runnerId);
         
         await _serverLock.WaitAsync().ConfigureAwait(false);
         try
@@ -111,7 +111,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             _serverLock.Release();
         }
         
-        _logger.LogDebug("{_runnerId}: Test servers reset complete", _runnerId);
+        _logger.LogDebug("{RunnerId}: Test servers reset complete", _runnerId);
     }
 
     /// <summary>
@@ -163,7 +163,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             if (coveredMutants.Count == 0 && staticMutants.Count == 0)
             {
                 _logger.LogWarning(
-                    "{_runnerId}: No coverage data captured for test {TestId} — coverage file was empty or missing. Marking as Dubious.",
+                    "{RunnerId}: No coverage data captured for test {TestId} — coverage file was empty or missing. Marking as Dubious.",
                     _runnerId, testId);
 
                 return CoverageRunResult.Create(
@@ -175,7 +175,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             }
 
             _logger.LogDebug(
-                "{_runnerId}: Test {TestId} covers {CoveredCount} mutants ({StaticCount} static)",
+                "{RunnerId}: Test {TestId} covers {CoveredCount} mutants ({StaticCount} static)",
                 _runnerId, testId, coveredMutants.Count, staticMutants.Count);
 
             return CoverageRunResult.Create(
@@ -187,9 +187,10 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "{_runnerId}: Failed to capture coverage for test {TestId}", _runnerId, testId);
+            _logger.LogWarning(ex, "{RunnerId}: Failed to capture coverage for test {TestId}", _runnerId, testId);
             try { await StopAndRemoveServerAsync(assembly).ConfigureAwait(false); }
-            catch { /* best-effort cleanup to prevent coverage data from leaking to the next test */ }
+            catch { /* best-effort cleanup to prevent server leak */ }
+            DeleteCoverageFile();
             return CoverageRunResult.Create(
                 testId,
                 CoverageConfidence.Dubious,
@@ -204,12 +205,12 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         try
         {
             File.WriteAllText(_mutantFilePath, mutantId.ToString());
-            _logger.LogDebug("{_runnerId}: Wrote mutant ID {MutantId} to file {FilePath}",
+            _logger.LogDebug("{RunnerId}: Wrote mutant ID {MutantId} to file {FilePath}",
                 _runnerId, mutantId, _mutantFilePath);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "{_runnerId}: Failed to write mutant ID to file {FilePath}",
+            _logger.LogWarning(ex, "{RunnerId}: Failed to write mutant ID to file {FilePath}",
                 _runnerId, _mutantFilePath);
         }
     }
@@ -239,26 +240,25 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         _serverLock.Wait();
         try
         {
-            if (_coverageMode == enabled)
+            if (_coverageMode != enabled)
             {
-                return;
-            }
+                _coverageMode = enabled;
+                _logger.LogDebug("{RunnerId}: Coverage mode {Status}", _runnerId, enabled ? "enabled" : "disabled");
 
-            _coverageMode = enabled;
-            _logger.LogDebug("{_runnerId}: Coverage mode {Status}", _runnerId, enabled ? "enabled" : "disabled");
-
-            foreach (var server in _assemblyServers.Values)
-            {
-                server.Dispose();
+                foreach (var server in _assemblyServers.Values)
+                {
+                    server.Dispose();
+                }
+                _assemblyServers.Clear();
             }
-            _assemblyServers.Clear();
         }
         finally
         {
             _serverLock.Release();
         }
 
-        // Clean up any existing coverage file, even when enabling, to ensure we start fresh
+        // Always clean up any existing coverage file to prevent stale data,
+        // even when the mode hasn't changed (e.g. retry/re-run paths)
         DeleteCoverageFile();
     }
 
@@ -270,14 +270,14 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     {
         if (!File.Exists(_coverageFilePath))
         {
-            _logger.LogDebug("{_runnerId}: Coverage file not found at {Path}", _runnerId, _coverageFilePath);
+            _logger.LogDebug("{RunnerId}: Coverage file not found at {Path}", _runnerId, _coverageFilePath);
             return (Array.Empty<int>(), Array.Empty<int>());
         }
 
         try
         {
             var content = File.ReadAllText(_coverageFilePath).Trim();
-            _logger.LogDebug("{_runnerId}: Read coverage data: {Content}", _runnerId, content);
+            _logger.LogDebug("{RunnerId}: Read coverage data: {Content}", _runnerId, content);
 
             if (string.IsNullOrEmpty(content))
             {
@@ -292,7 +292,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "{_runnerId}: Failed to read coverage file at {Path}", _runnerId, _coverageFilePath);
+            _logger.LogWarning(ex, "{RunnerId}: Failed to read coverage file at {Path}", _runnerId, _coverageFilePath);
             return (Array.Empty<int>(), Array.Empty<int>());
         }
     }
@@ -327,7 +327,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "{_runnerId}: Failed to delete coverage file at {Path}", _runnerId, _coverageFilePath);
+            _logger.LogWarning(ex, "{RunnerId}: Failed to delete coverage file at {Path}", _runnerId, _coverageFilePath);
         }
     }
 
@@ -378,12 +378,12 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
                 }
             }
 
-            _logger.LogDebug("{_runnerId}: Discovered {TestCount} tests in {Assembly}", _runnerId, tests.Count, assembly);
+            _logger.LogDebug("{RunnerId}: Discovered {TestCount} tests in {Assembly}", _runnerId, tests.Count, assembly);
             return tests.Count > 0;
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "{_runnerId}: Failed to discover tests in {Assembly}", _runnerId, assembly);
+            _logger.LogDebug(ex, "{RunnerId}: Failed to discover tests in {Assembly}", _runnerId, assembly);
             return false;
         }
     }
@@ -416,7 +416,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
     internal async Task HandleAssemblyTimeoutAsync(string assembly, List<TestNode> discoveredTests, List<string> allTimedOutTests)
     {
-        _logger.LogDebug("{_runnerId}: Test run timed out for {Assembly}", _runnerId, Path.GetFileName(assembly));
+        _logger.LogDebug("{RunnerId}: Test run timed out for {Assembly}", _runnerId, Path.GetFileName(assembly));
 
         allTimedOutTests.AddRange(discoveredTests.Select(t => t.Uid));
         
@@ -433,7 +433,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         
         if (server is not null)
         {
-            _logger.LogDebug("{_runnerId}: Restarting test server for {Assembly} after timeout", _runnerId, Path.GetFileName(assembly));
+            _logger.LogDebug("{RunnerId}: Restarting test server for {Assembly} after timeout", _runnerId, Path.GetFileName(assembly));
             await server.RestartAsync().ConfigureAwait(false);
         }
     }
@@ -568,7 +568,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "{_runnerId}: Failed to run tests for mutant ID {MutantId}", _runnerId, mutantId);
+            _logger.LogDebug(ex, "{RunnerId}: Failed to run tests for mutant ID {MutantId}", _runnerId, mutantId);
             return new TestRunResult(false, ex.Message);
         }
     }
@@ -707,7 +707,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             catch (Exception ex)
             {
                 // Ignore cleanup errors
-                _logger.LogWarning(ex, "{_runnerId}: Failed to clean up temp files", _runnerId);
+                _logger.LogWarning(ex, "{RunnerId}: Failed to clean up temp files", _runnerId);
             }
         }
         _disposed = true;

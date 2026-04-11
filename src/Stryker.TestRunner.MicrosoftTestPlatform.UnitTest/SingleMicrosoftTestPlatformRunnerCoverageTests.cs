@@ -63,10 +63,10 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
             var result = await runner.DiscoverTestsAsync(testAssembly);
             result.ShouldBeTrue("Server should be recreated successfully after enabling coverage mode");
 
-            // Trying to enable again should be a no-op
+            // Enabling again should still delete any stale coverage file (defensive cleanup)
             await File.WriteAllTextAsync(coverageFilePath, "test");
             runner.SetCoverageMode(true);
-            File.Exists(coverageFilePath).ShouldBeTrue("Should not delete file when mode is already enabled");
+            File.Exists(coverageFilePath).ShouldBeFalse("Should delete stale coverage file even when mode is already enabled");
         }
         finally
         {
@@ -113,10 +113,10 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
             var result = await runner.DiscoverTestsAsync(testAssembly);
             result.ShouldBeTrue("Server should be recreated successfully after disabling coverage mode");
 
-            // Trying to disable again should be a no-op (no servers disposed, no file deletion)
+            // Disabling again should still delete any stale coverage file (defensive cleanup)
             await File.WriteAllTextAsync(coverageFilePath, "test");
             runner.SetCoverageMode(false);
-            File.Exists(coverageFilePath).ShouldBeTrue("Should not delete file when mode is already disabled");
+            File.Exists(coverageFilePath).ShouldBeFalse("Should delete stale coverage file even when mode is already disabled");
         }
         finally
         {
@@ -150,13 +150,12 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
             runner.SetCoverageMode(true);
             File.Exists(coverageFilePath).ShouldBeFalse("Coverage file should be deleted on first enable");
 
-            // Create a coverage file to verify no-op doesn't delete it
+            // Create a coverage file to verify defensive cleanup still happens
             await File.WriteAllTextAsync(coverageFilePath, "test-data");
-            
-            // Try to enable again - should do nothing (no server disposal, no file deletion)
+
+            // Try to enable again - servers should NOT be disposed, but stale coverage file should be deleted
             runner.SetCoverageMode(true);
-            File.Exists(coverageFilePath).ShouldBeTrue("Coverage file should NOT be deleted when mode already enabled");
-            (await File.ReadAllTextAsync(coverageFilePath)).ShouldBe("test-data", "File content should be unchanged");
+            File.Exists(coverageFilePath).ShouldBeFalse("Stale coverage file should be deleted even when mode already enabled");
 
             // Verify servers are still functional (not disposed)
             var result = await runner.DiscoverTestsAsync(testAssembly);
