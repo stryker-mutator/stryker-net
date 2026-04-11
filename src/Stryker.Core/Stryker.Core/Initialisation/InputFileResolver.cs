@@ -40,7 +40,6 @@ public class InputFileResolver(
     private readonly ISolutionProvider _solutionProvider = solutionProvider ?? throw new ArgumentNullException(nameof(solutionProvider));
 
     private readonly INugetRestoreProcess _nugetRestoreProcess = nugetRestoreProcess ?? throw new ArgumentNullException(nameof(nugetRestoreProcess));
-
     public IFileSystem FileSystem { get; } = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
 
     /// <summary>
@@ -69,26 +68,29 @@ public class InputFileResolver(
             catch (IOException e)
             {
                 _logger.LogCritical(e, "Failed to load solution file {SolutionFile}.", options.SolutionPath);
-                return new RelatedSourceProjectsInfo(null, []);
+                return new RelatedSourceProjectsInfo(BuildTracker(options, null), []);
             }
             catch (UnauthorizedAccessException e)
             {
                 _logger.LogCritical(e, "Failed to access solution file {SolutionFile}.", options.SolutionPath);
-                return new RelatedSourceProjectsInfo(null, []);
+                return new RelatedSourceProjectsInfo(BuildTracker(options, null), []);
             }
             catch (AggregateException e) // Handles exceptions from .Result on Task
             {
                 _logger.LogCritical(e, "Failed to load solution file {SolutionFile}.", options.SolutionPath);
-                return new RelatedSourceProjectsInfo(null, []);
+                return new RelatedSourceProjectsInfo(BuildTracker(options, null), []);
             }
         }
 
-        var solutionInfo = new ProjectsTracker(solution, options, _analyzerProvider, _nugetRestoreProcess, FileSystem, _logger)
-            { TargetFramework = options.TargetFramework };
+        var solutionInfo = BuildTracker(options, solution);
         var sourceProjectInfos =  options.IsSolutionContext ? FindProjectsInSolutionMode(options, solutionInfo, normalizedProjectUnderTestNameFilter)
             : FindProjectInTargetProjectMode(options, solutionInfo, normalizedProjectUnderTestNameFilter);
         return new RelatedSourceProjectsInfo(solutionInfo, sourceProjectInfos);
     }
+
+    private ProjectsTracker BuildTracker(IStrykerOptions options, SolutionFile solution) =>
+        new(solution, options, _analyzerProvider, _nugetRestoreProcess, FileSystem, _logger)
+            { TargetFramework = options.TargetFramework };
 
     private IReadOnlyCollection<SourceProjectInfo> FindProjectsInSolutionMode(IStrykerOptions options, ProjectsTracker solutionInfo,
         string normalizedProjectUnderTestNameFilter)

@@ -177,8 +177,10 @@ public class ProjectSimulatedBuildHandler
         if (_logger.IsEnabled(LogLevel.Trace))
         {
             // dumps all other properties as well, as they can be useful for diagnosing build issues
-            log.AppendLine($"Other properties: {
-                string.Join(", ", properties.Where(p => !ImportantProperties.Contains(p.Key)).Select(p => $"{p.Key}={p.Value.Replace(Environment.NewLine, "\\n")}"))}.");
+            var propertiesString = string.Join(", ", properties.
+                Where(p => !ImportantProperties.Contains(p.Key)).
+                Select(p => $"{p.Key}={p.Value.Replace(Environment.NewLine, "\\n")}"));
+            log.AppendLine($"Other properties: {propertiesString}.");
         }
 
         log.AppendLine();
