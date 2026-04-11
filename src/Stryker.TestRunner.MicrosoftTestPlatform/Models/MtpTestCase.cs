@@ -10,6 +10,9 @@ public sealed class MtpTestCase : ITestCase
     public MtpTestCase(TestNode testNode)
     {
         _testNode = testNode;
+        CodeFilePath = testNode.LocationFile ?? string.Empty;
+        LineNumber = testNode.LocationLineStart ?? 0;
+        FullyQualifiedName = BuildFullyQualifiedName(testNode);
     }
 
     public string FullyQualifiedName { get; }
@@ -17,7 +20,7 @@ public sealed class MtpTestCase : ITestCase
     public int LineNumber { get; }
 
     public string Source { get; }
-    public string CodeFilePath => string.Empty;
+    public string CodeFilePath { get; }
 
     public string AssemblyPath { get; init; }
 
@@ -25,4 +28,14 @@ public sealed class MtpTestCase : ITestCase
     public string Name => _testNode.DisplayName;
 
     public string Id => _testNode.Uid;
+
+    private static string BuildFullyQualifiedName(TestNode testNode)
+    {
+        if (testNode.LocationType is not null && testNode.LocationMethod is not null)
+        {
+            return $"{testNode.LocationType}.{testNode.LocationMethod}";
+        }
+
+        return testNode.Uid;
+    }
 }

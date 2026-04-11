@@ -16,4 +16,19 @@ public sealed record TestNode
     string NodeType,
 
     [property: JsonPropertyName("execution-state")]
-    string ExecutionState);
+    string ExecutionState,
+
+    [property: JsonPropertyName("location.file")]
+    string? LocationFile = null,
+
+    [property: JsonPropertyName("location.line-start")]
+    int? LocationLineStart = null,
+
+    [property: JsonPropertyName("location.line-end")]
+    int? LocationLineEnd = null,
+
+    [property: JsonPropertyName("location.type")]
+    string? LocationType = null,
+
+    [property: JsonPropertyName("location.method")]
+    string? LocationMethod = null);
