@@ -52,11 +52,11 @@
       },
       "Spectre.Console.Testing": {
         "type": "Direct",
-        "requested": "[0.54.0, )",
-        "resolved": "0.54.0",
-        "contentHash": "9QjSrRH+scy66ppmOLDiSno0Uh1ISJL18FqmTQDFNvK/oNI1DaI30cy2Uj6v0gxLZghtc/eKTwXtPpe0KKfHXw==",
+        "requested": "[0.55.0, )",
+        "resolved": "0.55.0",
+        "contentHash": "QL2DGnnS85j4Scc2M6Tw+ABNCf8mN/VfvK06uTcMA0jTAv0E5mrN90Aik4jIWw2p23SaQfn0TfP51qz6pEE6cA==",
         "dependencies": {
-          "Spectre.Console": "0.54.0"
+          "Spectre.Console": "0.55.0"
         }
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
@@ -500,6 +500,11 @@
           "System.Text.Encoding.Extensions": "4.0.11"
         }
       },
+      "Spectre.Console.Ansi": {
+        "type": "Transitive",
+        "resolved": "0.55.0",
+        "contentHash": "GIfgOvuF8MpU52bprhwtDEtx0gmVIGOepM8bw0lH/TSMD0rg1Xp+5Y53kPG8rFVdcpbNANlhDQ5mEVVPO3/2Tg=="
+      },
       "System.ClientModel": {
         "type": "Transitive",
         "resolved": "1.8.0",
@@ -886,7 +891,7 @@
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
           "Serilog.Sinks.Console": "[6.1.1, )",
           "ShellProgressBar": "[5.2.0, )",
-          "Spectre.Console": "[0.54.0, )",
+          "Spectre.Console": "[0.55.0, )",
           "Stryker.Abstractions": "[4.14.1, )",
           "Stryker.Configuration": "[4.14.1, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
@@ -1251,9 +1256,12 @@
       },
       "Spectre.Console": {
         "type": "CentralTransitive",
-        "requested": "[0.54.0, )",
-        "resolved": "0.54.0",
-        "contentHash": "StDXCFayfy0yB1xzUHT2tgEpV1/HFTiS4JgsAQS49EYTfMixSwwucaQs/bIOCwXjWwIQTMuxjUIxcB5XsJkFJA=="
+        "requested": "[0.55.0, )",
+        "resolved": "0.55.0",
+        "contentHash": "2TVhUHFsDux0Z+y2Hv4bFsOMuON4SuotEEKkMparFkp5Rm259naaaEQrN4Sv6C1cbsiGKPjfkJDGgUp+hZPjTw==",
+        "dependencies": {
+          "Spectre.Console.Ansi": "0.55.0"
+        }
       },
       "StreamJsonRpc": {
         "type": "CentralTransitive",
