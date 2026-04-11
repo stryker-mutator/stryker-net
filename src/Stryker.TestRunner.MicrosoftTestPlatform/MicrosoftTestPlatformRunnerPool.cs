@@ -104,7 +104,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
             var confidence = _options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest)
                 ? CoverageConfidence.Exact
                 : CoverageConfidence.Normal;
-            return CaptureCoverageTestByTest(project, confidence);
+            return CaptureCoverageTestByTest(confidence);
         }
 
         return CaptureCoverageInOneGo(project);
@@ -167,7 +167,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     }
 
     private IEnumerable<ICoverageRunResult> CaptureCoverageTestByTest(
-        IProjectAndTests project, CoverageConfidence confidence)
+        CoverageConfidence confidence)
     {
         _logger.LogInformation("Starting per-test coverage capture for MTP runner");
 
