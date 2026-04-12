@@ -99,7 +99,7 @@ public class ProjectsTracker
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
                 _logger.LogWarning("Project analysis failed. Stryker will retry after a solution level nuget restore");
-                var optionsMsBuildPath = _options.MsBuildPath ?? results.First().MsBuildPath();
+                var optionsMsBuildPath = MsBuildPath(results);
                 if (string.IsNullOrEmpty(optionsMsBuildPath))
                 {
                     _logger.LogWarning("Failed to find MSBuild path from analysis results. Nuget restore may fail if MSBuild is not in PATH.");
@@ -110,6 +110,8 @@ public class ProjectsTracker
             _solutionRestored = true;
         }
     }
+
+    private string MsBuildPath(IEnumerable<IAnalyzerResult> results) => string.IsNullOrEmpty(_options.MsBuildPath) ? results.First().MsBuildPath() : _options.MsBuildPath;
 
     internal void BuildSolution(IInitialBuildProcess buildProcess, IEnumerable<IAnalyzerResult> results)
     {
@@ -129,8 +131,7 @@ public class ProjectsTracker
                 framework,
                 _fileSystem.Path.GetDirectoryName(SolutionFilePath),
                 SolutionFilePath, Configuration, Platform,
-                TargetFramework, _options.MsBuildPath ?? results.First().MsBuildPath()
-                );
+                TargetFramework, MsBuildPath(results));
             _solutionBuilt = true;
         }
     }

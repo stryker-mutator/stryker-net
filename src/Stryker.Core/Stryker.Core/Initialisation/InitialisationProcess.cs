@@ -57,34 +57,8 @@ public class InitialisationProcess(
     /// <inheritdoc/>
     public void BuildProjects(IStrykerOptions options, RelatedSourceProjectsInfo projects)
     {
-        var solutionInfo = projects.Tracker;
-        // pick configuration and platform from solution if available
-        // we build the whole solution if we have a solution file path, even in project mode
-        if (!string.IsNullOrEmpty(solutionInfo.SolutionFilePath))
-        {
-            solutionInfo.BuildSolution(_initialBuildProcess, projects.SourceProjectInfos.Select(p => p.AnalyzerResult));
-        }
-        else
-        {
-            // build every test projects
-            var testProjects = projects.SourceProjectInfos.SelectMany(p => p.TestProjectsInfo.AnalyzerResults).Distinct().ToList();
-            for (var i = 0; i < testProjects.Count; i++)
-            {
-                _logger.LogInformation(
-                    "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
-                    testProjects[i].ProjectFilePath, i + 1,
-                    testProjects.Count);
-
-                _initialBuildProcess.InitialBuild(
-                    testProjects[i].TargetsFullFramework(),
-                    testProjects[i].ProjectFilePath,
-                    options.SolutionPath,
-                    testProjects[i].GetProperty("Configuration"),
-                    testProjects[i].GetProperty("Platform"),
-                    msbuildPath: options.MsBuildPath ?? testProjects[i].MsBuildPath());
-            }
-        }
-
+        // ensure test projects are built
+        projects.BuildTestProjects(_initialBuildProcess);
         // perform post build update (to capture some content files in C# project for example)
         foreach (var project in projects.SourceProjectInfos)
         {

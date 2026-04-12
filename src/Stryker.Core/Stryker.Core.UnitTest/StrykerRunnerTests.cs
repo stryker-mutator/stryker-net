@@ -35,7 +35,6 @@ public class StrykerRunnerTests : TestBase
         var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
         var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
         var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
-        var fileSystemMock = new MockFileSystem();
 
         var folder = new CsharpFolderComposite();
         folder.Add(new CsharpFileLeaf()

@@ -68,24 +68,24 @@ public class InputFileResolver(
             catch (IOException e)
             {
                 _logger.LogCritical(e, "Failed to load solution file {SolutionFile}.", options.SolutionPath);
-                return new RelatedSourceProjectsInfo(BuildTracker(options, null), []);
+                return new RelatedSourceProjectsInfo(BuildTracker(options, null), [], _logger);
             }
             catch (UnauthorizedAccessException e)
             {
                 _logger.LogCritical(e, "Failed to access solution file {SolutionFile}.", options.SolutionPath);
-                return new RelatedSourceProjectsInfo(BuildTracker(options, null), []);
+                return new RelatedSourceProjectsInfo(BuildTracker(options, null), [], _logger);
             }
             catch (AggregateException e) // Handles exceptions from .Result on Task
             {
                 _logger.LogCritical(e, "Failed to load solution file {SolutionFile}.", options.SolutionPath);
-                return new RelatedSourceProjectsInfo(BuildTracker(options, null), []);
+                return new RelatedSourceProjectsInfo(BuildTracker(options, null), [], _logger);
             }
         }
 
         var solutionInfo = BuildTracker(options, solution);
         var sourceProjectInfos =  options.IsSolutionContext ? FindProjectsInSolutionMode(options, solutionInfo, normalizedProjectUnderTestNameFilter)
             : FindProjectInTargetProjectMode(options, solutionInfo, normalizedProjectUnderTestNameFilter);
-        return new RelatedSourceProjectsInfo(solutionInfo, sourceProjectInfos);
+        return new RelatedSourceProjectsInfo(solutionInfo, sourceProjectInfos, _logger);
     }
 
     private ProjectsTracker BuildTracker(IStrykerOptions options, SolutionFile solution) =>
