@@ -17,7 +17,7 @@ public class RelatedSourceProjectsInfo(
 {
     public IReadOnlyCollection<SourceProjectInfo> SourceProjectInfos { get; } = sourceProjectInfos;
 
-    public ProjectsTracker Tracker { get; } = projectsTracker;
+    private ProjectsTracker Tracker { get; } = projectsTracker;
 
     public bool BuildTestProjects(IInitialBuildProcess buildProcess)
     {
