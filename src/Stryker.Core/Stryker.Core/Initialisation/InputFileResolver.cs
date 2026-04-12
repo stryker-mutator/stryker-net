@@ -349,6 +349,7 @@ public class InputFileResolver(
     private IAnalyzerResults AnalyzeSingleProject(ProjectSimulatedBuildHandler project, IStrykerOptions options)
     {
         var projectLogName = FileSystem.Path.GetRelativePath(options.WorkingDirectory, project.ProjectFileName);
+        var shouldConfirmSuccess = false;
         _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
 
         var buildResult = project.Analyze();
@@ -364,6 +365,7 @@ public class InputFileResolver(
                 return buildResult;
             }
 
+            shouldConfirmSuccess = true;
             _logger.LogWarning("Project {ProjectFilePath} simulated build failed. Trying again with a nuget restore.", projectLogName);
 
             // if this is a full framework project, we can retry after a nuget restore
@@ -382,7 +384,7 @@ public class InputFileResolver(
         }
         if (!buildResult.OverallSuccess)
         {
-            _logger.LogInformation("Project {ProjectFilePath} simulated build failed. The MsBuild log is: {Log}", projectLogName, project.LastBuildLog);
+            _logger.LogInformation("Project {ProjectFilePath} simulated build failed. Use '--diag' option to have the build log.", projectLogName);
         }
 
         if (options.DiagMode || _logger.IsEnabled(LogLevel.Debug))
@@ -392,8 +394,9 @@ public class InputFileResolver(
 
         if (buildResultOverallSuccess)
         {
-            _logger.LogDebug("Analysis of project {ProjectFilePath} succeeded{Extra}", projectLogName,
-                buildResult.OverallSuccess ? "." : " but simulated build failed, Stryker may fail later.");
+            _logger.Log(shouldConfirmSuccess ? LogLevel.Warning : LogLevel.Debug,
+                "Analysis of project {ProjectFilePath} succeeded{Extra}", projectLogName,
+                buildResult.OverallSuccess ? "." : " but simulated build failed; Stryker may fail later.");
             return buildResult;
         }
 

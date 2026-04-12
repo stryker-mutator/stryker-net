@@ -37,7 +37,7 @@ public class RelatedSourceProjectsInfo(
                 testProjects.Count);
 
             buildProcess.InitialBuild(
-                false,
+                testProjects[i].TargetsFullFramework(),
                 testProjects[i].ProjectFilePath,
                 null,
                 testProjects[i].GetProperty("Configuration"),
