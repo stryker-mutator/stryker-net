@@ -88,7 +88,7 @@ public class InputFileResolver(
         return new RelatedSourceProjectsInfo(solutionInfo, sourceProjectInfos, _logger);
     }
 
-    private ProjectsTracker BuildTracker(IStrykerOptions options, SolutionFile solution) =>
+    private ProjectsTracker BuildTracker(IStrykerOptions options, SolutionFile? solution) =>
         new(solution, options, _analyzerProvider, _nugetRestoreProcess, FileSystem, _logger)
             { TargetFramework = options.TargetFramework };
 
