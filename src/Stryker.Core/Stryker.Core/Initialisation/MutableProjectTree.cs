@@ -57,7 +57,11 @@ internal class MutableProjectTree(ProjectSimulatedBuildHandler project, ILogger 
             logger.LogWarning("Failed to find a valid {Framework} target for project {Project}. ", optionsTargetFramework, project.ProjectFileName);
         }
 
-        targetToKeep = Targets.Where(t => t.IsValidTarget).FirstOrDefault( t => OperatingSystem.IsWindows() == t.ProjectTarget.TargetsFullFramework());
+        var mutableProjectTargets = Targets.Where(t => t.IsValidTarget);
+        // on non windows platform, keep first non netframework target
+        // on Windows, keep first netframework target if any, otherwise keep first valid target
+        targetToKeep = mutableProjectTargets.FirstOrDefault( t => OperatingSystem.IsWindows() == t.ProjectTarget.TargetsFullFramework()) ??
+                       mutableProjectTargets.FirstOrDefault();
         Targets.Clear();
         if (targetToKeep == null)
         {
