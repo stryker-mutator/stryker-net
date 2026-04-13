@@ -31,8 +31,8 @@ public class TestProjectsInfo : ITestProjectsInfo
         TestProjects = [];
     }
 
-    public static TestProjectsInfo operator +(TestProjectsInfo a, ITestProjectsInfo b) =>
-        new(a._fileSystem, a._logger)
+    public static TestProjectsInfo operator +(TestProjectsInfo a, ITestProjectsInfo b) => b == null ? a :
+        new TestProjectsInfo(a._fileSystem, a._logger)
         {
             TestProjects = a.TestProjects.Union(b.TestProjects)
         };
