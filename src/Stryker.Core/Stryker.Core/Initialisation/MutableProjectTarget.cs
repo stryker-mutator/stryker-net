@@ -32,7 +32,6 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
     /// Builds a <see cref="SourceProjectInfo"/> instance describing a project its associated test project(s)
     /// </summary>
     /// <param name="options">Stryker options</param>
-    /// <param name="projectsTracker"></param>
     /// <param name="fileSystem">filesystem</param>
     /// <returns></returns>
     public SourceProjectInfo BuildSourceProjectInfo(IStrykerOptions options, IFileSystem fileSystem )

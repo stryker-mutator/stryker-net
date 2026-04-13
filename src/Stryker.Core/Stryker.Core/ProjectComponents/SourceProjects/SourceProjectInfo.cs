@@ -14,9 +14,9 @@ public class SourceProjectInfo(IAnalyzerResult analyzerResult, ITestProjectsInfo
 
     public Action OnProjectBuilt { get; set; }
 
-    public IAnalyzerResult AnalyzerResult { get; init; } = analyzerResult;
+    public IAnalyzerResult AnalyzerResult { get; } = analyzerResult;
 
-    public ITestProjectsInfo? TestProjectsInfo { get; init; } = testProjectsInfo;
+    public ITestProjectsInfo TestProjectsInfo { get; } = testProjectsInfo;
 
     /// <summary>
     /// The Folder/File structure found in the project under test.

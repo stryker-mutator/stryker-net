@@ -13,7 +13,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects;
 public class TestProjectsInfo : ITestProjectsInfo
 {
     private readonly IFileSystem _fileSystem;
-    private readonly ILogger<TestProjectsInfo> _logger;
+    private readonly ILogger _logger;
 
     public IEnumerable<ITestProject> TestProjects { get; set; }
 
@@ -24,14 +24,14 @@ public class TestProjectsInfo : ITestProjectsInfo
     public IReadOnlyList<string> GetTestAssemblies() =>
         AnalyzerResults.Select(a => a.GetAssemblyPath()).ToList();
 
-    public TestProjectsInfo(IFileSystem fileSystem, ILogger<TestProjectsInfo> logger = null)
+    public TestProjectsInfo(IFileSystem fileSystem, ILogger logger = null)
     {
         _fileSystem = fileSystem ?? new FileSystem();
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<TestProjectsInfo>();
         TestProjects = [];
     }
 
-    public static TestProjectsInfo operator +(TestProjectsInfo a, TestProjectsInfo b) =>
+    public static TestProjectsInfo operator +(TestProjectsInfo a, ITestProjectsInfo b) =>
         new(a._fileSystem, a._logger)
         {
             TestProjects = a.TestProjects.Union(b.TestProjects)

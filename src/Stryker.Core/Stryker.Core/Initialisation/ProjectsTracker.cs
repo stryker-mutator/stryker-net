@@ -16,6 +16,7 @@ namespace Stryker.Core.Initialisation;
 public class ProjectsTracker
 {
     private List<string> _selectedProjects = [];
+    private readonly object _lock = new object();
     private bool _solutionRestored;
     private bool _solutionBuilt;
 
@@ -89,7 +90,7 @@ public class ProjectsTracker
     // the method is at solution level because it needs only be called once
     internal void RestoreSolution(IAnalyzerResults results)
     {
-        lock (_selectedProjects)
+        lock (_lock)
         {
             if (_solutionRestored || string.IsNullOrEmpty(SolutionFilePath))
             {
@@ -115,7 +116,7 @@ public class ProjectsTracker
 
     internal void BuildSolution(IInitialBuildProcess buildProcess, IEnumerable<IAnalyzerResult> results)
     {
-        lock (_selectedProjects)
+        lock (_lock)
         {
             if (_solutionBuilt || string.IsNullOrEmpty(SolutionFilePath))
             {
