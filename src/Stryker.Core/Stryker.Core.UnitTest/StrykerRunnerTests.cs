@@ -35,7 +35,6 @@ public class StrykerRunnerTests : TestBase
         var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
         var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
         var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
-        var fileSystemMock = new MockFileSystem();
 
         var folder = new CsharpFolderComposite();
         folder.Add(new CsharpFileLeaf()
@@ -43,12 +42,11 @@ public class StrykerRunnerTests : TestBase
             Mutants = new List<IMutant> { new Mutant { Id = 1 } }
         });
 
-        var projectInfo = Mock.Of<SourceProjectInfo>();
-        projectInfo.ProjectContents = folder;
+        var info = new SourceProjectInfo(null, new TestProjectsInfo(null)) { ProjectContents = folder };
 
         var mutationTestInput = new MutationTestInput()
         {
-            SourceProjectInfo = projectInfo
+            SourceProjectInfo = info
         };
 
         inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
@@ -111,10 +109,10 @@ public class StrykerRunnerTests : TestBase
         {
             Mutants = new Collection<IMutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
         });
-        
+
         var mutationTestInput = new MutationTestInput()
         {
-            SourceProjectInfo = new SourceProjectInfo()
+            SourceProjectInfo = new SourceProjectInfo(null, null)
             {
                 ProjectContents = folder
             },
@@ -160,22 +158,12 @@ public class StrykerRunnerTests : TestBase
         var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
         var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
         var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
-        var fileSystemMock = new MockFileSystem();
 
         var folder = new CsharpFolderComposite();
         folder.Add(new CsharpFileLeaf
         {
             Mutants = new Collection<IMutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
         });
-        var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-        
-        var mutationTestInput = new MutationTestInput()
-        {
-            SourceProjectInfo = new SourceProjectInfo()
-            {
-                ProjectContents = folder
-            }
-        };
 
         inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
         {

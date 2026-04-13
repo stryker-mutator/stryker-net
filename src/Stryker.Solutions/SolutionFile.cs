@@ -23,10 +23,9 @@ public class SolutionFile
 
     public HashSet<string> GetBuildTypes() => _configurations.Keys.Select(x => x.buildType).ToHashSet();
 
-    public string FileName { get; init; } = string.Empty;
+    public string FileName { get; private init; } = string.Empty;
 
     private HashSet<string> GetPlatforms() => _configurations.Keys.Select(x => x.platform).ToHashSet();
-
 
     private string DefaultPlatform
     {
@@ -86,7 +85,7 @@ public class SolutionFile
                 return (currentBuildType, currentPlatform);
             }
 
-            var thisScore = -1;
+            int thisScore;
             // evaluate the buildType match
             if (buildType != null && buildType == currentBuildType)
             {
@@ -136,6 +135,7 @@ public class SolutionFile
             .ToImmutableList();
     }
 
+    // returns the appropriate default build type if the provided one is null or whitespace, otherwise returns the provided one
     private string GetEffectiveBuildType(string? buildType)
     {
         if (!string.IsNullOrWhiteSpace(buildType))
@@ -155,61 +155,106 @@ public class SolutionFile
     {
         buildType = GetEffectiveBuildType(buildType);
         platform ??= DefaultPlatform;
-        return _configurations
-            .Where(entry => entry.Key.buildType == buildType && entry.Key.platform == platform)
-            .SelectMany(entry => entry.Value).Select(p => (p.Key, p.Value.buildType, p.Value.platform))
+        if (!_configurations.TryGetValue((buildType, platform), out var projects))
+        {
+            return [];
+        }
+        return projects
+            .Select(p => (p.Key, p.Value.buildType, p.Value.platform))
             .Distinct()
             .ToImmutableList();
     }
 
     /// <summary>
+    /// Gets the appropriate configuration and platform for a given project based on the solution configuration and platform provided as parameters.
+    /// If the project is not included in the solution configuration, it will return the provided configuration and platform or the defaults if they are not provided.
+    /// </summary>
+    /// <param name="filename">project file name</param>
+    /// <param name="configuration">requested configuration</param>
+    /// <param name="platform">requested platform</param>
+    /// <returns></returns>
+    public (string configuration, string platform) GetProjectConfiguration(string filename, string? configuration, string? platform)
+    {
+        configuration = GetEffectiveBuildType(configuration);
+        platform ??= DefaultPlatform;
+        if (_configurations.TryGetValue((configuration, platform), out var projects) && projects.TryGetValue(filename, out var projectConfig))
+        {
+            return (projectConfig.buildType, projectConfig.platform);
+        }
+        return (configuration, platform);
+    }
+
+    /// <summary>
     /// Create a solution file from a list of projects having two build types, Debug and Release, and the provided platforms.
     /// </summary>
+    /// <param name="filePath">solution file name</param>
     /// <param name="projects">list of csproj filenames</param>
     /// <param name="platforms">list of declared platforms. Default to AnyCpu and x86</param>
+    /// <param name="solutionPlatforms">list of solution level platforms</param>
     /// <returns>a solution instance</returns>
     /// <remarks>This method is used for testing purposes. It is mandatory as the underlying solution parser does not support any form of mocking</remarks>
-    public static SolutionFile BuildFromProjectList(List<string> projects, string[]? platforms = null)
+    public static SolutionFile BuildFromProjectList(string filePath, List<string> projects, string[]? platforms = null
+        , string[]? solutionPlatforms = null)
     {
-        var result = new SolutionFile();
-        platforms ??= [ DefaultSolutionType, "x86" ];
+        var result = new SolutionFile {FileName = filePath};
+        solutionPlatforms = DefineSolutionPlatforms(platforms, solutionPlatforms);
+        platforms ??= [ "AnyCPU", "x86" ];
+        if (platforms.Length != solutionPlatforms.Length)
+        {
+            throw new ArgumentException("The number of platforms should be the same as the number of solution platforms, if specified.");
+        }
         // default to Debug|Any CPU
         string[] buildTypes = ["Debug", "Release"];
         foreach (var buildType in buildTypes)
         {
-            foreach (var platform in platforms)
+            for (var index = 0; index < platforms.Length; index++)
             {
+                var platform = platforms[index];
                 var projectDict = new Dictionary<string, (string buildType, string platform)>();
                 foreach (var project in projects)
                 {
                     projectDict[project] = (buildType, platform);
                 }
-                result._configurations.Add((buildType, platform), projectDict);
+
+                result._configurations.Add((buildType, solutionPlatforms[index]), projectDict);
             }
         }
         return result;
+    }
+
+    private static string[] DefineSolutionPlatforms(string[]? platforms, string[]? solutionPlatforms)
+    {
+        if (solutionPlatforms != null)
+        {
+            return solutionPlatforms;
+        }
+
+        if (platforms == null)
+        {
+            solutionPlatforms = [ "Any CPU", "x86" ];
+        }
+        else
+        {
+            solutionPlatforms = new string[platforms.Length];
+            for (var i = 0; i < platforms.Length; i++)
+            {
+                solutionPlatforms[i] = platforms[i] == DefaultProjectBuildType ? DefaultSolutionType : platforms[i];
+            }
+        }
+
+        return solutionPlatforms;
     }
 
     private static SolutionFile AnalyzeSolution(string solutionPath, SolutionModel solution)
     {
         // extract needed information
         var result = new SolutionFile{ FileName = solutionPath };
+        var referencePath = Path.GetDirectoryName(Path.GetFullPath(solutionPath));
         foreach (var buildType in solution.BuildTypes)
         {
             foreach (var solutionPlatform in solution.Platforms)
             {
-                var projects = new Dictionary<string, (string buildType, string platform)>();
-                // add all projects that are built with this configuration
-                foreach (var solutionProject in solution.SolutionProjects)
-                {
-                    var (projectBuildType, projectPlatform, isBuilt, _) = solutionProject.GetProjectConfiguration(buildType, solutionPlatform);
-                    if (!isBuilt || projectBuildType == null || projectPlatform == null)
-                    {
-                        continue;
-                    }
-
-                    projects[solutionProject.FilePath] = (projectBuildType, projectPlatform);
-                }
+                var projects = ExtractProjectForGivenConfiguration(solution, referencePath, buildType, solutionPlatform);
                 if (projects.Count == 0)
                 {
                     continue;
@@ -219,6 +264,32 @@ public class SolutionFile
         }
 
         return result;
+    }
+
+    private static Dictionary<string, (string buildType, string platform)> ExtractProjectForGivenConfiguration(SolutionModel solution,
+        string path,
+        string buildType,
+        string solutionPlatform)
+    {
+        var projects = new Dictionary<string, (string buildType, string platform)>();
+        // add all projects that are built with this configuration
+        foreach (var solutionProject in solution.SolutionProjects)
+        {
+            var fullPath = Path.Combine(path, solutionProject.FilePath);
+            var (projectBuildType, projectPlatform, isBuilt, _) = solutionProject.GetProjectConfiguration(buildType, solutionPlatform);
+            if (!isBuilt || projectBuildType == null || projectPlatform == null)
+            {
+                continue;
+            }
+            // workaround for a bug in SolutionPersistence which does not properly handle default platform naming.
+            if (projectPlatform == DefaultSolutionType)
+            {
+                projectPlatform = DefaultProjectBuildType;
+            }
+            projects[fullPath] = (projectBuildType, projectPlatform);
+        }
+
+        return projects;
     }
 
     /// <summary>

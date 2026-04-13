@@ -28,13 +28,17 @@ public class LoggingInitializer : ILoggingInitializer
         inputs.OutputPathInput.SuppliedInput = outputPath;
 
         var diagnoseMode = inputs.DiagModeInput.Validate();
-        var logLevel = diagnoseMode ? LogEventLevel.Verbose : inputs.VerbosityInput.Validate();
+        var logLevel = inputs.VerbosityInput.Validate();
+        if (diagnoseMode && logLevel>LogEventLevel.Debug)
+        {
+            logLevel = LogEventLevel.Debug;
+        }
         var logToFile = inputs.LogToFileInput.Validate(outputPath) || diagnoseMode;
 
         ApplicationLogging.ConfigureLogger(logLevel, logToFile, diagnoseMode, outputPath);
     }
 
-    private string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)
+    private static string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)
     {
         var outputPath = inputs.OutputPathInput.SuppliedInput ?? Path.Combine("StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
 
