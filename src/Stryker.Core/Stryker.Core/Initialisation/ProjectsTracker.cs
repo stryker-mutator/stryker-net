@@ -89,7 +89,7 @@ public class ProjectsTracker
     // the method is at solution level because it needs only be called once
     internal void RestoreSolution(IAnalyzerResults results)
     {
-        lock (_nugetRestoreProcess)
+        lock (_selectedProjects)
         {
             if (_solutionRestored || string.IsNullOrEmpty(SolutionFilePath))
             {
@@ -111,11 +111,11 @@ public class ProjectsTracker
         }
     }
 
-    private string MsBuildPath(IEnumerable<IAnalyzerResult> results) => string.IsNullOrEmpty(_options.MsBuildPath) ? results.First().MsBuildPath() : _options.MsBuildPath;
+    private string MsBuildPath(IEnumerable<IAnalyzerResult> results) => string.IsNullOrEmpty(_options.MsBuildPath) ? results.FirstOrDefault()?.MsBuildPath() : _options.MsBuildPath;
 
     internal void BuildSolution(IInitialBuildProcess buildProcess, IEnumerable<IAnalyzerResult> results)
     {
-        lock (_nugetRestoreProcess)
+        lock (_selectedProjects)
         {
             if (_solutionBuilt || string.IsNullOrEmpty(SolutionFilePath))
             {
@@ -147,6 +147,7 @@ public class ProjectsTracker
         string platform;
         if (Solution != null)
         {
+            projectFile = _fileSystem.Path.GetFullPath(projectFile);
             (configuration, platform) =
                 Solution.GetProjectConfiguration(projectFile, Configuration, Platform);
         }

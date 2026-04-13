@@ -387,6 +387,11 @@ public class InputFileResolver(
             _logger.LogWarning("Project {ProjectFilePath} simulated build failed. Use '--diag' option to have the build log.", projectLogName);
         }
 
+        if (options.DiagMode)
+        {
+            project.LogAnalyzerResult();
+        }
+
         if (buildResultOverallSuccess)
         {
             _logger.Log(shouldConfirmSuccess ? LogLevel.Warning : LogLevel.Debug,
