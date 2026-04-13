@@ -18,6 +18,7 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Solutions;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.VsTest;
@@ -77,19 +78,23 @@ public class InitialisationProcessTests : TestBase
         var loggerMock = new Mock<ILogger<InitialisationProcess>>();
         var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
 
+        var mockFileSystem = new MockFileSystem();
+
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
-            ProjectVersion = "TheProjectVersion"
+            ProjectVersion = "TheProjectVersion",
+            WorkingDirectory = "./"
         };
-        var projectTracker = new ProjectsTracker(null, options,
+
+        var projectTracker = new ProjectsTracker(SolutionFile.BuildFromProjectList("solution.sln", []), options,
             new Mock<IBuildalyzerProvider>(MockBehavior.Strict).Object,
             new Mock<INugetRestoreProcess>().Object,
-            null, loggerMock.Object);
+            mockFileSystem, loggerMock.Object);
         inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>())).
             Returns(new RelatedSourceProjectsInfo(projectTracker,
         [new SourceProjectInfo( TestHelper.SetupProjectAnalyzerResult(references: []).Object,
-            new TestProjectsInfo(new MockFileSystem()))
+            new TestProjectsInfo(mockFileSystem))
         ]));
 
         inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
@@ -119,15 +124,19 @@ public class InitialisationProcessTests : TestBase
         folder.Add(new CsharpFileLeaf());
         var loggerMock = new Mock<ILogger<InitialisationProcess>>();
         var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
+        var mockFileSystem = new MockFileSystem();
+
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
-            ProjectVersion = "TheProjectVersion"
+            ProjectVersion = "TheProjectVersion",
+            WorkingDirectory = "./"
         };
-        var projectTracker = new ProjectsTracker(null, options,
+
+        var projectTracker = new ProjectsTracker(SolutionFile.BuildFromProjectList("solution.sln", []), options,
             new Mock<IBuildalyzerProvider>(MockBehavior.Strict).Object,
             new Mock<INugetRestoreProcess>().Object,
-            null, loggerMock.Object);
+            mockFileSystem, loggerMock.Object);
         inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>())).Returns(new RelatedSourceProjectsInfo(projectTracker,
         [new SourceProjectInfo(TestHelper.SetupProjectAnalyzerResult(references: []).Object,  new TestProjectsInfo(new MockFileSystem()))]));
 
@@ -170,16 +179,21 @@ public class InitialisationProcessTests : TestBase
         folder.Add(new CsharpFileLeaf());
 
         var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
+
+        var mockFileSystem = new MockFileSystem();
+
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
             ProjectVersion = "TheProjectVersion",
-            BreakOnInitialTestFailure = breakOnInitialTestFailure
+            BreakOnInitialTestFailure = breakOnInitialTestFailure,
+            WorkingDirectory = "./"
         };
-        var projectTracker = new ProjectsTracker(null, options,
+
+        var projectTracker = new ProjectsTracker(SolutionFile.BuildFromProjectList("solution.sln", []), options,
             new Mock<IBuildalyzerProvider>(MockBehavior.Strict).Object,
             new Mock<INugetRestoreProcess>().Object,
-            null, loggerMock.Object);
+            mockFileSystem, loggerMock.Object);
         inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>())).Returns(new RelatedSourceProjectsInfo(projectTracker,
         [new SourceProjectInfo(TestHelper.SetupProjectAnalyzerResult(references: []).Object, new TestProjectsInfo(new MockFileSystem()))]));
 
@@ -226,16 +240,19 @@ public class InitialisationProcessTests : TestBase
 
         var loggerMock = new Mock<ILogger<InitialisationProcess>>();
         var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
+        var mockFileSystem = new MockFileSystem();
+
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
-            ProjectVersion = "TheProjectVersion"
+            ProjectVersion = "TheProjectVersion",
+            WorkingDirectory = "./"
         };
-        var projectTracker = new ProjectsTracker(null, options,
+
+        var projectTracker = new ProjectsTracker(SolutionFile.BuildFromProjectList("solution.sln", []), options,
             new Mock<IBuildalyzerProvider>(MockBehavior.Strict).Object,
             new Mock<INugetRestoreProcess>().Object,
-            null, loggerMock.Object);
-
+            mockFileSystem, loggerMock.Object);
         inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>())).
             Returns(new RelatedSourceProjectsInfo(projectTracker,
             [new SourceProjectInfo(TestHelper.SetupProjectAnalyzerResult(references: []).Object,
@@ -287,15 +304,19 @@ public class InitialisationProcessTests : TestBase
 
         var loggerMock = new Mock<ILogger<InitialisationProcess>>();
         var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
+        var mockFileSystem = new MockFileSystem();
+
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
-            ProjectVersion = "TheProjectVersion"
+            ProjectVersion = "TheProjectVersion",
+            WorkingDirectory = "./"
         };
-        var projectTracker = new ProjectsTracker(null, options,
+
+        var projectTracker = new ProjectsTracker(SolutionFile.BuildFromProjectList("solution.sln", []), options,
             new Mock<IBuildalyzerProvider>(MockBehavior.Strict).Object,
             new Mock<INugetRestoreProcess>().Object,
-            null, loggerMock.Object);
+            mockFileSystem, loggerMock.Object);
         inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>())).Returns(new RelatedSourceProjectsInfo(projectTracker,
         [
             new SourceProjectInfo(
@@ -344,15 +365,19 @@ public class InitialisationProcessTests : TestBase
 
         var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
 
+        var mockFileSystem = new MockFileSystem();
+
         var options = new StrykerOptions
         {
             ProjectName = "TheProjectName",
-            ProjectVersion = "TheProjectVersion"
+            ProjectVersion = "TheProjectVersion",
+            WorkingDirectory = "./"
         };
-        var projectTracker = new ProjectsTracker(null, options,
+
+        var projectTracker = new ProjectsTracker(SolutionFile.BuildFromProjectList("solution.sln", []), options,
             new Mock<IBuildalyzerProvider>(MockBehavior.Strict).Object,
             new Mock<INugetRestoreProcess>().Object,
-            null, loggerMock.Object);
+            mockFileSystem, loggerMock.Object);
         inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>())).
             Returns(new RelatedSourceProjectsInfo(projectTracker,
         [new SourceProjectInfo(TestHelper.SetupProjectAnalyzerResult(

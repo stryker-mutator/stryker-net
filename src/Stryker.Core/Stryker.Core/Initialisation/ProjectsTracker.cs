@@ -16,7 +16,7 @@ namespace Stryker.Core.Initialisation;
 public class ProjectsTracker
 {
     private List<string> _selectedProjects = [];
-    private readonly object _lock = new object();
+    private readonly object _lock = new();
     private bool _solutionRestored;
     private bool _solutionBuilt;
 
@@ -26,7 +26,7 @@ public class ProjectsTracker
     private readonly IBuildalyzerProvider _buildalyzerProvider;
     private readonly ILogger _logger;
 
-    public ProjectsTracker(SolutionFile file, IStrykerOptions options, IBuildalyzerProvider buildalyzerProvider,
+    public ProjectsTracker(SolutionFile? file, IStrykerOptions options, IBuildalyzerProvider buildalyzerProvider,
         INugetRestoreProcess nugetRestoreProcess, IFileSystem fileSystem, ILogger logger)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
