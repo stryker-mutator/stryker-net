@@ -384,12 +384,7 @@ public class InputFileResolver(
         }
         if (!buildResult.OverallSuccess)
         {
-            _logger.LogInformation("Project {ProjectFilePath} simulated build failed. Use '--diag' option to have the build log.", projectLogName);
-        }
-
-        if (options.DiagMode || _logger.IsEnabled(LogLevel.Debug))
-        {
-            project.LogAnalyzerResult();
+            _logger.LogWarning("Project {ProjectFilePath} simulated build failed. Use '--diag' option to have the build log.", projectLogName);
         }
 
         if (buildResultOverallSuccess)
