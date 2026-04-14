@@ -312,6 +312,11 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             not null => initNode.Parent == null ? "whole file" : "the current node",
         };
 
+
+    // errors that must trigger a deep removal of mutations
+    // usage of uninitialized variables (165)
+    private static readonly HashSet<string> ErrorsRequiringRecursiveRemoval = ["CS0165"];
+
     private Collection<SyntaxNode> IdentifyMutationsAndFlagForRollback(IEnumerable<Diagnostic> diagnosticInfo,
         SyntaxNode rollbackRoot, out Diagnostic[] diagnostics)
     {
@@ -326,7 +331,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                 continue;
             }
 
-            if (MutantPlacer.RequiresRemovingChildMutations(mutationIf))
+            if (MutantPlacer.RequiresRemovingChildMutations(mutationIf) || ErrorsRequiringRecursiveRemoval.Contains(diagnostic.Id))
             {
                 FlagChildrenMutationsForRollback(mutationIf, brokenMutations);
             }
