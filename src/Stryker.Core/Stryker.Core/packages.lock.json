@@ -158,9 +158,9 @@
       },
       "NuGet.Frameworks": {
         "type": "Direct",
-        "requested": "[7.3.0, )",
-        "resolved": "7.3.0",
-        "contentHash": "AnhSFUOrCrWp7pGtqhfOxa5HKm4rfpQxuatGDKzpGtTczasj6OcGVtB74PyqW7osdu9/BtkjnkAYvNk5iT82Gg=="
+        "requested": "[7.3.1, )",
+        "resolved": "7.3.1",
+        "contentHash": "VUPAE5l/Ir4Gb3dv+v0jq0Qe4nfwxfrfiYN7QhwlGyWPXFKYXSSke1t1bV/ZYd6idtTtRDqJPM49Lt/U8NTocg=="
       },
       "Serilog": {
         "type": "Direct",
@@ -883,8 +883,8 @@
           "Microsoft.CodeAnalysis.CSharp": "[5.3.0, )",
           "Microsoft.CodeAnalysis.Common": "[5.3.0, )",
           "Serilog": "[4.3.1, )",
-          "Stryker.Abstractions": "[4.14.1, )",
-          "Stryker.Utilities": "[4.14.1, )"
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )"
         }
       },
       "stryker.datacollector": {
@@ -910,7 +910,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.TestPlatform.ObjectModel": "[18.4.0, )",
-          "Stryker.Abstractions": "[4.14.1, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "stryker.testrunner.microsofttestplatform": {
@@ -919,8 +919,8 @@
           "CliWrap": "[3.10.1, )",
           "Microsoft.Testing.Platform": "[1.5.2, )",
           "StreamJsonRpc": "[2.24.84, )",
-          "Stryker.TestRunner": "[4.14.1, )",
-          "Stryker.Utilities": "[4.14.1, )"
+          "Stryker.TestRunner": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )"
         }
       },
       "stryker.testrunner.vstest": {
@@ -931,10 +931,10 @@
           "Microsoft.TestPlatform.ObjectModel": "[18.4.0, )",
           "Microsoft.TestPlatform.Portable": "[18.4.0, )",
           "Microsoft.TestPlatform.TranslationLayer": "[18.4.0, )",
-          "Stryker.Abstractions": "[4.14.1, )",
-          "Stryker.DataCollector": "[4.14.1, )",
-          "Stryker.TestRunner": "[4.14.1, )",
-          "Stryker.Utilities": "[4.14.1, )",
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.TestRunner": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.1, )"
         }
       },
@@ -947,7 +947,7 @@
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.6, )",
           "Mono.Cecil": "[0.11.6, )",
           "ResXResourceReader.NetStandard": "[1.3.0, )",
-          "Stryker.Abstractions": "[4.14.1, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "CliWrap": {
