@@ -34,10 +34,10 @@ public class SseServerTest : TestBase
 
     private bool WaitForConnection(int timeout)
     {
-        var watch = new Stopwatch();
-        watch.Start();
         lock (_lock)
         {
+            var watch = new Stopwatch();
+            watch.Start();
             while (!_connected && watch.ElapsedMilliseconds < timeout)
             {
                 Monitor.Wait(_lock, Math.Max(timeout - (int)watch.ElapsedMilliseconds, 1));
@@ -49,10 +49,10 @@ public class SseServerTest : TestBase
 
     private bool WaitForDisConnection(int timeout)
     {
-        var watch = new Stopwatch();
-        watch.Start();
         lock (_lock)
         {
+            var watch = new Stopwatch();
+            watch.Start();
             while (_sut.HasConnectedClients && watch.ElapsedMilliseconds < timeout)
             {
                 Monitor.Wait(_lock,  Math.Max(Math.Min( timeout - (int)watch.ElapsedMilliseconds, 100), 1));
@@ -129,7 +129,7 @@ public class SseServerTest : TestBase
 
         var @object = new { Id = "1", Status = "Survived" };
         var sseClient = new EventSource(new Uri($"http://localhost:{_sut.Port}/"));
-        
+
         Task.Run(() => sseClient.StartAsync());
         WaitForConnection(500).ShouldBeTrue();
         Task.Run( ()=> {sseClient.Close(); sseClient.Dispose();}).Wait();
