@@ -99,6 +99,12 @@ internal abstract class BaseFunctionOrchestrator<T> : MemberDefinitionOrchestrat
         return SwitchToThisBodies(typedNode, null, expression).WithoutAnnotations(Marker);
     }
 
+    public SyntaxNode RemoveInstrumentationFrom(SyntaxNode tree, SyntaxNode instrumentation)
+    {
+        var restoredNode = RemoveInstrumentation(instrumentation);
+        return tree.ReplaceNode(instrumentation, restoredNode);
+    }
+
     /// <inheritdoc/>
     protected override T InjectMutations(T sourceNode, T targetNode, SemanticModel semanticModel, MutationContext context)
     {
