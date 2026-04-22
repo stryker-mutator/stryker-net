@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.IO.Abstractions.TestingHelpers;
 using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
@@ -15,10 +16,12 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Configuration.Options;
 using Stryker.Core.Compiling;
+using Stryker.Core.Initialisation;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.UnitTest.Compiling;
 
@@ -130,29 +133,23 @@ namespace ExampleProject
         };
         Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
 
-        var input = new MutationTestInput()
-        {
-            SourceProjectInfo = new SourceProjectInfo
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            properties: new Dictionary<string, string>
             {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "" },
-                        { "AssemblyName", "AssemblyName"},
-                        { "TargetFileName", "TargetFileName.dll"},
-                        { "SignAssembly", "true" },
-                        { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
-                    },
-                    projectFilePath: "TestResources",
-                    // add a reference to system so the example code can compile
-                    references: references.ToArray()
-                ).Object
-            }
-        };
+                { "TargetDir", "" },
+                { "AssemblyName", "AssemblyName"},
+                { "TargetFileName", "TargetFileName.dll"},
+                { "SignAssembly", "true" },
+                { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
+            },
+            projectFilePath: "TestResources",
+            // add a reference to system so the example code can compile
+            references: references.ToArray()
+        ).Object;
 
         var rollbackProcess = new CSharpRollbackProcess();
 
-        var target = new CsharpCompilingProcess(input, rollbackProcess, options);
+        var target = new CsharpCompilingProcess(analyzerResult, rollbackProcess, options);
 
         using var ms = new MemoryStream();
         var result = target.Compile(helpers, ms, null);
@@ -215,29 +212,23 @@ namespace ExampleProject
         };
         Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
 
-        var input = new MutationTestInput()
-        {
-            SourceProjectInfo = new SourceProjectInfo
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            properties: new Dictionary<string, string>()
             {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "" },
-                        { "AssemblyName", "AssemblyName"},
-                        { "TargetFileName", "TargetFileName.dll"},
-                        { "SignAssembly", "true" },
-                        { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
-                    },
-                    projectFilePath: "TestResources",
-                    // add a reference to system so the example code can compile
-                    references: references.ToArray()
-                ).Object
-            }
-        };
+                { "TargetDir", "" },
+                { "AssemblyName", "AssemblyName"},
+                { "TargetFileName", "TargetFileName.dll"},
+                { "SignAssembly", "true" },
+                { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
+            },
+            projectFilePath: "TestResources",
+            // add a reference to system so the example code can compile
+            references: references.ToArray()
+        ).Object;
 
         var rollbackProcess = new CSharpRollbackProcess();
 
-        var target = new CsharpCompilingProcess(input, rollbackProcess, options);
+        var target = new CsharpCompilingProcess(analyzerResult, rollbackProcess, options);
 
         using var ms = new MemoryStream();
 
