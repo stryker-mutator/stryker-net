@@ -4,11 +4,11 @@
     ".NETCoreApp,Version=v3.1": {
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
-        "requested": "[18.4.0, )",
-        "resolved": "18.4.0",
-        "contentHash": "w49iZdL4HL6V25l41NVQLXWQ+e71GvSkKVteMrOL02gP/PUkcnO/1yEb2s9FntU4wGmJWfKnyrRAhcMHd9ZZNA==",
+        "requested": "[18.5.0, )",
+        "resolved": "18.5.0",
+        "contentHash": "25WwwrAqPk8ZjUZchC0xlg0B89eHP4mGDOQwfwnM45/idYnIOQMT8NKWa8tY0HwRPTdFpdoPRBaoB7xU9lR+BA==",
         "dependencies": {
-          "Microsoft.CodeCoverage": "18.4.0"
+          "Microsoft.CodeCoverage": "18.5.0"
         }
       },
       "xunit": {
@@ -33,8 +33,8 @@
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
-        "resolved": "18.4.0",
-        "contentHash": "9O0BtCfzCWrkAmK187ugKdq72HHOXoOUjuWFDVc2LsZZ0pOnA9bTt+Sg9q4cF+MoAaUU+MuWtvBuFsnduviJow=="
+        "resolved": "18.5.0",
+        "contentHash": "6SR2NJFwMvobXs5FhuKdpxhzotlhy/OJzSZv4fhxnN5snHIHfrCUzpZ1k0fffFx9fkLb+GB4+sRptpTfWeu2TQ=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Transitive",

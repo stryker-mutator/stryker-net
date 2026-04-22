@@ -4,12 +4,12 @@
     "net10.0": {
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
-        "requested": "[18.4.0, )",
-        "resolved": "18.4.0",
-        "contentHash": "w49iZdL4HL6V25l41NVQLXWQ+e71GvSkKVteMrOL02gP/PUkcnO/1yEb2s9FntU4wGmJWfKnyrRAhcMHd9ZZNA==",
+        "requested": "[18.5.0, )",
+        "resolved": "18.5.0",
+        "contentHash": "25WwwrAqPk8ZjUZchC0xlg0B89eHP4mGDOQwfwnM45/idYnIOQMT8NKWa8tY0HwRPTdFpdoPRBaoB7xU9lR+BA==",
         "dependencies": {
-          "Microsoft.CodeCoverage": "18.4.0",
-          "Microsoft.TestPlatform.TestHost": "18.4.0"
+          "Microsoft.CodeCoverage": "18.5.0",
+          "Microsoft.TestPlatform.TestHost": "18.5.0"
         }
       },
       "NUnit": {
@@ -49,8 +49,8 @@
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
-        "resolved": "18.4.0",
-        "contentHash": "9O0BtCfzCWrkAmK187ugKdq72HHOXoOUjuWFDVc2LsZZ0pOnA9bTt+Sg9q4cF+MoAaUU+MuWtvBuFsnduviJow=="
+        "resolved": "18.5.0",
+        "contentHash": "6SR2NJFwMvobXs5FhuKdpxhzotlhy/OJzSZv4fhxnN5snHIHfrCUzpZ1k0fffFx9fkLb+GB4+sRptpTfWeu2TQ=="
       },
       "Microsoft.Extensions.DependencyModel": {
         "type": "Transitive",
@@ -100,15 +100,15 @@
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Transitive",
-        "resolved": "18.4.0",
-        "contentHash": "4L6m2kS2pY5uJ9cpeRxzW22opr6ttScIRqsOpMDQpgENp/ZwxkkQCcmc6LRSURo2dFaaSW5KVflQZvroiJ7Wzg=="
+        "resolved": "18.5.0",
+        "contentHash": "8f6BFQZEk8EvQ4xTo5QpNwgOfoMs28/iZ81+2pWKtB+S/PiI49W0Cvj+apHxJH3ttnKPlGlhKSn070Ise8ETlg=="
       },
       "Microsoft.TestPlatform.TestHost": {
         "type": "Transitive",
-        "resolved": "18.4.0",
-        "contentHash": "gZsCHI+zOmZCcKZieIL4Jg14qKD2OGZOmX5DehuIk1EA9BN6Crm0+taXQNEuajOH1G9CCyBxw8VWR4t5tumcng==",
+        "resolved": "18.5.0",
+        "contentHash": "vDo0CJKJqa1fgJkXWtwLbx7SMPSp6KkLk6jkJKe8rH1EG8SCD26vaPaEsxhd17+CazffDohWIGkO6yir85C45A==",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "18.4.0",
+          "Microsoft.TestPlatform.ObjectModel": "18.5.0",
           "Newtonsoft.Json": "13.0.3"
         }
       },
@@ -128,7 +128,7 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "[4.14.1, )",
+          "Library": "[1.0.0, )",
           "Microsoft.CodeAnalysis.Common": "[5.3.0, )",
           "Serilog": "[4.3.1, )"
         }

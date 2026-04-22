@@ -56,9 +56,9 @@
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Direct",
-        "requested": "[18.4.0, )",
-        "resolved": "18.4.0",
-        "contentHash": "4L6m2kS2pY5uJ9cpeRxzW22opr6ttScIRqsOpMDQpgENp/ZwxkkQCcmc6LRSURo2dFaaSW5KVflQZvroiJ7Wzg==",
+        "requested": "[18.5.0, )",
+        "resolved": "18.5.0",
+        "contentHash": "8f6BFQZEk8EvQ4xTo5QpNwgOfoMs28/iZ81+2pWKtB+S/PiI49W0Cvj+apHxJH3ttnKPlGlhKSn070Ise8ETlg==",
         "dependencies": {
           "System.Reflection.Metadata": "8.0.0"
         }
