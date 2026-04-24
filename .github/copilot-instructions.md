@@ -74,13 +74,18 @@ When creating or updating pull requests, **always** use Angular-style convention
 
 ### Testing Locally
 
-To test Stryker.NET on a project in a terminal, you can build Stryker.NET and then run the resulting `stryker.dll` on the target project. Run `dotnet <path-to-stryker.dll>` in the root of the project you want to test (adjust path as needed based on your build configuration).
+To test Stryker.NET on a project in a terminal, you can build Stryker.NET and then run the resulting `Stryker.CLI.dll` on the target project. Run `dotnet <path-to-stryker.dll>` in the root of the project you want to test (adjust path as needed based on your build configuration).
 
-For example in the `/integrationtest/TargetProjects/NetCore/TargetProject` directory, you can run `dotnet ../../src/Stryker.CLI/bin/Debug/net8.0/stryker.dll` to test Stryker.NET on the target projects.
+For example in the `/integrationtest/TargetProjects/NetCore/TargetProject` directory, you can run `dotnet ../../../../src/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI.dll` to run the locally built Stryker.NET on the target projects.
+
+Keep in mind the different runmodes of Stryker.NET:
+- **Solution context mode**: Run Stryker.NET from the root of a project containing a solution file (`.sln`). In this mode, Stryker.NET will analyze the solution and run mutation testing on all projects in the solution.
+- **Project context mode**: Run Stryker.NET from the root of a project containing a project file (`.csproj`). In this mode, Stryker.NET will analyze the project and run mutation testing on that specific project.
+- **Test Context mode**: Run Stryker.NET in a directory with a test project file (`.csproj`) and specify the path to the target project using the `--project` option. In this mode, Stryker.NET will analyze the specified target project and run mutation testing on it, while using the test project for running tests.
 
 ### Running Stryker on itself
 
-Running Stryker on itself doesn't work as assemblies will be in use. To run Stryker on the stryker codebase, use the official nuget release via `dotnet tool install dotnet-stryker` and then `dotnet stryker`.
+Running Stryker on itself doesn't work as assemblies will be in use. To run Stryker on the stryker codebase, use the official nuget release via `dotnet tool install dotnet-stryker` and then `dotnet stryker`. Or use the stryker-on-stryker.ps1 script in the root of the repo which will build Stryker and then run it on itself using the built dll.
 
 ## Adding a mutator
 
