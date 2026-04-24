@@ -1,6 +1,9 @@
 const { execSync } = require('child_process');
+const { promisify } = require('util');
 const readline = require('readline');
 const fs = require('fs');
+const semver = require('semver');
+const conventionalRecommendedBump = require('conventional-recommended-bump');
 const packagejson = require('./package.json');
 
 const exec = (command) => execSync(command, { stdio: [0, 1, 2] });
@@ -22,14 +25,29 @@ const packages = [
 
 const oldVersionPrefix = packagejson.versionPrefix;
 const oldVersionSuffix = packagejson.versionSuffix;
-const oldVersion = oldVersionPrefix + (oldVersionSuffix ?'-':'') + oldVersionSuffix;
-console.log(`Current package version is ${oldVersionPrefix}${oldVersionSuffix?'-':''}${oldVersionSuffix}`);
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
+const oldVersion = oldVersionPrefix + (oldVersionSuffix ? '-' : '') + oldVersionSuffix;
 
-rl.question('What should the new package version be? ', (newVersionNumber) => {
+const bump = promisify(conventionalRecommendedBump);
+
+(async () => {
+    const recommendation = await bump({ preset: 'angular', tagPrefix: 'dotnet-stryker@' });
+    const releaseType = recommendation.releaseType ?? 'patch';
+    const suggestedVersion = semver.inc(oldVersionPrefix, releaseType);
+
+    console.log(`Current package version is ${oldVersion}`);
+    if (recommendation.releaseType) {
+        console.log(`Suggested next version: ${suggestedVersion} (${releaseType} bump based on conventional commits)`);
+    } else {
+        console.log(`No conventional commits found since last tag. Defaulting to patch bump: ${suggestedVersion}`);
+    }
+
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    rl.question(`What should the new package version be? [${suggestedVersion}] `, (input) => {
+        const newVersionNumber = input.trim() || suggestedVersion;
     let commitMessageLines = ['Publish', '', ''];
     let versionPrefix = newVersionNumber;
     let versionSuffix = '';
@@ -48,13 +66,21 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
         console.log(`Updating version numbers in ${pckg.csproj}`);
         replaceVersionNumber(pckg.csproj, `<VersionPrefix>${oldVersionPrefix}</VersionPrefix>`, `<VersionPrefix>${versionPrefix}</VersionPrefix>`);
         replaceVersionNumber(pckg.csproj, `<VersionSuffix>${oldVersionSuffix}</VersionSuffix>`, `<VersionSuffix>${versionSuffix}</VersionSuffix>`);
-
-        if (!versionSuffix) {
-            console.log(`Updating changelog for ${pckg.name}`);
-            commitMessageLines.push(`- ${pckg.name}@${newVersionNumber}`);
-            exec(`npx conventional-changelog-cli -p angular --infile "${pckg.path}/CHANGELOG.md" --same-file --commit-path ${pckg.path} --tag-prefix "${pckg.name}@"`);
-        }
     });
+
+    let releaseNotes = '';
+    if (!versionSuffix) {
+        console.log(`Updating changelog`);
+        commitMessageLines.push(`- dotnet-stryker@${newVersionNumber}`);
+        releaseNotes = execSync(`npx conventional-changelog-cli -p angular --tag-prefix "dotnet-stryker@"`, { encoding: 'utf8' }).trim();
+        const changelogPath = './CHANGELOG.md';
+        const changelog = fs.readFileSync(changelogPath, { encoding: 'UTF-8' });
+        const marker = '<!-- changelog -->';
+        if (!changelog.includes(marker)) {
+            throw new Error(`${changelogPath} is missing the '${marker}' insertion marker`);
+        }
+        fs.writeFileSync(changelogPath, changelog.replace(marker, `${marker}\n\n${releaseNotes}`), { encoding: 'UTF-8' });
+    }
 
     console.log('Updating azure-pipelines.yml');
     replaceVersionNumber('./azure-pipelines.yml', `VersionBuildNumber: $[counter('${oldVersion}', 1)]`, `VersionBuildNumber: $[counter('${versionPrefix}', 1)]`);
@@ -62,7 +88,10 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
 
     if (!versionSuffix) {
         console.log('Tagging commit');
-        packages.forEach(pckg => exec(`git tag -a ${pckg.name}@${newVersionNumber} -m "${pckg.name}@${newVersionNumber}"`));
+        const tmpTagFile = '.release-notes.md';
+        fs.writeFileSync(tmpTagFile, releaseNotes);
+        exec(`git tag -a dotnet-stryker@${newVersionNumber} --cleanup=verbatim -F ${tmpTagFile}`);
+        fs.unlinkSync(tmpTagFile);
     }
 
     console.log(`Creating commit`);
@@ -71,6 +100,15 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
 
     console.log(`Pushing commit ${versionSuffix?'':' and tags'}`);
     exec('git push --follow-tags');
+    if (!versionSuffix) {
+        try {
+            const execSync = require('node:child_process').execSync;
+            execSync(`gh release create dotnet-stryker@${newVersionNumber} --title "dotnet-stryker@${newVersionNumber}" --notes-from-tag`);
+            console.log(`Created GitHub release for dotnet-stryker@${newVersionNumber}`);
+        } catch (e) {
+            console.warn('Failed to create GitHub release:', e.message);
+        }
+    }
     rl.close();
-});
-
+    });
+})().catch(console.error);

@@ -19,7 +19,7 @@ public sealed class MtpTestCase : ITestCase
     public Uri Uri => new("executor://MicrosoftTestPlatform");
     public int LineNumber { get; }
 
-    public string Source { get; }
+    public string Source { get; init; } = string.Empty;
     public string CodeFilePath { get; }
 
     public string AssemblyPath { get; init; }
