@@ -872,7 +872,7 @@
           "Stryker.TestRunner": "[1.0.0, )",
           "Stryker.Utilities": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.TestingHelpers": "[22.1.1, )",
-          "stryker": "[4.14.0, )"
+          "stryker": "[4.14.1, )"
         }
       },
       "stryker.datacollector": {

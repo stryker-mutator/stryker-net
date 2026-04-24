@@ -858,7 +858,7 @@
           "Microsoft.Extensions.DependencyInjection": "[10.0.5, )",
           "NuGet.Protocol": "[7.3.0, )",
           "YamlDotNet": "[17.0.1, )",
-          "stryker": "[4.14.0, )"
+          "stryker": "[4.14.1, )"
         }
       },
       "stryker": {

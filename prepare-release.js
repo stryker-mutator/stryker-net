@@ -90,7 +90,7 @@ const bump = promisify(conventionalRecommendedBump);
         console.log('Tagging commit');
         const tmpTagFile = '.release-notes.md';
         fs.writeFileSync(tmpTagFile, releaseNotes);
-        exec(`git tag -a dotnet-stryker@${newVersionNumber} -F ${tmpTagFile}`);
+        exec(`git tag -a dotnet-stryker@${newVersionNumber} --cleanup=verbatim -F ${tmpTagFile}`);
         fs.unlinkSync(tmpTagFile);
     }
 
