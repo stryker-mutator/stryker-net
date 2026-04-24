@@ -1,0 +1,172 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Override release version (e.g. 4.15.0). Leave empty to auto-detect from conventional commits.'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install changelog tools
+        run: npm install -g conventional-changelog-cli@5 conventional-recommended-bump@6 semver@7
+
+      - name: Determine version
+        id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          OLD_PREFIX=$(node -p "require('./package.json').versionPrefix")
+          OLD_SUFFIX=$(node -p "require('./package.json').versionSuffix")
+
+          if [ -n "$INPUT_VERSION" ]; then
+            NEW_VERSION="$INPUT_VERSION"
+          else
+            BUMP_TYPE=$(conventional-recommended-bump -p angular -t "dotnet-stryker@")
+            NEW_VERSION=$(semver "$OLD_PREFIX" -i "$BUMP_TYPE")
+          fi
+
+          NEW_PREFIX="${NEW_VERSION%%-*}"
+          [[ "$NEW_VERSION" == *-* ]] && NEW_SUFFIX="${NEW_VERSION#*-}" || NEW_SUFFIX=""
+
+          echo "old_prefix=$OLD_PREFIX" >> "$GITHUB_OUTPUT"
+          echo "old_suffix=$OLD_SUFFIX" >> "$GITHUB_OUTPUT"
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "new_prefix=$NEW_PREFIX" >> "$GITHUB_OUTPUT"
+          echo "new_suffix=$NEW_SUFFIX" >> "$GITHUB_OUTPUT"
+
+      - name: Generate changelog
+        run: conventional-changelog -p angular -t "dotnet-stryker@" > /tmp/release-notes.md
+
+      - name: Update CHANGELOG.md
+        run: |
+          node << 'EOF'
+          const fs = require('fs');
+          const releaseNotes = fs.readFileSync('/tmp/release-notes.md', 'utf8').trim();
+          const changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+          const marker = '<!-- changelog -->';
+          if (!changelog.includes(marker)) {
+            console.error('CHANGELOG.md is missing the <!-- changelog --> marker');
+            process.exit(1);
+          }
+          fs.writeFileSync('CHANGELOG.md', changelog.replace(marker, `${marker}\n\n${releaseNotes}`));
+          EOF
+
+      - name: Update csproj version numbers
+        env:
+          OLD_PREFIX: ${{ steps.version.outputs.old_prefix }}
+          NEW_PREFIX: ${{ steps.version.outputs.new_prefix }}
+          NEW_SUFFIX: ${{ steps.version.outputs.new_suffix }}
+        run: |
+          node << 'EOF'
+          const fs = require('fs');
+          const { OLD_PREFIX, NEW_PREFIX, NEW_SUFFIX } = process.env;
+          const csprojFiles = [
+            'src/Stryker.Core/Stryker.Core/Stryker.Core.csproj',
+            'src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj',
+          ];
+          for (const file of csprojFiles) {
+            let content = fs.readFileSync(file, 'utf8');
+            content = content.replace(
+              `<VersionPrefix>${OLD_PREFIX}</VersionPrefix>`,
+              `<VersionPrefix>${NEW_PREFIX}</VersionPrefix>`
+            );
+            content = content.replace(
+              /<VersionSuffix>.*<\/VersionSuffix>/,
+              `<VersionSuffix>${NEW_SUFFIX}</VersionSuffix>`
+            );
+            fs.writeFileSync(file, content);
+          }
+          EOF
+
+      - name: Update azure-pipelines.yml
+        env:
+          OLD_PREFIX: ${{ steps.version.outputs.old_prefix }}
+          OLD_SUFFIX: ${{ steps.version.outputs.old_suffix }}
+          NEW_PREFIX: ${{ steps.version.outputs.new_prefix }}
+        run: |
+          node << 'EOF'
+          const fs = require('fs');
+          const { OLD_PREFIX, OLD_SUFFIX, NEW_PREFIX } = process.env;
+          const oldVersion = OLD_SUFFIX ? `${OLD_PREFIX}-${OLD_SUFFIX}` : OLD_PREFIX;
+          let content = fs.readFileSync('azure-pipelines.yml', 'utf8');
+          content = content.replace(
+            `VersionBuildNumber: $[counter('${oldVersion}', 1)]`,
+            `VersionBuildNumber: $[counter('${NEW_PREFIX}', 1)]`
+          );
+          content = content.replace(
+            `PackageVersion: '${oldVersion}'`,
+            `PackageVersion: '${NEW_PREFIX}'`
+          );
+          fs.writeFileSync('azure-pipelines.yml', content);
+          EOF
+
+      - name: Update package.json
+        env:
+          OLD_PREFIX: ${{ steps.version.outputs.old_prefix }}
+          OLD_SUFFIX: ${{ steps.version.outputs.old_suffix }}
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+          NEW_PREFIX: ${{ steps.version.outputs.new_prefix }}
+          NEW_SUFFIX: ${{ steps.version.outputs.new_suffix }}
+        run: |
+          node << 'EOF'
+          const fs = require('fs');
+          const { OLD_PREFIX, OLD_SUFFIX, NEW_VERSION, NEW_PREFIX, NEW_SUFFIX } = process.env;
+          const oldVersion = OLD_SUFFIX ? `${OLD_PREFIX}-${OLD_SUFFIX}` : OLD_PREFIX;
+          let content = fs.readFileSync('package.json', 'utf8');
+          content = content.replace(`"version": "${oldVersion}",`, `"version": "${NEW_VERSION}",`);
+          content = content.replace(`"versionPrefix": "${OLD_PREFIX}",`, `"versionPrefix": "${NEW_PREFIX}",`);
+          content = content.replace(`"versionSuffix": "${OLD_SUFFIX}",`, `"versionSuffix": "${NEW_SUFFIX}",`);
+          fs.writeFileSync('package.json', content);
+          EOF
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit changes
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+        run: |
+          git add .
+          git commit -m "Publish" -m "" -m "- dotnet-stryker@${NEW_VERSION}"
+
+      - name: Create git tag
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+        run: git tag -a "dotnet-stryker@${NEW_VERSION}" -F /tmp/release-notes.md
+
+      - name: Push changes and tags
+        run: git push --follow-tags
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+        run: |
+          {
+            cat /tmp/release-notes.md
+            printf "\n---\n\n**NuGet:** https://www.nuget.org/packages/dotnet-stryker/%s\n" "${NEW_VERSION}"
+          } > /tmp/gh-release-notes.md
+          gh release create "dotnet-stryker@${NEW_VERSION}" \
+            --title "dotnet-stryker@${NEW_VERSION}" \
+            --notes-file /tmp/gh-release-notes.md
