@@ -66,7 +66,7 @@ When creating or updating pull requests, **always** use Angular-style convention
 
 ### Running Tests
 
-- **Unit tests**: Run `dotnet test` in the `/src` directory
+- **Unit tests**: Use #tool:execute/runTests or when the tool is not available run `dotnet test`
 - **Integration tests**:
   - On **Windows**: Run `.\integration-tests.ps1` in the root of the repo (PowerShell 7 recommended)
   - On **macOS/Linux**: Run `pwsh ./integration-tests.ps1` in the root of the repo (requires [PowerShell 7](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell))
