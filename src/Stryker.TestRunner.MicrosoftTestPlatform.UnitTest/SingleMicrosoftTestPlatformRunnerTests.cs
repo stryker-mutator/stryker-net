@@ -1154,9 +1154,9 @@ public class SingleMicrosoftTestPlatformRunnerTests
 
         public override void Dispose(bool disposing)
         {
-            var disposedField = typeof(SingleMicrosoftTestPlatformRunner).GetField("_disposed", 
+            var disposedField = typeof(SingleMicrosoftTestPlatformRunner).GetField("_disposed",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
+
             var wasDisposedBefore = (bool)disposedField!.GetValue(this)!;
 
             base.Dispose(disposing);
