@@ -1,9 +1,14 @@
 {
     "private": true,
-    "version": "4.14.0",
-    "versionPrefix": "4.14.0",
+    "version": "4.14.1",
+    "versionPrefix": "4.14.1",
     "versionSuffix": "",
     "scripts": {
         "prepare-release": "node prepare-release.js"
+    },
+    "devDependencies": {
+        "conventional-changelog-angular": "^8.3.1",
+        "conventional-recommended-bump": "^6.1.0",
+        "semver": "^7.6.0"
     }
 }

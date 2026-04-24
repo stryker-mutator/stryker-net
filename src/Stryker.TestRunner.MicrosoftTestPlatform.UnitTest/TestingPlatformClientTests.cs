@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Nerdbank.Streams;
 using Shouldly;
@@ -18,7 +19,7 @@ public class TestingPlatformClientTests
         var tcpClient = new Mock<TcpClient>();
         var processHandle = new Mock<IProcessHandle>();
 
-        using var client = new TestingPlatformClient(jsonRpc, tcpClient.Object, processHandle.Object, false);
+        using var client = new TestingPlatformClient(jsonRpc, tcpClient.Object, processHandle.Object, NullLogger.Instance, null);
 
         client.ShouldNotBeNull();
         client.JsonRpcClient.ShouldBe(jsonRpc);
@@ -33,7 +34,7 @@ public class TestingPlatformClientTests
         var processHandle = new Mock<IProcessHandle>();
         processHandle.SetupGet(x => x.ExitCode).Returns(42);
 
-        using var client = new TestingPlatformClient(jsonRpc, tcpClient.Object, processHandle.Object, false);
+        using var client = new TestingPlatformClient(jsonRpc, tcpClient.Object, processHandle.Object, NullLogger.Instance, null);
 
         client.ExitCode.ShouldBe(42);
     }
@@ -48,7 +49,7 @@ public class TestingPlatformClientTests
         processHandle.Setup(x => x.WaitForExitAsync()).ReturnsAsync(0);
         processHandle.SetupGet(x => x.ExitCode).Returns(0);
 
-        using var client = new TestingPlatformClient(jsonRpc, tcpClient.Object, processHandle.Object, false);
+        using var client = new TestingPlatformClient(jsonRpc, tcpClient.Object, processHandle.Object, NullLogger.Instance, null);
         var exitCode = await client.WaitServerProcessExitAsync();
 
         exitCode.ShouldBe(0);
@@ -64,7 +65,7 @@ public class TestingPlatformClientTests
         var processHandle = new Mock<IProcessHandle>();
         var listener = new LogsCollector();
 
-        using var client = new TestingPlatformClient(jsonRpc, tcpClient.Object, processHandle.Object, false);
+        using var client = new TestingPlatformClient(jsonRpc, tcpClient.Object, processHandle.Object, NullLogger.Instance, null);
 
         client.RegisterLogListener(listener);
         listener.ShouldNotBeNull();
@@ -79,7 +80,7 @@ public class TestingPlatformClientTests
         var processHandle = new Mock<IProcessHandle>();
         var listener = new TelemetryCollector();
 
-        using var client = new TestingPlatformClient(jsonRpc, tcpClient.Object, processHandle.Object, false);
+        using var client = new TestingPlatformClient(jsonRpc, tcpClient.Object, processHandle.Object, NullLogger.Instance, null);
 
         client.RegisterTelemetryListener(listener);
         listener.ShouldNotBeNull();
@@ -95,7 +96,7 @@ public class TestingPlatformClientTests
 
         var processHandle = new Mock<IProcessHandle>();
 
-        var client = new TestingPlatformClient(testableJsonRpc, testableTcpClient, processHandle.Object, false);
+        var client = new TestingPlatformClient(testableJsonRpc, testableTcpClient, processHandle.Object, NullLogger.Instance, null);
 
         client.Dispose();
 
@@ -112,7 +113,7 @@ public class TestingPlatformClientTests
         var tcpClient = new TestableTcpClient();
         var processHandle = new Mock<IProcessHandle>();
 
-        var client = new TestingPlatformClient(jsonRpc, tcpClient, processHandle.Object, false);
+        var client = new TestingPlatformClient(jsonRpc, tcpClient, processHandle.Object, NullLogger.Instance, null);
 
         client.Dispose();
 
@@ -164,7 +165,7 @@ public class TestingPlatformClientTests
         var testableTcpClient = new TestableTcpClient();
         var processHandle = new Mock<IProcessHandle>();
 
-        using var client = new TestingPlatformClient(jsonRpc, testableTcpClient, processHandle.Object, false);
+        using var client = new TestingPlatformClient(jsonRpc, testableTcpClient, processHandle.Object, NullLogger.Instance, null);
 
         // ExitAsync(gracefully: false) disposes TcpClient directly
         client.ExitAsync(gracefully: false).GetAwaiter().GetResult();
@@ -560,7 +561,7 @@ public class TestingPlatformClientTests
                 _clientStream, _clientStream, new SystemTextJsonFormatter());
 
             var clientRpc = new JsonRpc(clientHandler);
-            return new TestingPlatformClient(clientRpc, _dummyTcpClient, _processHandle.Object, false);
+            return new TestingPlatformClient(clientRpc, _dummyTcpClient, _processHandle.Object, NullLogger.Instance, null);
         }
 
         public void Dispose()
