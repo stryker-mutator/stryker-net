@@ -222,23 +222,30 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
     private CSharpCompilation ScanForCauseOfException(CSharpCompilation compilation)
     {
         var syntaxTrees = compilation.SyntaxTrees;
-        // we add each file incrementally until it fails
-        foreach (var st in syntaxTrees)
+        var success = false;
+        while (!success)
         {
-            var local = compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(st);
-            try
+            success = true;
+            // we add each file incrementally until it fails
+            foreach (var st in syntaxTrees)
             {
-                using var ms = new MemoryStream();
-                local.Emit(
-                    ms,
-                    manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
-                    options: null);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Failed to compile {FilePath}", st.FilePath);
-                _logger.LogTrace("source code:\n {Source}", st.GetText());
-                syntaxTrees = syntaxTrees.Where(x => x != st).Append(_rollbackProcess.CleanUpFile(st)).ToImmutableArray();
+                var local = compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(st);
+                try
+                {
+                    using var ms = new MemoryStream();
+                    local.Emit(
+                        ms,
+                        manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
+                        options: null);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Failed to compile {FilePath}", st.FilePath);
+                    _logger.LogTrace("source code:\n {Source}", st.GetText());
+                    syntaxTrees = [..syntaxTrees.Where(x => x != st).Append(_rollbackProcess.CleanUpFile(st))];
+                    success = false;
+                    break;
+                }
             }
         }
         _logger.LogError("Please report an issue and provide the source code of the file that caused the exception for analysis.");

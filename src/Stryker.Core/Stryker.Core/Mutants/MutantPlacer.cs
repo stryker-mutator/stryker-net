@@ -13,14 +13,14 @@ namespace Stryker.Core.Mutants;
 /// Implements multiple (reversible) patterns for injecting code in the mutated assembly
 /// Each pattern is implemented in a dedicated class.
 /// </summary>
-public class MutantPlacer
+public class MutantPlacer(CodeInjection injection)
 {
     private const string MutationIdMarker = "MutationId";
     private const string MutationTypeMarker = "MutationType";
-    public static readonly string Injector = "Injector";
+    private const string Injector = "Injector";
 
-    private static readonly Dictionary<string, (IInstrumentCode engine, SyntaxAnnotation annotation)> instrumentEngines = [];
-    private static readonly HashSet<string> requireRecursiveRemoval = [];
+    private static readonly Dictionary<string, (IInstrumentCode engine, SyntaxAnnotation annotation)> InstrumentEngines = [];
+    private static readonly HashSet<string> RequireRecursiveRemoval = [];
 
     private static readonly StaticInstrumentationEngine StaticEngine = new();
     private static readonly StaticInitializerMarkerEngine StaticInitializerEngine = new();
@@ -29,13 +29,10 @@ public class MutantPlacer
     private static readonly EndingReturnEngine EndingReturnEngine = new();
     private static readonly DefaultInitializationEngine DefaultInitializationEngine = new();
 
-    private readonly CodeInjection _injection;
     private ExpressionSyntax _binaryExpression;
     private SyntaxNode _placeHolderNode;
 
-    public static IEnumerable<string> MutationMarkers => [MutationIdMarker, MutationTypeMarker, Injector];
-
-    public MutantPlacer(CodeInjection injection) => _injection = injection;
+    private static IEnumerable<string> MutationMarkers => [MutationIdMarker, MutationTypeMarker, Injector];
 
     /// <summary>
     /// Register an instrumentation engine
@@ -44,9 +41,9 @@ public class MutantPlacer
     /// <param name="requireRecursive">true if inner injections should be removed first.</param>
     public static SyntaxAnnotation RegisterEngine(IInstrumentCode engine, bool requireRecursive = false)
     {
-        lock (instrumentEngines)
+        lock (InstrumentEngines)
         {
-            if (instrumentEngines.TryGetValue(engine.InstrumentEngineId, out var existing))
+            if (InstrumentEngines.TryGetValue(engine.InstrumentEngineId, out var existing))
             {
                 if (existing.engine!.GetType() != engine.GetType())
                 {
@@ -57,10 +54,10 @@ public class MutantPlacer
             }
 
             var syntaxAnnotation = new SyntaxAnnotation(Injector, engine.InstrumentEngineId);
-            instrumentEngines[engine.InstrumentEngineId] = (engine, syntaxAnnotation);
+            InstrumentEngines[engine.InstrumentEngineId] = (engine, syntaxAnnotation);
             if (requireRecursive)
             {
-                requireRecursiveRemoval.Add(engine.InstrumentEngineId);
+                RequireRecursiveRemoval.Add(engine.InstrumentEngineId);
             }
             return syntaxAnnotation;
         }
@@ -82,7 +79,7 @@ public class MutantPlacer
     /// <param name="block">block to augment with the marker</param>
     /// <returns><paramref name="block"/> with the marker added via a using statement.</returns>
     public BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
-        StaticEngine.PlaceStaticContextMarker(block, _injection);
+        StaticEngine.PlaceStaticContextMarker(block, injection);
 
     /// <summary>
     /// Add a static marker so that Stryker can identify mutations used in static context
@@ -90,7 +87,7 @@ public class MutantPlacer
     /// <param name="expression">expression to augment with the marker</param>
     /// <returns><paramref name="expression"/> with the marker added via a using expression.</returns>
     public ExpressionSyntax PlaceStaticContextMarker(ExpressionSyntax expression) =>
-        StaticInitializerEngine.PlaceValueMarker(expression, _injection);
+        StaticInitializerEngine.PlaceValueMarker(expression, injection);
 
     /// <summary>
     /// Add initialization for all out parameters
@@ -145,7 +142,7 @@ public class MutantPlacer
             var id = annotatedNode.GetAnnotations(Injector).First().Data;
             if (!string.IsNullOrEmpty(id))
             {
-                var restoredNode = instrumentEngines[id].engine.RemoveInstrumentation(annotatedNode);
+                var restoredNode = InstrumentEngines[id].engine.RemoveInstrumentation(annotatedNode);
                 return annotatedNode == nodeToRemove ? restoredNode : nodeToRemove.ReplaceNode(annotatedNode, restoredNode);
             }
         }
@@ -164,7 +161,7 @@ public class MutantPlacer
         {
             throw new InvalidOperationException("No mutation in this node!");
         }
-        return annotations.Exists(a => requireRecursiveRemoval.Contains(a.Data));
+        return annotations.Exists(a => RequireRecursiveRemoval.Contains(a.Data));
     }
 
     /// <summary>
@@ -213,11 +210,19 @@ public class MutantPlacer
     {
         if (_binaryExpression == null)
         {
-            _binaryExpression = SyntaxFactory.ParseExpression(_injection.SelectorExpression);
+            _binaryExpression = SyntaxFactory.ParseExpression(injection.SelectorExpression);
             _placeHolderNode = _binaryExpression.DescendantNodes().First(n => n is IdentifierNameSyntax { Identifier.Text: "ID" });
         }
 
         return _binaryExpression.ReplaceNode(_placeHolderNode,
             SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(mutantId)));
+    }
+
+    public static List<(SyntaxNode node, IInstrumentCode engine)> GetMutationsEnginesAndIDs(SyntaxNode node) => GetAllMutations(node).Select(entry => (entry.node, InstrumentEngines[entry.engine.Engine].engine)).ToList();
+
+    public static List<(SyntaxNode node, MutantInfo engine)> GetAllMutations(SyntaxNode node)
+    {
+        var mutations = node.GetAnnotatedNodes(MutationIdMarker);
+        return (from syntaxNode in mutations let engine = FindAnnotations(syntaxNode).Engine select (syntaxNode, FindAnnotations(syntaxNode))).ToList();
     }
 }

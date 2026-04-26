@@ -55,7 +55,7 @@ public class Calculator
                         { "TargetFileName", "TargetFileName.dll"},
                     },
                     // add a reference to system so the example code can compile
-                    references: new[] { typeof(object).Assembly.Location }
+                    references: [typeof(object).Assembly.Location]
                 ).Object
             }
         };
@@ -65,7 +65,7 @@ public class Calculator
 
         using var ms = new MemoryStream();
         using var symbol = new MemoryStream();
-        var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, symbol);
+        var result = target.Compile(new Collection<SyntaxTree> { syntaxTree }, ms, symbol);
         result.Success.ShouldBe(true);
         ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
     }
@@ -91,7 +91,7 @@ public class Calculator
         var immutableArray = ImmutableArray.Create("TheAlias");
         alias[typeof(object).Assembly.Location]=immutableArray;
 
-        var input = new MutationTestInput()
+        var input = new MutationTestInput
         {
             SourceProjectInfo = new SourceProjectInfo
             {
@@ -150,14 +150,14 @@ public class Calculator
                         { "TargetFileName", "TargetFileName.dll"},
                     },
                     // add a reference to system so the example code can compile
-                    references: new string[] { typeof(object).Assembly.Location }
+                    references: [typeof(object).Assembly.Location]
                 ).Object
             }
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
         rollbackProcessMock.Setup(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>(), false))
                         .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics, bool _, bool _) =>
-                        new(compilation, null));
+                        new CSharpRollbackProcessResult(compilation, null));
 
         var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, new StrykerOptions());
 
@@ -197,7 +197,7 @@ public class Calculator
                         { "TargetFileName", "TargetFileName.dll"},
                     },
                     // add a reference to system so the example code can compile
-                    references: new string[] { typeof(object).Assembly.Location }
+                    references: [typeof(object).Assembly.Location]
                 ).Object
             }
         };
@@ -205,12 +205,10 @@ public class Calculator
 
         var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
-        using (var ms = new MemoryStream())
-        {
-            target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+        using var ms = new MemoryStream();
+        target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
 
-            ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
-        }
+        ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
     }
 
     [TestMethod]
@@ -242,24 +240,21 @@ public class Calculator
                         { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
                     },
                     // add a reference to system so the example code can compile
-                    references: new string[] { typeof(object).Assembly.Location },
+                    references: [typeof(object).Assembly.Location],
                     projectFilePath: "TestResources"
                 ).Object
             }
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
-
         var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
-        using (var ms = new MemoryStream())
-        {
-            var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
-            result.Success.ShouldBe(true);
+        using var ms = new MemoryStream();
+        var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+        result.Success.ShouldBe(true);
 
-            var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
-            key.Length.ShouldBe(160, "Assembly was not signed");
-            ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
-        }
+        var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
+        key.Length.ShouldBe(160, "Assembly was not signed");
+        ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
     }
 
     [TestMethod]
@@ -290,7 +285,7 @@ public class Calculator
                         { "SignAssembly", "true" }
                     },
                     // add a reference to system so the example code can compile
-                    references: new string[] { typeof(object).Assembly.Location },
+                    references: [typeof(object).Assembly.Location],
                     projectFilePath: "TestResources"
                 ).Object
             }
@@ -300,15 +295,13 @@ public class Calculator
 
         var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
-        using (var ms = new MemoryStream())
-        {
-            var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
-            result.Success.ShouldBe(true);
+        using var ms = new MemoryStream();
+        var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+        result.Success.ShouldBe(true);
 
-            var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
-            key.Length.ShouldBe(0, "Assembly was signed");
-            ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
-        }
+        var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
+        key.Length.ShouldBe(0, "Assembly was signed");
+        ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
     }
 
     [TestMethod]
@@ -340,7 +333,7 @@ public class Calculator
                     },
                     projectFilePath: "project.csproj",
                     // add a reference to system so the example code can compile
-                    references: new string[] { typeof(object).Assembly.Location }
+                    references: [typeof(object).Assembly.Location]
                 ).Object
             }
 
@@ -349,10 +342,8 @@ public class Calculator
 
         var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
-        using (var ms = new MemoryStream())
-        {
-            Should.Throw<CompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null));
-        }
+        using var ms = new MemoryStream();
+        Should.Throw<CompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null));
     }
 
     [TestMethod]
@@ -383,7 +374,7 @@ public class Calculator
                         { "AssemblyName", "AssemblyName"},
                     },
                     // add a reference to system so the example code can compile
-                    references: new string[] { typeof(object).Assembly.Location }
+                    references: [typeof(object).Assembly.Location]
                 ).Object
             }
         };
@@ -503,7 +494,7 @@ public class Calculator
                         { "TargetFileName", "TargetFileName.dll" },
                     },
                     // add a reference to system so the example code can compile
-                    references: new[] { typeof(object).Assembly.Location }
+                    references: [typeof(object).Assembly.Location]
                 ).Object,
                 TestProjectsInfo = new TestProjectsInfo(fileSystem)
                 {
@@ -517,7 +508,7 @@ public class Calculator
                                 { "TargetFileName", "TargetFileName.dll" },
                             },
                             // add a reference to system so the example code can compile
-                            references: new[] { typeof(object).Assembly.Location }
+                            references: [typeof(object).Assembly.Location]
                         ).Object),
                     }
                 }

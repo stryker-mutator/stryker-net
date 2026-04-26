@@ -2,6 +2,7 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Instrumentation;
 
@@ -33,12 +34,16 @@ internal class IfInstrumentationEngine : BaseEngine<IfStatementSyntax>
     /// <param name="ifNode">if statement to be 'removed'</param>
     /// <returns>the original node.</returns>
     /// <remarks>this method returns either a single statement or a syntax block.</remarks>
-    protected override SyntaxNode Revert(IfStatementSyntax ifNode)
-    {
-        if (ifNode.Else?.Statement is BlockSyntax block)
-        {
-            return (block.Statements.Count == 1 ? block.Statements[0] : block).WithTriviaFrom(ifNode);
-        }
-        throw new InvalidOperationException($"Expected a block containing an 'else' statement, found:\n{ifNode.ToFullString()}.");
-    }
+    protected override SyntaxNode Revert(IfStatementSyntax ifNode) =>
+        ifNode.Else?.Statement is BlockSyntax block
+            ? (block.Statements.Count == 1 ? block.Statements[0] : block).WithTriviaFrom(ifNode)
+            : throw new InvalidOperationException(
+                $"Expected a block containing an 'else' statement, found:\n{ifNode.ToFullString()}.");
+
+    protected override bool ErasesAssignment(IfStatementSyntax node, string identifier) =>
+        // check if identifier is assigned on false condition and not assigned on true
+        !node.Statement.ContainsNodeThatVerifies(x =>
+            x.AssignsThis(identifier), false)
+        && node.Else.ContainsNodeThatVerifies(x =>
+            x.AssignsThis(identifier), false);
 }

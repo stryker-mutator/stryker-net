@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
+using Stryker.Core.Helpers;
 using Stryker.Core.Mutants;
 using Stryker.Utilities.Logging;
 
@@ -27,14 +28,8 @@ public interface ICSharpRollbackProcess
 /// </summary>
 public class CSharpRollbackProcess : ICSharpRollbackProcess
 {
-    private List<int> RollBackedIds { get; }
-    private ILogger Logger { get; }
-
-    public CSharpRollbackProcess()
-    {
-        Logger = ApplicationLogging.LoggerFactory.CreateLogger<CSharpRollbackProcess>();
-        RollBackedIds = new List<int>();
-    }
+    private List<int> RollBackedIds { get; } = [];
+    private ILogger Logger { get; } = ApplicationLogging.LoggerFactory.CreateLogger<CSharpRollbackProcess>();
 
     public CSharpRollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics,
         bool lastAttempt, bool devMode)
@@ -82,18 +77,18 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         }
 
         // by returning the same compiler object (with different syntax trees) the next compilation will use Roslyn's incremental compilation
-        return new(
+        return new CSharpRollbackProcessResult(
             compiler,
             RollBackedIds);
     }
 
     // search is this node contains or is within a mutation
-    private (SyntaxNode, int) FindMutationIfAndId(SyntaxNode startNode)
+    private SyntaxNode FindMutationWithNode(SyntaxNode startNode)
     {
         var info = ExtractMutationInfo(startNode);
         if (info.Id != null)
         {
-            return (startNode, info.Id.Value);
+            return startNode;
         }
 
         for (var node = startNode; node != null; node = node.Parent)
@@ -101,36 +96,19 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             info = ExtractMutationInfo(node);
             if (info.Id != null)
             {
-                return (node, info.Id.Value);
+                return node;
             }
         }
 
         // scan within the expression
-        return startNode is ExpressionSyntax ? FindMutationInChildren(startNode) : (null, -1);
+        return startNode is ExpressionSyntax ? FindMutationInChildren(startNode) : null;
     }
 
     // search the first mutation within the node
-    private (SyntaxNode, int) FindMutationInChildren(SyntaxNode startNode)
+    private static SyntaxNode FindMutationInChildren(SyntaxNode startNode)
     {
-        foreach (var node in startNode.ChildNodes())
-        {
-            var info = ExtractMutationInfo(node);
-            if (info.Id != null)
-            {
-                return (node, info.Id.Value);
-            }
-        }
-
-        foreach (var node in startNode.ChildNodes())
-        {
-            var (subNode, mutantId) = FindMutationInChildren(node);
-            if (subNode != null)
-            {
-                return (subNode, mutantId);
-            }
-        }
-
-        return (null, -1);
+        var mutation = MutantPlacer.GetAllMutations(startNode).FirstOrDefault(p => p.engine.Id!=null);
+        return mutation.node;
     }
 
     private MutantInfo ExtractMutationInfo(SyntaxNode node)
@@ -165,7 +143,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         return node.SyntaxTree.GetRoot();
     }
 
-    private IList<MutantInfo> ScanAllMutationsIfsAndIds(SyntaxNode node)
+    private List<MutantInfo> ScanAllMutationsIfsAndIds(SyntaxNode node)
     {
         var scan = new List<MutantInfo>();
         foreach (var childNode in node.ChildNodes())
@@ -221,6 +199,17 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         {
             // find the mutated node in the new tree
             var nodeToRemove = trackedTree.GetCurrentNode(brokenMutation);
+            if (nodeToRemove == null)
+            {
+                // already removed
+                continue;
+            }
+
+            var info = MutantPlacer.FindAnnotations(nodeToRemove);
+            if (info.Id.HasValue)
+            {
+                RollBackedIds.Add(info.Id.Value);
+            }
             // remove the mutated node using its MutantPlacer remove method and update the tree
             trackedTree = trackedTree.ReplaceNode(nodeToRemove, MutantPlacer.RemoveMutant(nodeToRemove));
         }
@@ -228,6 +217,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         return trackedTree.SyntaxTree;
     }
 
+    // identify mutations that may have caused compilation errors
     private Collection<SyntaxNode> ScanForSuspiciousMutations(Diagnostic[] diagnostics, SyntaxNode rollbackRoot)
     {
         var suspiciousMutations = new Collection<SyntaxNode>();
@@ -237,14 +227,13 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             var initNode = FindEnclosingMember(brokenMutation);
             var scan = ScanAllMutationsIfsAndIds(initNode);
 
-            if (scan.Any(x => x.Type == Mutator.Block.ToString()))
+            if (scan.Any(x => x.Type == nameof(Mutator.Block)))
             {
                 // we remove all block mutation first
                 foreach (var mutant in scan.Where(x =>
-                             x.Type == Mutator.Block.ToString() && !suspiciousMutations.Contains(x.Node)))
+                             x.Type == nameof(Mutator.Block) && !suspiciousMutations.Contains(x.Node)))
                 {
                     suspiciousMutations.Add(mutant.Node);
-                    RollBackedIds.Add(mutant.Id.Value);
                 }
             }
             else
@@ -264,10 +253,6 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                 foreach (var mutant in scan.Where(mutant => !suspiciousMutations.Contains(mutant.Node)))
                 {
                     suspiciousMutations.Add(mutant.Node);
-                    if (mutant.Id != -1)
-                    {
-                        RollBackedIds.Add(mutant.Id!.Value);
-                    }
                 }
             }
         }
@@ -284,10 +269,6 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         foreach (var mutant in scan.Where(mutant => !suspiciousMutations.Contains(mutant.Node)))
         {
             suspiciousMutations.Add(mutant.Node);
-            if (mutant.Id != -1)
-            {
-                RollBackedIds.Add(mutant.Id!.Value);
-            }
         }
 
         // mark the broken mutation nodes to track
@@ -303,7 +284,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         return file.WithRootAndOptions(trackedTree, file.Options);
     }
 
-    private string DisplayName(SyntaxNode initNode) =>
+    private static string DisplayName(SyntaxNode initNode) =>
         initNode switch
         {
             MethodDeclarationSyntax method => $"{method.Identifier}",
@@ -313,10 +294,6 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         };
 
 
-    // errors that must trigger a deep removal of mutations
-    // usage of uninitialized variables (165)
-    private static readonly HashSet<string> ErrorsRequiringRecursiveRemoval = ["CS0165"];
-
     private Collection<SyntaxNode> IdentifyMutationsAndFlagForRollback(IEnumerable<Diagnostic> diagnosticInfo,
         SyntaxNode rollbackRoot, out Diagnostic[] diagnostics)
     {
@@ -325,40 +302,73 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         foreach (var diagnostic in diagnostics)
         {
             var brokenMutation = rollbackRoot.FindNode(diagnostic.Location.SourceSpan);
-            var (mutationIf, mutantId) = FindMutationIfAndId(brokenMutation);
+            if (diagnostic.Id == "CS0165")
+            {
+                if (brokenMutation is IdentifierNameSyntax identifierNameSyntax
+                    && ScanUninitializedVariable(identifierNameSyntax.Identifier.Text, brokenMutation, brokenMutations))
+                {
+                    continue;
+                }
+            }
+            else if (diagnostic.Id == "CS0177")
+            {
+                if (diagnostic.GetType().GetProperty("Arguments",
+                            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                        ?.GetValue(diagnostic) is object[] { Length: > 0 } identifier && identifier[0] is string identifierText)
+                {
+                    ScanUninitializedVariable(identifierText, brokenMutation, brokenMutations);
+                    continue;
+                }
+            }
+
+            var mutationIf = FindMutationWithNode(brokenMutation);
             if (mutationIf == null || brokenMutations.Contains(mutationIf))
             {
                 continue;
             }
-
-            if (MutantPlacer.RequiresRemovingChildMutations(mutationIf) || ErrorsRequiringRecursiveRemoval.Contains(diagnostic.Id))
+            // we have a specific logic for uninitialized variable
+            if (MutantPlacer.RequiresRemovingChildMutations(mutationIf))
             {
                 FlagChildrenMutationsForRollback(mutationIf, brokenMutations);
             }
             else
             {
                 brokenMutations.Add(mutationIf);
-                if (mutantId >= 0)
-                {
-                    RollBackedIds.Add(mutantId);
-                }
             }
         }
 
         return brokenMutations;
     }
 
+    private static bool ScanUninitializedVariable(string identifierText, SyntaxNode brokenMutation,
+        Collection<SyntaxNode> brokenMutations)
+    {
+        var count = brokenMutations.Count;
+        do
+        {
+            foreach (var previous in brokenMutation.GetPreviousSiblings().Reverse())
+            {
+                var mutations = MutantPlacer.GetMutationsEnginesAndIDs(previous);
+                // we check if a mutation hides an assignment
+                foreach (var node in mutations.Where(entry => !brokenMutations.Contains(entry.node) && entry.engine.ErasesAssignment(entry.node, identifierText)).Select(entry => entry.node))
+                {
+                    brokenMutations.Add(node);
+                }
+            }
+            // we have a mutation, check if it erases an assignment
+            // we reached where we are
+            brokenMutation = brokenMutation.Parent;
+
+        } while (brokenMutation is not null && brokenMutation is not MemberDeclarationSyntax);
+        return count < brokenMutations.Count;
+    }
+
     private void FlagChildrenMutationsForRollback(SyntaxNode mutationIf, Collection<SyntaxNode> brokenMutations)
     {
         var scan = ScanAllMutationsIfsAndIds(mutationIf);
-
         foreach (var mutant in scan.Where(mutant => !brokenMutations.Contains(mutant.Node)))
         {
             brokenMutations.Add(mutant.Node);
-            if (mutant.Id != -1)
-            {
-                RollBackedIds.Add(mutant.Id!.Value);
-            }
         }
     }
 }
