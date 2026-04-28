@@ -41,5 +41,5 @@ internal class StaticInitializerMarkerEngine : BaseEngine<ExpressionSyntax>
     }
 
     // block cannot erase an assignment
-    protected override bool ErasesAssignment(ExpressionSyntax _, string __) => false;
+    protected override bool ErasesAssignment(ExpressionSyntax node, string identifier) => false;
 }

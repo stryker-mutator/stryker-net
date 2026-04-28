@@ -223,15 +223,6 @@ internal static class RoslynHelper
         .WithTrailingTrivia(CleanupTrivia(triviaSource.GetTrailingTrivia()));
 
     /// <summary>
-    /// Returns all siblings node before the provided one.
-    /// </summary>
-    /// <param name="node">reference node</param>
-    /// <returns>a list of <see cref="SyntaxNode"/></returns>
-    public static IEnumerable<SyntaxNode> GetPreviousSiblings(this SyntaxNode node) =>
-        node.Parent != null
-            ? [..node.Parent.ChildNodes().TakeWhile(syntaxNode => syntaxNode != node)] : [];
-
-    /// <summary>
     /// Inject cleaned up trivia from another syntax node.
     /// </summary>
     /// <param name="token">token on which to set the trivia</param>
@@ -244,4 +235,14 @@ internal static class RoslynHelper
 
     private static IEnumerable<SyntaxTrivia> CleanupTrivia(SyntaxTriviaList list)
         => list.Where(t=>t.IsKind(SyntaxKind.WhitespaceTrivia) || t.IsKind(SyntaxKind.EndOfLineTrivia));
+
+    /// <summary>
+    /// Returns all siblings node before the provided one.
+    /// </summary>
+    /// <param name="node">reference node</param>
+    /// <returns>a list of <see cref="SyntaxNode"/></returns>
+    public static IEnumerable<SyntaxNode> GetPreviousSiblings(this SyntaxNode node) =>
+        node.Parent != null
+            ? [..node.Parent.ChildNodes().TakeWhile(syntaxNode => syntaxNode != node)] : [];
+
 }

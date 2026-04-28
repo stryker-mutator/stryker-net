@@ -31,5 +31,5 @@ internal class StaticInstrumentationEngine : BaseEngine<BlockSyntax>
     }
 
     // cannot erase an assignment with a block
-    protected override bool ErasesAssignment(BlockSyntax _, string __) => false;
+    protected override bool ErasesAssignment(BlockSyntax node, string identifier) => false;
 }

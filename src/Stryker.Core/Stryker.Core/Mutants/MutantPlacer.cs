@@ -223,6 +223,6 @@ public class MutantPlacer(CodeInjection injection)
     public static List<(SyntaxNode node, MutantInfo engine)> GetAllMutations(SyntaxNode node)
     {
         var mutations = node.GetAnnotatedNodes(MutationIdMarker);
-        return (from syntaxNode in mutations let engine = FindAnnotations(syntaxNode).Engine select (syntaxNode, FindAnnotations(syntaxNode))).ToList();
+        return (from syntaxNode in mutations let _= FindAnnotations(syntaxNode).Engine select (syntaxNode, FindAnnotations(syntaxNode))).ToList();
     }
 }

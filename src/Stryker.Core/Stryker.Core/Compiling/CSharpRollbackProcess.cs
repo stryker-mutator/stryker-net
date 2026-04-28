@@ -293,7 +293,6 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             not null => initNode.Parent == null ? "whole file" : "the current node",
         };
 
-
     private Collection<SyntaxNode> IdentifyMutationsAndFlagForRollback(IEnumerable<Diagnostic> diagnosticInfo,
         SyntaxNode rollbackRoot, out Diagnostic[] diagnostics)
     {
@@ -310,34 +309,35 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                     continue;
                 }
             }
-            else if (diagnostic.Id == "CS0177")
+            else if (diagnostic.Id == "CS0177" && diagnostic.GetType().GetProperty("Arguments",
+                             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                         ?.GetValue(diagnostic) is object[] { Length: > 0 } identifier && identifier[0] is string identifierText)
             {
-                if (diagnostic.GetType().GetProperty("Arguments",
-                            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                        ?.GetValue(diagnostic) is object[] { Length: > 0 } identifier && identifier[0] is string identifierText)
-                {
-                    ScanUninitializedVariable(identifierText, brokenMutation, brokenMutations);
-                    continue;
-                }
-            }
-
-            var mutationIf = FindMutationWithNode(brokenMutation);
-            if (mutationIf == null || brokenMutations.Contains(mutationIf))
-            {
+                ScanUninitializedVariable(identifierText, brokenMutation, brokenMutations);
                 continue;
             }
-            // we have a specific logic for uninitialized variable
-            if (MutantPlacer.RequiresRemovingChildMutations(mutationIf))
-            {
-                FlagChildrenMutationsForRollback(mutationIf, brokenMutations);
-            }
-            else
-            {
-                brokenMutations.Add(mutationIf);
-            }
+
+            DefaultRemovalLogic(brokenMutation, brokenMutations);
         }
 
         return brokenMutations;
+    }
+
+    private void DefaultRemovalLogic(SyntaxNode brokenMutation, Collection<SyntaxNode> brokenMutations)
+    {
+        var mutationIf = FindMutationWithNode(brokenMutation);
+        if (mutationIf == null || brokenMutations.Contains(mutationIf))
+        {
+            return;
+        }
+        if (MutantPlacer.RequiresRemovingChildMutations(mutationIf))
+        {
+            FlagChildrenMutationsForRollback(mutationIf, brokenMutations);
+        }
+        else
+        {
+            brokenMutations.Add(mutationIf);
+        }
     }
 
     private static bool ScanUninitializedVariable(string identifierText, SyntaxNode brokenMutation,
