@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Buildalyzer;
+using Microsoft.Build.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -223,6 +224,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
     {
         var syntaxTrees = compilation.SyntaxTrees;
         var success = false;
+        var cleanedSyntaxTrees = new HashSet<SyntaxTree>();
         while (!success)
         {
             success = true;
@@ -240,9 +242,16 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, "Failed to compile {FilePath}", st.FilePath);
+                    if (cleanedSyntaxTrees.Contains(st))
+                    {
+                        _logger.LogError(e, "File {FilePath} already cleaned up but still causes compiler crash. Skipping it anyway.", st.FilePath);
+                        continue;
+                    }
+                    _logger.LogError(e, "Failed to compile {FilePath} (compiler crash)", st.FilePath);
                     _logger.LogTrace("source code:\n {Source}", st.GetText());
-                    syntaxTrees = [..syntaxTrees.Where(x => x != st).Append(_rollbackProcess.CleanUpFile(st))];
+                    var cleanUpFile = _rollbackProcess.CleanUpFile(st);
+                    cleanedSyntaxTrees.Add(cleanUpFile);
+                    syntaxTrees = [..syntaxTrees.Where(x => x != st).Append(cleanUpFile)];
                     success = false;
                     break;
                 }

@@ -206,7 +206,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             }
 
             var info = MutantPlacer.FindAnnotations(nodeToRemove);
-            if (info.Id.HasValue)
+            if (info.Id.HasValue && info.Id != -1)
             {
                 RollBackedIds.Add(info.Id.Value);
             }
@@ -310,7 +310,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                 }
             }
             else if (diagnostic.Id == "CS0177" && diagnostic.GetType().GetProperty("Arguments",
-                             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) // NOSONAR
                          ?.GetValue(diagnostic) is object[] { Length: > 0 } identifier && identifier[0] is string identifierText)
             {
                 ScanUninitializedVariable(identifierText, brokenMutation, brokenMutations);
@@ -348,7 +348,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         {
             foreach (var previous in brokenMutation.GetPreviousSiblings().Reverse())
             {
-                var mutations = MutantPlacer.GetMutationsEnginesAndIDs(previous);
+                var mutations = MutantPlacer.GetMutationsEngines(previous);
                 // we check if a mutation hides an assignment
                 foreach (var node in mutations.Where(entry => !brokenMutations.Contains(entry.node) && entry.engine.ErasesAssignment(entry.node, identifierText)).Select(entry => entry.node))
                 {

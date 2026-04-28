@@ -218,7 +218,7 @@ public class MutantPlacer(CodeInjection injection)
             SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(mutantId)));
     }
 
-    public static List<(SyntaxNode node, IInstrumentCode engine)> GetMutationsEnginesAndIDs(SyntaxNode node) => GetAllMutations(node).Select(entry => (entry.node, InstrumentEngines[entry.engine.Engine].engine)).ToList();
+    public static List<(SyntaxNode node, IInstrumentCode engine)> GetMutationsEngines(SyntaxNode node) => GetAllMutations(node).Select(entry => (entry.node, InstrumentEngines[entry.engine.Engine].engine)).ToList();
 
     public static List<(SyntaxNode node, MutantInfo engine)> GetAllMutations(SyntaxNode node)
     {

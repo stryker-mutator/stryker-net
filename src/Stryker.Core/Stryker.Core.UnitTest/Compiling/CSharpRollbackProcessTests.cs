@@ -783,7 +783,7 @@ public class CSharpRollbackProcessTests : TestBase
         var compiler = CSharpCompilation.Create("TestCompilation",
             syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-            references: new List<PortableExecutableReference>() {
+            references: new List<PortableExecutableReference> {
                 MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
             });
@@ -797,7 +797,7 @@ public class CSharpRollbackProcessTests : TestBase
         var rollbackResult = fixedCompilation.Compilation.Emit(ms);
 
         rollbackResult.Success.ShouldBeTrue();
-        // validate that mutations 8 and 6 were rolled back
+        // validate that mutations 8 and 7 were rolled back
         fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 });
     }
 

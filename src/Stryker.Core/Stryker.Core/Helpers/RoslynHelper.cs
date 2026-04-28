@@ -198,7 +198,9 @@ internal static class RoslynHelper
     /// <returns>true if this is node is an assignment or an out variable assigning <paramref name="node"/> </returns>
     public static bool AssignsThis(this SyntaxNode node, string identifier) =>
         (node is AssignmentExpressionSyntax assignmentExpressionSyntax && assignmentExpressionSyntax.Left.ToString() == identifier)
-        || (node is ArgumentSyntax arg && arg.ToString() == identifier && arg.RefOrOutKeyword.IsKind(SyntaxKind.OutKeyword));
+        || (node is ArgumentSyntax arg && arg.RefOrOutKeyword.IsKind(SyntaxKind.OutKeyword)
+                                       && arg.Expression is IdentifierNameSyntax identifierNameSyntax
+                                       && identifierNameSyntax.Identifier.Text == identifier);
 
     /// <summary>
     /// Clean trivia from a node
