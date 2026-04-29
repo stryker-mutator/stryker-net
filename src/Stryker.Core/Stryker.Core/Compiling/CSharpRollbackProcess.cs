@@ -17,7 +17,7 @@ namespace Stryker.Core.Compiling;
 
 public interface ICSharpRollbackProcess
 {
-    CSharpRollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics,
+    CSharpRollbackProcessResult Start(Compilation compiler, ImmutableArray<Diagnostic> diagnostics,
         bool lastAttempt, bool devMode);
 
     SyntaxTree CleanUpFile(SyntaxTree file);
@@ -31,7 +31,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
     private List<int> RollBackedIds { get; } = [];
     private ILogger Logger { get; } = ApplicationLogging.LoggerFactory.CreateLogger<CSharpRollbackProcess>();
 
-    public CSharpRollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics,
+    public CSharpRollbackProcessResult Start(Compilation compiler, ImmutableArray<Diagnostic> diagnostics,
         bool lastAttempt, bool devMode)
     {
         // match the diagnostics with their syntax trees

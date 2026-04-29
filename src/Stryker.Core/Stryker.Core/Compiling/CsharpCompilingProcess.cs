@@ -147,7 +147,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
         return outputCompilation as CSharpCompilation;
     }
 
-    private CSharpCompilation GetCSharpCompilation(IEnumerable<SyntaxTree> syntaxTrees)
+    private Compilation GetCSharpCompilation(IEnumerable<SyntaxTree> syntaxTrees)
     {
         var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
 
@@ -163,7 +163,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
     private (CSharpRollbackProcessResult, EmitResult, int) TryCompilation(
         Stream ms,
         Stream symbolStream,
-        ref CSharpCompilation compilation,
+        ref Compilation compilation,
         EmitResult previousEmitResult,
         bool lastAttempt,
         int retryCount)
@@ -217,7 +217,9 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
         return (rollbackProcessResult, emitResult, retryCount + 1);
     }
 
-    private CSharpCompilation ScanForCauseOfException(CSharpCompilation compilation)
+    [ExcludeFromCodeCoverage]
+    // unable to simulate a CS compiler fault
+    private Compilation ScanForCauseOfException(Compilation compilation)
     {
         var syntaxTrees = compilation.SyntaxTrees;
         var success = false;
@@ -300,7 +302,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
     // This class is used to provide the options to the source generators
     [ExcludeFromCodeCoverage]
-    private class SimpleAnalyserConfigOptionsProvider : AnalyzerConfigOptionsProvider
+    private sealed class SimpleAnalyserConfigOptionsProvider : AnalyzerConfigOptionsProvider
     {
         private readonly NullAnalyzerConfigOptions _nullProvider = new();
 
