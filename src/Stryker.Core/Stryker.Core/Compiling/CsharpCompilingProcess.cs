@@ -1,18 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Buildalyzer;
-using Microsoft.Build.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Configuration.Options;
@@ -303,11 +300,11 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
     // This class is used to provide the options to the source generators
     [ExcludeFromCodeCoverage]
-    internal class SimpleAnalyserConfigOptionsProvider : AnalyzerConfigOptionsProvider
+    private class SimpleAnalyserConfigOptionsProvider : AnalyzerConfigOptionsProvider
     {
         private readonly NullAnalyzerConfigOptions _nullProvider = new();
 
-        public SimpleAnalyserConfigOptionsProvider(IAnalyzerResult result) => GlobalOptions = new SimpleAnalyzerConfigOptions(result);
+        internal SimpleAnalyserConfigOptionsProvider(IAnalyzerResult result) => GlobalOptions = new SimpleAnalyzerConfigOptions(result);
 
         public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => _nullProvider;
 
@@ -315,12 +312,10 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
         public override AnalyzerConfigOptions GlobalOptions { get; }
 
-        private sealed class SimpleAnalyzerConfigOptions : AnalyzerConfigOptions
+        private sealed class SimpleAnalyzerConfigOptions(IAnalyzerResult result) : AnalyzerConfigOptions
         {
             private const string Prefix = "build_property.";
-            private readonly IReadOnlyDictionary<string, string> _options;
-
-            public SimpleAnalyzerConfigOptions(IAnalyzerResult result) => _options = result.Properties;
+            private readonly IReadOnlyDictionary<string, string> _options = result.Properties;
 
             public override bool TryGetValue(string key, out string value)
             {

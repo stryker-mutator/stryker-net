@@ -61,7 +61,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                 Logger.LogTrace("source {OriginalTree}", originalTree);
             }
 
-            var updatedSyntaxTree = RemoveCompileErrorMutations(originalTree, syntaxTreeMap.Value);
+            var updatedSyntaxTree = RemoveCompileErrorMutations(originalTree, syntaxTreeMap.Value).SyntaxTree;
 
             if (updatedSyntaxTree == originalTree || lastAttempt)
             {
@@ -180,7 +180,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         Logger.LogDebug(Environment.NewLine);
     }
 
-    private SyntaxTree RemoveCompileErrorMutations(SyntaxTree originalTree, IEnumerable<Diagnostic> diagnosticInfo)
+    private SyntaxNode RemoveCompileErrorMutations(SyntaxTree originalTree, IEnumerable<Diagnostic> diagnosticInfo)
     {
         var rollbackRoot = originalTree.GetRoot();
         // find all if statements to remove
@@ -193,6 +193,11 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             brokenMutations = ScanForSuspiciousMutations(diagnostics, rollbackRoot);
         }
 
+        return RemoveTheseMutations(rollbackRoot, brokenMutations);
+    }
+
+    private SyntaxNode RemoveTheseMutations(SyntaxNode rollbackRoot, Collection<SyntaxNode> brokenMutations)
+    {
         // mark the broken mutation nodes to track
         var trackedTree = rollbackRoot.TrackNodes(brokenMutations);
         foreach (var brokenMutation in brokenMutations)
@@ -214,7 +219,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             trackedTree = trackedTree.ReplaceNode(nodeToRemove, MutantPlacer.RemoveMutant(nodeToRemove));
         }
 
-        return trackedTree.SyntaxTree;
+        return trackedTree;
     }
 
     // identify mutations that may have caused compilation errors
@@ -270,18 +275,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         {
             suspiciousMutations.Add(mutant.Node);
         }
-
-        // mark the broken mutation nodes to track
-        var trackedTree = rollbackRoot.TrackNodes(suspiciousMutations);
-        foreach (var brokenMutation in suspiciousMutations)
-        {
-            // find the mutated node in the new tree
-            var nodeToRemove = trackedTree.GetCurrentNode(brokenMutation);
-            // remove the mutated node using its MutantPlacer remove method and update the tree
-            trackedTree = trackedTree.ReplaceNode(nodeToRemove, MutantPlacer.RemoveMutant(nodeToRemove));
-        }
-
-        return file.WithRootAndOptions(trackedTree, file.Options);
+        return file.WithRootAndOptions(RemoveTheseMutations(rollbackRoot, suspiciousMutations), file.Options);
     }
 
     private static string DisplayName(SyntaxNode initNode) =>
