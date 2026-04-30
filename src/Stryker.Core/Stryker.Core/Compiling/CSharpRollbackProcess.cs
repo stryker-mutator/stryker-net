@@ -193,10 +193,10 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             brokenMutations = ScanForSuspiciousMutations(diagnostics, rollbackRoot);
         }
 
-        return RemoveTheseMutations(rollbackRoot, brokenMutations);
+        return RollTheseMutationsBack(rollbackRoot, brokenMutations);
     }
 
-    private SyntaxNode RemoveTheseMutations(SyntaxNode rollbackRoot, Collection<SyntaxNode> brokenMutations)
+    private SyntaxNode RollTheseMutationsBack(SyntaxNode rollbackRoot, Collection<SyntaxNode> brokenMutations)
     {
         // mark the broken mutation nodes to track
         var trackedTree = rollbackRoot.TrackNodes(brokenMutations);
@@ -234,7 +234,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
 
             if (scan.Any(x => x.Type == nameof(Mutator.Block)))
             {
-                // we remove all block mutation first
+                // we remove all block mutation on first attempt
                 foreach (var mutant in scan.Where(x =>
                              x.Type == nameof(Mutator.Block) && !suspiciousMutations.Contains(x.Node)))
                 {
@@ -275,7 +275,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         {
             suspiciousMutations.Add(mutant.Node);
         }
-        return file.WithRootAndOptions(RemoveTheseMutations(rollbackRoot, suspiciousMutations), file.Options);
+        return file.WithRootAndOptions(RollTheseMutationsBack(rollbackRoot, suspiciousMutations), file.Options);
     }
 
     private static string DisplayName(SyntaxNode initNode) =>

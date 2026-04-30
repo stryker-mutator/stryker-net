@@ -155,7 +155,7 @@ public class Calculator
             }
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
-        rollbackProcessMock.Setup(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>(), false))
+        rollbackProcessMock.Setup(x => x.Start(It.IsAny<Compilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>(), false))
                         .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics, bool _, bool _) =>
                         new CSharpRollbackProcessResult(compilation, null));
 
