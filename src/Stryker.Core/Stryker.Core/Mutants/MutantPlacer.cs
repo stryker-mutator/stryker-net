@@ -177,17 +177,17 @@ public class MutantPlacer(CodeInjection injection)
         var annotations = node.GetAnnotations(MutationMarkers);
         foreach (var annotation in annotations)
         {
-            if (annotation.Kind == MutationIdMarker)
+            switch (annotation.Kind)
             {
-                id = int.Parse(annotation.Data!);
-            }
-            else if (annotation.Kind == Injector)
-            {
-                engine = annotation.Data;
-            }
-            else if (annotation.Kind == MutationTypeMarker)
-            {
-                type = annotation.Data;
+                case MutationIdMarker:
+                    id = int.Parse(annotation.Data!);
+                    break;
+                case Injector:
+                    engine = annotation.Data;
+                    break;
+                case MutationTypeMarker:
+                    type = annotation.Data;
+                    break;
             }
         }
 
@@ -223,6 +223,8 @@ public class MutantPlacer(CodeInjection injection)
     public static List<(SyntaxNode node, MutantInfo engine)> GetAllMutations(SyntaxNode node)
     {
         var mutations = node.GetAnnotatedNodes(MutationIdMarker);
-        return (from syntaxNode in mutations let _= FindAnnotations(syntaxNode).Engine select (syntaxNode, FindAnnotations(syntaxNode))).ToList();
+        return (from syntaxNode in mutations
+            let mutationInfo = FindAnnotations(syntaxNode)
+            select (syntaxNode, mutationInfo)).ToList();
     }
 }

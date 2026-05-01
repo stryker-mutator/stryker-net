@@ -107,7 +107,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
     // search the first mutation within the node
     private static SyntaxNode FindMutationInChildren(SyntaxNode startNode)
     {
-        var mutation = MutantPlacer.GetAllMutations(startNode).FirstOrDefault(p => p.engine.Id!=null);
+        var mutation = MutantPlacer.GetAllMutations(startNode).FirstOrDefault();
         return mutation.node;
     }
 
@@ -321,17 +321,10 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         return brokenMutations;
     }
 
-    private static bool ScanUninitializedVariable(Diagnostic diagnostic, SyntaxNode brokenMutation,
+    private bool ScanUninitializedVariable(Diagnostic diagnostic, SyntaxNode brokenMutation,
         Collection<SyntaxNode> brokenMutations)
     {
-        var arguments = diagnostic.GetType().GetProperty("Arguments",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) // NOSONAR
-            ?.GetValue(diagnostic) as object[];
-        var identifierText = arguments?[0] as string;
-        if (identifierText == null && diagnostic.Id == "CS0165" && brokenMutation is IdentifierNameSyntax identifierNameSyntax)
-        {
-            identifierText = identifierNameSyntax.Identifier.Text;
-        }
+        var identifierText = ExtractIdentifier(diagnostic, brokenMutation);
         if (string.IsNullOrEmpty(identifierText))
         {
             return false;
@@ -354,6 +347,29 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
 
         } while (brokenMutation is not null && brokenMutation is not MemberDeclarationSyntax);
         return count < brokenMutations.Count;
+    }
+
+    private string ExtractIdentifier(Diagnostic diagnostic, SyntaxNode brokenMutation)
+    {
+        var arguments = diagnostic.GetType().GetProperty("Arguments",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) // NOSONAR
+            ?.GetValue(diagnostic) as object[];
+        var identifierText = arguments?[0] as string;
+        if (identifierText == null)
+        {
+            if (diagnostic.Id == "CS0165" && brokenMutation is IdentifierNameSyntax identifierNameSyntax)
+            {
+                identifierText = identifierNameSyntax.Identifier.Text;
+            }
+            else
+            {
+                Logger.LogInformation(
+                    "Unable to extract the identifier for uninitialized variable error, fallback to default rollback logic. Diagnostic: {DiagnosticId}, message: {Message}",
+                    diagnostic.Id, diagnostic.GetMessage());
+            }
+        }
+
+        return identifierText;
     }
 
     private void FlagChildrenMutationsForRollback(SyntaxNode mutation, Collection<SyntaxNode> brokenMutations)
