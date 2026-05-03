@@ -35,7 +35,7 @@ internal static class RoslynHelper
     /// <returns>true if it contains a declaration</returns>
     public static bool ContainsDeclarations(this SyntaxNode node) =>
         node.ContainsNodeThatVerifies(x =>
-            x.IsKind(SyntaxKind.DeclarationExpression) || x.IsKind(SyntaxKind.DeclarationPattern));
+            x.IsKind(SyntaxKind.DeclarationExpression) || x.IsKind(SyntaxKind.DeclarationPattern), true);
 
     /// <summary>
     /// Gets the return the type of the method (incl. constructor, destructor...)
@@ -79,7 +79,6 @@ internal static class RoslynHelper
     /// <returns>Returns 'void' type</returns>
     public static TypeSyntax VoidTypeSyntax() => SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.VoidKeyword));
 
-
     /// <summary>
     /// Check if any modifier is the async keyword
     /// </summary>
@@ -118,15 +117,10 @@ internal static class RoslynHelper
     /// <returns>A copy of <see cref="sourceNode"/> with the mutation applied.</returns>
     /// <exception cref="InvalidOperationException">when mutation does not belong to this node.</exception>
     /// <remarks><paramref name="sourceNode"/> can be any node that includes the original, non mutated node described in the mutation.</remarks>
-    public static T InjectMutation<T>(this T sourceNode, Mutation mutation) where T : SyntaxNode
-    {
-        if (!sourceNode.Contains(mutation.OriginalNode))
-        {
+    public static T InjectMutation<T>(this T sourceNode, Mutation mutation) where T : SyntaxNode =>
+        sourceNode.Contains(mutation.OriginalNode) ? sourceNode.ReplaceNode(mutation.OriginalNode, mutation.ReplacementNode)
             // if this happens, there is a probably a bug in some orchestrator
-            throw new InvalidOperationException($"Cannot inject mutation '{mutation.ReplacementNode}' in '{sourceNode}' because we cannot find the original code.");
-        }
-        return sourceNode.ReplaceNode(mutation.OriginalNode, mutation.ReplacementNode);
-    }
+            : throw new InvalidOperationException($"Cannot inject mutation '{mutation.ReplacementNode}' in '{sourceNode}' because we cannot find the original code.");
 
     /// <summary>
     /// Get the gets accessor of a property, if any.
@@ -141,20 +135,22 @@ internal static class RoslynHelper
     /// </summary>
     /// <param name="accessor">accessor to evaluate</param>
     /// <returns>true if <paramref name="accessor"/> is a getter.</returns>
-    public static bool IsGetter(this AccessorDeclarationSyntax accessor) => accessor.Keyword.IsKind(SyntaxKind.GetKeyword);
+    private static bool IsGetter(this AccessorDeclarationSyntax accessor) => accessor.Keyword.IsKind(SyntaxKind.GetKeyword);
 
     /// <summary>
     /// Return a default(type) expression.
     /// </summary>
     /// <param name="type">Type used in the resulting default expression.</param>
     /// <returns>An expression representing `default(<paramref name="type"/>'.</returns>
-    public static ExpressionSyntax BuildDefaultExpression(this TypeSyntax type) => SyntaxFactory.DefaultExpression(type.WithoutTrivia()).WithLeadingTrivia(SyntaxFactory.Space);
+    public static ExpressionSyntax BuildDefaultExpression(this TypeSyntax type)
+        => SyntaxFactory.DefaultExpression(type.WithoutTrivia()).WithLeadingTrivia(SyntaxFactory.Space);
 
     /// <summary>
     /// Check if a statements (or one of its child statements, if any) verifies some given predicate.
     /// </summary>
     /// <param name="syntax">initial statements</param>
     /// <param name="predicate">predicate to verify</param>
+    /// <param name="skipBlocks">does not parse block statements if true</param>
     /// <returns>true if any of the child statements verify the predicate</returns>
     /// <remarks>scanning stops as soon as one child matches the predicate</remarks>
     public static bool ScanChildStatements(this StatementSyntax syntax, Func<StatementSyntax, bool> predicate, bool skipBlocks = false)
@@ -166,7 +162,7 @@ internal static class RoslynHelper
         // scan children with minor optimization for well known statement
         return syntax switch
         {
-            BlockSyntax block => !skipBlocks && block.Statements.Any(s => s.ScanChildStatements(predicate, false)),
+            BlockSyntax block => !skipBlocks && block.Statements.Any(s => s.ScanChildStatements(predicate)),
             LocalFunctionStatementSyntax => false,
             ForStatementSyntax forStatement => forStatement.Statement.ScanChildStatements(predicate, skipBlocks),
             WhileStatementSyntax whileStatement => whileStatement.Statement.ScanChildStatements(predicate, skipBlocks),
@@ -174,7 +170,7 @@ internal static class RoslynHelper
             SwitchStatementSyntax switchStatement => switchStatement.Sections.SelectMany(s => s.Statements).Any(statement => statement.ScanChildStatements(predicate, skipBlocks)),
             IfStatementSyntax ifStatement => ifStatement.Statement.ScanChildStatements(predicate, skipBlocks)
                                 || ifStatement.Else?.Statement.ScanChildStatements(predicate, skipBlocks) == true,
-            _ => syntax.ChildNodes().Where(n => n is StatementSyntax).Cast<StatementSyntax>()
+            _ => syntax.ChildNodes().OfType<StatementSyntax>()
                                 .Any(s => s.ScanChildStatements(predicate, skipBlocks)),
         };
     }
@@ -184,23 +180,30 @@ internal static class RoslynHelper
     /// </summary>
     /// <param name="node">starting node</param>
     /// <param name="predicate">predicate to match</param>
-    /// <param name="skipBlock">set to true to avoid scan into block statements</param>
-    /// <returns></returns>
+    /// <param name="skipBlock">true to skip inner blocks</param>
+    /// <returns>true if a child node matches the predicate</returns>
     public static bool ContainsNodeThatVerifies(this SyntaxNode node, Func<SyntaxNode, bool> predicate, bool skipBlock = true) =>
-        // scan 
+        // scan
         node.DescendantNodes((child) =>
-        {
-            if (skipBlock && child is BlockSyntax)
-            {
-                return false;
-            }
+            !(skipBlock && child is BlockSyntax)
+            && (child.Parent is not AnonymousFunctionExpressionSyntax function || function.ExpressionBody != child)
+            && (child.Parent is not LocalFunctionStatementSyntax localFunction || localFunction.ExpressionBody != child))
+            .Any(predicate);
 
-            return (child.Parent is not AnonymousFunctionExpressionSyntax function || function.ExpressionBody != child)
-                   && (child.Parent is not LocalFunctionStatementSyntax localFunction || localFunction.ExpressionBody != child);
-        } ).Any(predicate);
+    /// <summary>
+    /// Check if a node assigns a value to the provided identifier
+    /// </summary>
+    /// <param name="node">node to check</param>
+    /// <param name="identifier">identifier to check</param>
+    /// <returns>true if this is node is an assignment or an out variable assigning <paramref name="node"/> </returns>
+    public static bool AssignsThis(this SyntaxNode node, string identifier) =>
+        (node is AssignmentExpressionSyntax assignmentExpressionSyntax && assignmentExpressionSyntax.Left.ToString() == identifier)
+        || (node is ArgumentSyntax arg && arg.RefOrOutKeyword.IsKind(SyntaxKind.OutKeyword)
+                                       && arg.Expression is IdentifierNameSyntax identifierNameSyntax
+                                       && identifierNameSyntax.Identifier.Text == identifier);
 
-        /// <summary>
-    /// Cleaned trivia from a node
+    /// <summary>
+    /// Clean trivia from a node
     /// </summary>
     /// <typeparam name="T">Syntax node exact type</typeparam>
     /// <param name="node">node on which to set the trivia</param>
@@ -226,7 +229,7 @@ internal static class RoslynHelper
     /// </summary>
     /// <param name="token">token on which to set the trivia</param>
     /// <param name="triviaSource">node from which extract the trivia</param>
-    /// <returns>a <paramref name="node"/> copy with some trivia from <paramref name="triviaSource"/>.</returns>
+    /// <returns>a <paramref name="token"/> copy with some trivia from <paramref name="triviaSource"/>.</returns>
     /// <remarks>Current implementation only applies whitespacetrivia (no comment, no attribute nor directives)</remarks>
     public static SyntaxToken WithCleanTriviaFrom(this SyntaxToken token, SyntaxToken triviaSource)
         => token.WithLeadingTrivia(CleanupTrivia(triviaSource.LeadingTrivia))
@@ -234,5 +237,14 @@ internal static class RoslynHelper
 
     private static IEnumerable<SyntaxTrivia> CleanupTrivia(SyntaxTriviaList list)
         => list.Where(t=>t.IsKind(SyntaxKind.WhitespaceTrivia) || t.IsKind(SyntaxKind.EndOfLineTrivia));
+
+    /// <summary>
+    /// Returns all siblings node before the provided one.
+    /// </summary>
+    /// <param name="node">reference node</param>
+    /// <returns>a list of <see cref="SyntaxNode"/></returns>
+    public static IEnumerable<SyntaxNode> GetPreviousSiblings(this SyntaxNode node) =>
+        node.Parent != null
+            ? [..node.Parent.ChildNodes().TakeWhile(syntaxNode => syntaxNode != node)] : [];
 
 }

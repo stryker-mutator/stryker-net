@@ -46,4 +46,8 @@ internal abstract class BaseEngine<T> : IInstrumentCode where T : CSharpSyntaxNo
         }
         throw new InvalidOperationException($"Expected a {typeof(T).Name}, found:\n{node.ToFullString()}.");
     }
+
+    protected abstract bool ErasesAssignment(T node, string identifier);
+
+    public bool ErasesAssignment(SyntaxNode node, string identifierText) => node is T tNode && ErasesAssignment(tNode, identifierText);
 }

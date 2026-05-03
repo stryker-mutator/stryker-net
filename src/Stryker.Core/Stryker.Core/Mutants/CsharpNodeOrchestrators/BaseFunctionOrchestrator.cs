@@ -99,6 +99,9 @@ internal abstract class BaseFunctionOrchestrator<T> : MemberDefinitionOrchestrat
         return SwitchToThisBodies(typedNode, null, expression).WithoutAnnotations(Marker);
     }
 
+    // cannot erase an assignment
+    public bool ErasesAssignment(SyntaxNode node, string identifierText) => false;
+
     /// <inheritdoc/>
     protected override T InjectMutations(T sourceNode, T targetNode, SemanticModel semanticModel, MutationContext context)
     {

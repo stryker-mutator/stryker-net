@@ -34,17 +34,12 @@ internal class EndingReturnEngine : BaseEngine<BlockSyntax>
 
     protected override SyntaxNode Revert(BlockSyntax node)
     {
-        if (node == null)
-        {
-            throw new ArgumentNullException(nameof(node));
-        }
+        ArgumentNullException.ThrowIfNull(node);
 
-        if (!node.Statements.Last().IsKind(SyntaxKind.ReturnStatement))
-        {
-            throw new InvalidOperationException($"No return at the end of: {node}");
-        }
-
-        return node.WithStatements(node.Statements.Remove(node.Statements.Last())).WithoutAnnotations(Marker);
+        return node.Statements.Last().IsKind(SyntaxKind.ReturnStatement) ? node.WithStatements(node.Statements.Remove(node.Statements.Last())).WithoutAnnotations(Marker)
+            : throw new InvalidOperationException($"No return at the end of: {node}");
     }
 
+    // cannot erase an assignment
+    protected override bool ErasesAssignment(BlockSyntax node, string identifier) => false;
 }

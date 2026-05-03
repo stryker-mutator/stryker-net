@@ -22,11 +22,14 @@ internal class StaticInstrumentationEngine : BaseEngine<BlockSyntax>
 
     protected override SyntaxNode Revert(BlockSyntax node)
     {
-        if (node.Statements.Count == 1 && node.Statements[0] is UsingStatementSyntax usingStatement)
+        if (node.Statements is [UsingStatementSyntax usingStatement])
         {
             return usingStatement.Statement;
         }
 
         return node;
     }
+
+    // cannot erase an assignment with a block
+    protected override bool ErasesAssignment(BlockSyntax node, string identifier) => false;
 }
