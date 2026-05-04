@@ -70,9 +70,13 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
 
             if (updatedSyntaxTree == originalTree || lastAttempt)
             {
-                Logger.LogCritical(
-                    "Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on github with the previous error message.");
-                throw new CompilationException("Internal error due to compile error.");
+                Logger.LogError("Failed to restore file {Filename} to be compilable. Aborting.", originalTree.FilePath);
+                if (devMode)
+                {
+                    DumpBuildErrors(syntaxTreeMap);
+                    Logger.LogDebug("Current code: {OriginalTree}", originalTree);
+                }
+                throw new CompilationException("Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on Github with the previous error message.");
             }
 
             Logger.LogTrace("RolledBack to {UpdatedSyntaxTree}", updatedSyntaxTree.ToString());
