@@ -22,5 +22,11 @@ public interface IInstrumentCode
     /// <exception cref="InvalidOperationException">if the node was not instrumented (by this instrumentingEngine)</exception>
     SyntaxNode RemoveInstrumentation(SyntaxNode node);
 
-    bool ErasesAssignment(SyntaxNode node, string identifierText);
+    /// <summary>
+    /// Checks if the instrumentation erases information, such an assignment.
+    /// </summary>
+    /// <param name="node">node to analyze</param>
+    /// <param name="predicate">predicate</param>
+    /// <returns>true if the predicate is true on the default branch and false on at least another branch</returns>
+    bool Erases(SyntaxNode node, Func<SyntaxNode, bool> predicate);
 }

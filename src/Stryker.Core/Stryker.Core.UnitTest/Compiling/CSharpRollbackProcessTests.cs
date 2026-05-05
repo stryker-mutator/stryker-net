@@ -903,6 +903,107 @@ public class CSharpRollbackProcessTests : TestBase
     }
 
     [TestMethod]
+    public void RollbackProcess_ShouldRollbackMutationsErasingReturn()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+        """
+        using System;
+        namespace ExampleProject
+        {
+            public class StringMagic
+            {
+                public int ActiveMutation = 1;
+
+                public string AddTwoStrings()
+                {
+                    string first = string.Empty;
+                    string second = string.Empty;
+                    var dummy = "";
+                    if(ActiveMutation == 8){
+                        while (first.Length > 2)
+                        {
+                            dummy = first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second - first;
+                        }
+                        return dummy;
+                    }else{if(ActiveMutation == 7){
+                    while (first.Length > 2)
+                        {
+                            dummy =  first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second + first;
+                        }
+                    }else{if(ActiveMutation == 6){
+                        while (first.Length == 2)
+                        {
+                            dummy =  first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second + first;
+                        }
+                        return dummy;
+                    }else{
+                        while (first.Length == 2)
+                        {
+                            dummy =  first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second + first;
+                        }
+                        return dummy;
+                    }}}
+                }
+            }
+        }
+        """);
+        var root = syntaxTree.GetRoot();
+
+        var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(
+            mutantIf1,
+            mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(8), _ifEngineMarker)
+        );
+        var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
+        root = root.ReplaceNode(
+            mutantIf2,
+            mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(7), _ifEngineMarker)
+        );
+        var mutantIf3 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[2];
+        root = root.ReplaceNode(
+            mutantIf3,
+            mutantIf3.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
+        );
+        var annotatedSyntaxTree = root.SyntaxTree;
+
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            });
+
+        var target = new CSharpRollbackProcess();
+
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
+
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var rollbackResult = fixedCompilation.Compilation.Emit(ms);
+
+        rollbackResult.Success.ShouldBeTrue();
+        // validate that mutations 8 and 7 were rolled back
+        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 });
+    }
+
+    [TestMethod]
     public void RollbackProcess_ShouldRollbackError_RolledBackCompilationShouldCompileWhenUriIsEmpty()
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(

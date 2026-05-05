@@ -51,7 +51,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         }
 
         // remove the broken mutations from the syntax trees
-        foreach (var syntaxTreeMap in syntaxTreeMapping.Where(x => x.Value.Any()))
+        foreach (var syntaxTreeMap in syntaxTreeMapping.Where(x => x.Value.Count != 0))
         {
             var originalTree = syntaxTreeMap.Key;
             Logger.LogDebug("RollBacking mutations from {FilePath}.", originalTree.FilePath);
@@ -295,12 +295,31 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         foreach (var diagnostic in diagnostics)
         {
             var brokenMutation = rollbackRoot.FindNode(diagnostic.Location.SourceSpan);
-            if (diagnostic.Id is "CS0165" or "CS0177" && ScanUninitializedVariable(diagnostic, brokenMutation, brokenMutations))
+            // handles uninitialized variables
+            if (diagnostic.Id is "CS0165" or "CS0177")
             {
-                continue;
+                var identifierText = ExtractIdentifier(diagnostic, brokenMutation);
+                if (!string.IsNullOrEmpty(identifierText)
+                    && ScanErasingMutation(x => x.AssignsThis(identifierText), brokenMutation, brokenMutations))
+                {
+                    continue;
+                }
             }
 
-            // find mutation around node in error
+            // handles missing return statement
+            if (diagnostic.Id is "CS0161")
+            {
+                if (brokenMutation is MethodDeclarationSyntax methodDeclarationSyntax)
+                {
+                    // CS0161 implies a block body
+                    brokenMutation = methodDeclarationSyntax.Body!.Statements.Last();
+                }
+                if (ScanErasingMutation(x => x is ReturnStatementSyntax, brokenMutation, brokenMutations))
+                {
+                    continue;
+                }
+            }
+            // general case, assume the diagnostic location is within the mutation.
             var mutation = FindMutationWithNode(brokenMutation);
             if (mutation == null || brokenMutations.Contains(mutation))
             {
@@ -321,14 +340,11 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         return brokenMutations;
     }
 
-    private bool ScanUninitializedVariable(Diagnostic diagnostic, SyntaxNode brokenMutation,
+    private static bool ScanErasingMutation(Func<SyntaxNode, bool> predicate,
+        SyntaxNode brokenMutation,
         Collection<SyntaxNode> brokenMutations)
     {
-        var identifierText = ExtractIdentifier(diagnostic, brokenMutation);
-        if (string.IsNullOrEmpty(identifierText))
-        {
-            return false;
-        }
+
         var count = brokenMutations.Count;
         do
         {
@@ -336,7 +352,9 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             {
                 var mutations = MutantPlacer.GetMutationsEngines(previous);
                 // we check if a mutation hides an assignment
-                foreach (var node in mutations.Where(entry => !brokenMutations.Contains(entry.node) && entry.engine.ErasesAssignment(entry.node, identifierText)).Select(entry => entry.node))
+                foreach (var node in mutations.Where(entry => !brokenMutations.Contains(entry.node)
+                                                              && entry.engine.Erases(entry.node, predicate)).
+                             Select(entry => entry.node))
                 {
                     brokenMutations.Add(node);
                 }

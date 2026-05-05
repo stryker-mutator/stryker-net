@@ -1,3 +1,4 @@
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -31,5 +32,5 @@ internal class StaticInstrumentationEngine : BaseEngine<BlockSyntax>
     }
 
     // cannot erase an assignment with a block
-    protected override bool ErasesAssignment(BlockSyntax node, string identifier) => false;
+    protected override bool ErasesAssignment(BlockSyntax node, Func<SyntaxNode, bool> predicate) => false;
 }

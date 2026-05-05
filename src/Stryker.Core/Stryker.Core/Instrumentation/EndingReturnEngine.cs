@@ -41,5 +41,5 @@ internal class EndingReturnEngine : BaseEngine<BlockSyntax>
     }
 
     // cannot erase an assignment
-    protected override bool ErasesAssignment(BlockSyntax node, string identifier) => false;
+    protected override bool ErasesAssignment(BlockSyntax node, Func<SyntaxNode, bool> predicate) => false;
 }

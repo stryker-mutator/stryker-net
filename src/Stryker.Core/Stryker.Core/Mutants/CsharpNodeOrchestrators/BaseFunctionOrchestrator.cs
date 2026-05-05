@@ -100,7 +100,7 @@ internal abstract class BaseFunctionOrchestrator<T> : MemberDefinitionOrchestrat
     }
 
     // cannot erase an assignment
-    public bool ErasesAssignment(SyntaxNode node, string identifierText) => false;
+    public bool Erases(SyntaxNode node, Func<SyntaxNode, bool> predicate) => false;
 
     /// <inheritdoc/>
     protected override T InjectMutations(T sourceNode, T targetNode, SemanticModel semanticModel, MutationContext context)

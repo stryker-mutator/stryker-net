@@ -245,6 +245,6 @@ internal static class RoslynHelper
     /// <returns>a list of <see cref="SyntaxNode"/></returns>
     public static IEnumerable<SyntaxNode> GetPreviousSiblings(this SyntaxNode node) =>
         node.Parent != null
-            ? [..node.Parent.ChildNodes().TakeWhile(syntaxNode => syntaxNode != node)] : [];
+            ? [..node.Parent.ChildNodes().TakeWhile(syntaxNode => syntaxNode != node).Append(node)] : [];
 
 }

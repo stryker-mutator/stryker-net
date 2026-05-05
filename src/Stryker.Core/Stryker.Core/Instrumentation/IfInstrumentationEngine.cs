@@ -45,10 +45,8 @@ internal class IfInstrumentationEngine : BaseEngine<IfStatementSyntax>
             $"Expected a block containing an 'else' statement, found:\n{ifNode.ToFullString()}.");
     }
 
-    protected override bool ErasesAssignment(IfStatementSyntax node, string identifier) =>
+    protected override bool ErasesAssignment(IfStatementSyntax node, Func<SyntaxNode, bool> predicate) =>
         // check if identifier is assigned on false condition and not assigned on true
-        !node.Statement.ContainsNodeThatVerifies(x =>
-            x.AssignsThis(identifier), false)
-        && node.Else.ContainsNodeThatVerifies(x =>
-            x.AssignsThis(identifier), false);
+        !node.Statement.ContainsNodeThatVerifies(predicate, false)
+        && node.Else.ContainsNodeThatVerifies(predicate, false);
 }
