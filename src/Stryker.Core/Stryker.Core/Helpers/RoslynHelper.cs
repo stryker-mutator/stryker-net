@@ -239,7 +239,7 @@ internal static class RoslynHelper
         => list.Where(t=>t.IsKind(SyntaxKind.WhitespaceTrivia) || t.IsKind(SyntaxKind.EndOfLineTrivia));
 
     /// <summary>
-    /// Returns all siblings node before the provided one.
+    /// Returns all siblings node before and including the provided one.
     /// </summary>
     /// <param name="node">reference node</param>
     /// <returns>a list of <see cref="SyntaxNode"/></returns>

@@ -315,7 +315,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             // does it require to remove any child mutation ?
             if (MutantPlacer.RequiresRemovingChildMutations(mutation))
             {
-                FlagChildrenMutationsForRollback(mutation, brokenMutations);
+                RegisterMutationForRollback(mutation, brokenMutations);
             }
             else
             {
@@ -362,25 +362,33 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) // NOSONAR
             ?.GetValue(diagnostic) as object[];
         var identifierText = arguments?[0] as string;
-        if (identifierText == null)
+        if (identifierText != null)
         {
-            if (diagnostic.Id == "CS0165" && brokenMutation is IdentifierNameSyntax identifierNameSyntax)
-            {
-                identifierText = identifierNameSyntax.Identifier.Text;
-            }
-            else
-            {
-                Logger.LogInformation(
-                    "Unable to extract the identifier for uninitialized variable error, fallback to default rollback logic. Diagnostic: {DiagnosticId}, message: {Message}",
-                    diagnostic.Id, diagnostic.GetMessage());
-            }
+            return identifierText;
+        }
+
+        if (diagnostic.Id == "CS0165" && brokenMutation is IdentifierNameSyntax identifierNameSyntax)
+        {
+            identifierText = identifierNameSyntax.Identifier.Text;
+        }
+        else
+        {
+            Logger.LogInformation(
+                "Unable to extract the identifier for uninitialized variable error, fallback to default rollback logic. Diagnostic: {DiagnosticId}, message: {Message}",
+                diagnostic.Id, diagnostic.GetMessage());
         }
 
         return identifierText;
     }
 
-    private void FlagChildrenMutationsForRollback(SyntaxNode mutation, Collection<SyntaxNode> brokenMutations)
+    private void RegisterMutationForRollback(SyntaxNode mutation, Collection<SyntaxNode> brokenMutations)
     {
+        brokenMutations.Add(mutation);
+        if (!MutantPlacer.RequiresRemovingChildMutations(mutation))
+        {
+            return;
+        }
+
         var scan = ScanAllMutationsIfsAndIds(mutation);
         foreach (var mutant in scan.Where(mutant => !brokenMutations.Contains(mutant.Node)))
         {
