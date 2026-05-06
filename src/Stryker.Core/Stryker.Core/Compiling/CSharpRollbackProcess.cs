@@ -18,9 +18,16 @@ namespace Stryker.Core.Compiling;
 public interface ICSharpRollbackProcess
 {
     CSharpRollbackProcessResult Start(Compilation compiler, ImmutableArray<Diagnostic> diagnostics,
-        bool lastAttempt, bool devMode);
+        Mode mode, bool devMode);
 
     SyntaxTree CleanUpFile(SyntaxTree file);
+
+    enum Mode
+    {
+        Normal,
+        Aggressive,
+        LastChance
+    }
 }
 
 /// <summary>
@@ -32,7 +39,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
     private ILogger Logger { get; } = ApplicationLogging.LoggerFactory.CreateLogger<CSharpRollbackProcess>();
 
     public CSharpRollbackProcessResult Start(Compilation compiler, ImmutableArray<Diagnostic> diagnostics,
-        bool lastAttempt, bool devMode)
+        ICSharpRollbackProcess.Mode mode, bool devMode)
     {
         // match the diagnostics with their syntax trees
         var syntaxTreeMapping =
@@ -61,9 +68,9 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                 Logger.LogTrace("source {OriginalTree}", originalTree);
             }
 
-            var updatedSyntaxTree = RemoveCompileErrorMutations(originalTree, syntaxTreeMap.Value).SyntaxTree;
+            var updatedSyntaxTree = RemoveCompileErrorMutations(originalTree, syntaxTreeMap.Value, mode).SyntaxTree;
 
-            if (updatedSyntaxTree == originalTree || lastAttempt)
+            if (updatedSyntaxTree == originalTree || mode == ICSharpRollbackProcess.Mode.LastChance)
             {
                 Logger.LogCritical(
                     "Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on github with the previous error message.");
@@ -105,11 +112,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
     }
 
     // search the first mutation within the node
-    private static SyntaxNode FindMutationInChildren(SyntaxNode startNode)
-    {
-        var mutation = MutantPlacer.GetAllMutations(startNode).FirstOrDefault();
-        return mutation.node;
-    }
+    private static SyntaxNode FindMutationInChildren(SyntaxNode startNode) => MutantPlacer.GetAllMutations(startNode).FirstOrDefault().node;
 
     private MutantInfo ExtractMutationInfo(SyntaxNode node)
     {
@@ -160,32 +163,13 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         return scan;
     }
 
-    private void DumpBuildErrors(KeyValuePair<SyntaxTree, ICollection<Diagnostic>> syntaxTreeMap)
-    {
-        Logger.LogDebug("Dumping build error in file");
-        var sourceLines = syntaxTreeMap.Key.ToString().Split("\n");
-        foreach (var diagnostic in syntaxTreeMap.Value)
-        {
-            var fileLinePositionSpan = diagnostic.Location.GetMappedLineSpan();
-            Logger.LogDebug("Error :{Message}, {fileLinePositionSpan}",
-                diagnostic.GetMessage(), fileLinePositionSpan);
-            for (var i = Math.Max(0, fileLinePositionSpan.StartLinePosition.Line - 1);
-                 i <= Math.Min(fileLinePositionSpan.EndLinePosition.Line + 1, sourceLines.Length - 1);
-                 i++)
-            {
-                Logger.LogDebug("{index}: {sourceLine}", i + 1, sourceLines[i]);
-            }
-        }
-
-        Logger.LogDebug(Environment.NewLine);
-    }
-
-    private SyntaxNode RemoveCompileErrorMutations(SyntaxTree originalTree, IEnumerable<Diagnostic> diagnosticInfo)
+    private SyntaxNode RemoveCompileErrorMutations(SyntaxTree originalTree, IEnumerable<Diagnostic> diagnosticInfo,
+        ICSharpRollbackProcess.Mode mode)
     {
         var rollbackRoot = originalTree.GetRoot();
         // find all if statements to remove
         var brokenMutations =
-            IdentifyMutationsAndFlagForRollback(diagnosticInfo, rollbackRoot, out var diagnostics);
+            IdentifyMutationsAndFlagForRollback(diagnosticInfo, rollbackRoot, mode, out var diagnostics);
 
         if (brokenMutations.Count == 0)
         {
@@ -196,6 +180,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         return RollTheseMutationsBack(rollbackRoot, brokenMutations);
     }
 
+    // roll back mutations
     private SyntaxNode RollTheseMutationsBack(SyntaxNode rollbackRoot, Collection<SyntaxNode> brokenMutations)
     {
         // mark the broken mutation nodes to track
@@ -288,7 +273,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         };
 
     private Collection<SyntaxNode> IdentifyMutationsAndFlagForRollback(IEnumerable<Diagnostic> diagnosticInfo,
-        SyntaxNode rollbackRoot, out Diagnostic[] diagnostics)
+        SyntaxNode rollbackRoot, ICSharpRollbackProcess.Mode mode, out Diagnostic[] diagnostics)
     {
         var brokenMutations = new Collection<SyntaxNode>();
         diagnostics = diagnosticInfo as Diagnostic[] ?? diagnosticInfo.ToArray();
@@ -300,7 +285,8 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             {
                 var identifierText = ExtractIdentifier(diagnostic, brokenMutation);
                 if (!string.IsNullOrEmpty(identifierText)
-                    && ScanErasingMutation(x => x.AssignsThis(identifierText), brokenMutation, brokenMutations))
+                    && ScanErasingMutation(
+                        x => x.AssignsThis(identifierText), brokenMutation, brokenMutations, mode))
                 {
                     continue;
                 }
@@ -314,7 +300,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                     // CS0161 implies a block body
                     brokenMutation = methodDeclarationSyntax.Body!.Statements.Last();
                 }
-                if (ScanErasingMutation(x => x is ReturnStatementSyntax, brokenMutation, brokenMutations))
+                if (ScanErasingMutation(x => x is ReturnStatementSyntax, brokenMutation, brokenMutations, mode))
                 {
                     continue;
                 }
@@ -341,25 +327,28 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
     }
 
     private static bool ScanErasingMutation(Func<SyntaxNode, bool> predicate,
-        SyntaxNode brokenMutation,
-        Collection<SyntaxNode> brokenMutations)
+        SyntaxNode brokenMutation, Collection<SyntaxNode> brokenMutations, ICSharpRollbackProcess.Mode mode)
     {
-
         var count = brokenMutations.Count;
         do
         {
+            // scanning previous siblings
             foreach (var previous in brokenMutation.GetPreviousSiblings().Reverse())
             {
                 var mutations = MutantPlacer.GetMutationsEngines(previous);
-                // we check if a mutation hides an assignment
+                // we check if a mutation hides
                 foreach (var node in mutations.Where(entry => !brokenMutations.Contains(entry.node)
                                                               && entry.engine.Erases(entry.node, predicate)).
                              Select(entry => entry.node))
                 {
                     brokenMutations.Add(node);
+                    if (mode == ICSharpRollbackProcess.Mode.Normal)
+                    {
+                        // remove only one in normal mode
+                        return true;
+                    }
                 }
             }
-            // we have a mutation, check if it erases an assignment
             // we reached where we are
             brokenMutation = brokenMutation.Parent;
 
@@ -398,4 +387,25 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             brokenMutations.Add(mutant.Node);
         }
     }
+
+    private void DumpBuildErrors(KeyValuePair<SyntaxTree, ICollection<Diagnostic>> syntaxTreeMap)
+    {
+        Logger.LogDebug("Dumping build error in file");
+        var sourceLines = syntaxTreeMap.Key.ToString().Split("\n");
+        foreach (var diagnostic in syntaxTreeMap.Value)
+        {
+            var fileLinePositionSpan = diagnostic.Location.GetMappedLineSpan();
+            Logger.LogDebug("Error :{Message}, {fileLinePositionSpan}",
+                diagnostic.GetMessage(), fileLinePositionSpan);
+            for (var i = Math.Max(0, fileLinePositionSpan.StartLinePosition.Line - 1);
+                 i <= Math.Min(fileLinePositionSpan.EndLinePosition.Line + 1, sourceLines.Length - 1);
+                 i++)
+            {
+                Logger.LogDebug("{index}: {sourceLine}", i + 1, sourceLines[i]);
+            }
+        }
+
+        Logger.LogDebug(Environment.NewLine);
+    }
+
 }

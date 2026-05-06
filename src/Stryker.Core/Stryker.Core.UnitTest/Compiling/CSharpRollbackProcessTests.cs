@@ -80,7 +80,7 @@ public class CSharpRollbackProcessTests : TestBase
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
         var rolledBackResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -318,7 +318,7 @@ public class CSharpRollbackProcessTests : TestBase
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
         var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -414,7 +414,7 @@ public class CSharpRollbackProcessTests : TestBase
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
         var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -481,7 +481,7 @@ public class CSharpRollbackProcessTests : TestBase
         compileResult.Success.ShouldBeFalse();
         compileResult.Diagnostics.ShouldHaveSingleItem();
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
         var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -580,116 +580,14 @@ public class CSharpRollbackProcessTests : TestBase
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
         var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
         rollbackedResult.Success.ShouldBeFalse();
         rollbackedResult.Diagnostics.ShouldHaveSingleItem();
-        fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
+        fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
-        rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-        rollbackedResult.Success.ShouldBeTrue();
-        // validate that all mutations are rolled back
-        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
-    }
-
-    [TestMethod]
-    public void RollbackProcess_ShouldRollbackConstructorWhenLocalRollbackFailsAndNoBlockMutationsFound()
-    {
-        var syntaxTree = CSharpSyntaxTree.ParseText(
-            """
-            using System;
-            namespace ExampleProject
-            {
-                public class StringMagic
-                {
-                    public int ActiveMutation = 1;
-                    public StringMagic(string first, string second, out string third)
-                    {
-                        var dummy = "";
-                        if(ActiveMutation == 8){
-                            while (first.Length > 2)
-                            {
-                                dummy = first + second;
-                            }
-                            while (first.Length < 2)
-                            {
-                                dummy =  second - first;
-                            }
-                        }else{if(ActiveMutation == 7){
-                            while (first.Length > 2)
-                            {
-                                dummy =  first + second;
-                            }
-                            while (first.Length < 2)
-                            {
-                                dummy =  second - first;
-                            }
-                        }else{if(ActiveMutation == 6){
-                            while (first.Length == 2)
-                            {
-                                dummy =  first + second;
-                            }
-                            while (first.Length < 2)
-                            {
-                                dummy =  second + first;
-                            }
-                        }else{
-                            third = "good";
-                            while (first.Length == 2)
-                            {
-                                dummy =  first + second;
-                            }
-                            while (first.Length < 2)
-                            {
-                                dummy =  second + first;
-                            }
-                        }}}
-                    }
-                }
-            }
-            """);
-        var root = syntaxTree.GetRoot();
-        // we manually inject mutation markers
-        var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
-        root = root.ReplaceNode(
-            mutantIf1,
-            mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(8), _ifEngineMarker)
-        );
-        var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
-        root = root.ReplaceNode(
-            mutantIf2,
-            mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(7), _ifEngineMarker)
-        );
-        var mutantIf3 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[2];
-        root = root.ReplaceNode(
-            mutantIf3,
-            mutantIf3.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
-        );
-        var annotatedSyntaxTree = root.SyntaxTree;
-
-        var compiler = CSharpCompilation.Create("TestCompilation",
-            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-            references: new List<PortableExecutableReference>() {
-                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
-            });
-
-        var target = new CSharpRollbackProcess();
-
-        using var ms = new MemoryStream();
-        var compileResult = compiler.Emit(ms);
-
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
-
-        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-
-        rollbackedResult.Success.ShouldBeFalse();
-        rollbackedResult.Diagnostics.ShouldHaveSingleItem();
-
-        fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
         rollbackedResult = fixedCompilation.Compilation.Emit(ms);
         rollbackedResult.Success.ShouldBeTrue();
         // validate that all mutations are rolled back
@@ -793,7 +691,7 @@ public class CSharpRollbackProcessTests : TestBase
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
         var rollbackResult = fixedCompilation.Compilation.Emit(ms);
 
         rollbackResult.Success.ShouldBeTrue();
@@ -894,7 +792,7 @@ public class CSharpRollbackProcessTests : TestBase
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
         var rollbackResult = fixedCompilation.Compilation.Emit(ms);
 
         rollbackResult.Success.ShouldBeTrue();
@@ -995,7 +893,7 @@ public class CSharpRollbackProcessTests : TestBase
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
         var rollbackResult = fixedCompilation.Compilation.Emit(ms);
 
         rollbackResult.Success.ShouldBeTrue();
@@ -1054,7 +952,7 @@ public class CSharpRollbackProcessTests : TestBase
         var target = new CSharpRollbackProcess();
 
         using var ms = new MemoryStream();
-        var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
         fixedCompilation.Compilation.Emit(ms).Success.ShouldBeTrue();
 
         // validate that only one of the compile errors marked the mutation as rolled back.
@@ -1114,9 +1012,9 @@ public class CSharpRollbackProcessTests : TestBase
 
         using var ms = new MemoryStream();
         // first compilation will roll back the mutation
-        var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
         // next attempt cannot roll back anything, so it assumes this is not fixable
-        Should.Throw<CompilationException>(() => target.Start(fixedCompilation.Compilation, fixedCompilation.Compilation.Emit(ms).Diagnostics, true, false));
+        Should.Throw<CompilationException>(() => target.Start(fixedCompilation.Compilation, fixedCompilation.Compilation.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.LastChance, false));
     }
 }

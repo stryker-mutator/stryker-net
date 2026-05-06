@@ -64,7 +64,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
         // first try compiling
         var retryCount = 1;
-        (var rollbackProcessResult, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, ref compilation, null, false, retryCount);
+        (var rollbackProcessResult, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, ref compilation, null, ICSharpRollbackProcess.Mode.Normal, retryCount);
 
         // If compiling failed and the error has no location, log and throw exception.
         if (!emitResult.Success && emitResult.Diagnostics.Any(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error))
@@ -75,10 +75,18 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
             throw new CompilationException("General Build Failure detected.");
         }
 
+        var mode = ICSharpRollbackProcess.Mode.Normal;
         for (var count = 1; !emitResult.Success && count < MaxAttempt; count++)
         {
+            mode = count switch
+            {
+                MaxAttempt - 1 => ICSharpRollbackProcess.Mode.LastChance,
+                >= MaxAttempt - 3 => ICSharpRollbackProcess.Mode.Aggressive,
+                _ => mode
+            };
             // compilation did not succeed. let's compile a couple of times more for good measure
-            (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, ref compilation, emitResult, retryCount == MaxAttempt - 1, retryCount);
+            (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, ref compilation,
+                emitResult, mode, retryCount);
         }
 
         if (emitResult.Success)
@@ -165,7 +173,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
         Stream symbolStream,
         ref Compilation compilation,
         EmitResult previousEmitResult,
-        bool lastAttempt,
+        ICSharpRollbackProcess.Mode mode,
         int retryCount)
     {
         CSharpRollbackProcessResult rollbackProcessResult = null;
@@ -181,7 +189,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
             if (previousEmitResult != null)
             {
                 // remove broken mutations
-                rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, lastAttempt, _options.DiagMode);
+                rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, mode, _options.DiagMode);
                 compilation = rollbackProcessResult.Compilation;
             }
 
