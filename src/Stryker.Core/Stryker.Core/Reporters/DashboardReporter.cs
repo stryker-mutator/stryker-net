@@ -56,8 +56,7 @@ public class DashboardReporter : IReporter
             {
                 var aqua = new Style(Color.Aqua);
                 _console.WriteLine(
-                    "Hint: by passing \"--open-report:dashboard or -o:dashboard\" the report will open automatically once Stryker is done.",
-                    aqua);
+                    "Hint: by passing \"--open-report:dashboard or -o:dashboard\" the report will open automatically once Stryker is done.", aqua);
             }
 
             var green = new Style(Color.Green);
