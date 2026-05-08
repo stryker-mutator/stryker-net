@@ -1193,9 +1193,9 @@ public class SingleMicrosoftTestPlatformRunnerTests
         {
             get
             {
-                var field = typeof(SingleMicrosoftTestPlatformRunner).GetField("_coverageMode",
+                var coverageModeField = typeof(SingleMicrosoftTestPlatformRunner).GetField("_coverageMode",
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                return (bool)field!.GetValue(this)!;
+                return (bool)coverageModeField!.GetValue(this)!;
             }
         }
     }
