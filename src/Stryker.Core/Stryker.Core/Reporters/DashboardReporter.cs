@@ -64,8 +64,8 @@ public class DashboardReporter : IReporter
             _console.WriteLine();
             _console.WriteLine("Your report has been uploaded at:", green);
             // We must print the report path as the link text because on some terminals links might be supported but not actually clickable: https://github.com/spectreconsole/spectre.console/issues/764
-            _console.WriteLine(reportUri,
-                _console.Profile.Capabilities.Links ? green.Combine(new Style(link: reportUri)) : green);
+            _console.Write(new Paragraph(reportUri, green, _console.Profile.Capabilities.Links ? new Link(reportUri) : null));
+            _console.WriteLine();
             _console.WriteLine("You can open it in your browser of choice.", green);
         }
         else
