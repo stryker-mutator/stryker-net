@@ -102,7 +102,6 @@ const bump = promisify(conventionalRecommendedBump);
     exec('git push --follow-tags');
     if (!versionSuffix) {
         try {
-            const execSync = require('node:child_process').execSync;
             execSync(`gh release create dotnet-stryker@${newVersionNumber} --title "dotnet-stryker@${newVersionNumber}" --notes-from-tag`);
             console.log(`Created GitHub release for dotnet-stryker@${newVersionNumber}`);
         } catch (e) {
