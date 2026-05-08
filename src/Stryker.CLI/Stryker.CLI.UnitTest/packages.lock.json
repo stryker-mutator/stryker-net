@@ -52,11 +52,11 @@
       },
       "Spectre.Console.Testing": {
         "type": "Direct",
-        "requested": "[0.54.0, )",
-        "resolved": "0.54.0",
-        "contentHash": "9QjSrRH+scy66ppmOLDiSno0Uh1ISJL18FqmTQDFNvK/oNI1DaI30cy2Uj6v0gxLZghtc/eKTwXtPpe0KKfHXw==",
+        "requested": "[0.55.2, )",
+        "resolved": "0.55.2",
+        "contentHash": "g7BWoLVGAAJZ4VKR/GfQOLoOO0lpjPTsrO9C6GsFB/o93FtZqvDluc1RC483/kKhKPS1kqErswksoMQEueuiRw==",
         "dependencies": {
-          "Spectre.Console": "0.54.0"
+          "Spectre.Console": "0.55.2"
         }
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
@@ -492,6 +492,11 @@
           "System.Text.Encoding.Extensions": "4.0.11"
         }
       },
+      "Spectre.Console.Ansi": {
+        "type": "Transitive",
+        "resolved": "0.55.2",
+        "contentHash": "tN3KEJQQZwLW9HJnG5YTSAxfBwxsmg1wVuGvhGG2rM+pbl+NGaHU8pDcNofPlOXlgpkbpBMxI5t9o9qPfy3sHQ=="
+      },
       "System.ClientModel": {
         "type": "Transitive",
         "resolved": "1.8.0",
@@ -849,14 +854,14 @@
           "McMaster.Extensions.CommandLineUtils": "[5.1.0, )",
           "Microsoft.Extensions.DependencyInjection": "[10.0.7, )",
           "NuGet.Protocol": "[7.3.1, )",
-          "YamlDotNet": "[17.0.1, )",
+          "YamlDotNet": "[17.1.0, )",
           "stryker": "[4.14.1, )"
         }
       },
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "AWSSDK.S3": "[4.0.22.2, )",
+          "AWSSDK.S3": "[4.0.23, )",
           "Azure.Storage.Files.Shares": "[12.25.0, )",
           "Buildalyzer": "[8.0.0, )",
           "DotNet.Glob": "[3.1.3, )",
@@ -878,7 +883,7 @@
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
           "Serilog.Sinks.Console": "[6.1.1, )",
           "ShellProgressBar": "[5.2.0, )",
-          "Spectre.Console": "[0.54.0, )",
+          "Spectre.Console": "[0.55.2, )",
           "Stryker.Abstractions": "[4.14.1, )",
           "Stryker.Configuration": "[4.14.1, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
@@ -978,9 +983,9 @@
       },
       "AWSSDK.S3": {
         "type": "CentralTransitive",
-        "requested": "[4.0.22.2, )",
-        "resolved": "4.0.22.2",
-        "contentHash": "RYBhoTFlMRq2tiqv/8FfSRFkNz0OCY2U5AbwH5PWpI/XhI3eQp34ujVAT9gD9DqOUHKDaQvJegauypUSO6wkjQ==",
+        "requested": "[4.0.23, )",
+        "resolved": "4.0.23",
+        "contentHash": "yPvCj0ITnniE8j2YVVCrTfutOfaw+a9CememSzqYL2Y7zQaKLZL6F5385zI8NqnCpw26OzU5cwmKzAC6xssbGw==",
         "dependencies": {
           "AWSSDK.Core": "[4.0.6.1, 5.0.0)"
         }
@@ -1244,9 +1249,12 @@
       },
       "Spectre.Console": {
         "type": "CentralTransitive",
-        "requested": "[0.54.0, )",
-        "resolved": "0.54.0",
-        "contentHash": "StDXCFayfy0yB1xzUHT2tgEpV1/HFTiS4JgsAQS49EYTfMixSwwucaQs/bIOCwXjWwIQTMuxjUIxcB5XsJkFJA=="
+        "requested": "[0.55.2, )",
+        "resolved": "0.55.2",
+        "contentHash": "yc0g12YJpmZHofGJLTQX02/uqfzJ6XHRx6pe9rANNjleQptXMHPxD9KI2/DWkXiJWddc+4oizEdGox15c89hhw==",
+        "dependencies": {
+          "Spectre.Console.Ansi": "0.55.2"
+        }
       },
       "StreamJsonRpc": {
         "type": "CentralTransitive",
@@ -1280,9 +1288,9 @@
       },
       "YamlDotNet": {
         "type": "CentralTransitive",
-        "requested": "[17.0.1, )",
-        "resolved": "17.0.1",
-        "contentHash": "qVir5fehR/W5nTJyoJUibypETXaW4iRAF9cQa0FQIC9TJ3VC0qDOwm4o/RxANewj8KzPF8WMF2abBfUgi6LC4w=="
+        "requested": "[17.1.0, )",
+        "resolved": "17.1.0",
+        "contentHash": "AhsNXgeAs3Ugt653t8LC44xXDuldFfwBpWbWX9pN3e4Yg8U5Bk8jLn8eXtGv5HV2V2nHu7F46fqsPC+tpcTGAA=="
       }
     }
   }
