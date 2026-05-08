@@ -59,3 +59,6 @@ To test Stryker.NET on a project:
 
 **Note**: Running Stryker on itself doesn't work as assemblies will be in use. To run Stryker on the stryker codebase, use the official nuget release via `dotnet tool install dotnet-stryker` and then `dotnet stryker`.
 
+## Adding a New Mutator
+
+See the full guide in [adding_a_mutator.md](../adding_a_mutator.md).
