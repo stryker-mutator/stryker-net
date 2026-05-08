@@ -44,18 +44,10 @@ public class StrykerVsTestHostLauncher : IStrykerTestHostLauncher
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                EnvironmentVariables =
-                {
-                    // Disable DiffEngine so that approval tests frameworks such as https://github.com/VerifyTests/Verify
-                    // or https://github.com/approvals/ApprovalTests.Net (which both use DiffEngine under the hood)
-                    // don't launch a diffing tool GUI on each failed test.
-                    // See https://github.com/VerifyTests/DiffEngine/blob/6.6.1/src/DiffEngine/DisabledChecker.cs#L8
-                    ["DiffEngine_Disabled"] = "true",
-                    // Disable copying the command to accept the received version to the clipboard when using Verify
-                    // See https://github.com/VerifyTests/Verify/blob/main/docs/clipboard.md
-                    ["Verify_DisableClipboard"] = "true",
-                },
             };
+
+        ExternalEnvironmentVariables.Add(processInfo.Environment);
+
         var currentProcess = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
 
         if (_devMode)
