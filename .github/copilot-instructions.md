@@ -45,7 +45,7 @@ When creating or updating pull requests, **always** use Angular-style convention
 - **Integration tests**: 
   - On **Windows**: Run `.\integration-tests.ps1` in the root of the repo (PowerShell 7 recommended)
   - On **macOS/Linux**: Run `pwsh ./integration-tests.ps1` in the root of the repo (requires [PowerShell 7](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell))
-- Always run unit tests and integration after making a change to ensure nothing is broken
+- Always run unit tests and integration tests after making a change to ensure nothing is broken
 
 ### Testing Locally
 
