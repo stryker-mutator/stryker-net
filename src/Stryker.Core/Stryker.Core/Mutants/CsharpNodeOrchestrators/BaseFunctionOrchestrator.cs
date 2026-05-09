@@ -139,7 +139,6 @@ internal abstract class BaseFunctionOrchestrator<T> : MemberDefinitionOrchestrat
         }
 
         targetNode = ConvertToBlockBody(targetNode, returnType);
-
         var newBody = MutantPlacer.InjectOutParametersInitialization(context.InjectMutations(GetBodies(targetNode).block, GetBodies(sourceNode).expression, !returnType.IsVoid()), parameters);
         targetNode = SwitchToThisBodies(targetNode, newBody, null);
         return targetNode;

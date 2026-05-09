@@ -291,9 +291,8 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                     continue;
                 }
             }
-
             // handles missing return statement
-            if (diagnostic.Id is "CS0161")
+            else if (diagnostic.Id is "CS0161")
             {
                 if (brokenMutation is MethodDeclarationSyntax methodDeclarationSyntax)
                 {
@@ -306,27 +305,13 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                 }
             }
             // general case, assume the diagnostic location is within the mutation.
-            var mutation = FindMutationWithNode(brokenMutation);
-            if (mutation == null || brokenMutations.Contains(mutation))
-            {
-                continue;
-            }
-
-            // does it require to remove any child mutation ?
-            if (MutantPlacer.RequiresRemovingChildMutations(mutation))
-            {
-                RegisterMutationForRollback(mutation, brokenMutations);
-            }
-            else
-            {
-                brokenMutations.Add(mutation);
-            }
+            RegisterMutationForRollback(FindMutationWithNode(brokenMutation), brokenMutations);
         }
 
         return brokenMutations;
     }
 
-    private static bool ScanErasingMutation(Func<SyntaxNode, bool> predicate,
+    private bool ScanErasingMutation(Func<SyntaxNode, bool> predicate,
         SyntaxNode brokenMutation, Collection<SyntaxNode> brokenMutations, ICSharpRollbackProcess.Mode mode)
     {
         var count = brokenMutations.Count;
@@ -341,7 +326,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                                                               && entry.engine.Erases(entry.node, predicate)).
                              Select(entry => entry.node))
                 {
-                    brokenMutations.Add(node);
+                    RegisterMutationForRollback(node, brokenMutations);
                     if (mode == ICSharpRollbackProcess.Mode.Normal)
                     {
                         // remove only one in normal mode
@@ -383,16 +368,21 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
 
     private void RegisterMutationForRollback(SyntaxNode mutation, Collection<SyntaxNode> brokenMutations)
     {
-        brokenMutations.Add(mutation);
-        if (!MutantPlacer.RequiresRemovingChildMutations(mutation))
+        if (mutation == null || brokenMutations.Contains(mutation))
         {
             return;
         }
-
-        var scan = ScanAllMutationsIfsAndIds(mutation);
-        foreach (var mutant in scan.Where(mutant => !brokenMutations.Contains(mutant.Node)))
+        if (MutantPlacer.RequiresRemovingChildMutations(mutation))
         {
-            brokenMutations.Add(mutant.Node);
+            var scan = ScanAllMutationsIfsAndIds(mutation);
+            foreach (var mutant in scan.Where(mutant => !brokenMutations.Contains(mutant.Node)))
+            {
+                brokenMutations.Add(mutant.Node);
+            }
+        }
+        else
+        {
+            brokenMutations.Add(mutation);
         }
     }
 

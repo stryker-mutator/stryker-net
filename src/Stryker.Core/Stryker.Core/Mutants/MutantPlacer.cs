@@ -157,11 +157,9 @@ public class MutantPlacer(CodeInjection injection)
     public static bool RequiresRemovingChildMutations(SyntaxNode node)
     {
         var annotations = node.GetAnnotations(MutationMarkers).ToList();
-        if (annotations.TrueForAll(a => a.Kind != Injector))
-        {
-            throw new InvalidOperationException("No mutation in this node!");
-        }
-        return annotations.Exists(a => RequireRecursiveRemoval.Contains(a.Data));
+        return annotations.Any(a => a.Kind == Injector) ?
+            annotations.Exists(a => RequireRecursiveRemoval.Contains(a.Data))
+            : throw new InvalidOperationException("No mutation in this node!");
     }
 
     /// <summary>
