@@ -49,7 +49,7 @@ internal class DefaultInitializationEngine : BaseEngine<BlockSyntax>
         else
         {
             // this is the first initializer helper, no pre existing ones
-            initializers = Array.Empty<StatementSyntax>();
+            initializers = [];
             // keep all statements
             originalStatements = body.Statements;
         }
@@ -59,7 +59,7 @@ internal class DefaultInitializationEngine : BaseEngine<BlockSyntax>
                 p.Type.BuildDefaultExpression())))))
             .WithAdditionalAnnotations(BlockMarker);
 
-        return body.WithStatements(new(originalStatements.Prepend(initializersBlock))).WithAdditionalAnnotations(Marker);
+        return body.WithStatements(new SyntaxList<StatementSyntax>(originalStatements.Prepend(initializersBlock))).WithAdditionalAnnotations(Marker);
     }
 
     /// <summary>

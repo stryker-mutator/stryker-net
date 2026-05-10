@@ -148,13 +148,17 @@ internal static class RoslynHelper
     /// </summary>
     /// <param name="type">Type used in the resulting default expression.</param>
     /// <returns>An expression representing `default(<paramref name="type"/>'.</returns>
-    public static ExpressionSyntax BuildDefaultExpression(this TypeSyntax type) => SyntaxFactory.DefaultExpression(type.WithoutTrivia()).WithLeadingTrivia(SyntaxFactory.Space);
+    public static ExpressionSyntax BuildDefaultExpression(this TypeSyntax type) =>
+        (type == null
+            ? (ExpressionSyntax) SyntaxFactory.LiteralExpression(SyntaxKind.DefaultLiteralExpression)
+            : SyntaxFactory.DefaultExpression(type.WithoutTrivia())).WithLeadingTrivia(SyntaxFactory.Space);
 
     /// <summary>
     /// Check if a statements (or one of its child statements, if any) verifies some given predicate.
     /// </summary>
     /// <param name="syntax">initial statements</param>
     /// <param name="predicate">predicate to verify</param>
+    /// <param name="skipBlocks">true to skip syntablocks</param>
     /// <returns>true if any of the child statements verify the predicate</returns>
     /// <remarks>scanning stops as soon as one child matches the predicate</remarks>
     public static bool ScanChildStatements(this StatementSyntax syntax, Func<StatementSyntax, bool> predicate, bool skipBlocks = false)
@@ -187,7 +191,7 @@ internal static class RoslynHelper
     /// <param name="skipBlock">set to true to avoid scan into block statements</param>
     /// <returns></returns>
     public static bool ContainsNodeThatVerifies(this SyntaxNode node, Func<SyntaxNode, bool> predicate, bool skipBlock = true) =>
-        // scan 
+        // scan
         node.DescendantNodes((child) =>
         {
             if (skipBlock && child is BlockSyntax)
