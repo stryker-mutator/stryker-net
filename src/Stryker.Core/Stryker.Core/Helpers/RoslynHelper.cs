@@ -147,7 +147,7 @@ internal static class RoslynHelper
     /// Return a default(type) expression.
     /// </summary>
     /// <param name="type">Type used in the resulting default expression.</param>
-    /// <returns>An expression representing `default(<paramref name="type"/>'.</returns>
+    ///  <returns>An expression representing `default(<paramref name="type"/>`.</returns>
     public static ExpressionSyntax BuildDefaultExpression(this TypeSyntax type) =>
         (type == null
             ? (ExpressionSyntax) SyntaxFactory.LiteralExpression(SyntaxKind.DefaultLiteralExpression)
@@ -158,7 +158,7 @@ internal static class RoslynHelper
     /// </summary>
     /// <param name="syntax">initial statements</param>
     /// <param name="predicate">predicate to verify</param>
-    /// <param name="skipBlocks">true to skip syntablocks</param>
+    /// <param name="skipBlocks">true to skip syntax blocks</param>
     /// <returns>true if any of the child statements verify the predicate</returns>
     /// <remarks>scanning stops as soon as one child matches the predicate</remarks>
     public static bool ScanChildStatements(this StatementSyntax syntax, Func<StatementSyntax, bool> predicate, bool skipBlocks = false)
