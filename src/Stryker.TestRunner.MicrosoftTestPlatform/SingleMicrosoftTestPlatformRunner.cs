@@ -546,7 +546,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
             foreach (var assembly in assemblies)
             {
-                var (result, timedOut, discoveredTests) = await ProcessSingleAssemblyAsync(assembly, timeoutCalc, mutantId == -1).ConfigureAwait(false);
+                var (result, timedOut, discoveredTests) = await RunAssemblyTestsAsync(assembly, timeoutCalc).ConfigureAwait(false);
 
                 if (discoveredTests is not null)
                 {
@@ -569,15 +569,21 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             var failedTestIds = accumulator.BuildFailedTests();
             var timedOutTestIds = accumulator.BuildTimedOutTests();
 
+            IEnumerable<MtpTestDescription> testDescriptionValues;
+            lock (_discoveryLock)
+            {
+                testDescriptionValues = _testDescriptions.Values.ToList();
+            }
+
             if (update is not null && mutants is not null)
             {
                 update.Invoke(mutants, failedTestIds, executedTests, timedOutTestIds);
             }
 
-            lock (_discoveryLock)
+            if (accumulator.HasTimeout)
             {
-                return new TestRunResult(
-                    _testDescriptions.Values,
+                return TestRunResult.TimedOut(
+                    testDescriptionValues,
                     executedTests,
                     failedTestIds,
                     timedOutTestIds,
@@ -585,6 +591,15 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
                     accumulator.Messages,
                     accumulator.TotalDuration);
             }
+
+            return new TestRunResult(
+                testDescriptionValues,
+                executedTests,
+                failedTestIds,
+                timedOutTestIds,
+                accumulator.BuildErrorMessage(),
+                accumulator.Messages,
+                accumulator.TotalDuration);
         }
         catch (Exception ex)
         {
