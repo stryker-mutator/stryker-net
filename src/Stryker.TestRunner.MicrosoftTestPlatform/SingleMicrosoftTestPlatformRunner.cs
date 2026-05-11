@@ -435,14 +435,15 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         
         if (server is not null)
         {
-            _logger.LogDebug("{_runnerId}: Restarting test server for {Assembly} after timeout", _runnerId, Path.GetFileName(assembly));
+            _logger.LogDebug("{RunnerId}: Restarting test server for {Assembly} after timeout", _runnerId, Path.GetFileName(assembly));
             try
             {
                 await server.RestartAsync(force: true).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                _logger.LogDebug(ex, "{_runnerId}: Failed to restart test server for {Assembly} after timeout. Creating a new server on next use.", _runnerId, Path.GetFileName(assembly));
+                _logger.LogDebug(ex, "{RunnerId}: Failed to restart test server for {Assembly} after timeout. Creating a new server on next use.", _runnerId, Path.GetFileName(assembly));
+                server.Dispose();
                 await _serverLock.WaitAsync().ConfigureAwait(false);
                 try
                 {
@@ -510,8 +511,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
     internal async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> ProcessSingleAssemblyAsync(
         string assembly,
-        ITimeoutValueCalculator? timeoutCalc,
-        bool registerInitialResults = false)
+        ITimeoutValueCalculator? timeoutCalc)
     {
         if (!File.Exists(assembly))
         {
@@ -526,7 +526,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             timeout = CalculateAssemblyTimeout(discoveredTests, timeoutCalc, assembly);
         }
 
-        var (testResults, timedOut) = await RunAssemblyTestsInternalAsync(assembly, null, timeout, registerInitialResults).ConfigureAwait(false);
+        var (testResults, timedOut) = await RunAssemblyTestsInternalAsync(assembly, null, timeout).ConfigureAwait(false);
 
         return (testResults as TestRunResult, timedOut, discoveredTests);
     }
@@ -633,8 +633,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     internal async Task<(ITestRunResult Result, bool TimedOut)> RunAssemblyTestsInternalAsync(
         string assembly,
         Func<TestNode, bool>? testUidFilter,
-        TimeSpan? timeout = null,
-        bool registerInitialResults = false)
+        TimeSpan? timeout = null)
     {
         var startTime = DateTime.UtcNow;
 
