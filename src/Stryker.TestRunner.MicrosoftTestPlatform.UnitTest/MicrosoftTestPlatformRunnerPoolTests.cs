@@ -391,12 +391,12 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         cov1.MutationsCovered.ShouldContain(1);
         cov1.MutationsCovered.ShouldContain(2);
         cov1.MutationsCovered.ShouldNotContain(3);
-        cov1.Confidence.ShouldBe(CoverageConfidence.Normal);
+        cov1.Confidence.ShouldBe(CoverageConfidence.Exact);
 
         var cov2 = coverage.First(c => c.TestId == desc2.Id);
         cov2.MutationsCovered.ShouldContain(3);
         cov2.MutationsCovered.ShouldNotContain(1);
-        cov2.Confidence.ShouldBe(CoverageConfidence.Normal);
+        cov2.Confidence.ShouldBe(CoverageConfidence.Exact);
     }
 
     [TestMethod]

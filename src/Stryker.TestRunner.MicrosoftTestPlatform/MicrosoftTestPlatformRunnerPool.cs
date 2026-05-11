@@ -101,10 +101,10 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     {
         if (_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
         {
-            var confidence = _options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest)
-                ? CoverageConfidence.Exact
-                : CoverageConfidence.Normal;
-            return CaptureCoverageTestByTest(confidence);
+            // MTP always restarts the test host between tests (to trigger ProcessExit coverage flush),
+            // so per-test coverage is always captured in isolation — use Exact confidence regardless
+            // of whether perTest or perTestInIsolation was requested.
+            return CaptureCoverageTestByTest(CoverageConfidence.Exact);
         }
 
         return CaptureCoverageInOneGo(project);
