@@ -44,7 +44,7 @@ internal class TestableRunner : SingleMicrosoftTestPlatformRunner
             {
                 return await _coverageHandler(assembly, test, testId, confidence).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 return CoverageRunResult.Create(testId, CoverageConfidence.Dubious,
                     Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());

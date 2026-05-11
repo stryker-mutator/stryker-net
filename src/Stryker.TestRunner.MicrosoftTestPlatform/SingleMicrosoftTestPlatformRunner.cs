@@ -795,6 +795,8 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
                 // Ignore cleanup errors
                 _logger.LogWarning(ex, "{RunnerId}: Failed to clean up temp files", _runnerId);
             }
+
+            _serverLock.Dispose();
         }
         _disposed = true;
     }
