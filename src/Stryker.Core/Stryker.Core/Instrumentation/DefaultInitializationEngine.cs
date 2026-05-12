@@ -32,7 +32,11 @@ internal class DefaultInitializationEngine : BaseEngine<BlockSyntax>
                 "Can't add default initializer(s) to expression bodied or virtual method.");
         }
         parameters = parameters.Where(p => p.Modifiers.Any(m => m.IsKind(SyntaxKind.OutKeyword))).ToList();
-        if (!parameters.Any())
+
+
+        // The BlockSyntax may not have the type information available, it may not even be available to the SemanticModel, this can happen
+        // when there is a lambda expression as a parameter.
+        if (!parameters.Any() || parameters.Any(x => x.Type == null))
         {
             return body;
         }

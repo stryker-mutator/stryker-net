@@ -177,7 +177,6 @@ public class MutantPlacerTests : TestBase
         CheckMutantPlacerProperlyPlaceAndRemoveHelpers<PropertyDeclarationSyntax>(source, expected, placer.ConvertToBlockBody);
     }
 
-
     [TestMethod]
     public void ShouldInjectInitializersAndRestore()
     {
@@ -188,6 +187,61 @@ public class MutantPlacerTests : TestBase
             (n) => MutantPlacer.InjectOutParametersInitialization(n,
                 new[]{SyntaxFactory.Parameter(SyntaxFactory.Identifier("x")).WithModifiers(SyntaxFactory.TokenList(new[] {SyntaxFactory.Token(SyntaxKind.OutKeyword)})).WithType(SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))
                 )}));
+    }
+
+    [TestMethod]
+    public void ShouldNotInjectWithAnonymousLambda()
+    {
+        var codeInjection = new CodeInjection();
+        var placer = new MutantPlacer(codeInjection);
+
+        const string source = """
+                              public static class Foo
+                              {
+                                  private delegate bool ExceptionResultDelegate(out bool result);
+
+                                  public static void Thing()
+                                  {
+                                      var results = new List<ExceptionResultDelegate>();
+
+                                      results.Add((out result) =>
+                                      {
+                                          result = false;
+                                          return false;
+                                      });
+                                  }
+                              }
+                              """;
+        const string expected = """
+                                public static class Foo
+                                {
+                                    private delegate bool ExceptionResultDelegate(out bool result);
+
+                                    public static void Thing()
+                                {    if(StrykerNamespace.MutantControl.IsActive(0))    {}
+                                else{
+                                        var results = new List<ExceptionResultDelegate>();
+
+                                        if(StrykerNamespace.MutantControl.IsActive(1)){;}else{results.Add((out result) =>
+                                {        if(StrykerNamespace.MutantControl.IsActive(2))        {}else{
+                                            result = (StrykerNamespace.MutantControl.IsActive(3)?true:false);
+                                            return (StrykerNamespace.MutantControl.IsActive(4)?true:false);
+                                        }return default;});}
+                                    }
+                                }}
+                                """;
+        var expectedSyntax = CSharpSyntaxTree.ParseText(expected.Replace("StrykerNamespace", codeInjection.HelperNamespace));
+
+        var orchestrator = new CsharpMutantOrchestrator(placer, options: new StrykerOptions
+        {
+            OptimizationMode = OptimizationModes.CoverageBasedTest,
+            MutationLevel = MutationLevel.Complete
+        });
+
+        var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source), null);
+
+        actualNode.ShouldBeSemantically(expectedSyntax);
+        actualNode.ShouldNotContainErrors();
     }
 
 
