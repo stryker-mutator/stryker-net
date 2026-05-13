@@ -4,11 +4,11 @@
     "net8.0": {
       "AWSSDK.S3": {
         "type": "Direct",
-        "requested": "[4.0.23, )",
-        "resolved": "4.0.23",
-        "contentHash": "yPvCj0ITnniE8j2YVVCrTfutOfaw+a9CememSzqYL2Y7zQaKLZL6F5385zI8NqnCpw26OzU5cwmKzAC6xssbGw==",
+        "requested": "[4.0.23.1, )",
+        "resolved": "4.0.23.1",
+        "contentHash": "1njwJw6zyp+uxq1w+xxChnCj9KHxis48ANTDm/IG7OcaTHLmAkn6S4mJFrTCQOKzch905P69t4mshRoyIArClg==",
         "dependencies": {
-          "AWSSDK.Core": "[4.0.6.1, 5.0.0)"
+          "AWSSDK.Core": "[4.0.6.2, 5.0.0)"
         }
       },
       "Azure.Storage.Files.Shares": {
@@ -245,8 +245,8 @@
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "4.0.6.1",
-        "contentHash": "rPhyuf5BtxAxI1x4a9DlMfknODiVzr9Kc5QWDjn/thmnmCLT6ggBh0zlpaXlP/MtdpN/mhEpTIODvzMIWrICVQ=="
+        "resolved": "4.0.6.2",
+        "contentHash": "pG9FjeQZeiZQRTWf/L+v7wMr0eABc4wnjF+jA1OabmJXGlSX8RNuU44IPXfLDBfw9g9L4E61kHrQg/w8VkEdVA=="
       },
       "Azure.Core": {
         "type": "Transitive",
