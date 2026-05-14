@@ -80,5 +80,5 @@ internal class DefaultInitializationEngine : BaseEngine<BlockSyntax>
     }
 
     // cannot erase an assignment
-    protected override bool ErasesAssignment(BlockSyntax node, Func<SyntaxNode, bool> predicate) => false;
+    protected override bool Erases(BlockSyntax node, Func<SyntaxNode, bool> predicate) => false;
 }

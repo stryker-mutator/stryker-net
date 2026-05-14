@@ -40,6 +40,6 @@ internal class StaticInitializerMarkerEngine : BaseEngine<ExpressionSyntax>
         throw new InvalidOperationException($"Can't extract original expression from {node}");
     }
 
-    // block cannot erase an assignment
-    protected override bool ErasesAssignment(ExpressionSyntax node, Func<SyntaxNode, bool> predicate) => false;
+    // does not erase anything
+    protected override bool Erases(ExpressionSyntax node, Func<SyntaxNode, bool> predicate) => false;
 }

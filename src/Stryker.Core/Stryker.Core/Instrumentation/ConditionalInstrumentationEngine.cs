@@ -34,7 +34,7 @@ internal class ConditionalInstrumentationEngine : BaseEngine<ParenthesizedExpres
             : throw new InvalidOperationException(
                 $"Expected a block containing a conditional expression, found:\n{parenthesized.ToFullString()}.");
 
-    protected override bool ErasesAssignment(ParenthesizedExpressionSyntax node, Func<SyntaxNode, bool> predicate) =>
+    protected override bool Erases(ParenthesizedExpressionSyntax node, Func<SyntaxNode, bool> predicate) =>
         // check if identifier is assigned on false condition and not assigned on true
         node.Expression is ConditionalExpressionSyntax conditional
             ? conditional.WhenFalse.ContainsNodeThatVerifies(predicate, false)

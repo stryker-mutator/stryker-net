@@ -197,10 +197,14 @@ internal static class RoslynHelper
     /// <param name="identifier">identifier to check</param>
     /// <returns>true if this node is an assignment or an out variable assigning <paramref name="node"/> </returns>
     public static bool AssignsThis(this SyntaxNode node, string identifier) =>
-        (node is AssignmentExpressionSyntax assignmentExpressionSyntax && assignmentExpressionSyntax.Left.ToString() == identifier)
+        (node is AssignmentExpressionSyntax assignmentExpressionSyntax && assignmentExpressionSyntax.Left.AssignThisIdentifier(identifier))
         || (node is ArgumentSyntax arg && arg.RefOrOutKeyword.IsKind(SyntaxKind.OutKeyword)
-                                       && arg.Expression is IdentifierNameSyntax identifierNameSyntax
-                                       && identifierNameSyntax.Identifier.Text == identifier);
+                                       && arg.Expression.AssignThisIdentifier(identifier));
+
+    private static bool AssignThisIdentifier(this ExpressionSyntax expression, string identifier) =>
+        (expression is IdentifierNameSyntax identifierNameSyntax && identifierNameSyntax.Identifier.Text == identifier)
+        || (expression is ParenthesizedExpressionSyntax parenthesizedExpressionSyntax && parenthesizedExpressionSyntax.Expression.AssignThisIdentifier(identifier))
+        || (expression is TupleExpressionSyntax tupleExpressionSyntax && tupleExpressionSyntax.Arguments.Any(arg => arg.Expression.AssignThisIdentifier(identifier)));
 
     /// <summary>
     /// Clean trivia from a node

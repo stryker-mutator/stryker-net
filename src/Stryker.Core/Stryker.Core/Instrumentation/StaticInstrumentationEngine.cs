@@ -32,5 +32,5 @@ internal class StaticInstrumentationEngine : BaseEngine<BlockSyntax>
     }
 
     // do not erase anything
-    protected override bool ErasesAssignment(BlockSyntax node, Func<SyntaxNode, bool> predicate) => false;
+    protected override bool Erases(BlockSyntax node, Func<SyntaxNode, bool> predicate) => false;
 }

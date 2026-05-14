@@ -49,7 +49,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new DoNotMutateOrchestrator<FieldDeclarationSyntax>(
             t => t.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword))),
         new DoNotMutateOrchestrator<LocalDeclarationStatementSyntax>(t => t.IsConst),
-        // ensure-pre/post increment/decrement mutations are mutated at statement level
+        // ensure pre-/post-increment/decrement mutations are mutated at statement level
         new MutateAtStatementLevelOrchestrator<PostfixUnaryExpressionSyntax>(t =>
             t.Parent is ExpressionStatementSyntax or ForStatementSyntax),
         new MutateAtStatementLevelOrchestrator<PrefixUnaryExpressionSyntax>(t =>
@@ -173,7 +173,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
             Mutation = mutation,
             ResultStatus = mutantIgnored ? MutantStatus.Ignored : MutantStatus.Pending,
             IsStaticValue = context.InStaticValue,
-            ResultStatusReason = mutantIgnored ? context.FilterComment : string.Empty
+            ResultStatusReason = mutantIgnored ? context.FilterComment : null
         };
     }
 
