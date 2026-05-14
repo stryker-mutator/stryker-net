@@ -23,7 +23,7 @@ public interface IInstrumentCode
     SyntaxNode RemoveInstrumentation(SyntaxNode node);
 
     /// <summary>
-    /// Checks if the instrumentation erases information, such an assignment.
+    /// Checks if the instrumentation erases information, such as an assignment.
     /// </summary>
     /// <param name="node">node to analyze</param>
     /// <param name="predicate">predicate</param>
