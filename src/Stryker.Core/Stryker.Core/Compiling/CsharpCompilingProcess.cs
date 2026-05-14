@@ -229,43 +229,31 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
     // unable to simulate a CS compiler fault
     private Compilation ScanForCauseOfException(Compilation compilation)
     {
-        var syntaxTrees = compilation.SyntaxTrees;
-        var success = false;
+        var syntaxTrees = compilation.SyntaxTrees.ToList();
         var cleanedSyntaxTrees = new HashSet<SyntaxTree>();
-        while (!success)
+        // compile each file separately to identify the culprit(s)
+        foreach (var st in syntaxTrees)
         {
-            success = true;
-            // we add each file incrementally until it fails
-            foreach (var st in syntaxTrees)
+            var local = compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(st);
+            try
             {
-                var local = compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(st);
-                try
-                {
-                    using var ms = new MemoryStream();
-                    local.Emit(
-                        ms,
-                        manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
-                        options: null);
-                }
-                catch (Exception e)
-                {
-                    if (cleanedSyntaxTrees.Contains(st))
-                    {
-                        _logger.LogError(e, "File {FilePath} already cleaned up but still causes compiler crash. Skipping it anyway.", st.FilePath);
-                        continue;
-                    }
-                    _logger.LogError(e, "Failed to compile {FilePath} (compiler crash)", st.FilePath);
-                    _logger.LogTrace("source code:\n {Source}", st.GetText());
-                    var cleanUpFile = _rollbackProcess.CleanUpFile(st);
-                    cleanedSyntaxTrees.Add(cleanUpFile);
-                    syntaxTrees = [..syntaxTrees.Where(x => x != st).Append(cleanUpFile)];
-                    success = false;
-                    break;
-                }
+                using var ms = new MemoryStream();
+                local.Emit(
+                    ms,
+                    manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
+                    options: null);
+                cleanedSyntaxTrees.Add(st);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Failed to compile {FilePath} (compiler crash)", st.FilePath);
+                _logger.LogTrace("source code:\n {Source}", st.GetText());
+                var cleanUpFile = _rollbackProcess.CleanUpFile(st);
+                cleanedSyntaxTrees.Add(cleanUpFile);
             }
         }
         _logger.LogError("Please report an issue and provide the source code of the file that caused the exception for analysis.");
-        return compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(syntaxTrees);
+        return compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(cleanedSyntaxTrees);
     }
 
     private void LogEmitResult(EmitResult result)
