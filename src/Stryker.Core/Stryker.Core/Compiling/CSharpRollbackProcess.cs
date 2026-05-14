@@ -405,5 +405,4 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
 
         Logger.LogDebug(Environment.NewLine);
     }
-
 }
