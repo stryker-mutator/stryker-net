@@ -53,7 +53,7 @@ internal abstract class BaseEngine<T> : IInstrumentCode where T : CSharpSyntaxNo
     /// Checks if the engine erases a node that matches a given predicate.
     /// </summary>
     /// <param name="node">node to check</param>
-    /// <param name="predicate">predicated</param>
+    /// <param name="predicate">predicate</param>
     /// <returns>true if the default path in this node contains a match and another path contains no match</returns>
     public bool Erases(SyntaxNode node, Func<SyntaxNode, bool> predicate) => node is T tNode && ErasesAssignment(tNode, predicate);
 }

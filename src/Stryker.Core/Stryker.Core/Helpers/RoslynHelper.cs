@@ -195,7 +195,7 @@ internal static class RoslynHelper
     /// </summary>
     /// <param name="node">node to check</param>
     /// <param name="identifier">identifier to check</param>
-    /// <returns>true if this is node is an assignment or an out variable assigning <paramref name="node"/> </returns>
+    /// <returns>true if this node is an assignment or an out variable assigning <paramref name="node"/> </returns>
     public static bool AssignsThis(this SyntaxNode node, string identifier) =>
         (node is AssignmentExpressionSyntax assignmentExpressionSyntax && assignmentExpressionSyntax.Left.ToString() == identifier)
         || (node is ArgumentSyntax arg && arg.RefOrOutKeyword.IsKind(SyntaxKind.OutKeyword)

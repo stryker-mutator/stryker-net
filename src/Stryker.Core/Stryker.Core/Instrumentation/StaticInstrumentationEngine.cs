@@ -31,6 +31,6 @@ internal class StaticInstrumentationEngine : BaseEngine<BlockSyntax>
         return node;
     }
 
-    // cannot erase an assignment with a block
+    // do not erase anything
     protected override bool ErasesAssignment(BlockSyntax node, Func<SyntaxNode, bool> predicate) => false;
 }
