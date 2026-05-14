@@ -619,18 +619,10 @@ public class CSharpRollbackProcessTests : TestBase
                             {
                                 dummy = first + second;
                             }
-                            while (first.Length < 2)
-                            {
-                                dummy =  second - first;
-                            }
                         }else{if(ActiveMutation == 7){
                         while (first.Length > 2)
                             {
                                 dummy =  first + second;
-                            }
-                            while (first.Length < 2)
-                            {
-                                dummy =  second - first;
                             }
                         }else{if(ActiveMutation == 6){
                             third = "good";
@@ -693,7 +685,12 @@ public class CSharpRollbackProcessTests : TestBase
 
         var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
         var rollbackResult = fixedCompilation.Compilation.Emit(ms);
+        rollbackResult.Success.ShouldBeFalse();
+        // rollback a single assignment erasing mutation
+        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> {8});
 
+        fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        rollbackResult = fixedCompilation.Compilation.Emit(ms);
         rollbackResult.Success.ShouldBeTrue();
         // validate that mutations 8 and 7 were rolled back
         fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 });
