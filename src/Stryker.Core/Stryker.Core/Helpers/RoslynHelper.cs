@@ -203,19 +203,7 @@ internal static class RoslynHelper
 
     private static bool AssignThisIdentifier(this ExpressionSyntax expression, string identifier) =>
         (expression is IdentifierNameSyntax identifierNameSyntax && identifierNameSyntax.Identifier.Text == identifier)
-        || (expression is DeclarationExpressionSyntax declarationExpressionSyntax && declarationExpressionSyntax.Designation.AssignThisIdentifier(identifier))
-        || (expression is ParenthesizedExpressionSyntax parenthesizedExpressionSyntax && parenthesizedExpressionSyntax.Expression.AssignThisIdentifier(identifier))
         || (expression is TupleExpressionSyntax tupleExpressionSyntax && tupleExpressionSyntax.Arguments.Any(arg => arg.Expression.AssignThisIdentifier(identifier)));
-
-    private static bool AssignThisIdentifier(this VariableDesignationSyntax expression, string identifier) =>
-        expression switch
-        {
-            SingleVariableDesignationSyntax singleVariableDesignationSyntax => singleVariableDesignationSyntax
-                .Identifier.Text == identifier,
-            ParenthesizedVariableDesignationSyntax parenthesizedVariableDesignationSyntax =>
-                parenthesizedVariableDesignationSyntax.Variables.Any(v => v.AssignThisIdentifier(identifier)),
-            _ => false
-        };
 
     /// <summary>
     /// Clean trivia from a node

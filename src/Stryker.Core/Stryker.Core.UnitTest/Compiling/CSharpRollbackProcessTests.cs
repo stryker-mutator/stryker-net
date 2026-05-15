@@ -595,62 +595,66 @@ public class CSharpRollbackProcessTests : TestBase
     }
 
     [TestMethod]
-    public void RollbackProcess_ShouldRollbackMutationsErasingAssignment()
+    [DataRow("third = \"good\";")]
+    [DataRow("(third, _) = (\"good\", 2);")]
+    public void RollbackProcess_ShouldRollbackMutationsErasingAssignment(string assignment)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(
-        """
-        using System;
-        namespace ExampleProject
-        {
-            public class StringMagic
-            {
-                public int ActiveMutation = 1;
-
-                public string AddTwoStrings
+            $$"""
+                using System;
+                namespace ExampleProject
                 {
-                    get
+                    public class StringMagic
                     {
-                        string first = string.Empty;
-                        string second = string.Empty;
-                        string third;
-                        var dummy = "";
-                        if(ActiveMutation == 8){
-                            while (first.Length > 2)
+                        public int ActiveMutation = 1;
+
+                        public string AddTwoStrings
+                        {
+                            get
                             {
-                                dummy = first + second;
+                                string first = string.Empty;
+                                string second = string.Empty;
+                                string third;
+                                var dummy = "";
+                                if(ActiveMutation == 8){
+                                    while (first.Length > 2)
+                                    {
+                                        dummy = first + second;
+                                    }
+                                }else{if(ActiveMutation == 7){
+                                while (first.Length > 2)
+                                    {
+                                        dummy =  first + second;
+                                    }
+                                }else{if(ActiveMutation == 6){
+                                   {{assignment}}
+                                while (first.Length == 2)
+                                    {
+                                        dummy =  first + second;
+                                    }
+                                    while (first.Length < 2)
+                                    {
+                                        dummy =  second + first;
+                                    }
+                                }else{
+                                   {{assignment}}
+                                    while (first.Length == 2)
+                                    {
+                                        dummy =  first + second;
+                                    }
+                                    while (first.Length < 2)
+                                    {
+                                        dummy =  second + first;
+                                    }
+                                }
+                                }
+                                }
+                                return third;
                             }
-                        }else{if(ActiveMutation == 7){
-                        while (first.Length > 2)
-                            {
-                                dummy =  first + second;
-                            }
-                        }else{if(ActiveMutation == 6){
-                            third = "good";
-                            while (first.Length == 2)
-                            {
-                                dummy =  first + second;
-                            }
-                            while (first.Length < 2)
-                            {
-                                dummy =  second + first;
-                            }
-                        }else{
-                            third = "good";
-                            while (first.Length == 2)
-                            {
-                                dummy =  first + second;
-                            }
-                            while (first.Length < 2)
-                            {
-                                dummy =  second + first;
-                            }
-                        }}}
-                        return third;
+                        }
                     }
                 }
-            }
-        }
-        """);
+                """);
         var root = syntaxTree.GetRoot();
 
         var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
@@ -671,7 +675,7 @@ public class CSharpRollbackProcessTests : TestBase
         var annotatedSyntaxTree = root.SyntaxTree;
 
         var compiler = CSharpCompilation.Create("TestCompilation",
-            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            syntaxTrees: new Collection<SyntaxTree> { annotatedSyntaxTree },
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
             references: new List<PortableExecutableReference> {
                 MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
