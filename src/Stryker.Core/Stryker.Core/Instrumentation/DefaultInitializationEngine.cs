@@ -78,4 +78,7 @@ internal class DefaultInitializationEngine : BaseEngine<BlockSyntax>
         return body.WithStatements(new SyntaxList<StatementSyntax>(body.Statements.Skip(1)))
             .WithoutAnnotations(Marker);
     }
+
+    // cannot erase an assignment
+    protected override bool Erases(BlockSyntax node, Func<SyntaxNode, bool> predicate) => false;
 }

@@ -99,6 +99,9 @@ internal abstract class BaseFunctionOrchestrator<T> : MemberDefinitionOrchestrat
         return SwitchToThisBodies(typedNode, null, expression).WithoutAnnotations(Marker);
     }
 
+    // cannot erase an assignment
+    public bool Erases(SyntaxNode node, Func<SyntaxNode, bool> predicate) => false;
+
     /// <inheritdoc/>
     protected override T InjectMutations(T sourceNode, T targetNode, SemanticModel semanticModel, MutationContext context)
     {
@@ -136,7 +139,6 @@ internal abstract class BaseFunctionOrchestrator<T> : MemberDefinitionOrchestrat
         }
 
         targetNode = ConvertToBlockBody(targetNode, returnType);
-
         var newBody = MutantPlacer.InjectOutParametersInitialization(context.InjectMutations(GetBodies(targetNode).block, GetBodies(sourceNode).expression, !returnType.IsVoid()), parameters);
         targetNode = SwitchToThisBodies(targetNode, newBody, null);
         return targetNode;
