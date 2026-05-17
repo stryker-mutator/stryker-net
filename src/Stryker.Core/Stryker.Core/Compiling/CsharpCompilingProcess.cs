@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -64,7 +63,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
         // first try compiling
         var retryCount = 1;
-        (var rollbackProcessResult, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, ref compilation, null, false, retryCount);
+        (var rollbackProcessResult, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, ref compilation, null, ICSharpRollbackProcess.Mode.Normal, retryCount);
 
         // If compiling failed and the error has no location, log and throw exception.
         if (!emitResult.Success && emitResult.Diagnostics.Any(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error))
@@ -75,10 +74,18 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
             throw new CompilationException("General Build Failure detected.");
         }
 
+        var mode = ICSharpRollbackProcess.Mode.Normal;
         for (var count = 1; !emitResult.Success && count < MaxAttempt; count++)
         {
+            mode = count switch
+            {
+                MaxAttempt - 1 => ICSharpRollbackProcess.Mode.LastChance,
+                >= MaxAttempt - 3 => ICSharpRollbackProcess.Mode.Aggressive,
+                _ => mode
+            };
             // compilation did not succeed. let's compile a couple of times more for good measure
-            (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, ref compilation, emitResult, retryCount == MaxAttempt - 1, retryCount);
+            (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, ref compilation,
+                emitResult, mode, retryCount);
         }
 
         if (emitResult.Success)
@@ -147,7 +154,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
         return outputCompilation as CSharpCompilation;
     }
 
-    private CSharpCompilation GetCSharpCompilation(IEnumerable<SyntaxTree> syntaxTrees)
+    private Compilation GetCSharpCompilation(IEnumerable<SyntaxTree> syntaxTrees)
     {
 
         var compilation = CSharpCompilation.Create(AssemblyName,
@@ -162,9 +169,9 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
     private (CSharpRollbackProcessResult, EmitResult, int) TryCompilation(
         Stream ms,
         Stream symbolStream,
-        ref CSharpCompilation compilation,
+        ref Compilation compilation,
         EmitResult previousEmitResult,
-        bool lastAttempt,
+        ICSharpRollbackProcess.Mode mode,
         int retryCount)
     {
         CSharpRollbackProcessResult rollbackProcessResult = null;
@@ -180,7 +187,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
             if (previousEmitResult != null)
             {
                 // remove broken mutations
-                rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, lastAttempt, _options.DiagMode);
+                rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, mode, _options.DiagMode);
                 compilation = rollbackProcessResult.Compilation;
             }
 
@@ -216,10 +223,13 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
         return (rollbackProcessResult, emitResult, retryCount + 1);
     }
 
-    private CSharpCompilation ScanForCauseOfException(CSharpCompilation compilation)
+    [ExcludeFromCodeCoverage]
+    // unable to simulate a CS compiler fault
+    private Compilation ScanForCauseOfException(Compilation compilation)
     {
-        var syntaxTrees = compilation.SyntaxTrees;
-        // we add each file incrementally until it fails
+        var syntaxTrees = compilation.SyntaxTrees.ToList();
+        var cleanedSyntaxTrees = new HashSet<SyntaxTree>();
+        // compile each file separately to identify the culprit(s)
         foreach (var st in syntaxTrees)
         {
             var local = compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(st);
@@ -230,16 +240,18 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
                     ms,
                     manifestResources: _input.GetResources(_logger),
                     options: null);
+                cleanedSyntaxTrees.Add(st);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to compile {FilePath}", st.FilePath);
+                _logger.LogError(e, "Failed to compile {FilePath} (compiler crash)", st.FilePath);
                 _logger.LogTrace("source code:\n {Source}", st.GetText());
-                syntaxTrees = syntaxTrees.Where(x => x != st).Append(_rollbackProcess.CleanUpFile(st)).ToImmutableArray();
+                var cleanUpFile = _rollbackProcess.CleanUpFile(st);
+                cleanedSyntaxTrees.Add(cleanUpFile);
             }
         }
         _logger.LogError("Please report an issue and provide the source code of the file that caused the exception for analysis.");
-        return compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(syntaxTrees);
+        return compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(cleanedSyntaxTrees);
     }
 
     private void LogEmitResult(EmitResult result)
@@ -284,11 +296,11 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
     // This class is used to provide the options to the source generators
     [ExcludeFromCodeCoverage]
-    internal class SimpleAnalyserConfigOptionsProvider : AnalyzerConfigOptionsProvider
+    private sealed class SimpleAnalyserConfigOptionsProvider : AnalyzerConfigOptionsProvider
     {
         private readonly NullAnalyzerConfigOptions _nullProvider = new();
 
-        public SimpleAnalyserConfigOptionsProvider(IAnalyzerResult result) => GlobalOptions = new SimpleAnalyzerConfigOptions(result);
+        internal SimpleAnalyserConfigOptionsProvider(IAnalyzerResult result) => GlobalOptions = new SimpleAnalyzerConfigOptions(result);
 
         public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => _nullProvider;
 
@@ -296,12 +308,10 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
         public override AnalyzerConfigOptions GlobalOptions { get; }
 
-        private sealed class SimpleAnalyzerConfigOptions : AnalyzerConfigOptions
+        private sealed class SimpleAnalyzerConfigOptions(IAnalyzerResult result) : AnalyzerConfigOptions
         {
             private const string Prefix = "build_property.";
-            private readonly IReadOnlyDictionary<string, string> _options;
-
-            public SimpleAnalyzerConfigOptions(IAnalyzerResult result) => _options = result.Properties;
+            private readonly IReadOnlyDictionary<string, string> _options = result.Properties;
 
             public override bool TryGetValue(string key, out string value)
             {

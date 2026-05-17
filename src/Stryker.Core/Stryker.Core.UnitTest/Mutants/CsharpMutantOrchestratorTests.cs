@@ -168,8 +168,8 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     [TestMethod]
     public void ShouldProperlyMutatePrefixUnitaryExpressionStatement()
     {
-        const string Source = @"void Method(int x) {++x;}";
-        const string Expected = @"void Method(int x) {if(StrykerNamespace.MutantControl.IsActive(0)){}else{if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.MutantControl.IsActive(2)){--x;}else{++x;}}}}}";
+        const string Source = "void Method(int x) {++x;}";
+        const string Expected = "void Method(int x) {if(StrykerNamespace.MutantControl.IsActive(0)){}else{if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.MutantControl.IsActive(2)){--x;}else{++x;}}}}}";
 
         ShouldMutateSourceInClassToExpected(Source, Expected);
     }
@@ -1029,11 +1029,46 @@ static Mutator_Flag_MutatedStatics()
     [TestMethod]
     public void ShouldInitializeOutVars()
     {
-        var source = @"public void SomeMethod(out int x, out string text) { x = 1; text = ""hello"";}";
-        var expected = @"public void SomeMethod(out int x, out string text) {{x= default(int);text= default(string);}if(StrykerNamespace.MutantControl.IsActive(0)){}else{ x = 1; text = (StrykerNamespace.MutantControl.IsActive(1)?"""":""hello"");
-        }}";
+        const string Source = """public void SomeMethod(out int x, out string text) { x = 1; text = "hello";}""";
+        const string Expected = """
+                                public void SomeMethod(out int x, out string text) {{x= default(int);text= default(string);}if(StrykerNamespace.MutantControl.IsActive(0)){}else{ x = 1; text = (StrykerNamespace.MutantControl.IsActive(1)?"":"hello");
+                                        }}
+                                """;
 
-        ShouldMutateSourceInClassToExpected(source, expected);
+        ShouldMutateSourceInClassToExpected(Source, Expected);
+    }
+
+    [TestMethod]
+    public void ShouldInitializeOutVarsForLambdas()
+    {
+        const string Source = """
+                              public static void Thing()
+                              {
+                                  var results = new List<ExceptionResultDelegate>();
+
+                                  results.Add((out result) =>
+                                  {
+                                      result = false;
+                                      return false;
+                                  });
+                              }
+                              """;
+        const string Expected = """
+                                public static void Thing()
+                                {if(StrykerNamespace.MutantControl.IsActive(0)){}
+                                else{
+                                    var results = new List<ExceptionResultDelegate>();
+
+                                    if(StrykerNamespace.MutantControl.IsActive(1)){;}else{results.Add((out result) =>
+                                {{result= default;}    if(StrykerNamespace.MutantControl.IsActive(2))    {}else{
+                                        result = (StrykerNamespace.MutantControl.IsActive(3)?true:false);
+                                        return (StrykerNamespace.MutantControl.IsActive(4)?true:false);
+                                    }return default;});}
+                                }
+                                }
+                                """;
+
+        ShouldMutateSourceInClassToExpected(Source, Expected);
     }
 
     [TestMethod]

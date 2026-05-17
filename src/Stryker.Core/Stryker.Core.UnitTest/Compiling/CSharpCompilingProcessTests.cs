@@ -59,7 +59,7 @@ public class Calculator
 
         using var ms = new MemoryStream();
         using var symbol = new MemoryStream();
-        var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, symbol);
+        var result = target.Compile(new Collection<SyntaxTree> { syntaxTree }, ms, symbol);
         result.Success.ShouldBe(true);
         ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
     }
@@ -135,9 +135,9 @@ public class Calculator
         ).Object;
 
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
-        rollbackProcessMock.Setup(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>(), false))
-                        .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics, bool _, bool _) =>
-                        new(compilation, null));
+        rollbackProcessMock.Setup(x => x.Start(It.IsAny<Compilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<ICSharpRollbackProcess.Mode>(), false))
+                        .Returns((Compilation compilation, ImmutableArray<Diagnostic> _, ICSharpRollbackProcess.Mode _, bool _) =>
+                        new CSharpRollbackProcessResult(compilation, null));
 
         var target = new CsharpCompilingProcess(analyzerResult, rollbackProcessMock.Object, new StrykerOptions());
 
@@ -145,7 +145,7 @@ public class Calculator
         {
             Should.Throw<CompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null));
         }
-        rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), false, false),
+        rollbackProcessMock.Verify(x => x.Start(It.IsAny<Compilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), ICSharpRollbackProcess.Mode.Normal, false),
             Times.AtLeast(2));
     }
 
@@ -180,12 +180,10 @@ public class Calculator
 
         var target = new CsharpCompilingProcess(analyzerResult, rollbackProcessMock.Object);
 
-        using (var ms = new MemoryStream())
-        {
-            target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+        using var ms = new MemoryStream();
+        target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
 
-            ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
-        }
+        ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
     }
 
     [TestMethod]
@@ -462,7 +460,7 @@ public class Calculator
                                 { "TargetFileName", "TargetFileName.dll" },
                             },
                             // add a reference to system so the example code can compile
-                            references: new[] { typeof(object).Assembly.Location }
+                            references: [typeof(object).Assembly.Location]
                         ).Object),
                     }
                 }

@@ -2,6 +2,7 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Instrumentation;
 
@@ -39,6 +40,13 @@ internal class IfInstrumentationEngine : BaseEngine<IfStatementSyntax>
         {
             return (block.Statements.Count == 1 ? block.Statements[0] : block).WithTriviaFrom(ifNode);
         }
-        throw new InvalidOperationException($"Expected a block containing an 'else' statement, found:\n{ifNode.ToFullString()}.");
+
+        throw new InvalidOperationException(
+            $"Expected a block containing an 'else' statement, found:\n{ifNode.ToFullString()}.");
     }
+
+    protected override bool Erases(IfStatementSyntax node, Func<SyntaxNode, bool> predicate) =>
+        // check if identifier is assigned on false condition and not assigned on true
+        !node.Statement.ContainsNodeThatVerifies(predicate, false)
+        && node.Else.ContainsNodeThatVerifies(predicate, false);
 }
