@@ -48,7 +48,7 @@ internal class DefaultInitializationEngine : BaseEngine<BlockSyntax>
         }
         else
         {
-            // this is the first initializer helper, no pre-existing ones
+            // this is the first initializer helper, no pre existing ones
             initializers = [];
             // keep all statements
             originalStatements = body.Statements;
