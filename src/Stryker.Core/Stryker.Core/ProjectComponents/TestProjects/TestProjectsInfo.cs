@@ -71,10 +71,9 @@ public class TestProjectsInfo : ITestProjectsInfo
             }
             if (_fileSystem.File.Exists(injectionPath))
             {
-                // Only create backup if there isn't already a backup
                 if (!_fileSystem.File.Exists(backupFilePath))
                 {
-                    _fileSystem.File.Move(injectionPath, backupFilePath, false);
+                    _fileSystem.File.Copy(injectionPath, backupFilePath, false);
                 }
             }
             else

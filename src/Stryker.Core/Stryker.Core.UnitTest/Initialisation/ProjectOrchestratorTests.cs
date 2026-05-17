@@ -46,7 +46,8 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
                 mock.Setup(m => m.Input).Returns(input);
                 return mock.Object;
             });
-
+        _projectMutatorMock.Setup(x => x.CompileProject(It.IsAny<IMutationTestProcess>()));
+        _projectMutatorMock.Setup(x => x.EnrichWithInitialTestRunInfo(It.IsAny<MutationTestInput>()));
     }
 
     [TestMethod]
@@ -72,7 +73,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
 
         // act
-        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+        var result = (await target.MutateAndTestProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
         // assert
         result.ShouldHaveSingleItem();
@@ -107,7 +108,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
 
         // act
-        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+        var result = (await target.MutateAndTestProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
         // assert we see the content file
         var scan = ((ProjectComponent<SyntaxTree>)result.First().Input.SourceProjectInfo.ProjectContents).CompilationSyntaxTrees;
@@ -133,7 +134,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object, out var mockRunner);
 
         // act
-        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+        var result = (await target.MutateAndTestProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
         // assert
         result.ShouldHaveSingleItem();
@@ -165,7 +166,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var target = BuildProjectOrchestrator(analyzerResults, out var mockRunner, out var buildalyzerAnalyzerManagerMock);
 
         // act
-        await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object);
+        await target.MutateAndTestProjectsAsync(options, _reporterMock.Object, mockRunner.Object);
 
         // assert
         buildalyzerAnalyzerManagerMock.Verify(x => x.SetGlobalProperty("Configuration", "Release"), Times.AtLeastOnce);
@@ -240,7 +241,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
                 TestLoggerFactory.CreateLogger<ProjectOrchestrator>());
 
             // act
-            var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+            var result = (await target.MutateAndTestProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
             // assert
             result.ShouldHaveSingleItem();
@@ -271,7 +272,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
 
         // act
-        var mutateAction = async () => (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+        var mutateAction = async () => (await target.MutateAndTestProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
         // assert
         mutateAction.ShouldThrow<InputException>();
@@ -301,7 +302,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
 
         // act
-        var result = async() => (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+        var result = async() => (await target.MutateAndTestProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
         
         // assert
         result.ShouldThrow<InputException>();
@@ -337,7 +338,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
 
         // act
-        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+        var result = (await target.MutateAndTestProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
         // assert
         result.Count.ShouldBe(2);
@@ -374,7 +375,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
         // act
-        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+        var result = (await target.MutateAndTestProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
         // assert
         result.Count.ShouldBe(2);
     }
@@ -406,7 +407,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
         // act
-        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+        var result = (await target.MutateAndTestProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
         // assert
         result.Count.ShouldBe(1);
     }
@@ -441,7 +442,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
 
         // act
-        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+        var result = (await target.MutateAndTestProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
         // assert
         result.ShouldHaveSingleItem();
