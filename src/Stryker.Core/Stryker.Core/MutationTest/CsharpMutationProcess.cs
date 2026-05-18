@@ -36,7 +36,7 @@ public class CsharpMutationProcess : IMutationProcess
         _options = options;
         var projectInfo = input.SourceProjectInfo.ProjectContents;
         var orchestrator = new CsharpMutantOrchestrator(new MutantPlacer(input.SourceProjectInfo.CodeInjector), options: _options);
-        var compilingProcess = new CsharpCompilingProcess(input, options: _options);
+        var compilingProcess = new CsharpCompilingProcess(input.SourceProjectInfo.AnalyzerResult, options: _options);
         var semanticModels = compilingProcess.GetSemanticModels(projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree));
 
         // Mutate source files

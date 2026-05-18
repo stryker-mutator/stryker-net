@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Stryker.Abstractions;
 using Stryker.Configuration.Options;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
@@ -49,9 +48,8 @@ public class CSharpMutationTestProcessTests : TestBase
 
         var input = new MutationTestInput()
         {
-            SourceProjectInfo = new SourceProjectInfo()
-            {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            SourceProjectInfo = new SourceProjectInfo(
+                TestHelper.SetupProjectAnalyzerResult(
                     projectFilePath: "/c/ProjectUnderTest/ProjectUnderTest.csproj",
                     properties: new Dictionary<string, string>()
                     {
@@ -60,9 +58,8 @@ public class CSharpMutationTestProcessTests : TestBase
                         { "AssemblyName", "AssemblyName" },
                         { "Language", "C#" }
                     },
-                    references: new[] { typeof(object).Assembly.Location }).Object,
-                ProjectContents = folder,
-                TestProjectsInfo = new TestProjectsInfo(fileSystem)
+                    references: [typeof(object).Assembly.Location]).Object,
+                new TestProjectsInfo(fileSystem)
                 {
                     TestProjects = new List<TestProject> {
                         new(fileSystem, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
@@ -72,7 +69,9 @@ public class CSharpMutationTestProcessTests : TestBase
                             { "Language", "C#" }
                         }).Object)
                     }
-                }
+                })
+            {
+                ProjectContents = folder,
             }
         };
 
