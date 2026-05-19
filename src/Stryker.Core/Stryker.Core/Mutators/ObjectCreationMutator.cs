@@ -25,6 +25,13 @@ public class ObjectCreationMutator : MutatorBase<ObjectCreationExpressionSyntax>
         }
         if (node.Initializer?.Kind() == SyntaxKind.ObjectInitializerExpression && node.Initializer.Expressions.Count > 0)
         {
+            // Skip when the target type has any `required` members — an empty
+            // initializer would fail to compile with CS8852.
+            if (HasRequiredMembers(node, semanticModel))
+            {
+                yield break;
+            }
+
             yield return new Mutation()
             {
                 OriginalNode = node,
@@ -33,5 +40,33 @@ public class ObjectCreationMutator : MutatorBase<ObjectCreationExpressionSyntax>
                 Type = Mutator.Initializer,
             };
         }
+    }
+
+    private static bool HasRequiredMembers(ObjectCreationExpressionSyntax node, SemanticModel semanticModel)
+    {
+        if (semanticModel is null)
+        {
+            return false;
+        }
+
+        var typeSymbol = semanticModel.GetTypeInfo(node).Type as INamedTypeSymbol;
+        if (typeSymbol is null)
+        {
+            return false;
+        }
+
+        for (var current = typeSymbol; current is not null; current = current.BaseType)
+        {
+            foreach (var member in current.GetMembers())
+            {
+                if ((member is IPropertySymbol prop && prop.IsRequired) ||
+                    (member is IFieldSymbol field && field.IsRequired))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

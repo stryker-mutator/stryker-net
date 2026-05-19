@@ -5,6 +5,7 @@ using Stryker.Abstractions;
 using Stryker.Core.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Mutators;
 
@@ -109,6 +110,11 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
                 yield break;
             }
 
+            if (!IsLinqInvocation(node, semanticModel))
+            {
+                yield break;
+            }
+
             yield return new Mutation
             {
                 DisplayName =
@@ -134,4 +140,86 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
         }
         return null;
     }
+
+    // Ensures we only mutate calls that are actually LINQ operations. Without this
+    // check, any method whose name happens to match a LINQ operator (e.g.
+    // IResponseCookies.Append) would be incorrectly rewritten.
+    private static bool IsLinqInvocation(ExpressionSyntax node, SemanticModel semanticModel)
+    {
+        if (semanticModel is null)
+        {
+            // No semantic model available (e.g. unit tests) — preserve legacy
+            // name-only matching behaviour.
+            return true;
+        }
+
+        // `node` is the MemberAccess/MemberBinding being mutated; its parent is
+        // the enclosing InvocationExpression for a direct call (e.g.
+        // `x.Append(...)`). FindEnclosingInvocation only walks up through chained
+        // member access and returns null in the direct case.
+        var invocation = node.Parent as InvocationExpressionSyntax ?? FindEnclosingInvocation(node);
+        if (invocation is null)
+        {
+            return true;
+        }
+
+        if (semanticModel.GetSymbolInfo(invocation).Symbol is IMethodSymbol methodSymbol)
+        {
+            var containingType = methodSymbol.ContainingType?.ConstructedFrom ?? methodSymbol.ContainingType;
+            if (containingType is not null && IsLinqHostType(containingType))
+            {
+                return true;
+            }
+
+            var receiverType = methodSymbol.IsExtensionMethod
+                ? methodSymbol.ReducedFrom?.Parameters.FirstOrDefault()?.Type ?? methodSymbol.Parameters.FirstOrDefault()?.Type
+                : methodSymbol.ReceiverType;
+
+            return receiverType is not null && ImplementsGenericEnumerable(receiverType);
+        }
+
+        // Symbol couldn't be resolved from the invocation. Fall back to the
+        // receiver's syntactic expression — if its type binds and it isn't a LINQ
+        // shape, we can still skip the mutation. This catches cases like
+        // `httpContext.Response.Cookies.Append(...)` where the broader semantic
+        // resolution may have failed but the receiver's static type is still
+        // available.
+        if (node is MemberAccessExpressionSyntax memberAccess)
+        {
+            var receiverType = semanticModel.GetTypeInfo(memberAccess.Expression).Type;
+            if (receiverType is not null && receiverType.TypeKind != TypeKind.Error)
+            {
+                return ImplementsGenericEnumerable(receiverType);
+            }
+        }
+
+        // Receiver type could not be determined — preserve legacy behaviour.
+        return true;
+    }
+
+    private static bool IsLinqHostType(INamedTypeSymbol type) =>
+        type.ToDisplayString() is "System.Linq.Enumerable"
+            or "System.Linq.Queryable"
+            or "System.Linq.ParallelEnumerable";
+
+    private static bool ImplementsGenericEnumerable(ITypeSymbol type)
+    {
+        if (IsGenericIEnumerable(type))
+        {
+            return true;
+        }
+
+        foreach (var iface in type.AllInterfaces)
+        {
+            if (IsGenericIEnumerable(iface))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsGenericIEnumerable(ITypeSymbol type) =>
+        type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T;
 }

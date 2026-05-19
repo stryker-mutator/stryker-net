@@ -35,7 +35,13 @@ internal static class RoslynHelper
     /// <returns>true if it contains a declaration</returns>
     public static bool ContainsDeclarations(this SyntaxNode node) =>
         node.ContainsNodeThatVerifies(x =>
-            x.IsKind(SyntaxKind.DeclarationExpression) || x.IsKind(SyntaxKind.DeclarationPattern), true);
+            x.IsKind(SyntaxKind.DeclarationExpression)
+            || x.IsKind(SyntaxKind.DeclarationPattern)
+            // Recursive / var patterns can also introduce a variable via their
+            // SingleVariableDesignation, e.g. `s is { Length: > 0 } region`.
+            // Without this, expression-level mutations duplicate the declaration
+            // across ternary branches and produce CS0136.
+            || x.IsKind(SyntaxKind.SingleVariableDesignation), true);
 
     /// <summary>
     /// Gets the return the type of the method (incl. constructor, destructor...)

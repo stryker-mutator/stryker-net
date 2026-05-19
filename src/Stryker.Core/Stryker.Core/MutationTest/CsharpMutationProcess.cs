@@ -37,7 +37,17 @@ public class CsharpMutationProcess : IMutationProcess
         var projectInfo = input.SourceProjectInfo.ProjectContents;
         var orchestrator = new CsharpMutantOrchestrator(new MutantPlacer(input.SourceProjectInfo.CodeInjector), options: _options);
         var compilingProcess = new CsharpCompilingProcess(input, options: _options);
-        var semanticModels = compilingProcess.GetSemanticModels(projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree));
+        // Include auto-generated compilation trees (e.g. GlobalUsings.g.cs,
+        // AssemblyInfo.cs) so the semantic model resolves implicit usings and
+        // attributes — otherwise mutators that consult the semantic model see
+        // unresolved types. Files have not yet been mutated, so use the
+        // original SyntaxTree for each file rather than CompilationSyntaxTrees
+        // (which would return null MutatedSyntaxTrees at this stage).
+        var fileTrees = projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree);
+        var generatedTrees = ((ProjectComponent<SyntaxTree>)projectInfo).CompilationSyntaxTrees
+            .Where(t => t is not null)
+            .Except(fileTrees);
+        var semanticModels = compilingProcess.GetSemanticModels(fileTrees.Concat(generatedTrees));
 
         // Mutate source files
         foreach (var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
