@@ -221,9 +221,9 @@ public class ProjectSimulatedBuildHandler
 
     public bool FindMatchingVariant(string assemblyPath, out IAnalyzerResult? analyzerResult)
     {
-        analyzerResult= AnalyzerLastResults.FirstOrDefault( r=>
-                            string.Compare(assemblyPath, r.GetAssemblyPath(), StringComparison.OrdinalIgnoreCase) == 0
-                || string.Compare(assemblyPath, r.GetReferenceAssemblyPath(), StringComparison.OrdinalIgnoreCase) == 0);
+        analyzerResult= AnalyzerLastResults.FirstOrDefault( r=> r.BuildsAnAssembly() &&
+                            (string.Compare(assemblyPath, r.GetAssemblyPath(), StringComparison.OrdinalIgnoreCase) == 0
+                || string.Compare(assemblyPath, r.GetReferenceAssemblyPath(), StringComparison.OrdinalIgnoreCase) == 0));
         return analyzerResult != null;
     }
 }
