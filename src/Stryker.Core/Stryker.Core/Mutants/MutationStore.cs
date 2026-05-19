@@ -181,6 +181,14 @@ internal class MutationStore
             // never inject at member access level, there is no known control structure
             return mutatedNode;
         }
+        // If this expression introduces a declaration (e.g. `x is { … } v`),
+        // duplicating it via a ternary would re-declare the variable in each
+        // branch and trigger CS0136. Forward mutations to an enclosing block
+        // so they can be controlled by an if-statement instead.
+        if (sourceNode.ContainsDeclarations())
+        {
+            return mutatedNode;
+        }
         var store = _pendingMutations.Peek().Store;
         var result = _mutantPlacer.PlaceExpressionControlledMutations(mutatedNode,
              store.Select(m => (m, sourceNode.InjectMutation(m.Mutation))));
