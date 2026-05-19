@@ -1,3 +1,5 @@
+using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -68,5 +70,63 @@ public class ObjectCreationMutatorTests : TestBase
         var result = target.ApplyMutations(objectCreationExpression, null);
 
         result.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    [DataRow("public required int Value { get; set; }")]
+    [DataRow("public required int Value;")]
+    [DataRow("public int Other { get; set; } public required int Value { get; set; }")]
+    public void ShouldNotMutateObjectInitializerWhenTypeHasRequiredMembers(string members)
+    {
+        var (semanticModel, expression) = CreateSemanticModel(
+            $$"""
+              class Target { {{members}} }
+              class Caller { void M() { var t = new Target { Value = 1 }; } }
+              """);
+
+        var result = new ObjectCreationMutator().ApplyMutations(expression, semanticModel);
+
+        result.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ShouldNotMutateObjectInitializerWhenBaseTypeHasRequiredMembers()
+    {
+        var (semanticModel, expression) = CreateSemanticModel(
+            """
+            class Base { public required int Value { get; set; } }
+            class Derived : Base { public int Other { get; set; } }
+            class Caller { void M() { var t = new Derived { Value = 1, Other = 2 }; } }
+            """);
+
+        var result = new ObjectCreationMutator().ApplyMutations(expression, semanticModel);
+
+        result.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ShouldMutateObjectInitializerWhenTypeHasNoRequiredMembers()
+    {
+        var (semanticModel, expression) = CreateSemanticModel(
+            """
+            class Target { public int Value { get; set; } }
+            class Caller { void M() { var t = new Target { Value = 1 }; } }
+            """);
+
+        var result = new ObjectCreationMutator().ApplyMutations(expression, semanticModel).ToList();
+
+        result.ShouldHaveSingleItem().Type.ShouldBe(Mutator.Initializer);
+    }
+
+    private static (SemanticModel semanticModel, ObjectCreationExpressionSyntax expression) CreateSemanticModel(string source)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+        var compilation = CSharpCompilation.Create("TestAssembly")
+            .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+            .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location))
+            .AddSyntaxTrees(syntaxTree);
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
+        var expression = syntaxTree.GetRoot().DescendantNodes().OfType<ObjectCreationExpressionSyntax>().Single();
+        return (semanticModel, expression);
     }
 }

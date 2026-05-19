@@ -40,8 +40,11 @@ internal static class RoslynHelper
             // Recursive / var patterns can also introduce a variable via their
             // SingleVariableDesignation, e.g. `s is { Length: > 0 } region`.
             // Without this, expression-level mutations duplicate the declaration
-            // across ternary branches and produce CS0136.
-            || x.IsKind(SyntaxKind.SingleVariableDesignation), true);
+            // across ternary branches and produce CS0136. Scope to designations
+            // directly under a recursive/var pattern so unrelated designations
+            // (out var, tuple deconstruction) keep their previous behaviour.
+            || (x.IsKind(SyntaxKind.SingleVariableDesignation)
+                && x.Parent is RecursivePatternSyntax or VarPatternSyntax), true);
 
     /// <summary>
     /// Gets the return the type of the method (incl. constructor, destructor...)

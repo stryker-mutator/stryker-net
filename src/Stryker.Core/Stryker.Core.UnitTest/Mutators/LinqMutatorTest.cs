@@ -1,4 +1,5 @@
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -158,5 +159,64 @@ namespace TestApplication
         var result = target.ApplyMutations(memberAccessExpression, null);
 
         result.ShouldHaveSingleItem().ReplacementNode.ShouldBeOfType<MemberAccessExpressionSyntax>().Name.ToString().ShouldBe("Any");
+    }
+
+    [TestMethod]
+    public void ShouldNotMutateAppendOnNonEnumerableReceiver()
+    {
+        var (semanticModel, memberAccess) = CreateSemanticModelForMemberAccess(
+            """
+            namespace TestApp
+            {
+                interface IResponseCookies { void Append(string key, string value); }
+                class Program
+                {
+                    static void Run(IResponseCookies cookies) => cookies.Append("k", "v");
+                }
+            }
+            """,
+            "Append");
+
+        var result = new LinqMutator().ApplyMutations(memberAccess, semanticModel);
+
+        result.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ShouldMutateAppendOnEnumerableReceiver()
+    {
+        var (semanticModel, memberAccess) = CreateSemanticModelForMemberAccess(
+            """
+            using System.Collections.Generic;
+            using System.Linq;
+            namespace TestApp
+            {
+                class Program
+                {
+                    static void Run(IEnumerable<int> items) { var x = items.Append(1); }
+                }
+            }
+            """,
+            "Append");
+
+        var result = new LinqMutator().ApplyMutations(memberAccess, semanticModel).ToList();
+
+        result.ShouldHaveSingleItem();
+    }
+
+    private static (SemanticModel semanticModel, MemberAccessExpressionSyntax expression) CreateSemanticModelForMemberAccess(string source, string memberName)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+        var compilation = CSharpCompilation.Create("TestAssembly")
+            .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+            .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location))
+            .AddReferences(MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location))
+            .AddReferences(MetadataReference.CreateFromFile(typeof(System.Collections.Generic.IEnumerable<>).Assembly.Location))
+            .AddSyntaxTrees(syntaxTree);
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
+        var memberAccess = syntaxTree.GetRoot().DescendantNodes()
+            .OfType<MemberAccessExpressionSyntax>()
+            .Single(x => x.Name.Identifier.ValueText == memberName);
+        return (semanticModel, memberAccess);
     }
 }

@@ -26,7 +26,7 @@ public class ObjectCreationMutator : MutatorBase<ObjectCreationExpressionSyntax>
         if (node.Initializer?.Kind() == SyntaxKind.ObjectInitializerExpression && node.Initializer.Expressions.Count > 0)
         {
             // Skip when the target type has any `required` members — an empty
-            // initializer would fail to compile with CS8852.
+            // initializer would fail to compile with CS9035.
             if (HasRequiredMembers(node, semanticModel))
             {
                 yield break;
