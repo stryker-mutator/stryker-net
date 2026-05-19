@@ -166,6 +166,11 @@ public class CSharpRollbackProcessTests : TestBase
     [TestMethod]
     public void ShouldRollbackAllMutationsInsideAExpressionBodyMethod()
     {
+        // Arrange: a class that has an inherently uncompilable `protected override void Random()` (no base class
+        // declares `Random`). The Stryker orchestrator introduces mutations into the expression body.
+        // With the new rollback behaviour: after rolling back all reachable mutations the broken tree still
+        // cannot compile (CS0115 is unrelated to any mutation), so the rollback process removes the tree
+        // from the compilation entirely rather than exhausting all 50 retries and then throwing.
         var syntaxTree = CSharpSyntaxTree.ParseText(
             """
             using System;
@@ -218,7 +223,7 @@ public class CSharpRollbackProcessTests : TestBase
             typeof(Enumerable).Assembly.Location,
             typeof(PipeStream).Assembly.Location,
         };
-        Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
+        Assembly.GetEntryAssembly()?.GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
 
         var input = new MutationTestInput()
         {
@@ -244,10 +249,15 @@ public class CSharpRollbackProcessTests : TestBase
 
         var target = new CsharpCompilingProcess(input, rollbackProcess, options);
 
+        // Act: the new rollback behaviour removes the broken source-generator-output-like tree instead of
+        // exhausting 50 retries and throwing. Compilation should now succeed (with the broken tree removed)
+        // and at least the expression-body mutations must have been rolled back.
         using var ms = new MemoryStream();
+        var result = target.Compile(helpers, ms, null);
 
-        Action test = () => target.Compile(helpers, ms, null);
-        test.ShouldThrow<CompilationException>();
+        // Assert: compilation succeeds; some mutations were rolled back before the tree was removed
+        result.Success.ShouldBeTrue();
+        result.RollbackedIds.ShouldNotBeEmpty();
     }
 
     [TestMethod]
@@ -958,6 +968,94 @@ public class CSharpRollbackProcessTests : TestBase
 
         // validate that only one of the compile errors marked the mutation as rolled back.
         fixedCompilation.RollbackedIds.ShouldBe([1]);
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldRemoveTreeWithNoMutations_WhenCompileErrorOccurs_InNormalMode()
+    {
+        // Arrange: A tree with a compile error but NO Stryker mutation annotations (simulates a
+        // source-generator output tree that references mutated user code).
+        var brokenTree = CSharpSyntaxTree.ParseText(
+            """
+            using System;
+            namespace ExampleProject
+            {
+                public class BrokenGeneratorOutput
+                {
+                    // The subtraction operator causes a CS0019 compile error - no mutation annotation
+                    public string Value => "a" - "b";
+                }
+            }
+            """);
+
+        // A second tree that compiles fine independently
+        var goodTree = CSharpSyntaxTree.ParseText(
+            """
+            using System;
+            namespace ExampleProject
+            {
+                public class GoodClass
+                {
+                    public string Value => "hello";
+                }
+            }
+            """);
+
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: [brokenTree, goodTree],
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: [
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            ]);
+
+        var target = new CSharpRollbackProcess();
+
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
+        compileResult.Success.ShouldBeFalse();
+
+        // Act: rollback in Normal mode – should remove the broken tree with no mutations
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+
+        // Assert: no mutations were rolled back, but compilation should succeed after the broken tree is removed
+        fixedCompilation.RollbackedIds.ShouldBeEmpty();
+        fixedCompilation.Compilation.SyntaxTrees.ShouldNotContain(brokenTree);
+        fixedCompilation.Compilation.Emit(ms).Success.ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldThrowCompilationException_WhenNoMutationsInTree_AndLastChanceMode()
+    {
+        // Arrange: A tree with a compile error but NO Stryker mutation annotations
+        var brokenTree = CSharpSyntaxTree.ParseText(
+            """
+            using System;
+            namespace ExampleProject
+            {
+                public class BrokenGeneratorOutput
+                {
+                    public string Value => "a" - "b"; // no mutation annotation
+                }
+            }
+            """);
+
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: [brokenTree],
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: [
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            ]);
+
+        var target = new CSharpRollbackProcess();
+
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
+
+        // Act & Assert: LastChance mode should throw even for no-mutation trees
+        Should.Throw<CompilationException>(() =>
+            target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.LastChance, false));
     }
 
     [TestMethod]
