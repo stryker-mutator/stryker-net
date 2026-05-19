@@ -183,6 +183,59 @@ namespace TestApplication
     }
 
     [TestMethod]
+    public void ShouldNotMutateAnyWithoutArgumentsBecauseAllRequiresPredicate()
+    {
+        // `Any` -> `All` mutation must be skipped when there are no arguments,
+        // otherwise the mutant `items.All()` does not compile.
+        var (semanticModel, memberAccess) = CreateSemanticModelForMemberAccess(
+            """
+            using System.Collections.Generic;
+            using System.Linq;
+            namespace TestApp
+            {
+                class Program
+                {
+                    static void Run(IEnumerable<int> items) { var x = items.Any(); }
+                }
+            }
+            """,
+            "Any");
+
+        var result = new LinqMutator().ApplyMutations(memberAccess, semanticModel);
+
+        result.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ShouldNotMutateMethodGroupReference()
+    {
+        // `cookies.Append` as a method-group reference (no invocation) cannot be
+        // safely rewritten to `cookies.Prepend` — skip rather than emit an
+        // uncompilable mutant.
+        var (semanticModel, memberAccess) = CreateSemanticModelForMemberAccess(
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Linq;
+            namespace TestApp
+            {
+                class Program
+                {
+                    static void Run(IEnumerable<int> items)
+                    {
+                        Func<int, IEnumerable<int>> d = items.Append;
+                    }
+                }
+            }
+            """,
+            "Append");
+
+        var result = new LinqMutator().ApplyMutations(memberAccess, semanticModel);
+
+        result.ShouldBeEmpty();
+    }
+
+    [TestMethod]
     public void ShouldMutateAppendOnEnumerableReceiver()
     {
         var (semanticModel, memberAccess) = CreateSemanticModelForMemberAccess(

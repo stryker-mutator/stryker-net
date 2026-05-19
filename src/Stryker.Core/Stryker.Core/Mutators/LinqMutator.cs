@@ -104,13 +104,15 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
         if (Enum.TryParse(memberName, out LinqExpression expression) &&
             KindsToMutate.TryGetValue(expression, out var replacementExpression))
         {
+            var invocation = FindInvocation(node);
+
             if (RequireArguments.Contains(replacementExpression) &&
-                FindEnclosingInvocation(node)?.ArgumentList.Arguments.Count == 0)
+                invocation?.ArgumentList.Arguments.Count == 0)
             {
                 yield break;
             }
 
-            if (!IsLinqInvocation(node, semanticModel))
+            if (!IsLinqInvocation(node, invocation, semanticModel))
             {
                 yield break;
             }
@@ -127,8 +129,16 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
         }
     }
 
-    private static InvocationExpressionSyntax FindEnclosingInvocation(ExpressionSyntax node)
+    // `node` is the MemberAccess/MemberBinding being mutated. Its parent is the
+    // enclosing InvocationExpression for a direct call (e.g. `x.Append(...)`);
+    // for chained accesses we walk up through intermediate MemberAccess nodes.
+    private static InvocationExpressionSyntax FindInvocation(ExpressionSyntax node)
     {
+        if (node.Parent is InvocationExpressionSyntax direct)
+        {
+            return direct;
+        }
+
         var current = node.Parent;
         while (current is MemberAccessExpressionSyntax or MemberBindingExpressionSyntax)
         {
@@ -144,7 +154,7 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
     // Ensures we only mutate calls that are actually LINQ operations. Without this
     // check, any method whose name happens to match a LINQ operator (e.g.
     // IResponseCookies.Append) would be incorrectly rewritten.
-    private static bool IsLinqInvocation(ExpressionSyntax node, SemanticModel semanticModel)
+    private static bool IsLinqInvocation(ExpressionSyntax node, InvocationExpressionSyntax invocation, SemanticModel semanticModel)
     {
         if (semanticModel is null)
         {
@@ -153,14 +163,12 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
             return true;
         }
 
-        // `node` is the MemberAccess/MemberBinding being mutated; its parent is
-        // the enclosing InvocationExpression for a direct call (e.g.
-        // `x.Append(...)`). FindEnclosingInvocation only walks up through chained
-        // member access and returns null in the direct case.
-        var invocation = node.Parent as InvocationExpressionSyntax ?? FindEnclosingInvocation(node);
         if (invocation is null)
         {
-            return true;
+            // Member access isn't part of an invocation (e.g. method-group use
+            // `var d = cookies.Append;`); rewriting the name produces uncompilable
+            // code, so skip.
+            return false;
         }
 
         if (semanticModel.GetSymbolInfo(invocation).Symbol is IMethodSymbol methodSymbol)
