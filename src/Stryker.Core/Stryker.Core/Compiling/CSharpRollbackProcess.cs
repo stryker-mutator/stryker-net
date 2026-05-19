@@ -70,7 +70,32 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
 
             var updatedSyntaxTree = RemoveCompileErrorMutations(originalTree, syntaxTreeMap.Value, mode).SyntaxTree;
 
-            if (updatedSyntaxTree == originalTree || mode == ICSharpRollbackProcess.Mode.LastChance)
+            if (updatedSyntaxTree == originalTree)
+            {
+                // The tree could not be changed because it contains no Stryker mutations.
+                // This can happen when a source generator (e.g. the Blazor Razor compiler) adds
+                // trees to the compilation that reference user code that has been mutated.  Those
+                // generator-added trees contain no Stryker mutations, so there is nothing to roll
+                // back in them.  Remove the problematic tree from the compilation so subsequent
+                // retry attempts have a chance to succeed once the causally-responsible user-code
+                // mutation has been rolled back in a different tree.
+                if (mode == ICSharpRollbackProcess.Mode.LastChance)
+                {
+                    Logger.LogCritical(
+                        "Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on github with the previous error message.");
+                    throw new CompilationException("Internal error due to compile error.");
+                }
+
+                Logger.LogWarning(
+                    "No mutations found in {FilePath} despite compilation errors. " +
+                    "This is likely a source-generator output file whose content was invalidated by a mutation elsewhere. " +
+                    "Removing the file from this compilation attempt.",
+                    originalTree.FilePath);
+                compiler = compiler.RemoveSyntaxTrees(originalTree);
+                continue;
+            }
+
+            if (mode == ICSharpRollbackProcess.Mode.LastChance)
             {
                 Logger.LogCritical(
                     "Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on github with the previous error message.");

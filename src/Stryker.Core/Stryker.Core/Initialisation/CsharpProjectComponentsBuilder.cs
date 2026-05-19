@@ -99,6 +99,19 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
             // don't mutate auto generated code
             if (syntaxTree.IsGenerated())
             {
+                // Source generator output files (*.g.cs, e.g. *.razor.g.cs created by the Razor
+                // compiler) must be excluded from compilationSyntaxTrees entirely.  When Stryker
+                // runs source generators during compilation (CsharpCompilingProcess.RunSourceGenerators)
+                // those files are regenerated and added to the compilation automatically.  Including
+                // the on-disk copies here would produce duplicate partial-class declarations and
+                // cause a "duplicate member" compilation error that the rollback process cannot fix
+                // (since no Stryker mutations exist in those generated trees).
+                if (syntaxTree.IsSourceGeneratorOutput())
+                {
+                    _logger.LogDebug("Skipping source generator output file (will be regenerated): {fileName}", file.FullPath);
+                    continue;
+                }
+
                 // we found the generated assemblyinfo file
                 if (FileSystem.Path.GetFileName(sourceFile).ToLowerInvariant() == generatedAssemblyInfo)
                 {
