@@ -1143,10 +1143,10 @@ Please specify a test project name filter that results in one project.
         result.TestProjectsInfo.AnalyzerResults.First().TargetFramework.ShouldBe(expectedTestFramework);
     }
 
-    // Stryker will ignore NetFramework target when runnning on non windows platforms
+    // Stryker accepts netframework targert when running on Windows
     [TestMethodWithIgnoreIfSupport]
     [IgnoreIf(nameof(Is.NotWindows))]
-    [DataRow("net462,netcoreapp3.0", "net461,netcoreapp2.0", null, "net462", "net461")]
+    [DataRow("net462", "net461", null, "net462", "net461")]
     public void ShouldSelectFrameworkBasedOnTestProjectOnWindows(string testFrameworks
         , string projectFrameworks
         , string targetFramework
