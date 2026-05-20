@@ -73,12 +73,25 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             if (updatedSyntaxTree == originalTree)
             {
                 // The tree could not be changed because it contains no Stryker mutations.
-                // This can happen when a source generator (e.g. the Blazor Razor compiler) adds
-                // trees to the compilation that reference user code that has been mutated.  Those
-                // generator-added trees contain no Stryker mutations, so there is nothing to roll
-                // back in them.  Remove the problematic tree from the compilation so subsequent
-                // retry attempts have a chance to succeed once the causally-responsible user-code
-                // mutation has been rolled back in a different tree.
+                // For source-generator output files (e.g. Blazor Razor compiler output with .g.cs
+                // extension) this is expected: the generated file references user code that was
+                // mutated in another tree.  Remove the problematic generated tree so subsequent
+                // retry attempts can succeed once the causally-responsible mutation has been rolled
+                // back elsewhere.
+                // For regular user files that have no mutations but still produce diagnostics the
+                // old behaviour is preserved: throw so the caller knows we could not recover.
+                var isGeneratedFile = originalTree.FilePath.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase);
+                if (isGeneratedFile && mode != ICSharpRollbackProcess.Mode.LastChance)
+                {
+                    Logger.LogWarning(
+                        "No mutations found in {FilePath} despite compilation errors. " +
+                        "This is likely a source-generator output file whose content was invalidated by a mutation elsewhere. " +
+                        "Removing the file from this compilation attempt.",
+                        originalTree.FilePath);
+                    compiler = compiler.RemoveSyntaxTrees(originalTree);
+                    continue;
+                }
+
                 if (mode == ICSharpRollbackProcess.Mode.LastChance)
                 {
                     Logger.LogCritical(
@@ -86,13 +99,8 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                     throw new CompilationException("Internal error due to compile error.");
                 }
 
-                Logger.LogWarning(
-                    "No mutations found in {FilePath} despite compilation errors. " +
-                    "This is likely a source-generator output file whose content was invalidated by a mutation elsewhere. " +
-                    "Removing the file from this compilation attempt.",
-                    originalTree.FilePath);
-                compiler = compiler.RemoveSyntaxTrees(originalTree);
-                continue;
+                // Not a generated file and not last chance — fall through to the existing
+                // LastChance check below so the rollback loop can retry with the original tree.
             }
 
             if (mode == ICSharpRollbackProcess.Mode.LastChance)
