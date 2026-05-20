@@ -37,14 +37,17 @@ internal static class RoslynHelper
         node.ContainsNodeThatVerifies(x =>
             x.IsKind(SyntaxKind.DeclarationExpression)
             || x.IsKind(SyntaxKind.DeclarationPattern)
-            // Recursive / var patterns can also introduce a variable via their
-            // SingleVariableDesignation, e.g. `s is { Length: > 0 } region`.
-            // Without this, expression-level mutations duplicate the declaration
-            // across ternary branches and produce CS0136. Scope to designations
-            // directly under a recursive/var pattern so unrelated designations
-            // (out var, tuple deconstruction) keep their previous behaviour.
-            || (x.IsKind(SyntaxKind.SingleVariableDesignation)
-                && x.Parent is RecursivePatternSyntax or VarPatternSyntax), true);
+            || IsRecursiveOrVarPatternDesignation(x), true);
+
+    // Recursive / var patterns can introduce a variable via their
+    // SingleVariableDesignation, e.g. `s is { Length: > 0 } region`. Without
+    // this, expression-level mutations duplicate the declaration across
+    // ternary branches and produce CS0136. Scoped to designations directly
+    // under a recursive/var pattern so unrelated designations (out var, tuple
+    // deconstruction) keep their previous behaviour.
+    private static bool IsRecursiveOrVarPatternDesignation(SyntaxNode node) =>
+        node.IsKind(SyntaxKind.SingleVariableDesignation)
+        && node.Parent is RecursivePatternSyntax or VarPatternSyntax;
 
     /// <summary>
     /// Gets the return the type of the method (incl. constructor, destructor...)

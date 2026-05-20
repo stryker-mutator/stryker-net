@@ -183,8 +183,10 @@ internal class MutationStore
         }
         // If this expression introduces a declaration (e.g. `x is { … } v`),
         // duplicating it via a ternary would re-declare the variable in each
-        // branch and trigger CS0136. Forward mutations to an enclosing block
-        // so they can be controlled by an if-statement instead.
+        // branch and trigger CS0136. Skip expression-level injection by
+        // returning without consuming the pending store; Leave() will forward
+        // the mutations to an enclosing level so they can be controlled by an
+        // if-statement instead.
         if (sourceNode.ContainsDeclarations())
         {
             return mutatedNode;

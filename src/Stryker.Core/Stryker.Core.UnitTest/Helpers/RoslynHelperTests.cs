@@ -29,6 +29,10 @@ public class RoslynHelperTests : TestBase
     [DataRow("s.Length > 0")]
     [DataRow("s is [_, _]")]
     [DataRow("(a, b)")]
+    // Recursive / var patterns without a SingleVariableDesignation introduce
+    // no variable, so they must not trigger ContainsDeclarations.
+    [DataRow("s is { Length: > 0 }")]
+    [DataRow("s is var _")]
     public void ContainsDeclarationsShouldReturnFalseWithoutDeclarations(string expression)
     {
         SyntaxFactory.ParseExpression(expression).ContainsDeclarations().ShouldBeFalse();
