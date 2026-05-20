@@ -165,10 +165,12 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
 
         if (invocation is null)
         {
-            // Member access isn't part of an invocation (e.g. method-group use
-            // `var d = cookies.Append;`); rewriting the name produces uncompilable
-            // code, so skip.
-            return false;
+            // Not an invocation (e.g. property/method-group reference like
+            // `?.Count` or `var d = cookies.Append;`). Existing orchestrator
+            // tests rely on the legacy name-only behaviour for these shapes, so
+            // fall through and let Stryker's CompileError stage filter
+            // uncompilable mutants.
+            return true;
         }
 
         if (semanticModel.GetSymbolInfo(invocation).Symbol is IMethodSymbol methodSymbol)
