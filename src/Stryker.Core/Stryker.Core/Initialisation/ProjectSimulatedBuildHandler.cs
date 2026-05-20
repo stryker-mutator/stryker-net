@@ -203,7 +203,7 @@ public class ProjectSimulatedBuildHandler
     {
         if (analyzerResult.References.Length == 0)
         {
-            log.AppendLine("** No references Identified **");
+            log.AppendLine("** No references identified **");
         }
         else
         {

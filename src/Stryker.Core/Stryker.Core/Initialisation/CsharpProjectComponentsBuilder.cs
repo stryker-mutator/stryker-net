@@ -43,7 +43,7 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
         }
         else
         {
-            _logger.LogWarning("Buildalyzer could not find source files. This should not happen. We fallback to filesystem scan. Please report an issue at GitHub.");
+            _logger.LogWarning("Buildalyzer could not find source files. This should not happen. We fall back to filesystem scan. Please report an issue at GitHub.");
             inputFiles = FindProjectFilesScanningProjectFolders(_projectInfo.AnalyzerResult);
         }
         return inputFiles;

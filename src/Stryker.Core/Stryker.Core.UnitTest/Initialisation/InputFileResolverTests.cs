@@ -1375,7 +1375,7 @@ Please specify a test project name filter that results in one project.
 
         // Assert
         var ex = result.ShouldThrow<InputException>();
-        ex.Message.ShouldContain("Multiple projects identified as potential candidate for mutation testing. Please set the project option");
+        ex.Message.ShouldContain("Multiple projects identified as potential candidates for mutation testing. Please set the project option");
         ex.Message.ShouldContain("Choose one of the following references:");
     }
 
@@ -1725,7 +1725,7 @@ Please specify a test project name filter that results in one project.
         var target = BuildTestResolver(fileSystem);
 
         var options = new StrykerOptions { SourceProjectName = shouldMatch, ProjectPath = _testPath };
-        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
+        var result = target.ResolveSourceProjectInfos(options).SourceProjectInfos.First();
 
         result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectFilePath);
     }

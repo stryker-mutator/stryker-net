@@ -199,7 +199,7 @@ public class InputFileResolver(
 
                 // still ambiguous
                 var stringBuilder = new StringBuilder().AppendLine(
-                        "Multiple projects identified as potential candidate for mutation testing. Please set the project option (https://stryker-mutator.io/docs/stryker-net/configuration#project-file-name) to specify which project to mutate.")
+                        "Multiple projects identified as potential candidates for mutation testing. Please set the project option (https://stryker-mutator.io/docs/stryker-net/configuration#project-file-name) to specify which project to mutate.")
                     .Append(BuildReferenceChoice(result.Select(p => p.AnalyzerResult.ProjectFilePath)));
                 throw new InputException(stringBuilder.ToString());
             }

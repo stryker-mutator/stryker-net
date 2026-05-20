@@ -9,4 +9,8 @@
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Stryker.Utilities\Stryker.Utilities.csproj" />
+  </ItemGroup>
+
 </Project>
