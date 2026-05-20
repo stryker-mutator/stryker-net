@@ -208,9 +208,8 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
     }
 
     private static bool IsLinqHostType(INamedTypeSymbol type) =>
-        type.ToDisplayString() is "System.Linq.Enumerable"
-            or "System.Linq.Queryable"
-            or "System.Linq.ParallelEnumerable";
+        type.ContainingNamespace?.ToDisplayString() == "System.Linq" &&
+        type.Name is "Enumerable" or "Queryable" or "ParallelEnumerable";
 
     private static bool ImplementsGenericEnumerable(ITypeSymbol type)
     {
