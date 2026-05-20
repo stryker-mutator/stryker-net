@@ -98,7 +98,7 @@ public static class GeneratedCodeFilterExtension
     private static bool IsGeneratedFileName(string filePath, IFileSystem fileSystem) =>
         Regex.IsMatch(
             fileSystem.Path.GetFileName(filePath),
-            @"(\.designer\.cs|\.g\.cs)$",
+            @"\.designer\.cs$",
             RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture, TimeSpan.FromSeconds(1));
 
     /// <summary>
