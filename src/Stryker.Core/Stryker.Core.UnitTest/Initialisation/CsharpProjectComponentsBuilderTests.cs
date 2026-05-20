@@ -15,8 +15,10 @@ namespace Stryker.Core.UnitTest.Initialisation;
 [TestClass]
 public class CsharpProjectComponentsBuilderTests : TestBase
 {
-    private const string ProjectDir = @"C:\ExampleProject";
-    private const string ProjectFilePath = @"C:\ExampleProject\ExampleProject.csproj";
+    // Use a platform-appropriate root so tests run on Linux (/) and Windows (C:\) alike.
+    private static readonly string FilesystemRoot = Path.GetPathRoot(Path.GetTempPath());
+    private static readonly string ProjectDir = Path.Combine(FilesystemRoot, "ExampleProject");
+    private static readonly string ProjectFilePath = Path.Combine(ProjectDir, "ExampleProject.csproj");
 
     private static StrykerOptions DefaultOptions => new();
 
