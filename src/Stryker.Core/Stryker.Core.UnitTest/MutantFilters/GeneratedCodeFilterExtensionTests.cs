@@ -13,8 +13,7 @@ public class GeneratedCodeFilterExtensionTests : TestBase
     [DataRow("Component.razor.g.cs")]
     [DataRow("App.razor.g.cs")]
     [DataRow("MyView.cshtml.g.cs")]
-    [DataRow("Generated.g.cs")]
-    public void IsSourceGeneratorOutput_ReturnsTrue_ForDotGDotCsFiles(string fileName)
+    public void IsSourceGeneratorOutput_ReturnsTrue_ForRazorCshtmlGeneratedFiles(string fileName)
     {
         var result = GeneratedCodeFilterExtension.IsSourceGeneratorOutput(fileName);
 
@@ -23,7 +22,7 @@ public class GeneratedCodeFilterExtensionTests : TestBase
 
     [TestMethod]
     [DataRow("Component.razor.G.CS")]
-    [DataRow("Generated.G.CS")]
+    [DataRow("MyView.cshtml.G.CS")]
     public void IsSourceGeneratorOutput_IsCaseInsensitive(string fileName)
     {
         var result = GeneratedCodeFilterExtension.IsSourceGeneratorOutput(fileName);
@@ -36,6 +35,10 @@ public class GeneratedCodeFilterExtensionTests : TestBase
     [DataRow("Settings.Designer.cs")]
     [DataRow("Program.cs")]
     [DataRow("MyClass.cs")]
+    // Generic *.g.cs files like GlobalUsings.g.cs are NOT Razor/Blazor source generator output;
+    // they are produced by the .NET SDK (e.g. ImplicitUsings feature) and must stay in the compilation.
+    [DataRow("ExampleProject.GlobalUsings.g.cs")]
+    [DataRow("Generated.g.cs")]
     public void IsSourceGeneratorOutput_ReturnsFalse_ForNonGeneratorOutputFiles(string fileName)
     {
         var result = GeneratedCodeFilterExtension.IsSourceGeneratorOutput(fileName);
@@ -44,7 +47,7 @@ public class GeneratedCodeFilterExtensionTests : TestBase
     }
 
     [TestMethod]
-    public void IsSourceGeneratorOutput_OnSyntaxTree_ReturnsTrue_ForDotGDotCsPath()
+    public void IsSourceGeneratorOutput_OnSyntaxTree_ReturnsTrue_ForRazorGeneratedFile()
     {
         var filePath = @"C:\Project\obj\debug\net8.0\Component.razor.g.cs";
         var syntaxTree = CSharpSyntaxTree.ParseText("", path: filePath);
@@ -52,6 +55,18 @@ public class GeneratedCodeFilterExtensionTests : TestBase
         var result = syntaxTree.IsSourceGeneratorOutput();
 
         result.ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void IsSourceGeneratorOutput_OnSyntaxTree_ReturnsFalse_ForGenericGDotCsFile()
+    {
+        // Generic *.g.cs files (e.g. GlobalUsings.g.cs) are NOT Razor/Blazor source generator output
+        var filePath = @"C:\Project\obj\debug\net8.0\ExampleProject.GlobalUsings.g.cs";
+        var syntaxTree = CSharpSyntaxTree.ParseText("", path: filePath);
+
+        var result = syntaxTree.IsSourceGeneratorOutput();
+
+        result.ShouldBeFalse();
     }
 
     [TestMethod]
