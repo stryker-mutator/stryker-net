@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -25,48 +26,59 @@ public class ObjectCreationMutator : MutatorBase<ObjectCreationExpressionSyntax>
         }
         if (node.Initializer?.Kind() == SyntaxKind.ObjectInitializerExpression && node.Initializer.Expressions.Count > 0)
         {
-            // Skip when the target type has any `required` members — an empty
-            // initializer would fail to compile with CS9035.
-            if (HasRequiredMembers(node, semanticModel))
-            {
-                yield break;
-            }
+            // An empty initializer would fail to compile with CS9035 when the type has
+            // required members, so we preserve them by assigning `default!` to each.
+            var requiredMembers = GetRequiredMemberNames(node, semanticModel);
+            var replacementInitializer = requiredMembers.Count == 0
+                ? SyntaxFactory.InitializerExpression(SyntaxKind.ObjectInitializerExpression)
+                : SyntaxFactory.InitializerExpression(
+                    SyntaxKind.ObjectInitializerExpression,
+                    SyntaxFactory.SeparatedList<ExpressionSyntax>(
+                        requiredMembers.Select(name =>
+                            SyntaxFactory.AssignmentExpression(
+                                SyntaxKind.SimpleAssignmentExpression,
+                                SyntaxFactory.IdentifierName(name),
+                                SyntaxFactory.PostfixUnaryExpression(
+                                    SyntaxKind.SuppressNullableWarningExpression,
+                                    SyntaxFactory.LiteralExpression(SyntaxKind.DefaultLiteralExpression))))));
 
             yield return new Mutation()
             {
                 OriginalNode = node,
-                ReplacementNode = node.ReplaceNode(node.Initializer, SyntaxFactory.InitializerExpression(SyntaxKind.ObjectInitializerExpression)).WithCleanTrivia(),
+                ReplacementNode = node.ReplaceNode(node.Initializer, replacementInitializer).WithCleanTrivia(),
                 DisplayName = "Object initializer mutation",
                 Type = Mutator.Initializer,
             };
         }
     }
 
-    private static bool HasRequiredMembers(ObjectCreationExpressionSyntax node, SemanticModel semanticModel)
+    private static IReadOnlyList<string> GetRequiredMemberNames(ObjectCreationExpressionSyntax node, SemanticModel semanticModel)
     {
         if (semanticModel is null)
         {
-            return false;
+            return [];
         }
 
-        var typeSymbol = semanticModel.GetTypeInfo(node).Type as INamedTypeSymbol;
-        if (typeSymbol is null)
+        if (semanticModel.GetTypeInfo(node).Type is not INamedTypeSymbol typeSymbol)
         {
-            return false;
+            return [];
         }
 
+        var names = new List<string>();
+        var seen = new HashSet<string>();
         for (var current = typeSymbol; current is not null; current = current.BaseType)
         {
             foreach (var member in current.GetMembers())
             {
-                if ((member is IPropertySymbol prop && prop.IsRequired) ||
-                    (member is IFieldSymbol field && field.IsRequired))
+                var isRequired = (member is IPropertySymbol prop && prop.IsRequired) ||
+                                 (member is IFieldSymbol field && field.IsRequired);
+                if (isRequired && seen.Add(member.Name))
                 {
-                    return true;
+                    names.Add(member.Name);
                 }
             }
         }
 
-        return false;
+        return names;
     }
 }

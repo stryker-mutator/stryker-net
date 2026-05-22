@@ -76,7 +76,7 @@ public class ObjectCreationMutatorTests : TestBase
     [DataRow("public required int Value { get; set; }")]
     [DataRow("public required int Value;")]
     [DataRow("public int Other { get; set; } public required int Value { get; set; }")]
-    public void ShouldNotMutateObjectInitializerWhenTypeHasRequiredMembers(string members)
+    public void ShouldPreserveRequiredMembersWhenMutatingObjectInitializer(string members)
     {
         var (semanticModel, expression) = CreateSemanticModel(
             $$"""
@@ -84,13 +84,16 @@ public class ObjectCreationMutatorTests : TestBase
               class Caller { void M() { var t = new Target { Value = 1 }; } }
               """);
 
-        var result = new ObjectCreationMutator().ApplyMutations(expression, semanticModel);
+        var result = new ObjectCreationMutator().ApplyMutations(expression, semanticModel).ToList();
 
-        result.ShouldBeEmpty();
+        var mutation = result.ShouldHaveSingleItem();
+        mutation.Type.ShouldBe(Mutator.Initializer);
+        var replacement = mutation.ReplacementNode.ShouldBeOfType<ObjectCreationExpressionSyntax>();
+        replacement.Initializer.Expressions.ShouldHaveSingleItem().ToString().ShouldBe("Value=default!");
     }
 
     [TestMethod]
-    public void ShouldNotMutateObjectInitializerWhenBaseTypeHasRequiredMembers()
+    public void ShouldPreserveRequiredMembersFromBaseTypeWhenMutatingObjectInitializer()
     {
         var (semanticModel, expression) = CreateSemanticModel(
             """
@@ -99,9 +102,11 @@ public class ObjectCreationMutatorTests : TestBase
             class Caller { void M() { var t = new Derived { Value = 1, Other = 2 }; } }
             """);
 
-        var result = new ObjectCreationMutator().ApplyMutations(expression, semanticModel);
+        var result = new ObjectCreationMutator().ApplyMutations(expression, semanticModel).ToList();
 
-        result.ShouldBeEmpty();
+        var mutation = result.ShouldHaveSingleItem();
+        var replacement = mutation.ReplacementNode.ShouldBeOfType<ObjectCreationExpressionSyntax>();
+        replacement.Initializer.Expressions.ShouldHaveSingleItem().ToString().ShouldBe("Value=default!");
     }
 
     [TestMethod]
