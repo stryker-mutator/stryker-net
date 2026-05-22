@@ -37,17 +37,8 @@ public class CsharpMutationProcess : IMutationProcess
         var projectInfo = input.SourceProjectInfo.ProjectContents;
         var orchestrator = new CsharpMutantOrchestrator(new MutantPlacer(input.SourceProjectInfo.CodeInjector), options: _options);
         var compilingProcess = new CsharpCompilingProcess(input, options: _options);
-        // Include auto-generated compilation trees (e.g. GlobalUsings.g.cs,
-        // AssemblyInfo.cs) so the semantic model resolves implicit usings and
-        // attributes — otherwise mutators that consult the semantic model see
-        // unresolved types. Files have not yet been mutated, so use the
-        // original SyntaxTree for each file rather than CompilationSyntaxTrees
-        // (which would return null MutatedSyntaxTrees at this stage).
-        var fileTrees = projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree);
-        var generatedTrees = ((ProjectComponent<SyntaxTree>)projectInfo).CompilationSyntaxTrees
-            .Where(t => t is not null)
-            .Except(fileTrees);
-        var semanticModels = compilingProcess.GetSemanticModels(fileTrees.Concat(generatedTrees));
+        var semanticModelTrees = GatherSemanticModelTrees((ProjectComponent<SyntaxTree>)projectInfo);
+        var semanticModels = compilingProcess.GetSemanticModels(semanticModelTrees);
 
         // Mutate source files
         foreach (var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
@@ -131,5 +122,22 @@ public class CsharpMutationProcess : IMutationProcess
             var mutantsToFilter = file.Mutants.Where(x => x.ResultStatus != MutantStatus.CompileError);
             _mutantFilter.FilterMutants(mutantsToFilter, file, _options);
         }
+    }
+
+    // Gather the syntax trees that need to participate in the semantic model:
+    // every file tree plus any auto-generated compilation tree (e.g.
+    // GlobalUsings.g.cs, AssemblyInfo.cs) added via AddCompilationSyntaxTree.
+    // Files have not yet been mutated at this stage, so use each file's
+    // original SyntaxTree; CompilationSyntaxTrees on file leaves yields
+    // MutatedSyntaxTrees, whose entries are still null because
+    // MutatedSyntaxTree has not been assigned yet.
+    internal static SyntaxTree[] GatherSemanticModelTrees(ProjectComponent<SyntaxTree> projectInfo)
+    {
+        var fileTrees = projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree).ToArray();
+        var generatedTrees = projectInfo.CompilationSyntaxTrees
+            .Where(t => t is not null)
+            .Except(fileTrees)
+            .ToArray();
+        return [.. fileTrees, .. generatedTrees];
     }
 }

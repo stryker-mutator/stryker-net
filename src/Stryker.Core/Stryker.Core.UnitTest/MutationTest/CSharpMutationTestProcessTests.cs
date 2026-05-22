@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Configuration.Options;
 using Stryker.Core.Mutants;
@@ -96,5 +97,32 @@ public class CSharpMutationTestProcessTests : TestBase
         // Verify the created assembly is written to disk on the right location
         var expectedPath = Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0", "ProjectUnderTest.dll");
         fileSystem.ShouldContainFile(expectedPath);
+    }
+
+    [TestMethod]
+    public void GatherSemanticModelTreesShouldIncludeGeneratedCompilationTrees()
+    {
+        var folder = new CsharpFolderComposite();
+        var fileTree = CSharpSyntaxTree.ParseText(SourceFile);
+        folder.Add(new CsharpFileLeaf
+        {
+            SourceCode = SourceFile,
+            SyntaxTree = fileTree
+        });
+
+        // Auto-generated trees that aren't mutated but must participate in
+        // the semantic model so implicitly-imported types resolve.
+        var globalUsingsTree = CSharpSyntaxTree.ParseText("global using System.Collections.Generic;", path: "GlobalUsings.g.cs");
+        var assemblyInfoTree = CSharpSyntaxTree.ParseText("[assembly: System.Reflection.AssemblyTitle(\"x\")]", path: "AssemblyInfo.cs");
+        folder.AddCompilationSyntaxTree(globalUsingsTree);
+        folder.AddCompilationSyntaxTree(assemblyInfoTree);
+
+        var trees = CsharpMutationProcess.GatherSemanticModelTrees(folder);
+
+        trees.ShouldContain(fileTree);
+        trees.ShouldContain(globalUsingsTree);
+        trees.ShouldContain(assemblyInfoTree);
+        // Nulls from unset MutatedSyntaxTree must not leak through.
+        trees.ShouldNotContain((SyntaxTree)null);
     }
 }
