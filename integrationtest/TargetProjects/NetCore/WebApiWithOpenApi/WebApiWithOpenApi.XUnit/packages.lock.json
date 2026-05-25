@@ -4,9 +4,9 @@
     "net10.0": {
       "coverlet.collector": {
         "type": "Direct",
-        "requested": "[10.0.0, )",
-        "resolved": "10.0.0",
-        "contentHash": "WFejCcOUR6k8UYyDnnR6Gk+obFYMsWrZuNqPJnsVFGVhpPSN0y20D4qbdKJnXinYGx9PQ397Hf9TnU1NBST8vA=="
+        "requested": "[10.0.1, )",
+        "resolved": "10.0.1",
+        "contentHash": "27jXSV/0DbVqF5jDrAxuQFZ9oaz6gmG03p8ttxAFk+X0M4woFYj7MoWDLCna5EGLb0CE6OE7X6ZH3Wt5smTtaA=="
       },
       "Microsoft.AspNetCore.Mvc.Testing": {
         "type": "Direct",
