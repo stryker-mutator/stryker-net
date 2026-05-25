@@ -95,7 +95,8 @@ public static class IAnalyzerResultExtensions
         }
     }
 
-    private class AdditionalFile(string text) : SourceText
+    // Roslyn does not appear to expose usable implementations of these types (required for additional files support)
+    private sealed class AdditionalFile(string text) : SourceText
     {
         public override void CopyTo(int sourceIndex, char[] destination, int destinationIndex, int count)
         {
@@ -111,9 +112,10 @@ public static class IAnalyzerResultExtensions
         public override char this[int position] => text[position];
     }
 
-    private class AdditionalTextFromFile(string path) : AdditionalText
+    // Roslyn does not appear to expose usable implementations of these types (required for additional files support)
+    private sealed class AdditionalTextFromFile(string path) : AdditionalText
     {
-        public override SourceText? GetText(CancellationToken _ = new()) => new AdditionalFile(File.ReadAllText(Path));
+        public override SourceText? GetText(CancellationToken cancellationToken = default) => new AdditionalFile(File.ReadAllText(Path));
 
         public override string Path { get; } = path;
     }

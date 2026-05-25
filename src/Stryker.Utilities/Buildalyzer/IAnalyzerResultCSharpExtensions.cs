@@ -25,7 +25,7 @@ public static class IAnalyzerResultCSharpExtensions
             .WithSpecificDiagnosticOptions(analyzerResult.GetDiagnosticOptions())
             .WithWarningLevel(analyzerResult.GetWarningLevel());
 
-        if (analyzerResult.IsSignedAssembly() && analyzerResult.GetAssemblyOriginatorKeyFile() is var keyFile&& keyFile is not null)
+        if (analyzerResult.IsSignedAssembly() && analyzerResult.GetAssemblyOriginatorKeyFile() is { } keyFile)
         {
             compilationOptions = compilationOptions.WithCryptoKeyFile(keyFile)
                 .WithStrongNameProvider(new DesktopStrongNameProvider())
@@ -42,7 +42,7 @@ public static class IAnalyzerResultCSharpExtensions
         ).WithFeatures(ExtractCSharpFeatures(analyzerResult));
 
     /// <summary>
-    /// The Features> MSBuild property is an internal Roslyn mechanism that passes a key-value dictionary directly to CSharpParseOptions.WithFeatures().
+    /// The Features MSBuild property is an internal Roslyn mechanism that passes a key-value dictionary directly to CSharpParseOptions.WithFeatures().
     /// It is not publicly documented by Microsoft as it is primarily intended for internal compiler development.
     /// Interceptors are a use case relying on this mechanism, using the features InterceptorsNamespaces and InterceptorsPreviewNamespaces.
     ///

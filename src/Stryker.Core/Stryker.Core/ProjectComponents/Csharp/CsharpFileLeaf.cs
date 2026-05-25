@@ -25,7 +25,7 @@ public class CsharpFileLeaf : ProjectComponent, IFileLeaf
 
     public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => [MutatedSyntaxTree ?? SyntaxTree ];
 
-    public override string ToString() => SourceCode;
+    public override string ToString() => SourceCode ?? "<empty>";
 
     public override IEnumerable<IFileLeaf> GetAllFiles() => [this];
 

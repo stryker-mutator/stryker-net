@@ -112,7 +112,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
     /// <returns>Semantic models</returns>
     public IEnumerable<SemanticModel> GetSemanticModels(IEnumerable<SyntaxTree> syntaxTrees)
     {
-        var compilation = GetCSharpCompilation(syntaxTrees, [.._input.SourceProjectInfo.AnalyzerResult.GetAdditionalTexts()]);
+        var compilation = RunSourceGenerators(GetCSharpCompilation(syntaxTrees, [.._input.SourceProjectInfo.AnalyzerResult.GetAdditionalTexts()]));
         // extract semantic models from compilation
         return compilation.SyntaxTrees.Select(tree => compilation.GetSemanticModel(tree)).ToList();
     }
@@ -121,7 +121,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
     // Can't test or mock code generators, so we exclude them from coverage
     [ExcludeFromCodeCoverage]
-    public Compilation RunSourceGenerators(Compilation compilation)
+    private Compilation RunSourceGenerators(Compilation compilation)
     {
         _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
 
@@ -157,7 +157,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
         if (_compilation == null)
         {
-            _compilation??= CSharpCompilation.Create(AssemblyName,
+            _compilation= CSharpCompilation.Create(AssemblyName,
                 syntaxTrees.ToList(),
                 _input.SourceProjectInfo.AnalyzerResult.LoadReferences(),
                 analyzerResult.GetCompilationOptions());
