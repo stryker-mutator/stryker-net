@@ -147,7 +147,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
         {
             throw new CompilationException("Source Generator Failure");
         }
-        return outputCompilation as CSharpCompilation;
+        return outputCompilation;
     }
 
     private Compilation GetCSharpCompilation(IEnumerable<SyntaxTree> syntaxTrees,
@@ -161,16 +161,10 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
                 syntaxTrees.ToList(),
                 _input.SourceProjectInfo.AnalyzerResult.LoadReferences(),
                 analyzerResult.GetCompilationOptions());
+            _generatorDriver = CSharpGeneratorDriver
+                .Create(analyzerResult.GetSourceGenerators(_logger), parseOptions: analyzerResult.GetParseOptions(_options),
+                    optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult)).AddAdditionalTexts(additionalTexts);
         }
-        else
-        {
-            _compilation = _compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(syntaxTrees);
-        }
-
-        // C# source generators must be executed before compilation
-        _generatorDriver ??= CSharpGeneratorDriver
-            .Create(analyzerResult.GetSourceGenerators(_logger), parseOptions: analyzerResult.GetParseOptions(_options),
-                optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult)).AddAdditionalTexts(additionalTexts);
 
         return _compilation;
     }
