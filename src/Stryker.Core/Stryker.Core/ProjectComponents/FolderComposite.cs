@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
 
 namespace Stryker.Core.ProjectComponents;
 
-public class FolderComposite<T> : ProjectComponent<T>, IFolderComposite
+public class FolderComposite : ProjectComponent, IFolderComposite
 {
-    private readonly List<IReadOnlyProjectComponent> _children = [];
-    public readonly List<T> _compilationSyntaxTrees = [];
+    private readonly List<ProjectComponent> _children = [];
+    private readonly List<SyntaxTree> _compilationSyntaxTrees = [];
 
     public IEnumerable<IReadOnlyProjectComponent> Children => _children;
 
@@ -22,15 +23,21 @@ public class FolderComposite<T> : ProjectComponent<T>, IFolderComposite
     /// <summary>
     /// Add a syntax tree to this folder that is needed in compilation but should not be mutated
     /// </summary>
-    public void AddCompilationSyntaxTree(T syntaxTree) => _compilationSyntaxTrees.Add(syntaxTree);
-    public override IEnumerable<T> CompilationSyntaxTrees => _compilationSyntaxTrees.Union(ChildCompilationSyntaxTree);
-    private IEnumerable<T> ChildCompilationSyntaxTree => Children.Cast<ProjectComponent<T>>().SelectMany(c => c.CompilationSyntaxTrees);
-    public override IEnumerable<T> MutatedSyntaxTrees => Children.Cast<ProjectComponent<T>>().SelectMany(c => c.MutatedSyntaxTrees);
+    public void AddCompilationSyntaxTree(SyntaxTree syntaxTree) => _compilationSyntaxTrees.Add(syntaxTree);
+    public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => _compilationSyntaxTrees.Union(ChildCompilationSyntaxTree);
+    private IEnumerable<SyntaxTree> ChildCompilationSyntaxTree => _children.SelectMany(c => c.CompilationSyntaxTrees);
+    public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => _children.SelectMany(c => c.MutatedSyntaxTrees);
 
     public void Add(IProjectComponent child)
     {
-        child.Parent = this;
-        _children.Add(child);
+        if (child is not ProjectComponent projectComponent)
+        {
+            // accepts only same type
+            return;
+        }
+
+        projectComponent.Parent = this;
+        _children.Add(projectComponent);
     }
 
     public void AddRange(IEnumerable<IProjectComponent> children)

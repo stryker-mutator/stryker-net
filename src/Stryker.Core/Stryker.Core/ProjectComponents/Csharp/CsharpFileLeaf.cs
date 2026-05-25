@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.ProjectComponents.Csharp;
 
-public class CsharpFileLeaf : ProjectComponent<SyntaxTree>, IFileLeaf<SyntaxTree>
+public class CsharpFileLeaf : ProjectComponent, IFileLeaf
 {
     public string SourceCode { get; set; }
 
@@ -23,15 +23,11 @@ public class CsharpFileLeaf : ProjectComponent<SyntaxTree>, IFileLeaf<SyntaxTree
 
     public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => MutatedSyntaxTrees;
 
-    public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => new List<SyntaxTree> { MutatedSyntaxTree };
+    public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => [MutatedSyntaxTree ?? SyntaxTree ];
 
-    public override IEnumerable<IFileLeaf<SyntaxTree>> GetAllFiles()
-    {
-        yield return this;
-    }
+    public override string ToString() => SourceCode;
 
-    public override void Display()
-    {
-        DisplayFile(this);
-    }
+    public override IEnumerable<IFileLeaf> GetAllFiles() => [this];
+
+    public override void Display() => DisplayFile(this);
 }

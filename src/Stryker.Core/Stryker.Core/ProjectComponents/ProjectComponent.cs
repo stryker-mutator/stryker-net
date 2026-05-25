@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
@@ -52,6 +53,15 @@ public abstract class ProjectComponent : IProjectComponent
             m.ResultStatus is MutantStatus.Killed or MutantStatus.Timeout);
 
     /// <summary>
+    /// All syntax trees that should be a part of the compilation
+    /// </summary>
+    public abstract IEnumerable<SyntaxTree> CompilationSyntaxTrees { get; }
+    /// <summary>
+    /// Only those syntax trees that were changed by the mutation process
+    /// </summary>
+    public abstract IEnumerable<SyntaxTree> MutatedSyntaxTrees { get; }
+
+    /// <summary>
     /// Returns the mutation score for this folder / file
     /// </summary>
     /// <returns>double between 0 and 1 or NaN when no score could be calculated</returns>
@@ -73,16 +83,4 @@ public abstract class ProjectComponent : IProjectComponent
             _ => Health.Danger
         };
     }
-}
-
-public abstract class ProjectComponent<T> : ProjectComponent
-{
-    /// <summary>
-    /// All syntax trees that should be a part of the compilation
-    /// </summary>
-    public abstract IEnumerable<T> CompilationSyntaxTrees { get; }
-    /// <summary>
-    /// Only those syntax trees that were changed by the mutation process
-    /// </summary>
-    public abstract IEnumerable<T> MutatedSyntaxTrees { get; }
 }

@@ -34,10 +34,10 @@ public class CsharpMutationProcess : IMutationProcess
     public void Mutate(MutationTestInput input, IStrykerOptions options)
     {
         _options = options;
-        var projectInfo = input.SourceProjectInfo.ProjectContents;
+        var projectInfo = (ProjectComponent) input.SourceProjectInfo.ProjectContents;
         var orchestrator = new CsharpMutantOrchestrator(new MutantPlacer(input.SourceProjectInfo.CodeInjector), options: _options);
         var compilingProcess = new CsharpCompilingProcess(input, options: _options);
-        var semanticModels = compilingProcess.GetSemanticModels(projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree));
+        var semanticModels =  compilingProcess.GetSemanticModels(projectInfo.CompilationSyntaxTrees);
 
         // Mutate source files
         foreach (var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
@@ -64,7 +64,7 @@ public class CsharpMutationProcess : IMutationProcess
     private void CompileMutations(MutationTestInput input, CsharpCompilingProcess compilingProcess)
     {
         var info = input.SourceProjectInfo;
-        var projectInfo = (ProjectComponent<SyntaxTree>)info.ProjectContents;
+        var projectInfo = (ProjectComponent)info.ProjectContents;
         using var ms = new MemoryStream();
         using var msForSymbols = _options.DiagMode ? new MemoryStream() : null;
         // compile the mutated syntax trees

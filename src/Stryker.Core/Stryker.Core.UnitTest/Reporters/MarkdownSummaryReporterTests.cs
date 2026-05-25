@@ -3,9 +3,8 @@ using System.IO.Abstractions.TestingHelpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Spectre.Console.Testing;
-using Stryker.Abstractions;
 using Stryker.Configuration.Options;
-using Stryker.Core.ProjectComponents.Csharp;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 
 namespace Stryker.Core.UnitTest.Reporters;
@@ -136,7 +135,7 @@ public class MarkdownSummaryReporterTests : TestBase
         var console = new TestConsole().EmitAnsiSequences().Width(160);
 
         var reportGenerator = new MarkdownSummaryReporter(options, mockFileSystem, console);
-        var emptyReport = new CsharpFolderComposite() { FullPath = "/home/user/src/project/", RelativePath = "" };
+        var emptyReport = new FolderComposite() { FullPath = "/home/user/src/project/", RelativePath = "" };
 
         // Act
         reportGenerator.OnAllMutantsTested(emptyReport, null);

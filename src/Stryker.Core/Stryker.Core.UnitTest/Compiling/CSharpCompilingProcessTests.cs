@@ -18,6 +18,7 @@ using Stryker.Abstractions.Testing;
 using Stryker.Configuration.Options;
 using Stryker.Core.Compiling;
 using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -516,7 +517,7 @@ public class Calculator
 
             TestRunner = new Mock<ITestRunner>(MockBehavior.Default).Object
         };
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         var injector = input.SourceProjectInfo.CodeInjector;
         folder.Add(inputFile);
         foreach (var (name, code) in injector.MutantHelpers)

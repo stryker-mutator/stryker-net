@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
 
@@ -8,7 +9,7 @@ namespace Stryker.Core.ProjectComponents;
 
 public class Solution : ProjectComponent, IFolderComposite
 {
-    private readonly IList<IReadOnlyProjectComponent> _children = new List<IReadOnlyProjectComponent>();
+    private readonly IList<ProjectComponent> _children = new List<ProjectComponent>();
 
     public IEnumerable<IReadOnlyProjectComponent> Children => _children;
 
@@ -18,7 +19,14 @@ public class Solution : ProjectComponent, IFolderComposite
         set => throw new NotSupportedException("Folders do not contain mutants.");
     }
 
-    public void Add(IProjectComponent child) => _children.Add(child);
+    public void Add(IProjectComponent child)
+    {
+        if (child is not ProjectComponent projectComponent)
+        {
+            return;
+        }
+        _children.Add(projectComponent);
+    }
 
     public void AddRange(IEnumerable<IProjectComponent> children)
     {
@@ -37,6 +45,9 @@ public class Solution : ProjectComponent, IFolderComposite
             child.Display();
         }
     }
+
+    public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => _children.SelectMany(c => c.CompilationSyntaxTrees);
+    public override IEnumerable<SyntaxTree> MutatedSyntaxTrees=> _children.SelectMany(c => c.MutatedSyntaxTrees);
 
     public override IEnumerable<IFileLeaf> GetAllFiles() => Children.SelectMany(x => x.GetAllFiles());
 }

@@ -5,9 +5,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
 using Stryker.Abstractions;
@@ -82,6 +85,37 @@ public static class IAnalyzerResultExtensions
         }
 
         return generators;
+    }
+
+    public static IEnumerable<AdditionalText> GetAdditionalTexts(this IAnalyzerResult result)
+    {
+        foreach (var additionalFile in result.AdditionalFiles)
+        {
+            yield return new AdditionalTextFromFile(additionalFile);
+        }
+    }
+
+    private class AdditionalFile(string text) : SourceText
+    {
+        public override void CopyTo(int sourceIndex, char[] destination, int destinationIndex, int count)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                destination[i+destinationIndex] = text[i + sourceIndex];
+            }
+        }
+
+        public override Encoding? Encoding => null;
+        public override int Length => text.Length;
+
+        public override char this[int position] => text[position];
+    }
+
+    private class AdditionalTextFromFile(string path) : AdditionalText
+    {
+        public override SourceText? GetText(CancellationToken _ = new()) => new AdditionalFile(File.ReadAllText(Path));
+
+        public override string Path { get; } = path;
     }
 
     [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]

@@ -17,6 +17,7 @@ using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -37,7 +38,7 @@ public class StrykerRunnerTests : TestBase
         var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
         var fileSystemMock = new MockFileSystem();
 
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf()
         {
             Mutants = new List<IMutant> { new Mutant { Id = 1 } }
@@ -106,7 +107,7 @@ public class StrykerRunnerTests : TestBase
         var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
         var fileSystemMock = new MockFileSystem();
 
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf
         {
             Mutants = new Collection<IMutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
@@ -162,7 +163,7 @@ public class StrykerRunnerTests : TestBase
         var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
         var fileSystemMock = new MockFileSystem();
 
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf
         {
             Mutants = new Collection<IMutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
