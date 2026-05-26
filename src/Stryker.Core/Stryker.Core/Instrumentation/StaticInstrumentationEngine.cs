@@ -1,3 +1,4 @@
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -22,11 +23,14 @@ internal class StaticInstrumentationEngine : BaseEngine<BlockSyntax>
 
     protected override SyntaxNode Revert(BlockSyntax node)
     {
-        if (node.Statements.Count == 1 && node.Statements[0] is UsingStatementSyntax usingStatement)
+        if (node.Statements is [UsingStatementSyntax usingStatement])
         {
             return usingStatement.Statement;
         }
 
         return node;
     }
+
+    // do not erase anything
+    protected override bool Erases(BlockSyntax node, Func<SyntaxNode, bool> predicate) => false;
 }

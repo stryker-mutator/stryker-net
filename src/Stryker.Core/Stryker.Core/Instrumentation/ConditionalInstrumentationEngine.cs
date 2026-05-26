@@ -28,12 +28,16 @@ internal class ConditionalInstrumentationEngine : BaseEngine<ParenthesizedExpres
         // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
         WithAdditionalAnnotations(Marker);
 
-    protected override SyntaxNode Revert(ParenthesizedExpressionSyntax parenthesized)
-    {
-        if (parenthesized.Expression is ConditionalExpressionSyntax conditional)
-        {
-            return conditional.WhenFalse.WithTriviaFrom(parenthesized);
-        }
-        throw new InvalidOperationException($"Expected a block containing a conditional expression, found:\n{parenthesized.ToFullString()}.");
-    }
+    protected override SyntaxNode Revert(ParenthesizedExpressionSyntax parenthesized) =>
+        parenthesized.Expression is ConditionalExpressionSyntax conditional
+            ? conditional.WhenFalse.WithTriviaFrom(parenthesized)
+            : throw new InvalidOperationException(
+                $"Expected a block containing a conditional expression, found:\n{parenthesized.ToFullString()}.");
+
+    protected override bool Erases(ParenthesizedExpressionSyntax node, Func<SyntaxNode, bool> predicate) =>
+        // check if identifier is assigned on false condition and not assigned on true
+        node.Expression is ConditionalExpressionSyntax conditional
+            ? conditional.WhenFalse.ContainsNodeThatVerifies(predicate, false)
+              && !conditional.WhenTrue.ContainsNodeThatVerifies(predicate, false)
+            : throw new InvalidOperationException($"Expected a conditional expression, found:\n{node.ToFullString()}.");
 }
