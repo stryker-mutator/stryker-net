@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -15,6 +14,7 @@ using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Configuration.Options;
 using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents;
 using Stryker.Utilities.Buildalyzer;
 using Stryker.Utilities.EmbeddedResources;
 using Stryker.Utilities.Logging;
@@ -23,15 +23,16 @@ namespace Stryker.Core.Compiling;
 
 public interface ICSharpCompilingProcess
 {
-    CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream);
-    IEnumerable<SemanticModel> GetSemanticModels(IEnumerable<SyntaxTree> syntaxTrees);
+    CompilingProcessResult Compile(Stream ilStream, Stream symbolStream);
+
+    SemanticModel GetSemanticModel(SyntaxTree syntaxTree);
 }
 
 /// <summary>
 /// This process is in control of compiling the assembly and rolling back mutations that cannot compile
 /// Compiles the given input onto the memory stream
 /// </summary>
-public class CsharpCompilingProcess : ICSharpCompilingProcess
+public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationContent
 {
     private const int MaxAttempt = 50;
     private readonly MutationTestInput _input;
@@ -39,16 +40,21 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
     private readonly ICSharpRollbackProcess _rollbackProcess;
     private readonly ILogger _logger;
     private GeneratorDriver _generatorDriver;
-    private CSharpCompilation _compilation;
+    private Compilation _compilation;
+    private bool _generatorsFailInIncremental;
+    private readonly IEnumerable<SyntaxTree> _syntaxTrees;
 
     public CsharpCompilingProcess(MutationTestInput input,
         ICSharpRollbackProcess rollbackProcess = null,
-        IStrykerOptions options = null)
+        IStrykerOptions options = null,
+        IEnumerable<SyntaxTree> syntaxTrees = null)
     {
         _input = input;
         _options = options ?? new StrykerOptions();
         _rollbackProcess = rollbackProcess ?? new CSharpRollbackProcess();
         _logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpCompilingProcess>();
+        _syntaxTrees = syntaxTrees ?? ((ProjectComponent) _input.SourceProjectInfo.ProjectContents).CompilationSyntaxTrees.ToList();
+        _generatorsFailInIncremental = false;
     }
 
     private string AssemblyName =>
@@ -57,19 +63,19 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
     /// <summary>
     /// Compiles the given input onto the memory stream
     /// The compiling process is closely related to the rollback process. When the initial compilation fails, the rollback process will be executed.
-    /// <param name="syntaxTrees">The syntax trees to compile</param>
     /// <param name="ilStream">The memory stream to store the compilation result onto</param>
     /// <param name="symbolStream">The memory stream to store the debug symbol</param>
     /// </summary>
-    public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream)
+    public CompilingProcessResult Compile(Stream ilStream, Stream symbolStream)
     {
-        var compilation = GetCSharpCompilation(syntaxTrees, [.._input.SourceProjectInfo.AnalyzerResult.GetAdditionalTexts()]);
-
-        compilation = RunSourceGenerators(compilation);
+        InitCSharpCompilation();
         // first try compiling
         var retryCount = 1;
-        (var rollbackProcessResult, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, ref compilation, null, ICSharpRollbackProcess.Mode.Normal, retryCount);
-
+        (var rollbackProcessResult, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, null, ICSharpRollbackProcess.Mode.Normal, retryCount);
+        if (!_generatorsFailInIncremental)
+        {
+            RunSourceGenerators();
+        }
         // If compiling failed and the error has no location, log and throw exception.
         if (!emitResult.Success && emitResult.Diagnostics.Any(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error))
         {
@@ -89,7 +95,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
                 _ => mode
             };
             // compilation did not succeed. let's compile a couple of times more for good measure
-            (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, ref compilation,
+            (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream,
                 emitResult, mode, retryCount);
         }
 
@@ -97,7 +103,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
         {
             return new CompilingProcessResult(
                 true,
-                rollbackProcessResult?.RollbackedIds ?? []);
+                rollbackProcessResult ?? []);
         }
         // compiling failed
         _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");
@@ -108,76 +114,99 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
     /// <summary>
     /// Analyzes the syntax trees and returns the semantic models
     /// </summary>
-    /// <param name="syntaxTrees">The syntax trees to analyze</param>
+    /// <param name="syntaxTree">The syntax tree to analyze</param>
     /// <returns>Semantic models</returns>
-    public IEnumerable<SemanticModel> GetSemanticModels(IEnumerable<SyntaxTree> syntaxTrees)
+    public SemanticModel GetSemanticModel(SyntaxTree syntaxTree)
     {
-        var compilation = RunSourceGenerators(GetCSharpCompilation(syntaxTrees, [.._input.SourceProjectInfo.AnalyzerResult.GetAdditionalTexts()]));
+        InitCSharpCompilation();
         // extract semantic models from compilation
-        return compilation.SyntaxTrees.Select(tree => compilation.GetSemanticModel(tree)).ToList();
+        return _compilation.GetSemanticModel(syntaxTree);
     }
-
-    private static readonly string[] IgnoredErrors = ["RZ3600"];
 
     // Can't test or mock code generators, so we exclude them from coverage
     [ExcludeFromCodeCoverage]
-    private Compilation RunSourceGenerators(Compilation compilation)
+    private void RunSourceGenerators()
     {
-        _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
-
-        var errors = diagnostics.Where(diagnostic => IgnoredErrors.Contains(diagnostic.Id) || (diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None)).ToList();
+        _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(_compilation, out var outputCompilation, out var diagnostics);
+        _compilation = outputCompilation;
+        var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
         if (errors.Count == 0)
         {
-            return outputCompilation;
+            return;
         }
         var fail = false;
         foreach (var diagnostic in errors)
         {
-            if (IgnoredErrors.Contains(diagnostic.Id))
-            {
-                _logger.LogWarning("Stryker encountered a known error from a coe generator but it will keep on. Compilation may still fail later on: {0}", diagnostic);
-            }
-            else
-            {
-                _logger.LogError("Failed to generate source code for mutated assembly: {Diagnostics}", diagnostic);
-                fail = true;
-            }
+            _logger.LogError("Failed to generate source code for mutated assembly: {Diagnostics}", diagnostic);
+            fail = true;
         }
+
         if (fail)
         {
             throw new CompilationException("Source Generator Failure");
         }
-        return outputCompilation;
     }
 
-    private Compilation GetCSharpCompilation(IEnumerable<SyntaxTree> syntaxTrees,
-        ImmutableArray<AdditionalText> additionalTexts)
+    private void InitCSharpCompilation()
     {
-        var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
-
-        if (_compilation == null)
+        if (_compilation != null)
         {
-            _compilation= CSharpCompilation.Create(AssemblyName,
-                syntaxTrees.ToList(),
-                _input.SourceProjectInfo.AnalyzerResult.LoadReferences(),
-                analyzerResult.GetCompilationOptions());
-            _generatorDriver = CSharpGeneratorDriver
-                .Create(analyzerResult.GetSourceGenerators(_logger), parseOptions: analyzerResult.GetParseOptions(_options),
-                    optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult)).AddAdditionalTexts(additionalTexts);
+            return ;
         }
 
-        return _compilation;
+        var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
+        // create the compiler
+        _compilation= CSharpCompilation.Create(AssemblyName,
+            _syntaxTrees,
+            _input.SourceProjectInfo.AnalyzerResult.LoadReferences(),
+            analyzerResult.GetCompilationOptions());
+        // create the driver for source generators
+        _generatorDriver = CSharpGeneratorDriver
+            .Create(analyzerResult.GetSourceGenerators(_logger), parseOptions: analyzerResult.GetParseOptions(_options),
+                optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult)).AddAdditionalTexts([.._input.SourceProjectInfo.AnalyzerResult.GetAdditionalTexts()]);
+        // run the generators
+        _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(_compilation, out var compilation, out var diagnostics);
+        // try again
+        try
+        {
+            _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(compilation, out  _, out _);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Some generator(s) failed when run twice: {Diagnostics}", e.Message);
+            _generatorsFailInIncremental = true;
+        }
+        _compilation = compilation;
+        var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
+        if (errors.Count == 0)
+        {
+            return;
+        }
+        foreach (var diagnostic in errors)
+        {
+            _logger.LogError("Failed to generate source code for assembly: {Diagnostics}", diagnostic);
+        }
+
+        if (_options.DiagMode)
+        {
+            _logger.LogError("Diag mode: keep on despite errors to have a full diagnostic.");
+        }
+        else
+        {
+            throw new CompilationException("Source Generator Failure");
+        }
     }
 
-    private (CSharpRollbackProcessResult, EmitResult, int) TryCompilation(
+    public void UpdateFile(SyntaxTree fileSyntaxTree, SyntaxTree fileMutatedSyntaxTree) => _compilation = _compilation.ReplaceSyntaxTree(fileSyntaxTree, fileMutatedSyntaxTree);
+
+    private (IEnumerable<int>, EmitResult, int) TryCompilation(
         Stream ms,
         Stream symbolStream,
-        ref Compilation compilation,
         EmitResult previousEmitResult,
         ICSharpRollbackProcess.Mode mode,
         int retryCount)
     {
-        CSharpRollbackProcessResult rollbackProcessResult = null;
+        IEnumerable<int> rollbackProcessResult = null;
 
         _logger.LogDebug("Trying compilation for the {retryCount} time.", ReadableNumber(retryCount));
         var emitOptions = symbolStream == null ? null : new EmitOptions(false, DebugInformationFormat.PortablePdb,
@@ -189,8 +218,11 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
             if (previousEmitResult != null)
             {
                 // remove broken mutations
-                rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, mode, _options.DiagMode);
-                compilation =  RunSourceGenerators(rollbackProcessResult.Compilation);
+                rollbackProcessResult = _rollbackProcess.Start(this, previousEmitResult.Diagnostics, mode, _options.DiagMode);
+                if (!_generatorsFailInIncremental)
+                {
+                    RunSourceGenerators();
+                }
             }
 
             // reset the memoryStreams
@@ -198,11 +230,11 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
             symbolStream?.SetLength(0);
             try
             {
-                emitResult = compilation.Emit(
+                emitResult = _compilation.Emit(
                     ms,
                     symbolStream,
                     manifestResources: resourceDescriptions,
-                    win32Resources: compilation.CreateDefaultWin32Resources(
+                    win32Resources: _compilation.CreateDefaultWin32Resources(
                         true, // Important!
                         false,
                         null,
@@ -215,7 +247,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
                 _logger.LogError("Roslyn C# compiler raised an NullReferenceException. This is a known Roslyn's issue that may be triggered by invalid usage of conditional access expression.");
                 _logger.LogInformation(e, "Exception");
                 _logger.LogError("Stryker will attempt to skip problematic files.");
-                compilation = ScanForCauseOfException(compilation);
+                _compilation = ScanForCauseOfException(_compilation);
                 EmbeddedResourcesGenerator.ResetCache();
             }
         }
@@ -224,8 +256,8 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
         return (rollbackProcessResult, emitResult, retryCount + 1);
     }
 
-    [ExcludeFromCodeCoverage]
-    // unable to simulate a CS compiler fault
+    [ExcludeFromCodeCoverage]     // unable to simulate a CS compiler fault
+    // This method tries to identify which source file triggers a compiler exception
     private Compilation ScanForCauseOfException(Compilation compilation)
     {
         var syntaxTrees = compilation.SyntaxTrees.ToList();
@@ -338,7 +370,27 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
             public override IEnumerable<string> Keys => [];
         }
+    }
 
+    public IEnumerable<SyntaxTree> SyntaxTrees => _compilation.SyntaxTrees;
+
+    public void ReplaceSyntaxTree(SyntaxTree original, SyntaxTree updated) => _compilation = _compilation.ReplaceSyntaxTree(original, updated);
+
+    public bool RestoreOriginal(SyntaxTree original)
+    {
+        if (string.IsNullOrEmpty(original.FilePath))
+        {
+            return false;
+        }
+        foreach (var tree in _syntaxTrees)
+        {
+            if (tree.FilePath == original.FilePath)
+            {
+                _compilation = _compilation.ReplaceSyntaxTree(original, tree);
+                return true;
+            }
+        }
+        return false;
     }
 }
 

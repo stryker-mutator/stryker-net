@@ -15,10 +15,20 @@ using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Compiling;
 
+public interface ICompilationContent
+{
+    IEnumerable<SyntaxTree> SyntaxTrees { get; }
+
+    void ReplaceSyntaxTree(SyntaxTree original, SyntaxTree updated);
+
+    bool RestoreOriginal(SyntaxTree original);
+}
+
+
 public interface ICSharpRollbackProcess
 {
-    CSharpRollbackProcessResult Start(Compilation compiler, ImmutableArray<Diagnostic> diagnostics,
-        Mode mode, bool devMode);
+    IEnumerable<int> Start(ICompilationContent wrapper, ImmutableArray<Diagnostic> diagnostics,
+        ICSharpRollbackProcess.Mode mode, bool devMode);
 
     SyntaxTree CleanUpFile(SyntaxTree file);
 
@@ -38,12 +48,11 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
     private List<int> RollBackedIds { get; } = [];
     private ILogger Logger { get; } = ApplicationLogging.LoggerFactory.CreateLogger<CSharpRollbackProcess>();
 
-    public CSharpRollbackProcessResult Start(Compilation compiler, ImmutableArray<Diagnostic> diagnostics,
-        ICSharpRollbackProcess.Mode mode, bool devMode)
+    public IEnumerable<int> Start(ICompilationContent wrapper, ImmutableArray<Diagnostic> diagnostics, ICSharpRollbackProcess.Mode mode, bool devMode)
     {
         // match the diagnostics with their syntax trees
         var syntaxTreeMapping =
-            compiler.SyntaxTrees.ToDictionary<SyntaxTree, SyntaxTree, ICollection<Diagnostic>>(
+            wrapper.SyntaxTrees.ToDictionary<SyntaxTree, SyntaxTree, ICollection<Diagnostic>>(
                 syntaxTree => syntaxTree, _ => new Collection<Diagnostic>());
 
         foreach (var diagnostic in diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error))
@@ -80,13 +89,10 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             Logger.LogTrace("RolledBack to {UpdatedSyntaxTree}", updatedSyntaxTree.ToString());
 
             // update the compiler object with the new syntax tree
-            compiler = compiler.ReplaceSyntaxTree(originalTree, updatedSyntaxTree);
+            wrapper.ReplaceSyntaxTree(originalTree, updatedSyntaxTree);
         }
 
-        // by returning the same compiler object (with different syntax trees) the next compilation will use Roslyn's incremental compilation
-        return new CSharpRollbackProcessResult(
-            compiler,
-            RollBackedIds);
+        return RollBackedIds;
     }
 
     // search is this node contains or is within a mutation
