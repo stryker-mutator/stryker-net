@@ -87,13 +87,8 @@ public static class IAnalyzerResultExtensions
         return generators;
     }
 
-    public static IEnumerable<AdditionalText> GetAdditionalTexts(this IAnalyzerResult result)
-    {
-        foreach (var additionalFile in result.AdditionalFiles)
-        {
-            yield return new AdditionalTextFromFile(additionalFile);
-        }
-    }
+    public static IEnumerable<AdditionalText> GetAdditionalTexts(this IAnalyzerResult result) =>
+        result.AdditionalFiles.Select(additionalFile => new AdditionalTextFromFile(additionalFile)).Cast<AdditionalText>();
 
     // Roslyn does not appear to expose usable implementations of these types (required for additional files support)
     private sealed class AdditionalFile(string text) : SourceText
@@ -107,6 +102,7 @@ public static class IAnalyzerResultExtensions
         }
 
         public override Encoding? Encoding => null;
+
         public override int Length => text.Length;
 
         public override char this[int position] => text[position];
@@ -115,9 +111,15 @@ public static class IAnalyzerResultExtensions
     // Roslyn does not appear to expose usable implementations of these types (required for additional files support)
     private sealed class AdditionalTextFromFile(string path) : AdditionalText
     {
-        public override SourceText? GetText(CancellationToken cancellationToken = default) => new AdditionalFile(File.ReadAllText(Path));
+        private readonly Lazy<string> _source = new(() => File.ReadAllText(path));
 
-        public override string Path { get; } = path;
+        public override SourceText? GetText(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return new AdditionalFile(_source.Value);
+        }
+
+        public override string Path => path;
     }
 
     [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]
@@ -176,7 +178,7 @@ public static class IAnalyzerResultExtensions
         throw new InputException(message);
     }
 
-    public static bool TargetsFullFramework(this IAnalyzerResult analyzerResult) => analyzerResult.GetNuGetFramework()?.IsDesktop() == true;
+    public static bool TargetsClassicFramework(this IAnalyzerResult analyzerResult) => analyzerResult.GetNuGetFramework()?.IsDesktop() == true;
 
     public static Language GetLanguage(this IAnalyzerResult analyzerResult) =>
         analyzerResult.GetPropertyOrDefault("Language") switch

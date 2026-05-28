@@ -96,7 +96,7 @@ public class InitialisationProcess : IInitialisationProcess
                     testProjects.Count);
 
                 _initialBuildProcess.InitialBuild(
-                    testProjects[i].TargetsFullFramework(),
+                    testProjects[i].TargetsClassicFramework(),
                     testProjects[i].ProjectFilePath,
                     options.SolutionPath,
                     testProjects[i].GetProperty("Configuration"),

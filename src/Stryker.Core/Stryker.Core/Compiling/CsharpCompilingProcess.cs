@@ -42,7 +42,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
     private GeneratorDriver _generatorDriver;
     private Compilation _compilation;
     private bool _generatorsFailInIncremental;
-    private readonly IEnumerable<SyntaxTree> _syntaxTrees;
+    private readonly IEnumerable<SyntaxTree> _originalSyntaxTrees;
 
     public CsharpCompilingProcess(MutationTestInput input,
         ICSharpRollbackProcess rollbackProcess = null,
@@ -53,7 +53,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         _options = options ?? new StrykerOptions();
         _rollbackProcess = rollbackProcess ?? new CSharpRollbackProcess();
         _logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpCompilingProcess>();
-        _syntaxTrees = syntaxTrees ?? ((ProjectComponent) _input.SourceProjectInfo.ProjectContents).CompilationSyntaxTrees.ToList();
+        _originalSyntaxTrees = syntaxTrees ?? ((ProjectComponent) _input.SourceProjectInfo.ProjectContents).CompilationSyntaxTrees.ToList();
         _generatorsFailInIncremental = false;
     }
 
@@ -157,7 +157,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
         // create the compiler
         _compilation= CSharpCompilation.Create(AssemblyName,
-            _syntaxTrees,
+            _originalSyntaxTrees,
             _input.SourceProjectInfo.AnalyzerResult.LoadReferences(),
             analyzerResult.GetCompilationOptions());
         // create the driver for source generators
@@ -382,7 +382,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         {
             return false;
         }
-        foreach (var tree in _syntaxTrees)
+        foreach (var tree in _originalSyntaxTrees)
         {
             if (tree.FilePath == original.FilePath)
             {

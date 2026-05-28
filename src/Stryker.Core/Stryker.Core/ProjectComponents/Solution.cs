@@ -23,7 +23,7 @@ public class Solution : ProjectComponent, IFolderComposite
     {
         if (child is not ProjectComponent projectComponent)
         {
-            return;
+            throw new ArgumentException("Only ProjectComponent instances can be added to the solution.");
         }
         _children.Add(projectComponent);
     }
@@ -47,7 +47,8 @@ public class Solution : ProjectComponent, IFolderComposite
     }
 
     public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => _children.SelectMany(c => c.CompilationSyntaxTrees);
-    public override IEnumerable<SyntaxTree> MutatedSyntaxTrees=> _children.SelectMany(c => c.MutatedSyntaxTrees);
+
+    public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => _children.SelectMany(c => c.MutatedSyntaxTrees);
 
     public override IEnumerable<IFileLeaf> GetAllFiles() => Children.SelectMany(x => x.GetAllFiles());
 }

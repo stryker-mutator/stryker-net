@@ -27,7 +27,7 @@ internal class CompilerWrapper(CSharpCompilation compilation) : ICompilationCont
 {
     private CSharpCompilation _compilation = compilation;
 
-    public IEnumerable<SyntaxTree> SyntaxTrees => compilation.SyntaxTrees;
+    public IEnumerable<SyntaxTree> SyntaxTrees => _compilation.SyntaxTrees;
 
     public void ReplaceSyntaxTree(SyntaxTree original, SyntaxTree updated) => _compilation = _compilation.ReplaceSyntaxTree(original, updated);
 
@@ -36,6 +36,7 @@ internal class CompilerWrapper(CSharpCompilation compilation) : ICompilationCont
     public bool RestoreOriginal(SyntaxTree original) => false;
 }
 
+[TestClass]
 public class CSharpRollbackProcessTests : TestBase
 {
     private readonly SyntaxAnnotation _ifEngineMarker = new("Injector", "IfInstrumentationEngine");

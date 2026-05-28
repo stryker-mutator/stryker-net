@@ -494,7 +494,7 @@ public class InputFileResolver : IInputFileResolver
     private IAnalyzerResults RetryBuild(IProjectAnalyzer project, IStrykerOptions options, string projectLogName,
         IAnalyzerResults buildResult, out bool buildResultOverallSuccess)
     {
-        if (Environment.OSVersion.Platform == PlatformID.Win32NT && buildResult.Any(r => !r.IsValid() && r.TargetsFullFramework()))
+        if (Environment.OSVersion.Platform == PlatformID.Win32NT && buildResult.Any(r => !r.IsValid() && r.TargetsClassicFramework()))
         {
             _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
 
@@ -624,7 +624,7 @@ public class InputFileResolver : IInputFileResolver
 
         IAnalyzerResult PickFrameworkVersion()
         {
-            return validResults.Find(a => a.Succeeded && !a.TargetsFullFramework()) ?? validResults[0];
+            return validResults.Find(a => a.Succeeded && !a.TargetsClassicFramework()) ?? validResults[0];
         }
     }
 

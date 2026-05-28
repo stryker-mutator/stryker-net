@@ -37,13 +37,13 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
     public override IReadOnlyProjectComponent Build()
     {
         FolderComposite inputFiles;
-        if (_projectInfo.AnalyzerResult.SourceFiles.Length != 0)
+        if (_projectInfo.AnalyzerResult.SourceFiles!=null && _projectInfo.AnalyzerResult.SourceFiles.Length != 0)
         {
             inputFiles = FindProjectFilesUsingBuildalyzer(_projectInfo.AnalyzerResult, _options);
         }
         else
         {
-            _logger.LogWarning("Buildalyzer could not find source files. This should not happen. We fallback to filesystem scan. Please report an issue at github.");
+            _logger.LogWarning("Buildalyzer could not find source files. This should not happen. We fall back to filesystem scan. Please report an issue at GitHub.");
             inputFiles = FindProjectFilesScanningProjectFolders(_projectInfo.AnalyzerResult);
         }
         return inputFiles;

@@ -33,7 +33,7 @@ public class FolderComposite : ProjectComponent, IFolderComposite
         if (child is not ProjectComponent projectComponent)
         {
             // accepts only same type
-            return;
+            throw new ArgumentException("Only ProjectComponent instances can be added to the solution.");
         }
 
         projectComponent.Parent = this;
