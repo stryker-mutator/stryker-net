@@ -275,7 +275,11 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
             {
                 _logger.LogError(e, "Failed to compile {FilePath} (compiler crash)", st.FilePath);
                 _logger.LogTrace("source code:\n {Source}", st.GetText());
-                var cleanUpFile = _rollbackProcess.CleanUpFile(st);
+                var cleanUpFile = _originalSyntaxTrees.FirstOrDefault(x => x.FilePath == st.FilePath);
+                if (cleanUpFile == null)                {
+                    _logger.LogError("Failed to find the original syntax tree for {FilePath}. Assuming it is a generated file.", st.FilePath);
+                    continue;
+                }
                 cleanedSyntaxTrees.Add(cleanUpFile);
             }
         }
@@ -314,6 +318,12 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
 
         _logger.LogTrace("Compilation errors: {Diagnostics}", messageBuilder.ToString());
     }
+
+
+    public IEnumerable<SyntaxTree> SyntaxTrees => _compilation.SyntaxTrees;
+
+    public void ReplaceSyntaxTree(SyntaxTree original, SyntaxTree updated) => _compilation = _compilation.ReplaceSyntaxTree(original, updated);
+
 
     private static string ReadableNumber(int number) => number switch
     {
@@ -366,27 +376,6 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
 
             public override IEnumerable<string> Keys => [];
         }
-    }
-
-    public IEnumerable<SyntaxTree> SyntaxTrees => _compilation.SyntaxTrees;
-
-    public void ReplaceSyntaxTree(SyntaxTree original, SyntaxTree updated) => _compilation = _compilation.ReplaceSyntaxTree(original, updated);
-
-    public bool RestoreOriginal(SyntaxTree original)
-    {
-        if (string.IsNullOrEmpty(original.FilePath))
-        {
-            return false;
-        }
-        foreach (var tree in _originalSyntaxTrees)
-        {
-            if (tree.FilePath == original.FilePath)
-            {
-                _compilation = _compilation.ReplaceSyntaxTree(original, tree);
-                return true;
-            }
-        }
-        return false;
     }
 }
 

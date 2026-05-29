@@ -20,8 +20,6 @@ public interface ICompilationContent
     IEnumerable<SyntaxTree> SyntaxTrees { get; }
 
     void ReplaceSyntaxTree(SyntaxTree original, SyntaxTree updated);
-
-    bool RestoreOriginal(SyntaxTree original);
 }
 
 
@@ -29,8 +27,6 @@ public interface ICSharpRollbackProcess
 {
     IEnumerable<int> Start(ICompilationContent wrapper, ImmutableArray<Diagnostic> diagnostics,
         ICSharpRollbackProcess.Mode mode, bool devMode);
-
-    SyntaxTree CleanUpFile(SyntaxTree file);
 
     enum Mode
     {
@@ -254,19 +250,6 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         }
 
         return suspiciousMutations;
-    }
-
-    // removes all mutation from a file
-    public SyntaxTree CleanUpFile(SyntaxTree file)
-    {
-        var rollbackRoot = file.GetRoot();
-        var scan = ScanAllMutationsIfsAndIds(rollbackRoot);
-        var suspiciousMutations = new Collection<SyntaxNode>();
-        foreach (var mutant in scan.Where(mutant => !suspiciousMutations.Contains(mutant.Node)))
-        {
-            suspiciousMutations.Add(mutant.Node);
-        }
-        return file.WithRootAndOptions(RollTheseMutationsBack(rollbackRoot, suspiciousMutations), file.Options);
     }
 
     private static string DisplayName(SyntaxNode initNode) =>

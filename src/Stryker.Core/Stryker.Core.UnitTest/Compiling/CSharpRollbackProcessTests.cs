@@ -32,8 +32,6 @@ internal class CompilerWrapper(CSharpCompilation compilation) : ICompilationCont
     public void ReplaceSyntaxTree(SyntaxTree original, SyntaxTree updated) => _compilation = _compilation.ReplaceSyntaxTree(original, updated);
 
     public EmitResult Emit(Stream stream) => _compilation.Emit(stream);
-
-    public bool RestoreOriginal(SyntaxTree original) => false;
 }
 
 [TestClass]
