@@ -72,10 +72,6 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         // first try compiling
         var retryCount = 1;
         (var rollbackProcessResult, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, null, ICSharpRollbackProcess.Mode.Normal, retryCount);
-        if (!_generatorsFailInIncremental)
-        {
-            RunSourceGenerators();
-        }
         // If compiling failed and the error has no location, log and throw exception.
         if (!emitResult.Success && emitResult.Diagnostics.Any(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error))
         {
@@ -166,14 +162,14 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
                 optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult)).AddAdditionalTexts([.._input.SourceProjectInfo.AnalyzerResult.GetAdditionalTexts()]);
         // run the generators
         _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(_compilation, out var compilation, out var diagnostics);
-        // try again
+        // try again to see if it crashes
         try
         {
             _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(compilation, out  _, out _);
         }
         catch (Exception e)
         {
-            _logger.LogError("Some generator(s) failed when run twice: {Diagnostics}", e.Message);
+            _logger.LogError(e, "Some generator(s) failed when run twice");
             _generatorsFailInIncremental = true;
         }
         _compilation = compilation;
