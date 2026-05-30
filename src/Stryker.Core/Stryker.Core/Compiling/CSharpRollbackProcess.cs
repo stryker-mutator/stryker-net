@@ -25,8 +25,8 @@ public interface ICompilationContent
 
 public interface ICSharpRollbackProcess
 {
-    IEnumerable<int> Start(ICompilationContent wrapper, ImmutableArray<Diagnostic> diagnostics,
-        ICSharpRollbackProcess.Mode mode, bool devMode);
+    IEnumerable<int> RollbackMutationsInError(ICompilationContent wrapper, ImmutableArray<Diagnostic> diagnostics,
+        Mode mode, bool devMode);
 
     enum Mode
     {
@@ -44,7 +44,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
     private List<int> RollBackedIds { get; } = [];
     private ILogger Logger { get; } = ApplicationLogging.LoggerFactory.CreateLogger<CSharpRollbackProcess>();
 
-    public IEnumerable<int> Start(ICompilationContent wrapper, ImmutableArray<Diagnostic> diagnostics, ICSharpRollbackProcess.Mode mode, bool devMode)
+    public IEnumerable<int> RollbackMutationsInError(ICompilationContent wrapper, ImmutableArray<Diagnostic> diagnostics, ICSharpRollbackProcess.Mode mode, bool devMode)
     {
         // match the diagnostics with their syntax trees
         var syntaxTreeMapping =
@@ -125,8 +125,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             return new MutantInfo();
         }
 
-        Logger.LogDebug("Found mutant {id} of type '{type}' controlled by '{engine}'.", info.Id, info.Type,
-            info.Engine);
+        Logger.LogDebug("Found mutant {id} of type '{type}' controlled by '{engine}'.", info.Id, info.Type, info.Engine);
 
         return info;
     }

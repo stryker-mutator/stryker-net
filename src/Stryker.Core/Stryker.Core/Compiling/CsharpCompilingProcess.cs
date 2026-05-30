@@ -71,7 +71,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         InitCSharpCompilation();
         // first try compiling
         var retryCount = 1;
-        (var rollbackProcessResult, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, null, ICSharpRollbackProcess.Mode.Normal, retryCount);
+        var (rollbackProcessResult, emitResult) = TryCompilation(ilStream, symbolStream, null, ICSharpRollbackProcess.Mode.Normal, retryCount++);
         // If compiling failed and the error has no location, log and throw exception.
         if (!emitResult.Success && emitResult.Diagnostics.Any(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error))
         {
@@ -91,8 +91,8 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
                 _ => mode
             };
             // compilation did not succeed. let's compile a couple of times more for good measure
-            (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream,
-                emitResult, mode, retryCount);
+            (rollbackProcessResult, emitResult) = TryCompilation(ilStream, symbolStream,
+                emitResult, mode, retryCount++);
         }
 
         if (emitResult.Success)
@@ -123,8 +123,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
     [ExcludeFromCodeCoverage]
     private void RunSourceGenerators()
     {
-        _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(_compilation, out var outputCompilation, out var diagnostics);
-        _compilation = outputCompilation;
+        _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(_compilation, out _compilation, out var diagnostics);
         var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
         if (errors.Count == 0)
         {
@@ -145,23 +144,23 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
 
     private void InitCSharpCompilation()
     {
-        if (_compilation != null)
+        if (_compilation == null)
         {
-            return ;
+            var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
+            // create the compiler
+            _compilation= CSharpCompilation.Create(AssemblyName,
+                _originalSyntaxTrees,
+                _input.SourceProjectInfo.AnalyzerResult.LoadReferences(),
+                analyzerResult.GetCompilationOptions());
+            // create the driver for source generators
+            _generatorDriver = CSharpGeneratorDriver
+                .Create(analyzerResult.GetSourceGenerators(_logger), parseOptions: analyzerResult.GetParseOptions(_options),
+                    optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult)).AddAdditionalTexts([.._input.SourceProjectInfo.AnalyzerResult.GetAdditionalTexts()]);
         }
 
-        var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
-        // create the compiler
-        _compilation= CSharpCompilation.Create(AssemblyName,
-            _originalSyntaxTrees,
-            _input.SourceProjectInfo.AnalyzerResult.LoadReferences(),
-            analyzerResult.GetCompilationOptions());
-        // create the driver for source generators
-        _generatorDriver = CSharpGeneratorDriver
-            .Create(analyzerResult.GetSourceGenerators(_logger), parseOptions: analyzerResult.GetParseOptions(_options),
-                optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult)).AddAdditionalTexts([.._input.SourceProjectInfo.AnalyzerResult.GetAdditionalTexts()]);
         // run the generators
         _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(_compilation, out var compilation, out var diagnostics);
+        _compilation = compilation;
         // try again to see if it crashes
         try
         {
@@ -172,7 +171,6 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
             _logger.LogError(e, "Some generator(s) failed when run twice");
             _generatorsFailInIncremental = true;
         }
-        _compilation = compilation;
         var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
         if (errors.Count == 0)
         {
@@ -195,7 +193,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
 
     public void UpdateFile(SyntaxTree fileSyntaxTree, SyntaxTree fileMutatedSyntaxTree) => _compilation = _compilation.ReplaceSyntaxTree(fileSyntaxTree, fileMutatedSyntaxTree);
 
-    private (IEnumerable<int>, EmitResult, int) TryCompilation(
+    private (IEnumerable<int>, EmitResult) TryCompilation(
         Stream ms,
         Stream symbolStream,
         EmitResult previousEmitResult,
@@ -209,47 +207,68 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
             _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
         EmitResult emitResult = null;
         var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger);
-        while (emitResult == null)
+        if (previousEmitResult != null)
         {
-            if (previousEmitResult != null)
+            // remove broken mutations
+            rollbackProcessResult = _rollbackProcess.RollbackMutationsInError(this, previousEmitResult.Diagnostics, mode, _options.DiagMode);
+            if (!_generatorsFailInIncremental)
             {
-                // remove broken mutations
-                rollbackProcessResult = _rollbackProcess.Start(this, previousEmitResult.Diagnostics, mode, _options.DiagMode);
-                if (!_generatorsFailInIncremental)
-                {
-                    RunSourceGenerators();
-                }
-            }
-
-            // reset the memoryStreams
-            ms.SetLength(0);
-            symbolStream?.SetLength(0);
-            try
-            {
-                emitResult = _compilation.Emit(
-                    ms,
-                    symbolStream,
-                    manifestResources: resourceDescriptions,
-                    win32Resources: _compilation.CreateDefaultWin32Resources(
-                        true, // Important!
-                        false,
-                        null,
-                        null),
-                    options: emitOptions);
-            }
-#pragma warning disable S1696 // this catches an exception raised by the C# compiler
-            catch (NullReferenceException e)
-            {
-                _logger.LogError("Roslyn C# compiler raised an NullReferenceException. This is a known Roslyn's issue that may be triggered by invalid usage of conditional access expression.");
-                _logger.LogInformation(e, "Exception");
-                _logger.LogError("Stryker will attempt to skip problematic files.");
-                _compilation = ScanForCauseOfException(_compilation);
-                EmbeddedResourcesGenerator.ResetCache();
+                RunSourceGenerators();
             }
         }
 
+        // reset the memoryStreams
+        ms.SetLength(0);
+        symbolStream?.SetLength(0);
+        emitResult = ActualCompilation(ms, symbolStream, resourceDescriptions, emitOptions);
+
         LogEmitResult(emitResult);
-        return (rollbackProcessResult, emitResult, retryCount + 1);
+        return (rollbackProcessResult, emitResult);
+    }
+
+    [ExcludeFromCodeCoverage]     // unable to simulate a CS compiler fault
+    private EmitResult ActualCompilation(Stream ms, Stream symbolStream, IEnumerable<ResourceDescription> resourceDescriptions,
+        EmitOptions emitOptions)
+    {
+        EmitResult emitResult = null;
+
+        try
+        {
+            emitResult = _compilation.Emit(
+                ms,
+                symbolStream,
+                manifestResources: resourceDescriptions,
+                win32Resources: _compilation.CreateDefaultWin32Resources(
+                    true, // Important!
+                    false,
+                    null,
+                    null),
+                options: emitOptions);
+        }
+#pragma warning disable S1696 // this catches an exception raised by the C# compiler
+        catch (NullReferenceException e)
+        {
+            _logger.LogError("Roslyn C# compiler raised an NullReferenceException. This is a known Roslyn's issue that may be triggered by invalid usage of conditional access expression.");
+            _logger.LogInformation(e, "Exception");
+            _logger.LogError("Stryker will attempt to skip problematic files.");
+            _compilation = ScanForCauseOfException(_compilation);
+            EmbeddedResourcesGenerator.ResetCache();
+            ms.SetLength(0);
+            symbolStream?.SetLength(0);
+            // try again
+            emitResult = _compilation.Emit(
+                ms,
+                symbolStream,
+                manifestResources: resourceDescriptions,
+                win32Resources: _compilation.CreateDefaultWin32Resources(
+                    true, // Important!
+                    false,
+                    null,
+                    null),
+                options: emitOptions);
+        }
+
+        return emitResult;
     }
 
     [ExcludeFromCodeCoverage]     // unable to simulate a CS compiler fault

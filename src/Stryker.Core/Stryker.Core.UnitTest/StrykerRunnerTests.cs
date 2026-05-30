@@ -36,7 +36,6 @@ public class StrykerRunnerTests : TestBase
         var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
         var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
         var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
-        var fileSystemMock = new MockFileSystem();
 
         var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf()
@@ -105,14 +104,13 @@ public class StrykerRunnerTests : TestBase
         var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
         var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
         var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
-        var fileSystemMock = new MockFileSystem();
 
         var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf
         {
             Mutants = new Collection<IMutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
         });
-        
+
         var mutationTestInput = new MutationTestInput()
         {
             SourceProjectInfo = new SourceProjectInfo()
@@ -161,7 +159,6 @@ public class StrykerRunnerTests : TestBase
         var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
         var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
         var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
-        var fileSystemMock = new MockFileSystem();
 
         var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf
@@ -169,7 +166,7 @@ public class StrykerRunnerTests : TestBase
             Mutants = new Collection<IMutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
         });
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-        
+
         var mutationTestInput = new MutationTestInput()
         {
             SourceProjectInfo = new SourceProjectInfo()

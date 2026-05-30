@@ -88,7 +88,7 @@ public static class IAnalyzerResultExtensions
     }
 
     public static IEnumerable<AdditionalText> GetAdditionalTexts(this IAnalyzerResult result) =>
-        result.AdditionalFiles.Select(additionalFile => new AdditionalTextFromFile(additionalFile)).Cast<AdditionalText>();
+        result.AdditionalFiles?.Select(additionalFile => new AdditionalTextFromFile(additionalFile)) ?? [];
 
     // Roslyn does not appear to expose usable implementations of these types (required for additional files support)
     private sealed class AdditionalFile(string text) : SourceText

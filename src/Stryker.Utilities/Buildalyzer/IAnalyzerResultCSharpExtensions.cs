@@ -48,7 +48,7 @@ public static class IAnalyzerResultCSharpExtensions
     ///
     /// About the Interceptors:
     ///
-    /// This feature allow the user to specify namespaces that should be considered as containing interceptor types.
+    /// This feature allows the user to specify namespaces that should be considered as containing interceptor types.
     /// This is necessary for the Roslyn compiler to properly handle them during compilation and enable the associated features and behaviors.
     ///
     /// Here is a doc explaining the interceptors feature:
