@@ -125,7 +125,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             return new MutantInfo();
         }
 
-        Logger.LogDebug("Found mutant {id} of type '{type}' controlled by '{engine}'.", info.Id, info.Type, info.Engine);
+        Logger.LogDebug("Found mutant {Id} of type '{Type}' controlled by '{Engine}'.", info.Id, info.Type, info.Engine);
 
         return info;
     }

@@ -41,8 +41,9 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
     private readonly ILogger _logger;
     private GeneratorDriver _generatorDriver;
     private Compilation _compilation;
-    private bool _generatorsFailInIncremental;
     private readonly IEnumerable<SyntaxTree> _originalSyntaxTrees;
+    private bool _needToRunGenerators;
+    private bool _someGeneratorMayCrash;
 
     public CsharpCompilingProcess(MutationTestInput input,
         ICSharpRollbackProcess rollbackProcess = null,
@@ -54,7 +55,6 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         _rollbackProcess = rollbackProcess ?? new CSharpRollbackProcess();
         _logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpCompilingProcess>();
         _originalSyntaxTrees = syntaxTrees ?? ((ProjectComponent) _input.SourceProjectInfo.ProjectContents).CompilationSyntaxTrees.ToList();
-        _generatorsFailInIncremental = false;
     }
 
     private string AssemblyName =>
@@ -69,6 +69,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
     public CompilingProcessResult Compile(Stream ilStream, Stream symbolStream)
     {
         InitCSharpCompilation();
+        RunSourceGenerators();
         // first try compiling
         var retryCount = 1;
         var (rollbackProcessResult, emitResult) = TryCompilation(ilStream, symbolStream, null, ICSharpRollbackProcess.Mode.Normal, retryCount++);
@@ -123,75 +124,66 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
     [ExcludeFromCodeCoverage]
     private void RunSourceGenerators()
     {
-        _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(_compilation, out _compilation, out var diagnostics);
-        var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
-        if (errors.Count == 0)
+        if (!_needToRunGenerators || _someGeneratorMayCrash)
         {
             return;
         }
-        var fail = false;
-        foreach (var diagnostic in errors)
-        {
-            _logger.LogError("Failed to generate source code for mutated assembly: {Diagnostics}", diagnostic);
-            fail = true;
-        }
 
-        if (fail)
+        try
         {
-            throw new CompilationException("Source Generator Failure");
+            _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(_compilation, out _compilation, out var diagnostics);
+            var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
+            if (errors.Count == 0)
+            {
+                return;
+            }
+            var fail = false;
+            foreach (var diagnostic in errors)
+            {
+                _logger.LogError("Failed to generate source code for mutated assembly: {Diagnostics}", diagnostic);
+                fail = true;
+            }
+
+            if (fail)
+            {
+                throw new CompilationException("Source Generator Failure");
+            }
         }
+        catch (Exception e)
+        {
+            _someGeneratorMayCrash = true;
+            _logger.LogError(e, "Some generator(s) failed to run. Stryker will skip running code generators for the rest of this session.");
+        }
+        _needToRunGenerators = false;
     }
 
     private void InitCSharpCompilation()
     {
-        if (_compilation == null)
-        {
-            var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
-            // create the compiler
-            _compilation= CSharpCompilation.Create(AssemblyName,
-                _originalSyntaxTrees,
-                _input.SourceProjectInfo.AnalyzerResult.LoadReferences(),
-                analyzerResult.GetCompilationOptions());
-            // create the driver for source generators
-            _generatorDriver = CSharpGeneratorDriver
-                .Create(analyzerResult.GetSourceGenerators(_logger), parseOptions: analyzerResult.GetParseOptions(_options),
-                    optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult)).AddAdditionalTexts([.._input.SourceProjectInfo.AnalyzerResult.GetAdditionalTexts()]);
-        }
-
-        // run the generators
-        _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(_compilation, out var compilation, out var diagnostics);
-        _compilation = compilation;
-        // try again to see if it crashes
-        try
-        {
-            _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(compilation, out  _, out _);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Some generator(s) failed when run twice");
-            _generatorsFailInIncremental = true;
-        }
-        var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
-        if (errors.Count == 0)
+        if (_compilation != null)
         {
             return;
         }
-        foreach (var diagnostic in errors)
-        {
-            _logger.LogError("Failed to generate source code for assembly: {Diagnostics}", diagnostic);
-        }
 
-        if (_options.DiagMode)
-        {
-            _logger.LogError("Diag mode: keep on despite errors to have a full diagnostic.");
-        }
-        else
-        {
-            throw new CompilationException("Source Generator Failure");
-        }
+        var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
+        // create the compiler
+        _compilation= CSharpCompilation.Create(AssemblyName,
+            _originalSyntaxTrees,
+            _input.SourceProjectInfo.AnalyzerResult.LoadReferences(),
+            analyzerResult.GetCompilationOptions());
+        // create the driver for source generators
+        _generatorDriver = CSharpGeneratorDriver
+            .Create(analyzerResult.GetSourceGenerators(_logger), parseOptions: analyzerResult.GetParseOptions(_options),
+                optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult)).AddAdditionalTexts([.._input.SourceProjectInfo.AnalyzerResult.GetAdditionalTexts()]);
+        // run the generators
+        _needToRunGenerators = true;
+        RunSourceGenerators();
     }
 
-    public void UpdateFile(SyntaxTree fileSyntaxTree, SyntaxTree fileMutatedSyntaxTree) => _compilation = _compilation.ReplaceSyntaxTree(fileSyntaxTree, fileMutatedSyntaxTree);
+    public void UpdateFile(SyntaxTree fileSyntaxTree, SyntaxTree fileMutatedSyntaxTree)
+    {
+        _compilation = _compilation.ReplaceSyntaxTree(fileSyntaxTree, fileMutatedSyntaxTree);
+        _needToRunGenerators = true;
+    }
 
     private (IEnumerable<int>, EmitResult) TryCompilation(
         Stream ms,
@@ -211,10 +203,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         {
             // remove broken mutations
             rollbackProcessResult = _rollbackProcess.RollbackMutationsInError(this, previousEmitResult.Diagnostics, mode, _options.DiagMode);
-            if (!_generatorsFailInIncremental)
-            {
-                RunSourceGenerators();
-            }
+            RunSourceGenerators();
         }
 
         // reset the memoryStreams
@@ -338,11 +327,9 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         _logger.LogTrace("Compilation errors: {Diagnostics}", messageBuilder.ToString());
     }
 
-
     public IEnumerable<SyntaxTree> SyntaxTrees => _compilation.SyntaxTrees;
 
     public void ReplaceSyntaxTree(SyntaxTree original, SyntaxTree updated) => _compilation = _compilation.ReplaceSyntaxTree(original, updated);
-
 
     private static string ReadableNumber(int number) => number switch
     {

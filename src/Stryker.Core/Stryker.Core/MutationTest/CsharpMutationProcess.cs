@@ -38,12 +38,13 @@ public class CsharpMutationProcess : IMutationProcess
         var orchestrator = new CsharpMutantOrchestrator(new MutantPlacer(input.SourceProjectInfo.CodeInjector), options: _options);
         var compilingProcess = new CsharpCompilingProcess(input, options: _options);
 
+        var semanticModels = projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().ToDictionary(x => x, x => compilingProcess.GetSemanticModel(x.SyntaxTree));
         // Mutate source files
-        foreach (var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
+        foreach (var file in semanticModels.Keys)
         {
             _logger.LogDebug("Mutating {FilePath}", file.SyntaxTree.FilePath);
             // Mutate the syntax tree
-            var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree, compilingProcess.GetSemanticModel(file.SyntaxTree));
+            var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree, semanticModels[file]);
             // Add the mutated syntax tree for compilation
             file.MutatedSyntaxTree = mutatedSyntaxTree;
             if (_options.DiagMode)
