@@ -132,29 +132,21 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         try
         {
             _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(_compilation, out _compilation, out var diagnostics);
+            _needToRunGenerators = false;
             var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
             if (errors.Count == 0)
             {
                 return;
             }
-            var fail = false;
-            foreach (var diagnostic in errors)
-            {
-                _logger.LogError("Failed to generate source code for mutated assembly: {Diagnostics}", diagnostic);
-                fail = true;
-            }
-
-            if (fail)
-            {
-                throw new CompilationException("Source Generator Failure");
-            }
+            _logger.LogError("Failed to generate source code for mutated assembly, errors are: {Diagnostics}",
+                string.Join(Environment.NewLine, errors.Select(e => e.ToString())));
+            throw new CompilationException("Source Generator Failure");
         }
         catch (Exception e)
         {
             _someGeneratorMayCrash = true;
             _logger.LogError(e, "Some generator(s) failed to run. Stryker will skip running code generators for the rest of this session.");
         }
-        _needToRunGenerators = false;
     }
 
     private void InitCSharpCompilation()
@@ -197,7 +189,6 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         _logger.LogDebug("Trying compilation for the {retryCount} time.", ReadableNumber(retryCount));
         var emitOptions = symbolStream == null ? null : new EmitOptions(false, DebugInformationFormat.PortablePdb,
             _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
-        EmitResult emitResult = null;
         var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger);
         if (previousEmitResult != null)
         {
@@ -209,7 +200,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         // reset the memoryStreams
         ms.SetLength(0);
         symbolStream?.SetLength(0);
-        emitResult = ActualCompilation(ms, symbolStream, resourceDescriptions, emitOptions);
+        var emitResult = ActualCompilation(ms, symbolStream, resourceDescriptions, emitOptions);
 
         LogEmitResult(emitResult);
         return (rollbackProcessResult, emitResult);
@@ -240,7 +231,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
             _logger.LogError("Roslyn C# compiler raised an NullReferenceException. This is a known Roslyn's issue that may be triggered by invalid usage of conditional access expression.");
             _logger.LogInformation(e, "Exception");
             _logger.LogError("Stryker will attempt to skip problematic files.");
-            _compilation = ScanForCauseOfException(_compilation);
+            ScanForCauseOfException();
             EmbeddedResourcesGenerator.ResetCache();
             ms.SetLength(0);
             symbolStream?.SetLength(0);
@@ -262,14 +253,14 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
 
     [ExcludeFromCodeCoverage]     // unable to simulate a CS compiler fault
     // This method tries to identify which source file triggers a compiler exception
-    private Compilation ScanForCauseOfException(Compilation compilation)
+    private void ScanForCauseOfException()
     {
-        var syntaxTrees = compilation.SyntaxTrees.ToList();
+        var syntaxTrees = _compilation.SyntaxTrees.ToList();
         var cleanedSyntaxTrees = new HashSet<SyntaxTree>();
         // compile each file separately to identify the culprit(s)
         foreach (var st in syntaxTrees)
         {
-            var local = compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(st);
+            var local = _compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(st);
             try
             {
                 using var ms = new MemoryStream();
@@ -292,7 +283,8 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
             }
         }
         _logger.LogError("Please report an issue and provide the source code of the file that caused the exception for analysis.");
-        return compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(cleanedSyntaxTrees);
+        _compilation = _compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(cleanedSyntaxTrees);
+        RunSourceGenerators();
     }
 
     private void LogEmitResult(EmitResult result)

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
@@ -40,15 +41,25 @@ public class BuildalyzerHelperTests : TestBase
     [TestMethod]
     public void ShouldHandleAdditionalFiles()
     {
+        var path = Path.Combine("TestResources","ExampleSourceFile.cs");
         var setupProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-            properties: new(),
+            properties: new Dictionary<string, string>(),
             projectFilePath: "path");
-        setupProjectAnalyzerResult.Setup(x => x.AdditionalFiles).Returns(["path.AssemblyInfo.cs"]);
+        setupProjectAnalyzerResult.Setup(x => x.AdditionalFiles).Returns([path]);
         var projectAnalyzerResult = setupProjectAnalyzerResult.Object;
 
         var result = projectAnalyzerResult.GetAdditionalTexts();
 
-        result.Where(x => x.Path == "path.AssemblyInfo.cs").ShouldHaveSingleItem();
+        // check we have a single additional text
+        result.Where(x => x.Path == path).ShouldHaveSingleItem();
+        var additionalText = result.Where(x => x.Path == path).Single();
+        var fileContent = File.ReadAllText(path);
+        // which content the provided text
+        additionalText.GetText().ToString().ShouldBe(fileContent);
+        var buffer = new char[10];
+        // and copy to works as expected
+        additionalText.GetText().CopyTo(10, buffer, 0, 10);
+        new string(buffer).ShouldBe(fileContent.Substring(10, 10));
     }
 
     [TestMethod]
