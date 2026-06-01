@@ -222,6 +222,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
             _logger.LogError("Roslyn C# compiler raised an NullReferenceException. This is a known Roslyn's issue that may be triggered by invalid usage of conditional access expression.");
             _logger.LogInformation(e, "Exception");
             _logger.LogError("Stryker will attempt to skip problematic files.");
+            // cleanup the files triggering an exception
             ScanForCauseOfException();
             EmbeddedResourcesGenerator.ResetCache();
             ms.SetLength(0);
@@ -249,7 +250,8 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         var syntaxTrees = _compilation.SyntaxTrees.ToList();
         var cleanedSyntaxTrees = new HashSet<SyntaxTree>();
         // compile each file separately to identify the culprit(s)
-        foreach (var st in syntaxTrees)
+        // we disregard generated files. If those trigger an exception, we can't fix it
+        foreach (var st in syntaxTrees.Where(st => !_generatorDriver.GetRunResult().GeneratedTrees.Contains(st)))
         {
             var local = _compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(st);
             try
@@ -266,7 +268,8 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
                 _logger.LogError(e, "Failed to compile {FilePath} (compiler crash)", st.FilePath);
                 _logger.LogTrace("source code:\n {Source}", st.GetText());
                 var cleanUpFile = _originalSyntaxTrees.FirstOrDefault(x => x.FilePath == st.FilePath);
-                if (cleanUpFile == null)                {
+                if (cleanUpFile == null)
+                {
                     _logger.LogError("Failed to find the original syntax tree for {FilePath}. Assuming it is a generated file.", st.FilePath);
                     continue;
                 }
