@@ -43,7 +43,6 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
     private Compilation _compilation;
     private readonly IEnumerable<SyntaxTree> _originalSyntaxTrees;
     private bool _needToRunGenerators;
-    private bool _someGeneratorMayCrash;
 
     public CsharpCompilingProcess(MutationTestInput input,
         ICSharpRollbackProcess rollbackProcess = null,
@@ -124,29 +123,21 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
     [ExcludeFromCodeCoverage]
     private void RunSourceGenerators()
     {
-        if (!_needToRunGenerators || _someGeneratorMayCrash)
+        if (!_needToRunGenerators)
         {
             return;
         }
 
-        try
+        _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(_compilation.RemoveSyntaxTrees(_generatorDriver.GetRunResult().GeneratedTrees), out _compilation, out var diagnostics);
+        _needToRunGenerators = false;
+        var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
+        if (errors.Count == 0)
         {
-            _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(_compilation, out _compilation, out var diagnostics);
-            _needToRunGenerators = false;
-            var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
-            if (errors.Count == 0)
-            {
-                return;
-            }
-            _logger.LogError("Failed to generate source code for mutated assembly, errors are: {Diagnostics}",
-                string.Join(Environment.NewLine, errors.Select(e => e.ToString())));
-            throw new CompilationException("Source Generator Failure");
+            return;
         }
-        catch (Exception e)
-        {
-            _someGeneratorMayCrash = true;
-            _logger.LogError(e, "Some generator(s) failed to run. Stryker will skip running code generators for the rest of this session.");
-        }
+        _logger.LogError("Failed to generate source code for mutated assembly, errors are: {Diagnostics}",
+            string.Join(Environment.NewLine, errors.Select(e => e.ToString())));
+        throw new CompilationException("Source Generator Failure");
     }
 
     private void InitCSharpCompilation()
