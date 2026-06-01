@@ -135,7 +135,7 @@ public class CsharpMutationProcess : IMutationProcess
     {
         var fileTrees = projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree).ToArray();
         var generatedTrees = projectInfo.CompilationSyntaxTrees
-            .Where(t => t is not null)
+            .OfType<SyntaxTree>()
             .Except(fileTrees)
             .ToArray();
         return [.. fileTrees, .. generatedTrees];
