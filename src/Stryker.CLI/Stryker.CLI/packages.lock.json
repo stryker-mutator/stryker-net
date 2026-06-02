@@ -254,8 +254,8 @@
       },
       "Nerdbank.MessagePack": {
         "type": "Transitive",
-        "resolved": "1.1.62",
-        "contentHash": "mJN+8kTL/UOvKv6Vhf7I/G4XkdY2YSqA31EwFY61NA7qg0um+Oy5h0nj+XCQ2hXAjqYiBhpvUpOJDUxiJBZ45A==",
+        "resolved": "1.2.4",
+        "contentHash": "9NKlDsKkOV5zQFkZZnQmssdV6npFNs0Of1Nz5mvAJA4uANxCge2TfXQ9nCYUet58bEWQ00a/aNHdjmcXEI7iuQ==",
         "dependencies": {
           "Microsoft.NET.StringTools": "18.4.0",
           "Microsoft.VisualStudio.Validation": "17.13.22",
@@ -760,14 +760,14 @@
           "Serilog.Sinks.Console": "[6.1.1, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.55.2, )",
-          "Stryker.Abstractions": "[4.14.2, )",
-          "Stryker.Configuration": "[4.14.2, )",
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.Configuration": "[1.0.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
-          "Stryker.RegexMutators": "[4.14.2, )",
-          "Stryker.Solutions": "[4.14.2, )",
-          "Stryker.TestRunner.MicrosoftTestPlatform": "[4.14.2, )",
-          "Stryker.TestRunner.VsTest": "[4.14.2, )",
-          "Stryker.Utilities": "[4.14.2, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
+          "Stryker.Solutions": "[1.0.0, )",
+          "Stryker.TestRunner.MicrosoftTestPlatform": "[1.0.0, )",
+          "Stryker.TestRunner.VsTest": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.1, )"
         }
       },
@@ -790,8 +790,8 @@
           "Microsoft.CodeAnalysis.CSharp": "[5.3.0, )",
           "Microsoft.CodeAnalysis.Common": "[5.3.0, )",
           "Serilog": "[4.3.1, )",
-          "Stryker.Abstractions": "[4.14.2, )",
-          "Stryker.Utilities": "[4.14.2, )"
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )"
         }
       },
       "stryker.datacollector": {
@@ -817,7 +817,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.TestPlatform.ObjectModel": "[18.6.0, )",
-          "Stryker.Abstractions": "[4.14.2, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "stryker.testrunner.microsofttestplatform": {
@@ -825,9 +825,9 @@
         "dependencies": {
           "CliWrap": "[3.10.1, )",
           "Microsoft.Testing.Platform": "[1.5.2, )",
-          "StreamJsonRpc": "[2.24.92, )",
-          "Stryker.TestRunner": "[4.14.2, )",
-          "Stryker.Utilities": "[4.14.2, )"
+          "StreamJsonRpc": "[2.25.25, )",
+          "Stryker.TestRunner": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )"
         }
       },
       "stryker.testrunner.vstest": {
@@ -838,10 +838,10 @@
           "Microsoft.TestPlatform.ObjectModel": "[18.6.0, )",
           "Microsoft.TestPlatform.Portable": "[18.6.0, )",
           "Microsoft.TestPlatform.TranslationLayer": "[18.6.0, )",
-          "Stryker.Abstractions": "[4.14.2, )",
-          "Stryker.DataCollector": "[4.14.2, )",
-          "Stryker.TestRunner": "[4.14.2, )",
-          "Stryker.Utilities": "[4.14.2, )",
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.TestRunner": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.1, )"
         }
       },
@@ -854,7 +854,7 @@
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.8, )",
           "Mono.Cecil": "[0.11.6, )",
           "ResXResourceReader.NetStandard": "[1.3.0, )",
-          "Stryker.Abstractions": "[4.14.2, )"
+          "Stryker.Abstractions": "[1.0.0, )"
         }
       },
       "AWSSDK.S3": {
@@ -1101,14 +1101,14 @@
       },
       "StreamJsonRpc": {
         "type": "CentralTransitive",
-        "requested": "[2.24.92, )",
-        "resolved": "2.24.92",
-        "contentHash": "aqW/UF9e/jER8OWi95lwOiOMDSS+zyYm7STYqy9nMh1esRxBlLLOvasXOUyHCFBfY3C2clwNLKqkdoPyiGdy8A==",
+        "requested": "[2.25.25, )",
+        "resolved": "2.25.25",
+        "contentHash": "zsTQZ1xsWVu9+jC1r9NuTYqg1QgUONjL2BhOD08Lg99N46CUqcn2ig0I73P23/sDLZfegVqxUvgueREad4KpNw==",
         "dependencies": {
           "MessagePack": "2.5.198",
           "Microsoft.VisualStudio.Threading.Only": "17.14.15",
           "Microsoft.VisualStudio.Validation": "17.13.22",
-          "Nerdbank.MessagePack": "1.1.62",
+          "Nerdbank.MessagePack": "1.2.4",
           "Nerdbank.Streams": "2.13.16",
           "Newtonsoft.Json": "13.0.3",
           "System.IO.Pipelines": "8.0.0"
