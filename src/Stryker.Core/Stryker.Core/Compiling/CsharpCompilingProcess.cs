@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -128,7 +129,8 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
             return;
         }
 
-        _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(_compilation.RemoveSyntaxTrees(_generatorDriver.GetRunResult().GeneratedTrees), out _compilation, out var diagnostics);
+        _generatorDriver = _generatorDriver.RunGeneratorsAndUpdateCompilation(_compilation.RemoveSyntaxTrees(GeneratedTrees)
+            , out _compilation, out var diagnostics);
         _needToRunGenerators = false;
         var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
         if (errors.Count == 0)
@@ -148,7 +150,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         }
 
         var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
-        // create the compiler
+        // create the compilation context
         _compilation= CSharpCompilation.Create(AssemblyName,
             _originalSyntaxTrees,
             _input.SourceProjectInfo.AnalyzerResult.LoadReferences(),
@@ -156,7 +158,8 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         // create the driver for source generators
         _generatorDriver = CSharpGeneratorDriver
             .Create(analyzerResult.GetSourceGenerators(_logger), parseOptions: analyzerResult.GetParseOptions(_options),
-                optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult)).AddAdditionalTexts([.._input.SourceProjectInfo.AnalyzerResult.GetAdditionalTexts()]);
+                additionalTexts:[.._input.SourceProjectInfo.AnalyzerResult.GetAdditionalTexts()],
+                optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult));
         // run the generators
         _needToRunGenerators = true;
         RunSourceGenerators();
@@ -251,7 +254,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         var cleanedSyntaxTrees = new HashSet<SyntaxTree>();
         // compile each file separately to identify the culprit(s)
         // we disregard generated files. If those trigger an exception, we can't fix it
-        foreach (var st in syntaxTrees.Where(st => !_generatorDriver.GetRunResult().GeneratedTrees.Contains(st)))
+        foreach (var st in syntaxTrees.Where(st => !GeneratedTrees.Contains(st)))
         {
             var local = _compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(st);
             try
@@ -280,6 +283,8 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         _compilation = _compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(cleanedSyntaxTrees);
         RunSourceGenerators();
     }
+
+    private ImmutableArray<SyntaxTree> GeneratedTrees => _generatorDriver.GetRunResult().GeneratedTrees;
 
     private void LogEmitResult(EmitResult result)
     {
