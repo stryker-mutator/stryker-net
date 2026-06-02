@@ -409,8 +409,8 @@
       },
       "Nerdbank.MessagePack": {
         "type": "Transitive",
-        "resolved": "1.1.62",
-        "contentHash": "mJN+8kTL/UOvKv6Vhf7I/G4XkdY2YSqA31EwFY61NA7qg0um+Oy5h0nj+XCQ2hXAjqYiBhpvUpOJDUxiJBZ45A==",
+        "resolved": "1.2.4",
+        "contentHash": "9NKlDsKkOV5zQFkZZnQmssdV6npFNs0Of1Nz5mvAJA4uANxCge2TfXQ9nCYUet58bEWQ00a/aNHdjmcXEI7iuQ==",
         "dependencies": {
           "Microsoft.NET.StringTools": "18.4.0",
           "Microsoft.VisualStudio.Validation": "17.13.22",
@@ -998,7 +998,7 @@
         "dependencies": {
           "CliWrap": "[3.10.1, )",
           "Microsoft.Testing.Platform": "[1.5.2, )",
-          "StreamJsonRpc": "[2.24.92, )",
+          "StreamJsonRpc": "[2.25.25, )",
           "Stryker.TestRunner": "[4.14.2, )",
           "Stryker.Utilities": "[4.14.2, )"
         }
@@ -1307,14 +1307,14 @@
       },
       "StreamJsonRpc": {
         "type": "CentralTransitive",
-        "requested": "[2.24.92, )",
-        "resolved": "2.24.92",
-        "contentHash": "aqW/UF9e/jER8OWi95lwOiOMDSS+zyYm7STYqy9nMh1esRxBlLLOvasXOUyHCFBfY3C2clwNLKqkdoPyiGdy8A==",
+        "requested": "[2.25.25, )",
+        "resolved": "2.25.25",
+        "contentHash": "zsTQZ1xsWVu9+jC1r9NuTYqg1QgUONjL2BhOD08Lg99N46CUqcn2ig0I73P23/sDLZfegVqxUvgueREad4KpNw==",
         "dependencies": {
           "MessagePack": "2.5.198",
           "Microsoft.VisualStudio.Threading.Only": "17.14.15",
           "Microsoft.VisualStudio.Validation": "17.13.22",
-          "Nerdbank.MessagePack": "1.1.62",
+          "Nerdbank.MessagePack": "1.2.4",
           "Nerdbank.Streams": "2.13.16",
           "Newtonsoft.Json": "13.0.3",
           "System.IO.Pipelines": "8.0.0"
