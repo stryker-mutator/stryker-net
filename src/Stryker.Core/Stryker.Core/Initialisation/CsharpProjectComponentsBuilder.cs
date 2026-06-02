@@ -34,7 +34,7 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
         _logger = logger;
     }
 
-    public override IReadOnlyProjectComponent Build()
+       public override IReadOnlyProjectComponent Build()
     {
         FolderComposite inputFiles;
         if (_projectInfo.AnalyzerResult.SourceFiles!=null && _projectInfo.AnalyzerResult.SourceFiles.Length != 0)
@@ -86,7 +86,8 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
         foreach (var sourceFile in analyzerResult.SourceFiles)
         {
             var relativePath = FileSystem.Path.GetRelativePath(sourceProjectDir, sourceFile);
-            var folderComposite = GetOrBuildFolderComposite(cache, FileSystem.Path.GetDirectoryName(relativePath), sourceProjectDir, projectUnderTestFolderComposite);
+            var folderComposite = GetOrBuildFolderComposite(cache, FileSystem.Path.GetDirectoryName(relativePath) ?? string.Empty
+                , sourceProjectDir, projectUnderTestFolderComposite);
 
             var file = new CsharpFileLeaf()
             {

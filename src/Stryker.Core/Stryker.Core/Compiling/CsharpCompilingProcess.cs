@@ -281,6 +281,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         }
         _logger.LogError("Please report an issue and provide the source code of the file that caused the exception for analysis.");
         _compilation = _compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(cleanedSyntaxTrees);
+        _needToRunGenerators = true;
         RunSourceGenerators();
     }
 

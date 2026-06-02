@@ -91,24 +91,6 @@ public static class IAnalyzerResultExtensions
         result.AdditionalFiles?.Select(additionalFile => new AdditionalTextFromFile(additionalFile)) ?? [];
 
     // Roslyn does not appear to expose usable implementations of these types (required for additional files support)
-    private sealed class AdditionalFile(string text) : SourceText
-    {
-        public override void CopyTo(int sourceIndex, char[] destination, int destinationIndex, int count)
-        {
-            for (var i = 0; i < count; i++)
-            {
-                destination[i+destinationIndex] = text[i + sourceIndex];
-            }
-        }
-
-        public override Encoding? Encoding => null;
-
-        public override int Length => text.Length;
-
-        public override char this[int position] => text[position];
-    }
-
-    // Roslyn does not appear to expose usable implementations of these types (required for additional files support)
     private sealed class AdditionalTextFromFile(string path) : AdditionalText
     {
         private readonly Lazy<string> _source = new(() => File.ReadAllText(path));
@@ -116,7 +98,7 @@ public static class IAnalyzerResultExtensions
         public override SourceText? GetText(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return new AdditionalFile(_source.Value);
+            return SourceText.From(_source.Value, Encoding.UTF8);
         }
 
         public override string Path => path;

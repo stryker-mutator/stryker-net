@@ -41,7 +41,7 @@ public class BuildalyzerHelperTests : TestBase
     [TestMethod]
     public void ShouldHandleAdditionalFiles()
     {
-        var path = Path.Combine("TestResources","ExampleSourceFile.cs");
+        var path = Path.GetFullPath(Path.Combine("TestResources","ExampleSourceFile.cs"));
         var setupProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
             properties: new Dictionary<string, string>(),
             projectFilePath: "path");
@@ -56,10 +56,6 @@ public class BuildalyzerHelperTests : TestBase
         var fileContent = File.ReadAllText(path);
         // which content the provided text
         additionalText.GetText().ToString().ShouldBe(fileContent);
-        var buffer = new char[10];
-        // and copy to works as expected
-        additionalText.GetText().CopyTo(10, buffer, 0, 10);
-        new string(buffer).ShouldBe(fileContent.Substring(10, 10));
     }
 
     [TestMethod]
