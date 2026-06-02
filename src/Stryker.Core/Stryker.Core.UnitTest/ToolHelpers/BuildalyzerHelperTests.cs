@@ -54,7 +54,7 @@ public class BuildalyzerHelperTests : TestBase
         result.Where(x => x.Path == path).ShouldHaveSingleItem();
         var additionalText = result.Where(x => x.Path == path).Single();
         var fileContent = File.ReadAllText(path);
-        // which content the provided text
+        // which contains the provided text
         additionalText.GetText().ToString().ShouldBe(fileContent);
     }
 

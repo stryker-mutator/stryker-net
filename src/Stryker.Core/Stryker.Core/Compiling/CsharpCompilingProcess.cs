@@ -165,12 +165,6 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         RunSourceGenerators();
     }
 
-    public void UpdateFile(SyntaxTree fileSyntaxTree, SyntaxTree fileMutatedSyntaxTree)
-    {
-        _compilation = _compilation.ReplaceSyntaxTree(fileSyntaxTree, fileMutatedSyntaxTree);
-        _needToRunGenerators = true;
-    }
-
     private (IEnumerable<int>, EmitResult) TryCompilation(
         Stream ms,
         Stream symbolStream,
@@ -321,7 +315,11 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
 
     public IEnumerable<SyntaxTree> SyntaxTrees => _compilation.SyntaxTrees;
 
-    public void ReplaceSyntaxTree(SyntaxTree original, SyntaxTree updated) => _compilation = _compilation.ReplaceSyntaxTree(original, updated);
+    public void ReplaceSyntaxTree(SyntaxTree original, SyntaxTree updated)
+    {
+        _compilation = _compilation.ReplaceSyntaxTree(original, updated);
+        _needToRunGenerators = true;
+    }
 
     private static string ReadableNumber(int number) => number switch
     {

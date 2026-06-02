@@ -54,7 +54,7 @@ public class CsharpMutationProcess : IMutationProcess
             }
             // Filter the mutants
             file.Mutants = orchestrator.GetLatestMutantBatch();
-            compilingProcess.UpdateFile(file.SyntaxTree, file.MutatedSyntaxTree);
+            compilingProcess.ReplaceSyntaxTree(file.SyntaxTree, file.MutatedSyntaxTree);
         }
 
         _logger.LogDebug("{MutantsCount} mutants created", projectInfo.Mutants.Count());
