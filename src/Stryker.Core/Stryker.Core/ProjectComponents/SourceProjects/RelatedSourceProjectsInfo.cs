@@ -7,7 +7,7 @@ using Stryker.Utilities.Buildalyzer;
 namespace Stryker.Core.ProjectComponents.SourceProjects;
 
 /// <summary>
-/// Simple class aggregating mutable projects and the associated overarching context: platform/framework... settings
+/// Simple class aggregating mutable projects and the associated shared context: platform/framework... settings
 /// and solution file when relevant
 /// </summary>
 public class RelatedSourceProjectsInfo(

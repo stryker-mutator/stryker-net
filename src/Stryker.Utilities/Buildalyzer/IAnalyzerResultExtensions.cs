@@ -183,14 +183,16 @@ public static class IAnalyzerResultExtensions
 
     private static bool IsTestProject(this IAnalyzerResult analyzerResult)
     {
-        if (bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestingPlatformApplication"), out var isTestingPlatformApplication) && isTestingPlatformApplication)
+        // if 'IsTestProject' is defined, we assume it is a test project, unless said otherwise
+        if (analyzerResult.TryGetProperty("IsTestingPlatformApplication", out var value))
         {
-            return true;
+            return bool.TryParse(value, out var isTestProject) && isTestProject;
         }
 
-        if (bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestProject"), out var isTestProject) && isTestProject)
+        // if 'IsTestProject' is defined, we assume it is a test project, unless said otherwise
+        if (analyzerResult.TryGetProperty("IsTestProject", out value))
         {
-            return true;
+            return bool.TryParse(value, out var isTestProject) && isTestProject;
         }
 
         if (Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n)))
@@ -292,6 +294,9 @@ public static class IAnalyzerResultExtensions
     public static string GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name,
         string defaultValue = default) =>
         analyzerResult.Properties.GetValueOrDefault(name, defaultValue);
+
+    public static bool TryGetProperty(this IAnalyzerResult analyzerResult, string name, out string value) =>
+        analyzerResult.Properties.TryGetValue(name, out value);
 
     private static IProjectItem[] GetItem(this IAnalyzerResult analyzerResult, string name) => !analyzerResult.Items.TryGetValue(name, out var item) ? [] : item;
 
