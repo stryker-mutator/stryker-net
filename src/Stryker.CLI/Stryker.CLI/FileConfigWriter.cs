@@ -23,6 +23,7 @@ public static class FileConfigGenerator
                 {
                     Enabled = inputs.WithBaselineInput.SuppliedInput ?? inputs.WithBaselineInput.Default,
                     Provider = inputs.BaselineProviderInput.SuppliedInput ?? inputs.BaselineProviderInput.Default,
+                    Output = inputs.BaselineOutputInput.SuppliedInput ?? inputs.BaselineOutputInput.Default,
                     FallbackVersion = inputs.FallbackVersionInput.SuppliedInput ?? inputs.FallbackVersionInput.Default,
                     AzureFileShareUrl = inputs.AzureFileStorageUrlInput.SuppliedInput ?? inputs.AzureFileStorageUrlInput.Default,
                     S3BucketName = inputs.S3BucketNameInput.SuppliedInput ?? inputs.S3BucketNameInput.Default,
