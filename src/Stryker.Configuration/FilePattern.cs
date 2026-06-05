@@ -40,7 +40,7 @@ public sealed class FilePattern : IEquatable<IFilePattern>, IFilePattern
 
     /// <summary>
     /// Parses a given file pattern string.
-    /// Format: (!)&lt;glob&gt;({&lt;spanStart&gt;..&lt;spanEnd&gt;})*
+    /// Format: (!)&lt;glob&gt;({&lt;startLine&gt;:&lt;startCol&gt;:&lt;endLine&gt;:&lt;endCol&gt;})*
     /// </summary>
     /// <param name="pattern">The pattern to parse.</param>
     /// <returns>The <see cref="FilePattern"/></returns>
