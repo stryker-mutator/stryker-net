@@ -39,8 +39,8 @@ Directory structure:
   - `/src/Stryker.Utilities`: Utility functions and shared code used across the project
 - `/docs`: Documentation for Stryker.NET
 - `/integrationtest`: Integration tests for Stryker.NET
-  - `/integrationtest/TargetProjects`: Target projects used for testing major features of stryker. For example different runtimes, test frameworks, and project types. These projects are used for testing stryker's core features.
-  - `/integrationtest/Validation`: The tests validating the results of running stryker on the target projects
+  - `/integrationtest/TargetProjects`: Target projects used for testing major features of Stryker.NET. For example different runtimes, test frameworks, and project types. These projects are used for testing Stryker.NET's core features.
+  - `/integrationtest/Validation`: The tests validating the results of running Stryker.NET on the target projects
 - `/ExampleProjects`: Example projects used only for testing F#
 
 ## Contributing Workflow
