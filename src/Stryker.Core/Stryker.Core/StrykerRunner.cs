@@ -99,7 +99,6 @@ public class StrykerRunner : IStrykerRunner
                 }
 
                 reporters.OnAllMutantsTested(rootComponent, combinedTestProjectsInfo);
-                _projectOrchestrator.Dispose();
                 return new StrykerRunResult(options, rootComponent.GetMutationScore());
             }
 
@@ -111,8 +110,6 @@ public class StrykerRunner : IStrykerRunner
             {
                 await project.TestAsync(project.Input.SourceProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.Pending).ToList()).ConfigureAwait(false);
             }
-            // dispose and stop runners
-            _projectOrchestrator.Dispose();
 
             // Restore assemblies
             foreach (var project in _mutationTestProcesses)
@@ -135,7 +132,9 @@ public class StrykerRunner : IStrykerRunner
 #endif
         finally
         {
-            // log duration
+            // Dispose runners to kill all spawned test processes, even on cancellation or error
+            _projectOrchestrator.Dispose();
+
             stopwatch.Stop();
             _logger.LogInformation("Time Elapsed {duration}", stopwatch.Elapsed);
         }

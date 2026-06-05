@@ -19,6 +19,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 {
     private readonly AutoResetEvent _runnerAvailableHandler = new(false);
     private readonly ConcurrentBag<SingleMicrosoftTestPlatformRunner> _availableRunners = new();
+    private bool _disposed;
     private readonly ILogger _logger;
     private readonly int _countOfRunners;
     private readonly TestSet _testSet = new();
@@ -215,6 +216,13 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
         foreach (var runner in _availableRunners)
         {
             runner.Dispose();
