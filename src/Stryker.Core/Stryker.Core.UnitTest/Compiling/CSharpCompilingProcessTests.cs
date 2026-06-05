@@ -533,6 +533,7 @@ public class Calculator
         };
         var process = new CsharpMutationProcess(fileSystem, TestLoggerFactory.CreateLogger<CsharpMutationProcess>());
         process.Mutate(input, options);
+        process.Compile(input);
 
         var projectContentsMutants = input.SourceProjectInfo.ProjectContents.Mutants;
         return projectContentsMutants;
