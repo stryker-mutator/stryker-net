@@ -183,13 +183,13 @@ public static class IAnalyzerResultExtensions
 
     private static bool IsTestProject(this IAnalyzerResult analyzerResult)
     {
-        // if 'IsTestProject' is defined, we assume it is a test project, unless said otherwise
+        // if 'IsTestingPlatformApplication' is defined, we use its value to check if its a test project
         if (analyzerResult.TryGetProperty("IsTestingPlatformApplication", out var value))
         {
             return bool.TryParse(value, out var isTestProject) && isTestProject;
         }
 
-        // if 'IsTestProject' is defined, we assume it is a test project, unless said otherwise
+        // if 'IsTestProject' is defined, we assume it is a test project, we use its value to check if its a test project
         if (analyzerResult.TryGetProperty("IsTestProject", out value))
         {
             return bool.TryParse(value, out var isTestProject) && isTestProject;
