@@ -18,10 +18,7 @@ const replaceVersionNumber = (path, oldString, newString) => {
     fs.writeFileSync(path, updatedFileContent, { encoding: 'UTF-8' });
 };
 
-const packages = [
-    { name: 'stryker', path: './src/Stryker.Core', csproj: './src/Stryker.Core/Stryker.Core/Stryker.Core.csproj' },
-    { name: 'dotnet-stryker', path: './src/Stryker.CLI', csproj: './src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj' }
-];
+const sharedVersionPropsFile = './src/Directory.Build.props';
 
 const oldVersionPrefix = packagejson.versionPrefix;
 const oldVersionSuffix = packagejson.versionSuffix;
@@ -52,7 +49,7 @@ const bump = promisify(conventionalRecommendedBump);
     let versionPrefix = newVersionNumber;
     let versionSuffix = '';
 
-    if (newVersionNumber.indexOf('-')) {
+    if (newVersionNumber.indexOf('-') >= 0) {
         versionPrefix = newVersionNumber.split('-')[0];
         versionSuffix = newVersionNumber.split('-')[1] ?? '';
     }
@@ -62,11 +59,9 @@ const bump = promisify(conventionalRecommendedBump);
     replaceVersionNumber('./package.json', `"versionPrefix": "${oldVersionPrefix}",`, `"versionPrefix": "${versionPrefix}",`);
     replaceVersionNumber('./package.json', `"versionSuffix": "${oldVersionSuffix}",`, `"versionSuffix": "${versionSuffix}",`);
 
-    packages.forEach(pckg => {
-        console.log(`Updating version numbers in ${pckg.csproj}`);
-        replaceVersionNumber(pckg.csproj, `<VersionPrefix>${oldVersionPrefix}</VersionPrefix>`, `<VersionPrefix>${versionPrefix}</VersionPrefix>`);
-        replaceVersionNumber(pckg.csproj, `<VersionSuffix>${oldVersionSuffix}</VersionSuffix>`, `<VersionSuffix>${versionSuffix}</VersionSuffix>`);
-    });
+    console.log(`Updating version numbers in ${sharedVersionPropsFile}`);
+    replaceVersionNumber(sharedVersionPropsFile, `<VersionPrefix>${oldVersionPrefix}</VersionPrefix>`, `<VersionPrefix>${versionPrefix}</VersionPrefix>`);
+    replaceVersionNumber(sharedVersionPropsFile, `<VersionSuffix>${oldVersionSuffix}</VersionSuffix>`, `<VersionSuffix>${versionSuffix}</VersionSuffix>`);
 
     let releaseNotes = '';
     if (!versionSuffix) {

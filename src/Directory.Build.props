@@ -9,6 +9,8 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <ImplicitUsings>disable</ImplicitUsings>
+    <VersionPrefix>4.14.2</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
     <RestoreLockedMode Condition="'$(RestoreLockedMode)' == 'true'">true</RestoreLockedMode>
   </PropertyGroup>
 
