@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSharp.Compiler.Service" Version="43.12.203" />
+    <PackageReference Include="FSharp.Compiler.Service" Version="43.12.204" />
   </ItemGroup>
 
 </Project>

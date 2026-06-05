@@ -112,7 +112,7 @@ internal sealed class AssemblyTestServer : IDisposable
         await discoverTestsResponse.WaitCompletionAsync().ConfigureAwait(false);
 
         return discoveredResults
-            .Where(x => x.Node.ExecutionState is "discovered")
+            .Where(x => x.Node.ExecutionState is TestNodeStates.Discovered)
             .Select(x => x.Node)
             .ToList();
     }
