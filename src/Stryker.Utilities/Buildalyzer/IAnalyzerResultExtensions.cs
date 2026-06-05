@@ -160,7 +160,7 @@ public static class IAnalyzerResultExtensions
         throw new InputException(message);
     }
 
-    public static bool TargetsClassicFramework(this IAnalyzerResult analyzerResult) => analyzerResult.GetNuGetFramework()?.IsDesktop() == true;
+    public static bool TargetsDesktop(this IAnalyzerResult analyzerResult) => analyzerResult.GetNuGetFramework()?.IsDesktop() == true;
 
     public static Language GetLanguage(this IAnalyzerResult analyzerResult) =>
         analyzerResult.GetPropertyOrDefault("Language") switch

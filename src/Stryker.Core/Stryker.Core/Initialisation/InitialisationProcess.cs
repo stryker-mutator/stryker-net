@@ -74,7 +74,7 @@ public class InitialisationProcess : IInitialisationProcess
         // we build the whole solution if we have a solution file path, even in project mode
         if (!string.IsNullOrEmpty(solutionFilePath))
         {
-            var framework = projects.Any(p => p.IsFullFramework);
+            var framework = projects.Any(p => p.AnalyzerResult.TargetsDesktop());
             // Build the complete solution
             _logger.LogInformation("Building solution {SolutionPathName}.", FileSystem.Path.GetRelativePath(options.WorkingDirectory, solutionFilePath));
 
@@ -96,7 +96,7 @@ public class InitialisationProcess : IInitialisationProcess
                     testProjects.Count);
 
                 _initialBuildProcess.InitialBuild(
-                    testProjects[i].TargetsClassicFramework(),
+                    testProjects[i].TargetsDesktop(),
                     testProjects[i].ProjectFilePath,
                     options.SolutionPath,
                     testProjects[i].GetProperty("Configuration"),
