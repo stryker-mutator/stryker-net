@@ -19,6 +19,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 {
     private readonly AutoResetEvent _runnerAvailableHandler = new(false);
     private readonly ConcurrentBag<SingleMicrosoftTestPlatformRunner> _availableRunners = new();
+    private static readonly List<SingleMicrosoftTestPlatformRunner> _allRunners = new();
     private bool _disposed;
     private readonly ILogger _logger;
     private readonly int _countOfRunners;
@@ -64,6 +65,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
                 _logger,
                 _options);
             _availableRunners.Add(runner);
+            _allRunners.Add(runner);
             _runnerAvailableHandler.Set();
         });
     }
@@ -101,7 +103,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         _logger.LogInformation("Starting coverage capture for MTP runner");
 
         // Enable coverage mode on all runners
-        foreach (var runner in _availableRunners)
+        foreach (var runner in _allRunners)
         {
             runner.SetCoverageMode(true);
         }
@@ -223,7 +225,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
         _disposed = true;
 
-        foreach (var runner in _availableRunners)
+        foreach (var runner in _allRunners)
         {
             runner.Dispose();
         }
