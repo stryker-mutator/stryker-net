@@ -24,7 +24,8 @@ public class DiskBaselineProviderTests : TestBase
         var fileSystemMock = new MockFileSystem();
         var options = new StrykerOptions()
         {
-            ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder"
+            ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder",
+            BaselineOutputPath = "StrykerOutput"
         };
         var sut = new DiskBaselineProvider(options, fileSystemMock);
 
@@ -39,11 +40,70 @@ public class DiskBaselineProviderTests : TestBase
     }
 
     [TestMethod]
+    public async Task ShouldWriteToConfiguredBaselineOutputPathAsync()
+    {
+        var fileSystemMock = new MockFileSystem();
+        var options = new StrykerOptions()
+        {
+            ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder",
+            BaselineOutputPath = "custom-baseline"
+        };
+        var sut = new DiskBaselineProvider(options, fileSystemMock);
+
+        await sut.Save(JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>()), "baseline/version");
+
+        var path = FilePathUtils.NormalizePathSeparators(@"C:/Users/JohnDoe/Project/TestFolder/custom-baseline/baseline/version/stryker-report.json");
+
+        var file = fileSystemMock.GetFile(path);
+        file.ShouldNotBeNull();
+    }
+
+    [TestMethod]
+    public async Task ShouldWriteToAbsoluteBaselineOutputPathAsync()
+    {
+        var fileSystemMock = new MockFileSystem();
+        var options = new StrykerOptions()
+        {
+            ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder",
+            BaselineOutputPath = @"D:/shared/baselines"
+        };
+        var sut = new DiskBaselineProvider(options, fileSystemMock);
+
+        await sut.Save(JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>()), "baseline/version");
+
+        var path = FilePathUtils.NormalizePathSeparators(@"D:/shared/baselines/baseline/version/stryker-report.json");
+
+        var file = fileSystemMock.GetFile(path);
+        file.ShouldNotBeNull();
+    }
+
+    [TestMethod]
+    public async Task ShouldLoadReportFromConfiguredBaselineOutputPathAsync()
+    {
+        var fileSystemMock = new MockFileSystem();
+        var options = new StrykerOptions()
+        {
+            ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder",
+            BaselineOutputPath = "custom-baseline"
+        };
+        var report = JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<ITestProjectsInfo>());
+
+        fileSystemMock.AddFile("C:/Users/JohnDoe/Project/TestFolder/custom-baseline/baseline/version/stryker-report.json", report.ToJson());
+
+        var target = new DiskBaselineProvider(options, fileSystemMock);
+
+        var result = await target.Load("baseline/version");
+
+        result.ShouldNotBeNull();
+        result.ToJson().ShouldBe(report.ToJson());
+    }
+
+    [TestMethod]
     public async Task ShouldHandleFileNotFoundExceptionOnLoadAsync()
     {
         // Arrange
         var fileSystemMock = new MockFileSystem();
-        var options = new StrykerOptions { ProjectPath = "C:/Dev" };
+        var options = new StrykerOptions { ProjectPath = "C:/Dev", BaselineOutputPath = "StrykerOutput" };
         var sut = new DiskBaselineProvider(options, fileSystemMock);
 
         // Act
@@ -59,7 +119,8 @@ public class DiskBaselineProviderTests : TestBase
         var fileSystemMock = new MockFileSystem();
         var options = new StrykerOptions()
         {
-            ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder"
+            ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder",
+            BaselineOutputPath = "StrykerOutput"
         };
         var report = JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<ITestProjectsInfo>());
 
