@@ -135,7 +135,9 @@ public class StrykerRunner : IStrykerRunner
 #endif
         finally
         {
-            // log duration
+            // Dispose runners to kill all spawned test processes, even on cancellation or error
+            _projectOrchestrator.Dispose();
+
             stopwatch.Stop();
             _logger.LogInformation("Time Elapsed {duration}", stopwatch.Elapsed);
         }
