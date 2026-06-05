@@ -86,6 +86,10 @@ const bump = promisify(conventionalRecommendedBump);
     replaceVersionNumber('./azure-pipelines.yml', `VersionBuildNumber: $[counter('${oldVersion}', 1)]`, `VersionBuildNumber: $[counter('${versionPrefix}', 1)]`);
     replaceVersionNumber('./azure-pipelines.yml', `PackageVersion: '${oldVersion}'`, `PackageVersion: '${versionPrefix}'`);
 
+    console.log(`Creating commit`);
+    exec('git add .');
+    exec(`git commit ${commitMessageLines.map(entry => `-m "${entry}"`).join(' ')}`);
+
     if (!versionSuffix) {
         console.log('Tagging commit');
         const tmpTagFile = '.release-notes.md';
@@ -94,15 +98,10 @@ const bump = promisify(conventionalRecommendedBump);
         fs.unlinkSync(tmpTagFile);
     }
 
-    console.log(`Creating commit`);
-    exec('git add .');
-    exec(`git commit ${commitMessageLines.map(entry => `-m "${entry}"`).join(' ')}`);
-
-    console.log(`Pushing commit ${versionSuffix?'':' and tags'}`);
+    console.log(`Pushing commit ${versionSuffix?'':' and tag'}`);
     exec('git push --follow-tags');
     if (!versionSuffix) {
         try {
-            const execSync = require('node:child_process').execSync;
             execSync(`gh release create dotnet-stryker@${newVersionNumber} --title "dotnet-stryker@${newVersionNumber}" --notes-from-tag`);
             console.log(`Created GitHub release for dotnet-stryker@${newVersionNumber}`);
         } catch (e) {
