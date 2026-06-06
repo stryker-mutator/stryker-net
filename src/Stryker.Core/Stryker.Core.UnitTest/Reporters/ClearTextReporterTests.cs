@@ -9,6 +9,7 @@ using Spectre.Console.Testing;
 using Stryker.Abstractions;
 using Stryker.Configuration.Options;
 using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
@@ -25,9 +26,9 @@ public class ClearTextReporterTests : TestBase
         var console = new TestConsole().EmitAnsiSequences().Width(160);
         var target = new ClearTextReporter(new StrykerOptions(), console);
 
-        var rootFolder = new CsharpFolderComposite();
+        var rootFolder = new FolderComposite();
 
-        var folder = new CsharpFolderComposite()
+        var folder = new FolderComposite()
         {
             RelativePath = "FolderA",
             FullPath = "C://Project/FolderA",
@@ -73,9 +74,9 @@ All mutants have been tested, and your mutation score has been calculated
         var console = new TestConsole().EmitAnsiSequences().Width(160);
         var target = new ClearTextReporter(new StrykerOptions(), console);
 
-        var rootFolder = new CsharpFolderComposite();
+        var rootFolder = new FolderComposite();
 
-        var folder = new CsharpFolderComposite()
+        var folder = new FolderComposite()
         {
             RelativePath = "FolderA",
             FullPath = "C://Project/FolderA",
@@ -126,9 +127,9 @@ All mutants have been tested, and your mutation score has been calculated
         var console = new TestConsole().EmitAnsiSequences().Width(160);
         var target = new ClearTextReporter(new StrykerOptions(), console);
 
-        var rootFolder = new CsharpFolderComposite();
+        var rootFolder = new FolderComposite();
 
-        var folder = new CsharpFolderComposite()
+        var folder = new FolderComposite()
         {
             RelativePath = "FolderA",
             FullPath = "C://Project/FolderA",
@@ -180,7 +181,7 @@ All mutants have been tested, and your mutation score has been calculated
         var console = new TestConsole().EmitAnsiSequences().Width(160);
         var target = new ClearTextReporter(options, console);
 
-        var folder = new CsharpFolderComposite()
+        var folder = new FolderComposite()
         {
             RelativePath = "RootFolder",
             FullPath = "C://RootFolder",
@@ -222,7 +223,7 @@ All mutants have been tested, and your mutation score has been calculated
         var console = new TestConsole().EmitAnsiSequences().Width(160);
         var target = new ClearTextReporter(options, console);
 
-        var folder = new CsharpFolderComposite()
+        var folder = new FolderComposite()
         {
             RelativePath = "RootFolder",
             FullPath = "C://RootFolder",
@@ -263,7 +264,7 @@ All mutants have been tested, and your mutation score has been calculated
         var console = new TestConsole().EmitAnsiSequences().Width(160);
         var target = new ClearTextReporter(new StrykerOptions(), console);
 
-        var folder = new CsharpFolderComposite()
+        var folder = new FolderComposite()
         {
             RelativePath = "RootFolder",
             FullPath = "C://RootFolder",
