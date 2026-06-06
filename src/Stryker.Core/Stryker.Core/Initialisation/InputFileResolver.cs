@@ -503,7 +503,7 @@ public class InputFileResolver(
                 }
                 // we try to find a target with the same target framework or one of the same kind (full or core
                 var candidateVariant = candidateProjectVariants.FirstOrDefault( v=> v.TargetFramework == variant.TargetFramework) ??
-                                       candidateProjectVariants.FirstOrDefault( v=> v.TargetsFullFramework() == variant.TargetsFullFramework());
+                                       candidateProjectVariants.FirstOrDefault( v=> v.TargetsDesktop() == variant.TargetsDesktop());
                 if (candidateVariant == null)
                 {
                     continue;

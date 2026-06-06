@@ -10,6 +10,7 @@ using Moq;
 using Stryker.Configuration.Options;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -34,7 +35,7 @@ public class CSharpMutationTestProcessTests : TestBase
     [TestMethod]
     public void MutateShouldWriteToDisk_IfCompilationIsSuccessful()
     {
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf
         {
             SourceCode = SourceFile,

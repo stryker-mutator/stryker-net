@@ -109,7 +109,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
         // assert we see the content file
-        var scan = ((ProjectComponent<SyntaxTree>)result.First().Input.SourceProjectInfo.ProjectContents).CompilationSyntaxTrees;
+        var scan = ((ProjectComponent)result.First().Input.SourceProjectInfo.ProjectContents).CompilationSyntaxTrees;
         scan.Count(f => f?.FilePath == contentFile).ShouldBe(1);
     }
 

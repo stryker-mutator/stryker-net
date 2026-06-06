@@ -59,7 +59,7 @@ internal class MutableProjectTree(ProjectSimulatedBuildHandler project, ILogger 
 
         var mutableProjectTargets = Targets.Where(t => t.IsValidTarget);
         // keep the first non netframework target otherwise pick the first one when running on Windows OS
-        targetToKeep = mutableProjectTargets.FirstOrDefault( t => !t.ProjectTarget.TargetsFullFramework()) ??
+        targetToKeep = mutableProjectTargets.FirstOrDefault( t => !t.ProjectTarget.TargetsDesktop()) ??
                        mutableProjectTargets.FirstOrDefault(_ => OperatingSystem.IsWindows());
         Targets.Clear();
         if (targetToKeep == null)

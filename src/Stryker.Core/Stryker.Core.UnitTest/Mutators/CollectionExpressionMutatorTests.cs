@@ -17,7 +17,9 @@ using Stryker.Configuration.Options;
 using Stryker.Core.Compiling;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
+using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
+using Stryker.Core.ProjectComponents.SourceProjects;
 
 namespace Stryker.Core.UnitTest.Mutators;
 
@@ -67,397 +69,397 @@ public class CollectionExpressionMutatorTests : TestBase
 
     [TestMethod]
     [CollectionExpressionTest("Should mutate collection expression with spread elements",
-                                 """
-                                 using System;
+        """
+        using System;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     public void M() {
-                                         int[] abc = [ 1, 5, 7 ];
-                                         int[] bcd = [ 1, ..abc, 3 ];
-                                     }
-                                 }
-                                 """, 2)]
+        class ClassName {
+            public void M() {
+                int[] abc = [ 1, 5, 7 ];
+                int[] bcd = [ 1, ..abc, 3 ];
+            }
+        }
+        """, 2)]
     [CollectionExpressionTest("Should mutate collection expression with explicit cast",
-                                 """
-                                 using System;
+        """
+        using System;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     public void M() {
-                                         int[] abc = [ 1, 5, 7 ];
-                                         var bcd = (int[])[ 1, ..abc, 3 ];
-                                     }
-                                 }
-                                 """, 2)]
+        class ClassName {
+            public void M() {
+                int[] abc = [ 1, 5, 7 ];
+                var bcd = (int[])[ 1, ..abc, 3 ];
+            }
+        }
+        """, 2)]
     [CollectionExpressionTest("Should mutate nested collection expression",
-                                 """
-                                 using System;
+        """
+        using System;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     public void M() {
-                                         int[][] abc = [ [ 1, 5 ], [ 7 ] ];
-                                     }
-                                 }
-                                 """, 3)]
+        class ClassName {
+            public void M() {
+                int[][] abc = [ [ 1, 5 ], [ 7 ] ];
+            }
+        }
+        """, 3)]
     [CollectionExpressionTest("Should mutate collection expression with inner array initialization",
-                                 """
-                                 using System;
+        """
+        using System;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     public void M() {
-                                         int[][] abc = [ [ 1, 5 ], new [] { 7 } ];
-                                     }
-                                 }
-                                 """, 2)]
+        class ClassName {
+            public void M() {
+                int[][] abc = [ [ 1, 5 ], new [] { 7 } ];
+            }
+        }
+        """, 2)]
     [CollectionExpressionTest("Should mutate collection expression with inner explicit spread collection expression",
-                                 """
-                                 using System;
+        """
+        using System;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     public void M() {
-                                         int[] abc = [ ..(Span<int>)[ 1, 5 ], ..(Span<int>)[ 7 ] ];
-                                     }
-                                 }
-                                 """, 3)]
+        class ClassName {
+            public void M() {
+                int[] abc = [ ..(Span<int>)[ 1, 5 ], ..(Span<int>)[ 7 ] ];
+            }
+        }
+        """, 3)]
     [CollectionExpressionTest("Should mutate empty collection expression",
-                                 """
-                                 using System;
+        """
+        using System;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     public void M() {
-                                         int[] abc = [];
-                                     }
-                                 }
-                                 """, 1)]
+        class ClassName {
+            public void M() {
+                int[] abc = [];
+            }
+        }
+        """, 1)]
     [CollectionExpressionTest("Should mutated collection expression used as a generic parameter",
-                                 """
-                                 using System;
-                                 using System.Collections.Generic;
+        """
+        using System;
+        using System.Collections.Generic;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     public IEnumerable<int> M() => Iter([ 1 ]);
+        class ClassName {
+            public IEnumerable<int> M() => Iter([ 1 ]);
 
-                                     public IEnumerable<T> Iter<T>(IList<T> list) {
-                                         foreach (var l in list) {
-                                             yield return l;
-                                         }
-                                     }
-                                 }
-                                 """, 1)]
+            public IEnumerable<T> Iter<T>(IList<T> list) {
+                foreach (var l in list) {
+                    yield return l;
+                }
+            }
+        }
+        """, 1)]
     [CollectionExpressionTest("Empty collection expression mutation should not be ambiguous",
-                                 """
-                                 using System;
-                                 using System.Collections.Generic;
+        """
+        using System;
+        using System.Collections.Generic;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     public IEnumerable<int> M() => Iter([ 1 ]);
+        class ClassName {
+            public IEnumerable<int> M() => Iter([ 1 ]);
 
-                                     public IEnumerable<T> Iter<T>(IList<T> list) {
-                                         foreach (var l in list) {
-                                             yield return l;
-                                         }
-                                     }
+            public IEnumerable<T> Iter<T>(IList<T> list) {
+                foreach (var l in list) {
+                    yield return l;
+                }
+            }
 
-                                     public IEnumerable<T> Iter<T>(IReadOnlyCollection<T> list) {
-                                         foreach (var l in list) {
-                                             yield return l;
-                                         }
-                                     }
+            public IEnumerable<T> Iter<T>(IReadOnlyCollection<T> list) {
+                foreach (var l in list) {
+                    yield return l;
+                }
+            }
 
-                                     public IEnumerable<T> Iter<T>(T[] list) {
-                                         foreach (var l in list) {
-                                             yield return l;
-                                         }
-                                     }
+            public IEnumerable<T> Iter<T>(T[] list) {
+                foreach (var l in list) {
+                    yield return l;
+                }
+            }
 
-                                     public IEnumerable<T> Iter<T>(ReadOnlyMemory<T> list) {
-                                         for (var i = 0; i < list.Length; i++) {
-                                             yield return list.Span[i];
-                                         }
-                                     }
-                                 }
-                                 """, 1)]
+            public IEnumerable<T> Iter<T>(ReadOnlyMemory<T> list) {
+                for (var i = 0; i < list.Length; i++) {
+                    yield return list.Span[i];
+                }
+            }
+        }
+        """, 1)]
     [CollectionExpressionTest("Filled collection expression mutation should not be ambiguous",
-                                 """
-                                 using System;
-                                 using System.Collections.Generic;
-                                 using System.Collections.Immutable;
+        """
+        using System;
+        using System.Collections.Generic;
+        using System.Collections.Immutable;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     public void M() {
-                                         ImmutableArray<int>? a = [];
-                                         var b = a ?? [];
-                                     }
-                                 }
-                                 """, 2)]
+        class ClassName {
+            public void M() {
+                ImmutableArray<int>? a = [];
+                var b = a ?? [];
+            }
+        }
+        """, 2)]
     [CollectionExpressionTest("Empty collection expression mutation should not be ambiguous again",
-                                 """
-                                 using System;
-                                 using System.Collections.Generic;
-                                 using System.Collections.Immutable;
+        """
+        using System;
+        using System.Collections.Generic;
+        using System.Collections.Immutable;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     public void M() {
-                                         List<int>? a = [];
-                                         var b = a ?? [];
-                                     }
-                                 }
-                                 """, 2)]
+        class ClassName {
+            public void M() {
+                List<int>? a = [];
+                var b = a ?? [];
+            }
+        }
+        """, 2)]
     [CollectionExpressionTest("Should mutate collection expression with varying sources",
-                                 """
-                                 using System;
-                                 using System.Collections.Generic;
-                                 using System.Collections.Immutable;
+        """
+        using System;
+        using System.Collections.Generic;
+        using System.Collections.Immutable;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     public string[] M() {
-                                         string[] vowels = [ "a", "e", "i", "o", "u" ];
-                                         string[] consonants = [
-                                             "b", "c", "d", "f", "g", "h", "j", "k", "l", "m",
-                                             "n", "p", "q", "r", "s", "t", "v", "w", "x", "z"
-                                         ];
-                                         string[] alphabet = [..vowels, ..consonants, "y" ];
-                                         return alphabet;
-                                     }
-                                 }
-                                 """, 3)]
+        class ClassName {
+            public string[] M() {
+                string[] vowels = [ "a", "e", "i", "o", "u" ];
+                string[] consonants = [
+                    "b", "c", "d", "f", "g", "h", "j", "k", "l", "m",
+                    "n", "p", "q", "r", "s", "t", "v", "w", "x", "z"
+                ];
+                string[] alphabet = [..vowels, ..consonants, "y" ];
+                return alphabet;
+            }
+        }
+        """, 3)]
     [CollectionExpressionTest("Should mutate collection expression when nullable",
-                                 """
-                                 using System;
-                                 using System.Collections;
-                                 using System.Collections.Generic;
-                                 using System.Collections.Immutable;
-                                 using System.Linq;
-                                 using System.IO;
+        """
+        using System;
+        using System.Collections;
+        using System.Collections.Generic;
+        using System.Collections.Immutable;
+        using System.Linq;
+        using System.IO;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     public void GetLocalDateTime(Stream s) {
-                                         AddAll(Deserialize(s, Enumerable.Empty<string>()) ?? []);
-                                     }
-                                     public IEnumerable<int>? Deserialize(Stream s, IEnumerable<string> s2) {
-                                         return [];
-                                     }
-                                     public void AddAll(IEnumerable<int> list) { }
-                                 }
-                                 """, 2)]
+        class ClassName {
+            public void GetLocalDateTime(Stream s) {
+                AddAll(Deserialize(s, Enumerable.Empty<string>()) ?? []);
+            }
+            public IEnumerable<int>? Deserialize(Stream s, IEnumerable<string> s2) {
+                return [];
+            }
+            public void AddAll(IEnumerable<int> list) { }
+        }
+        """, 2)]
     [CollectionExpressionTest("Should mutate heavily nested collection expression",
-                                 """
-                                 using System;
-                                 using System.Collections;
-                                 using System.Collections.Generic;
-                                 using System.Collections.Immutable;
-                                 using System.Linq;
-                                 using System.IO;
+        """
+        using System;
+        using System.Collections;
+        using System.Collections.Generic;
+        using System.Collections.Immutable;
+        using System.Linq;
+        using System.IO;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     public static int[][][][][] Deep => [[[[[]]]]];
-                                 }
-                                 """, 5)]
+        class ClassName {
+            public static int[][][][][] Deep => [[[[[]]]]];
+        }
+        """, 5)]
     [CollectionExpressionTest("Should mutate empty collection expressions",
-                                 """
-                                 using System;
-                                 using System.Collections;
-                                 using System.Collections.Generic;
-                                 using System.Collections.Immutable;
-                                 using System.Linq;
-                                 using System.IO;
+        """
+        using System;
+        using System.Collections;
+        using System.Collections.Generic;
+        using System.Collections.Immutable;
+        using System.Linq;
+        using System.IO;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions#empty-collection-literal
-                                     public static void Method() {
-                                        int[] x = [];
-                                        IEnumerable<int> y = [];
-                                        List<int> z = [];
-                                     }
-                                 }
-                                 """, 3)]
+        class ClassName {
+            // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions#empty-collection-literal
+            public static void Method() {
+               int[] x = [];
+               IEnumerable<int> y = [];
+               List<int> z = [];
+            }
+        }
+        """, 3)]
     [CollectionExpressionTest("Should support ref safety",
-                                 """
-                                 using System;
-                                 using System.Collections;
-                                 using System.Collections.Generic;
-                                 using System.Collections.Immutable;
-                                 using System.Linq;
-                                 using System.IO;
+        """
+        using System;
+        using System.Collections;
+        using System.Collections.Generic;
+        using System.Collections.Immutable;
+        using System.Linq;
+        using System.IO;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions#ref-safety
-                                     static ReadOnlySpan<int> AsSpanConstants()
-                                     {
-                                         return [1, 2, 3]; // ok: span refers to assembly data section
-                                     }
+        class ClassName {
+            // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions#ref-safety
+            static ReadOnlySpan<int> AsSpanConstants()
+            {
+                return [1, 2, 3]; // ok: span refers to assembly data section
+            }
 
-                                     static ReadOnlySpan<T> AsSpan3<T>(T x, T y, T z)
-                                     {
-                                         return (T[])[x, y, z]; // ok: span refers to T[] on heap
-                                     }
-                                 }
-                                 """, 2)]
+            static ReadOnlySpan<T> AsSpan3<T>(T x, T y, T z)
+            {
+                return (T[])[x, y, z]; // ok: span refers to T[] on heap
+            }
+        }
+        """, 2)]
     [CollectionExpressionTest("Should support type inference",
-                                 """
-                                 using System;
-                                 using System.Collections;
-                                 using System.Collections.Generic;
-                                 using System.Collections.Immutable;
-                                 using System.Linq;
-                                 using System.IO;
+        """
+        using System;
+        using System.Collections;
+        using System.Collections.Generic;
+        using System.Collections.Immutable;
+        using System.Linq;
+        using System.IO;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions#type-inference
-                                     public static void Method() {
-                                        var a = AsArray([1, 2, 3]);          // AsArray<int>(int[])
-                                        var b = AsListOfArray([[4, 5], []]); // AsListOfArray<int>(List<int[]>)
+        class ClassName {
+            // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions#type-inference
+            public static void Method() {
+               var a = AsArray([1, 2, 3]);          // AsArray<int>(int[])
+               var b = AsListOfArray([[4, 5], []]); // AsListOfArray<int>(List<int[]>)
 
-                                        static T[] AsArray<T>(T[] arg) => arg;
-                                        static List<T[]> AsListOfArray<T>(List<T[]> arg) => arg;
-                                     }
-                                 }
-                                 """, 4)]
+               static T[] AsArray<T>(T[] arg) => arg;
+               static List<T[]> AsListOfArray<T>(List<T[]> arg) => arg;
+            }
+        }
+        """, 4)]
     [CollectionExpressionTest("Should support overload resolution",
-                                 """
-                                 using System;
-                                 using System.Collections;
-                                 using System.Collections.Generic;
-                                 using System.Collections.Immutable;
-                                 using System.Linq;
-                                 using System.IO;
+        """
+        using System;
+        using System.Collections;
+        using System.Collections.Generic;
+        using System.Collections.Immutable;
+        using System.Linq;
+        using System.IO;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     static void Generic<T>(Span<T> value) { }
-                                     static void Generic<T>(T[] value) { }
+        class ClassName {
+            static void Generic<T>(Span<T> value) { }
+            static void Generic<T>(T[] value) { }
 
-                                     static void SpanDerived(Span<string> value) { }
-                                     static void SpanDerived(object[] value) { }
+            static void SpanDerived(Span<string> value) { }
+            static void SpanDerived(object[] value) { }
 
-                                     static void ArrayDerived(Span<object> value) { }
-                                     static void ArrayDerived(string[] value) { }
+            static void ArrayDerived(Span<object> value) { }
+            static void ArrayDerived(string[] value) { }
 
-                                     // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions#overload-resolution
-                                     public static void Method() {
-                                         // Array initializers
-                                         Generic(new[] { "" });      // string[]
-                                         ArrayDerived(new[] { "" }); // string[]
+            // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions#overload-resolution
+            public static void Method() {
+                // Array initializers
+                Generic(new[] { "" });      // string[]
+                ArrayDerived(new[] { "" }); // string[]
 
-                                         // Collection expressions
-                                         Generic([""]);              // Span<string>
-                                         SpanDerived([""]);          // Span<string>
-                                     }
-                                 }
-                                 """, 2)]
+                // Collection expressions
+                Generic([""]);              // Span<string>
+                SpanDerived([""]);          // Span<string>
+            }
+        }
+        """, 2)]
     [CollectionExpressionTest("Should not result in syntax ambiguities",
-                                 """
-                                 using System;
-                                 using System.Collections;
-                                 using System.Collections.Generic;
-                                 using System.Collections.Immutable;
-                                 using System.Linq;
-                                 using System.IO;
+        """
+        using System;
+        using System.Collections;
+        using System.Collections.Generic;
+        using System.Collections.Immutable;
+        using System.Linq;
+        using System.IO;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     static void Generic<T>(Span<T> value) { }
-                                     static void Generic<T>(T[] value) { }
+        class ClassName {
+            static void Generic<T>(Span<T> value) { }
+            static void Generic<T>(T[] value) { }
 
-                                     static void SpanDerived(Span<string> value) { }
-                                     static void SpanDerived(object[] value) { }
+            static void SpanDerived(Span<string> value) { }
+            static void SpanDerived(object[] value) { }
 
-                                     static void ArrayDerived(Span<object> value) { }
-                                     static void ArrayDerived(string[] value) { }
+            static void ArrayDerived(Span<object> value) { }
+            static void ArrayDerived(string[] value) { }
 
-                                     // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions#syntax-ambiguities
-                                     public static void Method() {
-                                         Range range1 = default;
-                                         Range range2 = default;
-                                         int e = 3;
-                                         Range[] ranges = [range1, (..e), range2];
-                                     }
-                                 }
-                                 """, 1)]
+            // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions#syntax-ambiguities
+            public static void Method() {
+                Range range1 = default;
+                Range range2 = default;
+                int e = 3;
+                Range[] ranges = [range1, (..e), range2];
+            }
+        }
+        """, 1)]
     [CollectionExpressionTest("Should support int to long implicit conversion",
-                                 """
-                                 using System;
-                                 using System.Collections;
-                                 using System.Collections.Generic;
-                                 using System.Collections.Immutable;
-                                 using System.Linq;
-                                 using System.IO;
+        """
+        using System;
+        using System.Collections;
+        using System.Collections.Generic;
+        using System.Collections.Immutable;
+        using System.Linq;
+        using System.IO;
 
-                                 namespace ExampleProject;
+        namespace ExampleProject;
 
-                                 class ClassName {
-                                     static void Generic<T>(Span<T> value) { }
-                                     static void Generic<T>(T[] value) { }
+        class ClassName {
+            static void Generic<T>(Span<T> value) { }
+            static void Generic<T>(T[] value) { }
 
-                                     static void SpanDerived(Span<string> value) { }
-                                     static void SpanDerived(object[] value) { }
+            static void SpanDerived(Span<string> value) { }
+            static void SpanDerived(object[] value) { }
 
-                                     static void ArrayDerived(Span<object> value) { }
-                                     static void ArrayDerived(string[] value) { }
+            static void ArrayDerived(Span<object> value) { }
+            static void ArrayDerived(string[] value) { }
 
-                                     // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions#resolved-questions
-                                     public static void Method() {
-                                         void DoWork(IEnumerable<long> values) { }
-                                         // Needs to produce `longs` not `ints` for this to work.
-                                         DoWork([1, 2, 3]);
-                                     }
-                                 }
-                                 """, 1)]
+            // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions#resolved-questions
+            public static void Method() {
+                void DoWork(IEnumerable<long> values) { }
+                // Needs to produce `longs` not `ints` for this to work.
+                DoWork([1, 2, 3]);
+            }
+        }
+        """, 1)]
     public void MutatedCollectionExpressionsShouldCompile(string inputText, int expectedMutants)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(inputText);
 
         var compilation = CSharpCompilation.Create("TestAssembly")
-                                           .WithOptions(new
-                                                            CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
-                                                             nullableContextOptions: NullableContextOptions.Enable))
-                                           .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly
-                                                             .Location))
-                                           .AddSyntaxTrees(syntaxTree);
+            .WithOptions(new
+                CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
+                    nullableContextOptions: NullableContextOptions.Enable))
+            .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly
+                .Location))
+            .AddSyntaxTrees(syntaxTree);
         var semanticModel = compilation.GetSemanticModel(syntaxTree);
 
         var injector = new CodeInjection();
         var orchestrator = new CsharpMutantOrchestrator(new MutantPlacer(injector),
-                                                        options: new StrykerOptions
-                                                        {
-                                                            MutationLevel    = MutationLevel.Complete,
-                                                            OptimizationMode = OptimizationModes.CoverageBasedTest,
-                                                            ExcludedMutations = Enum.GetValues<Mutator>()
-                                                               .Except([Mutator.CollectionExpression])
-                                                        });
+            options: new StrykerOptions
+            {
+                MutationLevel = MutationLevel.Complete,
+                OptimizationMode = OptimizationModes.CoverageBasedTest,
+                ExcludedMutations = Enum.GetValues<Mutator>()
+                    .Except([Mutator.CollectionExpression])
+            });
         syntaxTree = orchestrator.Mutate(syntaxTree, semanticModel);
         orchestrator.Mutants.Count(a => a.Mutation.Type == Mutator.CollectionExpression).ShouldBe(expectedMutants);
 
@@ -476,28 +478,28 @@ public class CollectionExpressionMutatorTests : TestBase
                 {
                     { "TargetDir", "" },
                     { "AssemblyName", "AssemblyName" },
-                    {
-                        "TargetFileName",
-                        "TargetFileName.dll"
-                    }
+                    { "TargetFileName", "TargetFileName.dll" }
                 },
                 references: references.ToArray()
-            )
-            .Object;
+            ).Object;
 
-        var target = new CsharpCompilingProcess(analyzerResult);
+        var input = new MutationTestInput()
+        {
+            SourceProjectInfo = new SourceProjectInfo(analyzerResult, null)
+        };
+
+        var target = new CsharpCompilingProcess(input, syntaxTrees:[
+            syntaxTree,
+            ..injector.MutantHelpers.Select(a => CSharpSyntaxTree.ParseText(a.Value, path: a.Key,
+                encoding: Encoding.UTF32))
+        ]);
 
         try
         {
             var result =
-                target.Compile([
-                                   syntaxTree,
-                                   ..injector.MutantHelpers.Select(a => CSharpSyntaxTree.ParseText(a.Value, path: a.Key,
-                                                                    encoding: Encoding.UTF32))
-                               ],
-                               Stream.Null, Stream.Null);
+                target.Compile(Stream.Null, Stream.Null);
             result.Success.ShouldBe(true);
-            result.RollbackedIds.ShouldBeEmpty();
+            result.RolledbackIds.ShouldBeEmpty();
         }
         catch (CompilationException)
         {

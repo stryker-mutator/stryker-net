@@ -34,17 +34,17 @@ public class CsharpMutationProcess : IMutationProcess
     public void Mutate(MutationTestInput input, IStrykerOptions options)
     {
         _options = options;
-        var projectInfo = input.SourceProjectInfo.ProjectContents;
+        var projectInfo = (ProjectComponent) input.SourceProjectInfo.ProjectContents;
         var orchestrator = new CsharpMutantOrchestrator(new MutantPlacer(input.SourceProjectInfo.CodeInjector), options: _options);
-        var compilingProcess = new CsharpCompilingProcess(input.SourceProjectInfo.AnalyzerResult, options: _options);
-        var semanticModels = compilingProcess.GetSemanticModels(projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree));
+        var compilingProcess = new CsharpCompilingProcess(input, options: _options);
 
+        var semanticModels = projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().ToDictionary(x => x, x => compilingProcess.GetSemanticModel(x.SyntaxTree));
         // Mutate source files
-        foreach (var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
+        foreach (var file in semanticModels.Keys)
         {
-            _logger.LogDebug("Mutating {FilePath}", file.FullPath);
+            _logger.LogDebug("Mutating {FilePath}", file.SyntaxTree.FilePath);
             // Mutate the syntax tree
-            var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree, semanticModels.First(x => x.SyntaxTree == file.SyntaxTree));
+            var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree, semanticModels[file]);
             // Add the mutated syntax tree for compilation
             file.MutatedSyntaxTree = mutatedSyntaxTree;
             if (_options.DiagMode)
@@ -54,6 +54,7 @@ public class CsharpMutationProcess : IMutationProcess
             }
             // Filter the mutants
             file.Mutants = orchestrator.GetLatestMutantBatch();
+            compilingProcess.ReplaceSyntaxTree(file.SyntaxTree, file.MutatedSyntaxTree);
         }
 
         _logger.LogDebug("{MutantsCount} mutants created", projectInfo.Mutants.Count());
@@ -64,11 +65,11 @@ public class CsharpMutationProcess : IMutationProcess
     private void CompileMutations(MutationTestInput input, CsharpCompilingProcess compilingProcess)
     {
         var info = input.SourceProjectInfo;
-        var projectInfo = (ProjectComponent<SyntaxTree>)info.ProjectContents;
+        var projectInfo = (ProjectComponent)info.ProjectContents;
         using var ms = new MemoryStream();
         using var msForSymbols = _options.DiagMode ? new MemoryStream() : null;
         // compile the mutated syntax trees
-        var compileResult = compilingProcess.Compile(projectInfo.CompilationSyntaxTrees, ms, msForSymbols);
+        var compileResult = compilingProcess.Compile(ms, msForSymbols);
 
         foreach (var testProject in info.TestProjectsInfo.AnalyzerResults)
         {
@@ -94,21 +95,23 @@ public class CsharpMutationProcess : IMutationProcess
             _logger.LogDebug("Injected the mutated assembly file into {InjectionPath}", injectionPath);
         }
 
-        // if a rollback took place, mark the rolled back mutants as status:BuildError
-        if (compileResult.RollbackedIds.Any())
+        if (!compileResult.RolledbackIds.Any())
         {
-            foreach (var mutant in projectInfo.Mutants
-                .Where(x => compileResult.RollbackedIds.Contains(x.Id)))
-            {
-                // Ignore compilation errors if the mutation is skipped anyways.
-                if (mutant.ResultStatus == MutantStatus.Ignored)
-                {
-                    continue;
-                }
+            return;
+        }
 
-                mutant.ResultStatus = MutantStatus.CompileError;
-                mutant.ResultStatusReason = "Mutant caused compile errors";
+        // if a rollback took place, mark the rolled back mutants as status:BuildError
+        foreach (var mutant in projectInfo.Mutants
+                     .Where(x => compileResult.RolledbackIds.Contains(x.Id)))
+        {
+            // Ignore compilation errors if the mutation is skipped anyway.
+            if (mutant.ResultStatus == MutantStatus.Ignored)
+            {
+                continue;
             }
+
+            mutant.ResultStatus = MutantStatus.CompileError;
+            mutant.ResultStatusReason = "Mutant caused compile errors";
         }
     }
 

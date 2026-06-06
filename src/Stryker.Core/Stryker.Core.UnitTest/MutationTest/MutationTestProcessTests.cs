@@ -17,6 +17,7 @@ using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -30,7 +31,7 @@ public class MutationTestProcessTests : TestBase
     private string FilesystemRoot { get; }
     private string SourceFile { get; }
     private MockFileSystem FileSystemMock { get; } = new MockFileSystem();
-    private CsharpFolderComposite Folder { get; } = new CsharpFolderComposite();
+    private FolderComposite Folder { get; } = new FolderComposite();
     private FullRunScenario TestScenario { get; } = new FullRunScenario();
 
     private MutationTestInput Input { get; }

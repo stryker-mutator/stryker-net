@@ -123,7 +123,7 @@ public class ProjectsTracker
                 return;
             }
 
-            var framework = results.Any(p => p.TargetsFullFramework());
+            var framework = results.Any(p => p.TargetsDesktop());
             // Build the complete solution
             _logger.LogInformation("Building solution {SolutionPathName}.",
                 _fileSystem.Path.GetRelativePath(_options.WorkingDirectory, SolutionFilePath));

@@ -10,6 +10,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Emit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions;
@@ -24,6 +25,17 @@ using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.UnitTest.Compiling;
+
+internal class CompilerWrapper(CSharpCompilation compilation) : ICompilationContent
+{
+    private CSharpCompilation _compilation = compilation;
+
+    public IEnumerable<SyntaxTree> SyntaxTrees => _compilation.SyntaxTrees;
+
+    public void ReplaceSyntaxTree(SyntaxTree original, SyntaxTree updated) => _compilation = _compilation.ReplaceSyntaxTree(original, updated);
+
+    public EmitResult Emit(Stream stream) => _compilation.Emit(stream);
+}
 
 [TestClass]
 public class CSharpRollbackProcessTests : TestBase
@@ -82,10 +94,10 @@ public class CSharpRollbackProcessTests : TestBase
 
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
+        target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
-
-        var rolledBackResult = fixedCompilation.Compilation.Emit(ms);
+        var rolledBackResult = compilerWrapper.Emit(ms);
 
         rolledBackResult.Success.ShouldBeTrue();
     }
@@ -152,12 +164,16 @@ public class CSharpRollbackProcessTests : TestBase
         ).Object;
 
         var rollbackProcess = new CSharpRollbackProcess();
+        var input = new MutationTestInput()
+        {
+            SourceProjectInfo = new SourceProjectInfo(analyzerResult, null)
+        };
 
-        var target = new CsharpCompilingProcess(analyzerResult, rollbackProcess, options);
+        var target = new CsharpCompilingProcess(input, rollbackProcess, options, syntaxTrees: helpers);
 
         using var ms = new MemoryStream();
-        var result = target.Compile(helpers, ms, null);
-        result.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
+        var result = target.Compile(ms, null);
+        result.RolledbackIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
     }
 
     [TestMethod]
@@ -232,12 +248,16 @@ public class CSharpRollbackProcessTests : TestBase
         ).Object;
 
         var rollbackProcess = new CSharpRollbackProcess();
+        var input = new MutationTestInput()
+        {
+            SourceProjectInfo = new SourceProjectInfo(analyzerResult, null)
+        };
 
-        var target = new CsharpCompilingProcess(analyzerResult, rollbackProcess, options);
+        var target = new CsharpCompilingProcess(input, rollbackProcess, options, helpers);
 
         using var ms = new MemoryStream();
 
-        Action test = () => target.Compile(helpers, ms, null);
+        Action test = () => target.Compile(ms, null);
         test.ShouldThrow<CompilationException>();
     }
 
@@ -309,12 +329,14 @@ public class CSharpRollbackProcessTests : TestBase
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        var compilerWrapper = new CompilerWrapper(compiler);
 
-        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+
+        var rollbackedResult = compilerWrapper.Emit(ms);
 
         rollbackedResult.Success.ShouldBeTrue();
-        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 6, 7 });
+        ids.ShouldBe(new Collection<int> { 6, 7 });
     }
 
     [TestMethod]
@@ -404,14 +426,15 @@ public class CSharpRollbackProcessTests : TestBase
 
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
-        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        var rollbackedResult = compilerWrapper.Emit(ms);
 
         rollbackedResult.Success.ShouldBeTrue();
         // validate that only mutation 8 and 7 were rollbacked
-        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 });
+        ids.ShouldBe(new Collection<int> { 8, 7 });
     }
 
     [TestMethod]
@@ -471,14 +494,15 @@ public class CSharpRollbackProcessTests : TestBase
 
         compileResult.Success.ShouldBeFalse();
         compileResult.Diagnostics.ShouldHaveSingleItem();
+        var compilerWrapper = new CompilerWrapper(compiler);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
-        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        var rollbackedResult = compilerWrapper.Emit(ms);
 
         rollbackedResult.Success.ShouldBeTrue();
         // validate that only the block mutation was rolled back
-        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
+        ids.ShouldBe(new Collection<int> { 1 });
     }
 
     [TestMethod]
@@ -570,19 +594,20 @@ public class CSharpRollbackProcessTests : TestBase
 
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
-        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        var result = compilerWrapper.Emit(ms);
 
-        rollbackedResult.Success.ShouldBeFalse();
-        rollbackedResult.Diagnostics.ShouldHaveSingleItem();
-        fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        result.Success.ShouldBeFalse();
+        result.Diagnostics.ShouldHaveSingleItem();
+        ids = target.RollbackMutationsInError(compilerWrapper, result.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
-        rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-        rollbackedResult.Success.ShouldBeTrue();
+        result = compilerWrapper.Emit(ms);
+        result.Success.ShouldBeTrue();
         // validate that all mutations are rolled back
-        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
+        ids.ShouldBe(new Collection<int> { 8, 7, 6 });
     }
 
     [TestMethod]
@@ -677,18 +702,19 @@ public class CSharpRollbackProcessTests : TestBase
 
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
-        var rollbackResult = fixedCompilation.Compilation.Emit(ms);
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        var rollbackResult = compilerWrapper.Emit(ms);
         rollbackResult.Success.ShouldBeFalse();
         // rollback a single assignment erasing mutation
-        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> {8});
+        ids.ShouldBe(new Collection<int> {8});
 
-        fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
-        rollbackResult = fixedCompilation.Compilation.Emit(ms);
+        ids = target.RollbackMutationsInError(compilerWrapper, rollbackResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        rollbackResult = compilerWrapper.Emit(ms);
         rollbackResult.Success.ShouldBeTrue();
         // validate that mutations 8 and 7 were rolled back
-        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 });
+        ids.ShouldBe(new Collection<int> { 8, 7 });
     }
 
     [TestMethod]
@@ -783,13 +809,14 @@ public class CSharpRollbackProcessTests : TestBase
 
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
-        var rollbackResult = fixedCompilation.Compilation.Emit(ms);
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        var rollbackResult = compilerWrapper.Emit(ms);
 
         rollbackResult.Success.ShouldBeTrue();
         // validate that mutations 8 and 7 were rolled back
-        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 });
+        ids.ShouldBe(new Collection<int> { 8, 7 });
     }
 
     [TestMethod]
@@ -884,13 +911,14 @@ public class CSharpRollbackProcessTests : TestBase
 
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
-        var rollbackResult = fixedCompilation.Compilation.Emit(ms);
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        var rollbackResult = compilerWrapper.Emit(ms);
 
         rollbackResult.Success.ShouldBeTrue();
         // validate that mutations 8 and 7 were rolled back
-        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 });
+        ids.ShouldBe(new Collection<int> { 8, 7 });
     }
 
     [TestMethod]
@@ -942,13 +970,14 @@ public class CSharpRollbackProcessTests : TestBase
             });
 
         var target = new CSharpRollbackProcess();
+        var compilerWrapper = new CompilerWrapper(compiler);
 
         using var ms = new MemoryStream();
-        var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
-        fixedCompilation.Compilation.Emit(ms).Success.ShouldBeTrue();
+        var ids = target.RollbackMutationsInError(compilerWrapper, compiler.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        compilerWrapper.Emit(ms).Success.ShouldBeTrue();
 
         // validate that only one of the compile errors marked the mutation as rolled back.
-        fixedCompilation.RollbackedIds.ShouldBe([1]);
+        ids.ShouldBe([1]);
     }
 
     [TestMethod]
@@ -1003,10 +1032,12 @@ public class CSharpRollbackProcessTests : TestBase
         var target = new CSharpRollbackProcess();
 
         using var ms = new MemoryStream();
+        var compilerWrapper = new CompilerWrapper(compiler);
+
         // first compilation will roll back the mutation
-        var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        var fixedCompilation = target.RollbackMutationsInError(compilerWrapper, compiler.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
         // next attempt cannot roll back anything, so it assumes this is not fixable
-        Should.Throw<CompilationException>(() => target.Start(fixedCompilation.Compilation, fixedCompilation.Compilation.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.LastChance, false));
+        Should.Throw<CompilationException>(() => target.RollbackMutationsInError(compilerWrapper, compilerWrapper.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.LastChance, false));
     }
 }

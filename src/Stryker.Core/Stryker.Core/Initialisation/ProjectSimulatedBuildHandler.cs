@@ -62,7 +62,7 @@ public class ProjectSimulatedBuildHandler
             throw new InvalidOperationException("Cannot force framework when no framework is specified in options.");
         }
 
-        if (withRestore && AnalyzerLastResults.Any(ar => ar.TargetsFullFramework()))
+        if (withRestore && AnalyzerLastResults.Any(ar => ar.TargetsDesktop()))
         {
             _projectsTracker.RestoreSolution(AnalyzerLastResults);
             withRestore= false;

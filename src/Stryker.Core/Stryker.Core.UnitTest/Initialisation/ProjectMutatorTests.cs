@@ -4,16 +4,15 @@ using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Reporting;
 using Stryker.Configuration.Options;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.TestRunner.Results;
@@ -72,7 +71,7 @@ namespace ExtraProject.XUnit
             projectReferences: Array.Empty<string>(),
             sourceFiles: Array.Empty<string>()).Object;
 
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf
         {
             FullPath = "c:\\TestClass.cs",

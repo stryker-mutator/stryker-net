@@ -20,7 +20,6 @@ using Stryker.Configuration.Options;
 using Stryker.Core.Initialisation;
 using Stryker.Utilities.Buildalyzer;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Solutions;
 using Stryker.Utilities;
@@ -462,7 +461,7 @@ using System.Reflection;
         var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
-        var mutatedFile = ((ProjectComponent<SyntaxTree>)result.ProjectContents).CompilationSyntaxTrees.First(s => s != null && s.FilePath.Contains("AssemblyInfo.cs"));
+        var mutatedFile = ((ProjectComponent)result.ProjectContents).CompilationSyntaxTrees.First(s => s != null && s.FilePath.Contains("AssemblyInfo.cs"));
 
         var node = ((CompilationUnitSyntax)mutatedFile.GetRoot()).AttributeLists
             .SelectMany(al => al.Attributes).FirstOrDefault(n => n.Name.Kind() == SyntaxKind.QualifiedName
@@ -518,7 +517,7 @@ using System.Reflection;
 
         var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
-        ((ProjectComponent<SyntaxTree>)result.ProjectContents).CompilationSyntaxTrees.FirstOrDefault(s => s != null && s.FilePath.Contains("AssemblyInfo.cs")).
+        ((ProjectComponent)result.ProjectContents).CompilationSyntaxTrees.FirstOrDefault(s => s != null && s.FilePath.Contains("AssemblyInfo.cs")).
              ShouldBeSemantically(CSharpSyntaxTree.ParseText(textContents));
     }
 
@@ -903,11 +902,11 @@ using System.Reflection;
 
         var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
-        ((CsharpFolderComposite)result.ProjectContents).Children.Count().ShouldBe(1);
+        ((FolderComposite)result.ProjectContents).Children.Count().ShouldBe(1);
 
-        var sub = (CsharpFolderComposite)((CsharpFolderComposite)result.ProjectContents).Children.First();
+        var sub = (FolderComposite)((FolderComposite)result.ProjectContents).Children.First();
         // here sub is the root folder of the project
-        sub = (CsharpFolderComposite)sub.Children.First();
+        sub = (FolderComposite)sub.Children.First();
         sub.Children.Count().ShouldBe(2);
     }
 

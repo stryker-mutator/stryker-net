@@ -147,14 +147,17 @@ public class StrykerRunner : IStrykerRunner
 
     private void AnalyzeCoverage(IStrykerOptions options)
     {
-        if (options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) || options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+        if (!options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
+            !options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
         {
-            _logger.LogInformation("Capture mutant coverage using '{OptimizationMode}' mode.", options.OptimizationMode);
+            return;
+        }
 
-            foreach (var project in _mutationTestProcesses)
-            {
-                project.GetCoverage();
-            }
+        _logger.LogInformation("Capture mutant coverage using '{OptimizationMode}' mode.", options.OptimizationMode);
+
+        foreach (var project in _mutationTestProcesses)
+        {
+            project.GetCoverage();
         }
     }
 
@@ -181,6 +184,6 @@ public class StrykerRunner : IStrykerRunner
             return rootComponent;
         }
 
-        return projectComponents.FirstOrDefault();
+        return projectComponents.First();
     }
 }

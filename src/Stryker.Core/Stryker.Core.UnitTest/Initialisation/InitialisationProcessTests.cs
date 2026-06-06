@@ -15,6 +15,7 @@ using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Testing;
 using Stryker.Configuration.Options;
 using Stryker.Core.Initialisation;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -34,9 +35,9 @@ public class InitialisationProcessTests : TestBase
     {
         var inputFileResolverMock = new Mock<IInputFileResolver>(MockBehavior.Strict);
 
-        var projectContents = new CsharpFolderComposite();
+        var projectContents = new FolderComposite();
         projectContents.Add(new CsharpFileLeaf());
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         folder.AddRange(new Mono.Collections.Generic.Collection<IProjectComponent>
         {
             new CsharpFileLeaf()
@@ -72,7 +73,7 @@ public class InitialisationProcessTests : TestBase
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
         var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
 
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf());
 
         var loggerMock = new Mock<ILogger<InitialisationProcess>>();
@@ -120,7 +121,7 @@ public class InitialisationProcessTests : TestBase
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
         var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
 
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf());
         var loggerMock = new Mock<ILogger<InitialisationProcess>>();
         var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
@@ -175,7 +176,7 @@ public class InitialisationProcessTests : TestBase
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
         var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
 
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf());
 
         var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
@@ -235,7 +236,7 @@ public class InitialisationProcessTests : TestBase
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
         var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
 
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf());
 
         var loggerMock = new Mock<ILogger<InitialisationProcess>>();
@@ -292,7 +293,7 @@ public class InitialisationProcessTests : TestBase
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
         var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
 
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf());
 
         var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -347,7 +348,7 @@ public class InitialisationProcessTests : TestBase
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
         var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
 
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf());
 
 
