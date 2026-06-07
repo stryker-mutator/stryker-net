@@ -44,6 +44,10 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new DoNotMutateOrchestrator<ParameterListSyntax>(),
         // enum values
         new DoNotMutateOrchestrator<EnumMemberDeclarationSyntax>(),
+        // case labels (including pattern-matching labels) and goto case require compile-time constants
+        new DoNotMutateOrchestrator<CaseSwitchLabelSyntax>(),
+        new DoNotMutateOrchestrator<CasePatternSwitchLabelSyntax>(),
+        new DoNotMutateOrchestrator<GotoStatementSyntax>(t => t.IsKind(SyntaxKind.GotoCaseStatement)),
         new DoNotMutateOrchestrator<UsingDirectiveSyntax>(),
         // constants and constant fields
         new DoNotMutateOrchestrator<FieldDeclarationSyntax>(

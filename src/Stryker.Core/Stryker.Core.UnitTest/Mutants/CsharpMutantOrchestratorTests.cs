@@ -97,7 +97,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     }
 }
     ";
-       ShouldMutateSourceInClassToExpected(source, expected);
+        ShouldMutateSourceInClassToExpected(source, expected);
 
     }
 
@@ -687,6 +687,91 @@ var (one, two) = ((StrykerNamespace.MutantControl.IsActive(1)?1 - 1:1 + 1), (Str
     {
         var source = @"private enum Numbers { One = 1, Two = One + 1 }";
         var expected = @"private enum Numbers { One = 1, Two = One + 1 }";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    /// <summary>
+    /// Verifies that string literals inside <c>goto case</c> targets are not mutated.
+    /// A ternary expression is not a compile-time constant, so mutating would cause <see href="https://learn.microsoft.com/dotnet/csharp/misc/cs0150">CS0150</see>.
+    /// </summary>
+    [TestMethod]
+    public void ShouldNotMutateStringInGotoCaseStatement()
+    {
+        var source = @"void TestMethod(string input)
+{
+    switch (input)
+    {
+        case ""first"":
+            goto case ""second"";
+        case ""second"":
+            break;
+    }
+}";
+        var expected = @"void TestMethod(string input)
+{if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+    switch (input)
+    {
+        case ""first"":
+            goto case ""second"";
+        case ""second"":
+            break;
+    }
+}}";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    /// <summary>
+    /// Verifies that string literals inside <c>case</c> switch labels are not mutated.
+    /// A ternary expression is not a compile-time constant, so mutating would cause <see href="https://learn.microsoft.com/dotnet/csharp/misc/cs0150">CS0150</see>.
+    /// </summary>
+    [TestMethod]
+    public void ShouldNotMutateStringInSwitchCaseLabel()
+    {
+        var source = @"void TestMethod(string input)
+{
+    switch (input)
+    {
+        case ""hello"":
+            break;
+    }
+}";
+        var expected = @"void TestMethod(string input)
+{if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+    switch (input)
+    {
+        case ""hello"":
+            break;
+    }
+}}";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    /// <summary>
+    /// Verifies that string literals inside pattern-matching <c>case</c> labels (<c>case "x" when ...: </c>) are not mutated.
+    /// A ternary expression is not a compile-time constant, so mutating would cause <see href="https://learn.microsoft.com/dotnet/csharp/misc/cs0150">CS0150</see>.
+    /// </summary>
+    [TestMethod]
+    public void ShouldNotMutateStringInCasePatternSwitchLabel()
+    {
+        var source = @"void TestMethod(string input)
+{
+    switch (input)
+    {
+        case ""hello"" when input.Length > 0:
+            break;
+    }
+}";
+        var expected = @"void TestMethod(string input)
+{if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+    switch (input)
+    {
+        case ""hello"" when input.Length > 0:
+            break;
+    }
+}}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
     }
