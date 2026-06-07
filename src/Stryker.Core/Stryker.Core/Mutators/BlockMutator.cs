@@ -18,7 +18,8 @@ public class BlockMutator : MutatorBase<BlockSyntax>
     {
         if (node.IsEmpty() ||
             IsInfiniteWhileLoop(node) ||
-            CantBeMutated(node))
+            CantBeMutated(node) ||
+            IsBodyWithoutReturnOfNonVoidMember(node))
         {
             yield break;
         }
@@ -60,4 +61,15 @@ public class BlockMutator : MutatorBase<BlockSyntax>
 
         return false;
     }
+
+    /// <summary>
+    /// Returns true when the block is the direct body of a property getter and contains no return statements.
+    /// Replacing it with an empty block would cause <see href="https://learn.microsoft.com/dotnet/csharp/misc/cs0161">CS0161</see>
+    /// because the injected if-true branch would have no return value, and <see cref="EndingReturnEngine"/> skips
+    /// adding <c>return default</c> when there are no return statements in the block.
+    /// For methods, CS0161 is handled by the rollback process; for getters it falls to safe mode.
+    /// </summary>
+    private static bool IsBodyWithoutReturnOfNonVoidMember(BlockSyntax node) =>
+        node.Parent is AccessorDeclarationSyntax { RawKind: (int)SyntaxKind.GetAccessorDeclaration }
+        && !node.ScanChildStatements(s => s.IsKind(SyntaxKind.ReturnStatement));
 }

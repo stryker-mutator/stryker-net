@@ -97,7 +97,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     }
 }
     ";
-       ShouldMutateSourceInClassToExpected(source, expected);
+        ShouldMutateSourceInClassToExpected(source, expected);
 
     }
 
@@ -687,6 +687,39 @@ var (one, two) = ((StrykerNamespace.MutantControl.IsActive(1)?1 - 1:1 + 1), (Str
     {
         var source = @"private enum Numbers { One = 1, Two = One + 1 }";
         var expected = @"private enum Numbers { One = 1, Two = One + 1 }";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    /// <summary>
+    /// Verifies that a <c>throw</c> statement that is the only statement in a property getter
+    /// is not replaced with an empty statement by the StatementMutator, and the getter body
+    /// is not replaced with an empty block by the BlockMutator.
+    /// Both would cause <see href="https://learn.microsoft.com/dotnet/csharp/misc/cs0161">CS0161</see> (not all code paths return a value).
+    /// </summary>
+    [TestMethod]
+    public void ShouldNotMutateThrowStatementAsOnlyStatementInPropertyGetter()
+    {
+        var source = @"int Value { get { throw new NotImplementedException(); } }";
+        var expected = @"int Value { get { throw new NotImplementedException(); } }";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateExpressionBodiedGetter()
+    {
+        var source = @"int Value { get => 1 + 2; }";
+        var expected = @"int Value { get => (StrykerNamespace.MutantControl.IsActive(0)?1 - 2:1 + 2); }";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateThrowStatementWhenReturnPrecedesItInPropertyGetter()
+    {
+        var source = @"int Value { get { return 1; throw new NotImplementedException(); } }";
+        var expected = @"int Value { get {if(StrykerNamespace.MutantControl.IsActive(0)){}else{return 1;if(StrykerNamespace.MutantControl.IsActive(1)){;}else{throw new NotImplementedException();}}return default(int);}}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
     }

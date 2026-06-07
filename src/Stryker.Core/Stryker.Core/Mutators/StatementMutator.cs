@@ -80,6 +80,13 @@ public class StatementMutator : MutatorBase<StatementSyntax>
             yield break;
         }
 
+        // a throw that is the only statement in a getter/method body that requires a return value
+        // would leave the member with no valid code path, causing CS0161
+        if (node is ThrowStatementSyntax && IsOnlyControlFlowInMemberRequiringReturn(node))
+        {
+            yield break;
+        }
+
         if (node is ExpressionStatementSyntax expressionNode)
         {
             // removing an assignment may cause a compile error
@@ -107,4 +114,29 @@ public class StatementMutator : MutatorBase<StatementSyntax>
             Type = Mutator.Statement
         };
     }
+
+    /// <summary>
+    /// Returns true when the throw is the only statement that provides control flow in a member
+    /// that must return a value (non-void method, property getter, indexer getter).
+    /// Replacing it with an empty statement would cause <see href="https://learn.microsoft.com/dotnet/csharp/misc/cs0161">CS0161</see>.
+    /// </summary>
+    private static bool IsOnlyControlFlowInMemberRequiringReturn(StatementSyntax node)
+    {
+        if (node.Parent is BlockSyntax parentBlock)
+        {
+            // Block must itself be the direct body of an accessor or method declaration.
+            return parentBlock.Parent switch
+            {
+                AccessorDeclarationSyntax { RawKind: (int)SyntaxKind.GetAccessorDeclaration } or
+                MethodDeclarationSyntax { ReturnType: not PredefinedTypeSyntax { Keyword.RawKind: (int)SyntaxKind.VoidKeyword } } =>
+                    !parentBlock.Statements.Any(s => s != node && IsReturnLike(s)),
+                _ => false
+            };
+        }
+
+        return false;
+    }
+
+    private static bool IsReturnLike(StatementSyntax s) =>
+        s.IsKind(SyntaxKind.ReturnStatement) || s.IsKind(SyntaxKind.ThrowStatement);
 }
