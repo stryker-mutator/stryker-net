@@ -19,7 +19,7 @@ public class BlockMutator : MutatorBase<BlockSyntax>
         if (node.IsEmpty() ||
             IsInfiniteWhileLoop(node) ||
             CantBeMutated(node) ||
-            IsBodyWithoutReturnOfNonVoidMember(node))
+            IsGetterBodyWithoutReturn(node))
         {
             yield break;
         }
@@ -69,7 +69,7 @@ public class BlockMutator : MutatorBase<BlockSyntax>
     /// adding <c>return default</c> when there are no return statements in the block.
     /// For methods, CS0161 is handled by the rollback process; for getters it falls to safe mode.
     /// </summary>
-    private static bool IsBodyWithoutReturnOfNonVoidMember(BlockSyntax node) =>
+    private static bool IsGetterBodyWithoutReturn(BlockSyntax node) =>
         node.Parent is AccessorDeclarationSyntax { RawKind: (int)SyntaxKind.GetAccessorDeclaration }
         && !node.ScanChildStatements(s => s.IsKind(SyntaxKind.ReturnStatement));
 }

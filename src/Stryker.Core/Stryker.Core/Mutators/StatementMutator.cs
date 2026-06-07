@@ -80,9 +80,10 @@ public class StatementMutator : MutatorBase<StatementSyntax>
             yield break;
         }
 
-        // a throw that is the only statement in a getter/method body that requires a return value
-        // would leave the member with no valid code path, causing CS0161
-        if (node is ThrowStatementSyntax && IsOnlyControlFlowInMemberRequiringReturn(node))
+        // a throw that is the only top-level terminating statement in a getter body
+        // would leave the getter with no valid code path, causing CS0161
+        // (for non-void methods CS0161 is handled by the rollback process)
+        if (node is ThrowStatementSyntax && IsOnlyControlFlowInGetterRequiringReturn(node))
         {
             yield break;
         }
@@ -116,22 +117,17 @@ public class StatementMutator : MutatorBase<StatementSyntax>
     }
 
     /// <summary>
-    /// Returns true when the throw is the only statement that provides control flow in a member
-    /// that must return a value (non-void method, property getter, indexer getter).
+    /// Returns true when the throw is the only top-level terminating statement in a property getter body.
     /// Replacing it with an empty statement would cause <see href="https://learn.microsoft.com/dotnet/csharp/misc/cs0161">CS0161</see>.
+    /// For non-void methods the same error is handled by the rollback process.
     /// </summary>
-    private static bool IsOnlyControlFlowInMemberRequiringReturn(StatementSyntax node)
+    private static bool IsOnlyControlFlowInGetterRequiringReturn(StatementSyntax node)
     {
         if (node.Parent is BlockSyntax parentBlock)
         {
-            // Block must itself be the direct body of an accessor or method declaration.
-            return parentBlock.Parent switch
-            {
-                AccessorDeclarationSyntax { RawKind: (int)SyntaxKind.GetAccessorDeclaration } or
-                MethodDeclarationSyntax { ReturnType: not PredefinedTypeSyntax { Keyword.RawKind: (int)SyntaxKind.VoidKeyword } } =>
-                    !parentBlock.Statements.Any(s => s != node && IsReturnLike(s)),
-                _ => false
-            };
+            // Block must itself be the direct body of a get accessor.
+            return parentBlock.Parent is AccessorDeclarationSyntax { RawKind: (int)SyntaxKind.GetAccessorDeclaration }
+                && !parentBlock.Statements.Any(s => s != node && IsReturnLike(s));
         }
 
         return false;

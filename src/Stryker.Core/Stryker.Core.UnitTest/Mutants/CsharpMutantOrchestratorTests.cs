@@ -724,6 +724,32 @@ var (one, two) = ((StrykerNamespace.MutantControl.IsActive(1)?1 - 1:1 + 1), (Str
         ShouldMutateSourceInClassToExpected(source, expected);
     }
 
+    /// <summary>
+    /// A non-void method with only a throw is handled by the rollback process, so the throw should still be mutated.
+    /// </summary>
+    [TestMethod]
+    public void ShouldMutateThrowStatementAsOnlyStatementInNonVoidMethod()
+    {
+        var source = @"public int SomeMethod() { throw new NotImplementedException(); }";
+        // No return default(int) here: EndingReturnEngine only injects it when the block already contains a return statement.
+        // CS0161 for the empty-block mutant is caught and rolled back during compilation.
+        var expected = @"public int SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{if(StrykerNamespace.MutantControl.IsActive(1)){;}else{throw new NotImplementedException();}}}";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    /// <summary>
+    /// An async Task method does not require an explicit return, so a throw inside should be mutated normally.
+    /// </summary>
+    [TestMethod]
+    public void ShouldMutateThrowStatementAsOnlyStatementInAsyncTaskMethod()
+    {
+        var source = @"public async System.Threading.Tasks.Task SomeMethod() { throw new NotImplementedException(); }";
+        var expected = @"public async System.Threading.Tasks.Task SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{if(StrykerNamespace.MutantControl.IsActive(1)){;}else{throw new NotImplementedException();}}}";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
     [TestMethod]
     public void ShouldNotMutateAttributes()
     {
