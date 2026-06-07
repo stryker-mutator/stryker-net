@@ -1,8 +1,6 @@
-# Copilot Instructions for Stryker.NET
+# AI Agent Instructions for Stryker.NET
 
-This document provides guidance for GitHub Copilot when working with the Stryker.NET repository.
-
-## Additional Copilot Instructions
+This document provides guidance for AI agents, such as GitHub Copilot, when working with the Stryker.NET repository.
 
 Reference these instruction files when applicable:
 - **Always**: [Taming Copilot](./instructions/taming-copilot.instructions.md)
