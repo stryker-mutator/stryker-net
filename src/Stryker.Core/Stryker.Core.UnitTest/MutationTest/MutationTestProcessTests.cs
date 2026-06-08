@@ -56,9 +56,8 @@ public class MutationTestProcessTests : TestBase
         };
         Input = new MutationTestInput()
         {
-            SourceProjectInfo = new SourceProjectInfo()
-            {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            SourceProjectInfo = new SourceProjectInfo(
+                TestHelper.SetupProjectAnalyzerResult(
                     projectFilePath: Path.Combine(FilesystemRoot, "ProjectUnderTest", "ProjectUnderTest.csproj"),
                     properties: new Dictionary<string, string>()
                     {
@@ -67,10 +66,10 @@ public class MutationTestProcessTests : TestBase
                         { "AssemblyName", "ProjectUnderTest" },
                         { "Language", "C#" }
                     }).Object,
-                ProjectContents = Folder,
-                TestProjectsInfo = testProjectsInfo
-            },
-            TestProjectsInfo = testProjectsInfo,
+                testProjectsInfo)
+            {
+                ProjectContents = Folder
+            }
         };
     }
 
@@ -80,7 +79,7 @@ public class MutationTestProcessTests : TestBase
         // Arrange
         var options = new StrykerOptions()
         {
-            ExcludedMutations = new Mutator[] { }
+            ExcludedMutations = []
         };
 
         var executorMock = new Mock<IMutationTestExecutor>();

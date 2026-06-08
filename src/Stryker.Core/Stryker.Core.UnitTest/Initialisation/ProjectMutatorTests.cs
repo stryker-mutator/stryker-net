@@ -78,22 +78,21 @@ namespace ExtraProject.XUnit
             SyntaxTree = CSharpSyntaxTree.ParseText("class TestClass { }")
         });
 
+        var testProjectsInfo = new TestProjectsInfo(_fileSystemMock)
+        {
+            TestProjects = new List<TestProject>
+            {
+                new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
+                    projectFilePath: "c:\\testproject.csproj",
+                    targetFramework: "netcoreapp3.1",
+                    sourceFiles: [_testFilePath]).Object)
+            }
+        };
         _mutationTestInput = new MutationTestInput()
         {
-            SourceProjectInfo = new Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo()
+            SourceProjectInfo = new Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo(analyzerResult, testProjectsInfo)
             {
-                AnalyzerResult = analyzerResult,
-                ProjectContents = folder
-            },
-            TestProjectsInfo = new TestProjectsInfo(_fileSystemMock)
-            {
-                TestProjects = new List<TestProject>
-                {
-                    new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
-                        projectFilePath: "c:\\testproject.csproj",
-                        targetFramework: "netcoreapp3.1",
-                        sourceFiles: new [] { _testFilePath }).Object)
-                }
+                ProjectContents = folder,
             }
         };
     }
@@ -125,7 +124,7 @@ namespace ExtraProject.XUnit
             executedTests: new TestIdentifierList(failedTest, successfulTest),
             failedTests: new TestIdentifierList(failedTest),
             timedOutTest: TestIdentifierList.NoTest(),
-            message: "testrun succesful",
+            message: "testrun successful",
             Enumerable.Empty<string>(),
             timeSpan: TimeSpan.FromSeconds(2));
 
@@ -137,7 +136,7 @@ namespace ExtraProject.XUnit
 
         // assert
         result.ShouldNotBeNull();
-        var testFile = _mutationTestInput.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
+        var testFile = _mutationTestInput.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
         testFile.Tests.Count.ShouldBe(2);
     }
 }

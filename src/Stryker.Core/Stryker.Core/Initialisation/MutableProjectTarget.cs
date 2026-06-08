@@ -1,0 +1,94 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Abstractions;
+using System.Linq;
+using Buildalyzer;
+using Microsoft.Extensions.Logging;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
+using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Utilities.Buildalyzer;
+
+namespace Stryker.Core.Initialisation;
+
+/// <summary>
+/// Keep track of a project and the test projects covering it
+/// </summary>
+/// <param name="target">analyzer result for target project</param>
+/// <param name="logger">logger used for reporting</param>
+internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
+{
+    public IAnalyzerResult ProjectTarget { get; } = target;
+
+    public HashSet<IAnalyzerResult> TestProjects { get; } = [];
+
+    public bool IsValidTarget => ProjectTarget.IsValid() && TestProjects.Count>0 && TestProjects.Any(tp => tp.IsValid());
+
+    private static readonly string[] FoldersToExclude = ["obj", "bin", "node_modules", "StrykerOutput"];
+
+    /// <summary>
+    /// Builds a <see cref="SourceProjectInfo"/> instance describing a project its associated test project(s)
+    /// </summary>
+    /// <param name="options">Stryker options</param>
+    /// <param name="fileSystem">filesystem</param>
+    /// <returns></returns>
+    public SourceProjectInfo BuildSourceProjectInfo(IStrykerOptions options, IFileSystem fileSystem )
+    {
+        var testProjectInfo = new TestProjectsInfo(fileSystem)
+        {
+            TestProjects = TestProjects.Select(testProjectAnalyzerResult => new TestProject(fileSystem, testProjectAnalyzerResult)).ToList()
+        };
+        var targetProjectInfo = new SourceProjectInfo(ProjectTarget , testProjectInfo);
+
+        var language = targetProjectInfo.AnalyzerResult.GetLanguage();
+
+        var builder = language == Language.Csharp
+            ? new CsharpProjectComponentsBuilder(targetProjectInfo, options, FoldersToExclude, logger,
+                fileSystem)
+            : throw new NotSupportedException($"Language not supported: {language}");
+
+        var inputFiles = builder.Build();
+        builder.InjectHelpers(inputFiles);
+        targetProjectInfo.OnProjectBuilt = builder.PostBuildAction();
+        targetProjectInfo.ProjectContents = inputFiles;
+        logger.LogInformation("Found project {ProjectFileName} to mutate.", ProjectTarget.ProjectFilePath);
+        return targetProjectInfo;
+    }
+
+    public void DumpForAnalysis()
+    {
+        logger.LogInformation(" target {TargetFramework} analysis {Result}, simulated build {BuildResult}.",
+            ProjectTarget.TargetFramework,
+            ProjectTarget.IsValid() ? "succeeded" : "failed",
+            ProjectTarget.Succeeded ? "succeeded" : "failed"
+        );
+        if (TestProjects.Count == 0)
+        {
+            logger.LogWarning(
+                "  can't be mutated because no test project references it. If this is a test project, " +
+                "ensure it has the property: <IsTestProject>true</IsTestProject> in its project file.");
+            return;
+        }
+
+        // dump info on test projects
+        foreach (var testProject in TestProjects)
+        {
+            logger.LogInformation("  referenced by test project {ProjectName}, analysis {Result}.",
+                Path.GetFileName(testProject.ProjectFilePath),
+                testProject.IsValid() ? "succeeded" : "failed");
+        }
+
+        // dump associated test projects
+        // provide synthetic status
+        if (TestProjects.Any(r => r.IsValid()))
+        {
+            logger.LogInformation(ProjectTarget.IsValid() ? "  can be mutated." : " can't be mutated because its simulated build failed.");
+        }
+        else
+        {
+            logger.LogWarning("  can't be mutated because all referencing test projects' simulated build failed.");
+        }
+    }
+}

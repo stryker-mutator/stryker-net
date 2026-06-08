@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -160,7 +161,7 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         // Arrange
         var options = new Mock<IStrykerOptions>();
         options.Setup(x => x.Concurrency).Returns(3);
-
+        var createdRunners = new List<int>();
         var disposedRunners = new System.Collections.Concurrent.ConcurrentBag<int>();
         var runnerFactory = new Mock<ISingleRunnerFactory>();
 
@@ -176,6 +177,11 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
                 (id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger, opts) =>
                 {
                     var testRunner = new TestableRunner(id, () => disposedRunners.Add(id));
+                    lock (createdRunners)
+                    {
+                        createdRunners.Add(id);
+                        Monitor.Pulse(createdRunners);
+                    }
                     return testRunner;
                 });
 
@@ -183,7 +189,18 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
 
         // The pool uses Parallel.For to create runners, which should complete before constructor returns
         // However, to be defensive against timing issues, verify by checking the actual runners in the pool
-        pool.Runners.Count().ShouldBe(3, "All 3 runners should be available in the pool");
+
+        var timeout = new Stopwatch();
+        timeout.Start();
+        var start = timeout.ElapsedMilliseconds;
+        lock (createdRunners)
+        {
+            while (createdRunners.Count<3 && timeout.ElapsedMilliseconds-start<2000)
+            {
+                Monitor.Wait(createdRunners, 200);
+            }
+        }
+        createdRunners.Count.ShouldBe(3, "All 3 runners should have been created before disposal");
 
         // Act
         pool.Dispose();
@@ -279,7 +296,7 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         coverage.ShouldBeEmpty();
     }
 
-    // Note: Testing CaptureCoverage with multiple tests that cover different mutants is complex 
+    // Note: Testing CaptureCoverage with multiple tests that cover different mutants is complex
     // because SingleMicrosoftTestPlatformRunner methods are not virtual/overridable for mocking.
     // The coverage model is cumulative: all tests receive the aggregated coverage from all runners.
     // Example: If Test1 covers mutant 1 and Test2 covers mutant 2, both tests will be reported
