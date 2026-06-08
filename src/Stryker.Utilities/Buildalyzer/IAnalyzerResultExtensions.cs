@@ -209,7 +209,7 @@ public static class IAnalyzerResultExtensions
             return true;
         }
 
-        // if 'IsTestProject' is defined, we use its value to check if it'Hs a test project (or not)
+        // if 'IsTestProject' is defined, we use its value to check if it's a test project (or not)
         if (analyzerResult.TryGetProperty("IsTestProject", out var value))
         {
             return bool.TryParse(value, out var isTestProject) && isTestProject;

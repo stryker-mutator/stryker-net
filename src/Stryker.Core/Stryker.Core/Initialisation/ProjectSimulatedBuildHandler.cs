@@ -65,7 +65,7 @@ public class ProjectSimulatedBuildHandler
         if (withRestore && AnalyzerLastResults.Any(ar => ar.TargetsDesktop()))
         {
             _projectsTracker.RestoreSolution(AnalyzerLastResults);
-            withRestore= false;
+            withRestore = false;
         }
         _buildLogger.GetStringBuilder().Clear();
         var env = new EnvironmentOptions

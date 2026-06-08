@@ -276,7 +276,7 @@ public class SolutionFile
         // add all projects that are built with this configuration
         foreach (var solutionProject in solution.SolutionProjects)
         {
-            var fullPath = Path.Combine(FilePathUtils.NormalizePathSeparators(path), solutionProject.FilePath);
+            var fullPath = FilePathUtils.NormalizePathSeparators(Path.Combine(path, solutionProject.FilePath));
             var (projectBuildType, projectPlatform, isBuilt, _) = solutionProject.GetProjectConfiguration(buildType, solutionPlatform);
             if (!isBuilt || projectBuildType == null || projectPlatform == null)
             {
