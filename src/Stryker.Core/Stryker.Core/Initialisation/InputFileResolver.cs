@@ -312,11 +312,11 @@ public class InputFileResolver(
                         IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(projectAnalysisContext, options);
 
                         // apply project name filter (except for test projects)
-                        if (!(normalizedProjectUnderTestNameFilter == null
-                              || buildResult.IsTestProject()
-                              || projectAnalysisContext.ProjectFileName.Replace('\\', '/')
+                        if (normalizedProjectUnderTestNameFilter != null
+                              && !buildResult.IsTestProject()
+                              && !projectAnalysisContext.ProjectFileName.Replace('\\', '/')
                               .Contains(normalizedProjectUnderTestNameFilter,
-                                  StringComparison.InvariantCultureIgnoreCase)))
+                                  StringComparison.InvariantCultureIgnoreCase))
                         {
                             return;
                         }
