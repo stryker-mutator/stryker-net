@@ -203,13 +203,13 @@ public static class IAnalyzerResultExtensions
 
     private static bool IsTestProject(this IAnalyzerResult analyzerResult)
     {
-        // if 'IsTestingPlatformApplication' is defined, we use its value to check if its a test project
+        // if 'IsTestingPlatformApplication' is defined, we use its value to check if it's a test project
         if (analyzerResult.TryGetProperty("IsTestingPlatformApplication", out var value))
         {
             return bool.TryParse(value, out var isTestProject) && isTestProject;
         }
 
-        // if 'IsTestProject' is defined, we assume it is a test project, we use its value to check if its a test project
+        // if 'IsTestProject' is defined, we use its value to check if it's a test project (or not)
         if (analyzerResult.TryGetProperty("IsTestProject", out value))
         {
             return bool.TryParse(value, out var isTestProject) && isTestProject;
@@ -315,7 +315,7 @@ public static class IAnalyzerResultExtensions
         string defaultValue = default) =>
         analyzerResult.Properties.GetValueOrDefault(name, defaultValue);
 
-    public static bool TryGetProperty(this IAnalyzerResult analyzerResult, string name, out string value) =>
+    public static bool TryGetProperty(this IAnalyzerResult analyzerResult, string name, [NotNullWhen(true)] out string? value) =>
         analyzerResult.Properties.TryGetValue(name, out value);
 
     private static IProjectItem[] GetItem(this IAnalyzerResult analyzerResult, string name) => !analyzerResult.Items.TryGetValue(name, out var item) ? [] : item;

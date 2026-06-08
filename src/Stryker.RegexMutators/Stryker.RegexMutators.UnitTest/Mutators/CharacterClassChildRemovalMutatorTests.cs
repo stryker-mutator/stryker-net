@@ -12,7 +12,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators;
 [TestClass]
 public sealed class CharacterClassChildRemovalMutatorTests
 {
-    [DataTestMethod("Character Class Remove Node")]
+    [TestMethod("Character Class Remove Node")]
     [CharacterClassRemoveChild("[A-Z]", [])]
     [CharacterClassRemoveChild("[ab0-9A-Zcd]",
     [
