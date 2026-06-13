@@ -508,7 +508,7 @@
       "stryker.testrunner.microsofttestplatform": {
         "type": "Project",
         "dependencies": {
-          "CliWrap": "[3.10.1, )",
+          "CliWrap": "[3.10.2, )",
           "Microsoft.Testing.Platform": "[1.5.2, )",
           "StreamJsonRpc": "[2.25.28, )",
           "Stryker.TestRunner": "[4.14.2, )",
@@ -546,9 +546,9 @@
       },
       "CliWrap": {
         "type": "CentralTransitive",
-        "requested": "[3.10.1, )",
-        "resolved": "3.10.1",
-        "contentHash": "C+WzXwzpQsJVNqvuh19ZO/bw/vR43L+DC/CmvK+PATUBkail2AWYE6an17dOGgWaVGzF9sU28YwRwfNfkPrQdg=="
+        "requested": "[3.10.2, )",
+        "resolved": "3.10.2",
+        "contentHash": "oW63Lh5Tr2dVRnGSn5UyV2ITAYTdyaGB8r4pGMcz7CwfzketV7ANyn2LvNJtOjXjL/tJbG0qDH8Xwgt3jgGMNg=="
       },
       "DotNet.Glob": {
         "type": "CentralTransitive",
