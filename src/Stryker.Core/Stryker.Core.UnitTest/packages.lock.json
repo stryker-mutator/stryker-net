@@ -73,11 +73,11 @@
       },
       "Spectre.Console.Testing": {
         "type": "Direct",
-        "requested": "[0.55.2, )",
-        "resolved": "0.55.2",
-        "contentHash": "g7BWoLVGAAJZ4VKR/GfQOLoOO0lpjPTsrO9C6GsFB/o93FtZqvDluc1RC483/kKhKPS1kqErswksoMQEueuiRw==",
+        "requested": "[0.57.0, )",
+        "resolved": "0.57.0",
+        "contentHash": "rGzTq+6SBsn7irqzKEdSrcGX69kBDGinEEwkIaS71iOtPrZOIAqLobwWx9G1ljkqVpsc/TkTYSW/2rgwyNHciQ==",
         "dependencies": {
-          "Spectre.Console": "0.55.2"
+          "Spectre.Console": "0.57.0"
         }
       },
       "Stryker.Regex.Parser": {
@@ -526,8 +526,8 @@
       },
       "Spectre.Console.Ansi": {
         "type": "Transitive",
-        "resolved": "0.55.2",
-        "contentHash": "tN3KEJQQZwLW9HJnG5YTSAxfBwxsmg1wVuGvhGG2rM+pbl+NGaHU8pDcNofPlOXlgpkbpBMxI5t9o9qPfy3sHQ=="
+        "resolved": "0.57.0",
+        "contentHash": "DGeYljyWAIHSeUAoUGqyzyOqS8WlsHKW+y4zOZ0OO61oqrhx90jHS+XG5Kpq/wWz6ovIs2VL/0CTKpUVa7tdWg=="
       },
       "System.ClientModel": {
         "type": "Transitive",
@@ -932,7 +932,7 @@
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
           "Serilog.Sinks.Console": "[6.1.1, )",
           "ShellProgressBar": "[5.2.0, )",
-          "Spectre.Console": "[0.55.2, )",
+          "Spectre.Console": "[0.57.0, )",
           "Stryker.Abstractions": "[4.14.2, )",
           "Stryker.Configuration": "[4.14.2, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
@@ -1280,11 +1280,11 @@
       },
       "Spectre.Console": {
         "type": "CentralTransitive",
-        "requested": "[0.55.2, )",
-        "resolved": "0.55.2",
-        "contentHash": "yc0g12YJpmZHofGJLTQX02/uqfzJ6XHRx6pe9rANNjleQptXMHPxD9KI2/DWkXiJWddc+4oizEdGox15c89hhw==",
+        "requested": "[0.57.0, )",
+        "resolved": "0.57.0",
+        "contentHash": "X5+4ZsUYTPlTs5PEoKRlxUuKOa1AkEoAGM34pUeJPjsBdtOnvnaVb31hqewhooomihl1i9fEBid1fz8XxZTacQ==",
         "dependencies": {
-          "Spectre.Console.Ansi": "0.55.2"
+          "Spectre.Console.Ansi": "0.57.0"
         }
       },
       "StreamJsonRpc": {
