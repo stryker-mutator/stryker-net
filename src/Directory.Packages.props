@@ -1,7 +1,7 @@
 <Project>
   <ItemGroup>
     <PackageVersion Include="AWSSDK.S3" Version="4.0.24.4" />
-    <PackageVersion Include="Azure.Storage.Files.Shares" Version="12.26.0" />
+    <PackageVersion Include="Azure.Storage.Files.Shares" Version="12.27.0" />
     <PackageVersion Include="CliWrap" Version="3.10.2" />
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="2.0.2" />
     <PackageVersion Include="LaunchDarkly.EventSource" Version="5.3.0" />
