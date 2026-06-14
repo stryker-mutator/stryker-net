@@ -19,6 +19,7 @@ public class StrykerInputsTests : TestBase
         AzureFileStorageSasInput = new AzureFileStorageSasInput(),
         AzureFileStorageUrlInput = new AzureFileStorageUrlInput(),
         BaselineProviderInput = new BaselineProviderInput(),
+        BaselineOutputInput = new BaselineOutputInput(),
         BasePathInput = new BasePathInput() { SuppliedInput = Directory.GetCurrentDirectory() },
         ConcurrencyInput = new ConcurrencyInput(),
         DashboardApiKeyInput = new DashboardApiKeyInput(),
@@ -198,6 +199,24 @@ public class StrykerInputsTests : TestBase
         _target.WithBaselineInput.SuppliedInput = true;
 
         Should.NotThrow(() => _target.ValidateAll());
+    }
+
+    [TestMethod]
+    public void BaselineOutputPathShouldDefaultToStrykerOutput()
+    {
+        var result = _target.ValidateAll();
+
+        result.BaselineOutputPath.ShouldBe("StrykerOutput");
+    }
+
+    [TestMethod]
+    public void ShouldSetBaselineOutputPathWhenSupplied()
+    {
+        _target.BaselineOutputInput.SuppliedInput = "custom-baseline";
+
+        var result = _target.ValidateAll();
+
+        result.BaselineOutputPath.ShouldBe("custom-baseline");
     }
 
     [TestMethod]

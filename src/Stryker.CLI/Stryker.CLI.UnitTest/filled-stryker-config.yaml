@@ -41,6 +41,7 @@ stryker-config:
   baseline:
     enabled: false
     fallback-version: master
+    output: custom-baseline
     azure-fileshare-url: ''
     s3-bucket-name: my-bucket
     s3-endpoint: https://minio.example.com:9000

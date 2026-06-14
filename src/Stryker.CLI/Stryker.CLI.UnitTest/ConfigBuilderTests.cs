@@ -205,6 +205,7 @@ public class ConfigBuilderTests
 
         inputs.Setup(x => x.SinceInput).Returns(new SinceInput());
         inputs.Setup(x => x.BaselineProviderInput).Returns(new BaselineProviderInput());
+        inputs.Setup(x => x.BaselineOutputInput).Returns(new BaselineOutputInput());
         inputs.Setup(x => x.DiffIgnoreChangesInput).Returns(new DiffIgnoreChangesInput());
         inputs.Setup(x => x.FallbackVersionInput).Returns(new FallbackVersionInput());
         inputs.Setup(x => x.AzureFileStorageUrlInput).Returns(new AzureFileStorageUrlInput());

@@ -95,6 +95,7 @@ public class FileConfigReaderTests
         actualInputs.S3BucketNameInput.SuppliedInput.ShouldBe("my-bucket");
         actualInputs.S3EndpointInput.SuppliedInput.ShouldBe("https://minio.example.com:9000");
         actualInputs.S3RegionInput.SuppliedInput.ShouldBe("us-east-1");
+        actualInputs.BaselineOutputInput.SuppliedInput.ShouldBe("custom-baseline");
         actualInputs.BreakOnInitialTestFailureInput.SuppliedInput.ShouldNotBeNull().ShouldBeFalse();
     }
 
@@ -145,6 +146,7 @@ public class FileConfigReaderTests
         actualInputs.S3BucketNameInput.SuppliedInput.ShouldBe("my-bucket");
         actualInputs.S3EndpointInput.SuppliedInput.ShouldBe("https://minio.example.com:9000");
         actualInputs.S3RegionInput.SuppliedInput.ShouldBe("us-east-1");
+        actualInputs.BaselineOutputInput.SuppliedInput.ShouldBe("custom-baseline");
         actualInputs.BreakOnInitialTestFailureInput.SuppliedInput.ShouldNotBeNull().ShouldBeTrue();
     }
 }

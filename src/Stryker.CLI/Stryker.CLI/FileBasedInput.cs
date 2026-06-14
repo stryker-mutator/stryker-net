@@ -124,6 +124,9 @@ public class Baseline : IExtraData
     [JsonPropertyName("provider")]
     public string Provider { get; init; }
 
+    [JsonPropertyName("output")]
+    public string Output { get; init; }
+
     [JsonPropertyName("azure-fileshare-url")]
     public string AzureFileShareUrl { get; init; }
 
