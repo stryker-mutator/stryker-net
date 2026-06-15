@@ -825,7 +825,7 @@
         "dependencies": {
           "CliWrap": "[3.10.2, )",
           "Microsoft.Testing.Platform": "[1.5.2, )",
-          "StreamJsonRpc": "[2.25.28, )",
+          "StreamJsonRpc": "[2.25.29, )",
           "Stryker.TestRunner": "[4.14.2, )",
           "Stryker.Utilities": "[4.14.2, )"
         }
@@ -1101,9 +1101,9 @@
       },
       "StreamJsonRpc": {
         "type": "CentralTransitive",
-        "requested": "[2.25.28, )",
-        "resolved": "2.25.28",
-        "contentHash": "XqoXO/zmpP5VgL8TT4IWrrOrutt3+K+KoIsy6LWPgyt3/mErOU+pEf2Wxx/ZiI5RXTDy6bAIM0FbAmHAW7yryQ==",
+        "requested": "[2.25.29, )",
+        "resolved": "2.25.29",
+        "contentHash": "ebP0ScWRtbd1EWayLRJ6bjM7aPwYZoJIIU1DApmn/cYl2dydR9f4p6Mj3eY77qzAywy6IbZWB9sJPSWeO5hmrg==",
         "dependencies": {
           "MessagePack": "2.5.302",
           "Microsoft.VisualStudio.Threading.Only": "17.14.15",
