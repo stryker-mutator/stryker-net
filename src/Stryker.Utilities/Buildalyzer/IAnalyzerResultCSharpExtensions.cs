@@ -50,14 +50,9 @@ public static class IAnalyzerResultCSharpExtensions
                 return options.LanguageVersion;
             }
             var version = analyzerResult.GetProperty("LangVersion");
-            if (version is null || !double.TryParse(version, CultureInfo.InvariantCulture, out var numericVersion))
-            {
-                return LanguageVersion.Default;
-            }
-
-            return numericVersion > 7.0
-                ? (LanguageVersion)((int)numericVersion*100)
-                : (LanguageVersion)(int)numericVersion;
+            return string.IsNullOrWhiteSpace(version) && LanguageVersionFacts.TryParse(version, out var parsedVersion)
+                ? parsedVersion
+                : LanguageVersion.Default;
         }
     /// <summary>
     /// The Features MSBuild property is an internal Roslyn mechanism that passes a key-value dictionary directly to CSharpParseOptions.WithFeatures().
