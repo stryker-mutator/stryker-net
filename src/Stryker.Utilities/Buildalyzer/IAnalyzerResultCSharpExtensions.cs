@@ -50,7 +50,7 @@ public static class IAnalyzerResultCSharpExtensions
                 return options.LanguageVersion;
             }
             var version = analyzerResult.GetProperty("LangVersion");
-            return string.IsNullOrWhiteSpace(version) && LanguageVersionFacts.TryParse(version, out var parsedVersion)
+            return !string.IsNullOrWhiteSpace(version) && LanguageVersionFacts.TryParse(version, out var parsedVersion)
                 ? parsedVersion
                 : LanguageVersion.Default;
         }
