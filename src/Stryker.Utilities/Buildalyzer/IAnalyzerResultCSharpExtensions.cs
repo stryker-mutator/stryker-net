@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
@@ -43,17 +42,17 @@ public static class IAnalyzerResultCSharpExtensions
         ).WithFeatures(ExtractCSharpFeatures(analyzerResult));
 
 
-        private static LanguageVersion GetLanguageVersion(this IAnalyzerResult analyzerResult, IStrykerOptions options)
+    private static LanguageVersion GetLanguageVersion(this IAnalyzerResult analyzerResult, IStrykerOptions options)
+    {
+        if (options.LanguageVersion != LanguageVersion.Default)
         {
-            if (options.LanguageVersion != LanguageVersion.Default)
-            {
-                return options.LanguageVersion;
-            }
-            var version = analyzerResult.GetProperty("LangVersion");
-            return !string.IsNullOrWhiteSpace(version) && LanguageVersionFacts.TryParse(version, out var parsedVersion)
-                ? parsedVersion
-                : LanguageVersion.Default;
+            return options.LanguageVersion;
         }
+        var version = analyzerResult.GetProperty("LangVersion");
+        return !string.IsNullOrWhiteSpace(version) && LanguageVersionFacts.TryParse(version, out var parsedVersion)
+            ? parsedVersion
+            : LanguageVersion.Default;
+    }
     /// <summary>
     /// The Features MSBuild property is an internal Roslyn mechanism that passes a key-value dictionary directly to CSharpParseOptions.WithFeatures().
     /// It is not publicly documented by Microsoft as it is primarily intended for internal compiler development.
