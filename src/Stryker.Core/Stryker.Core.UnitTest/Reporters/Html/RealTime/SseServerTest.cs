@@ -32,6 +32,8 @@ public class SseServerTest : TestBase
         }
     }
 
+    // Callers wait up to 2000ms: establishing the loopback SSE connection is genuinely slower than
+    // 500ms on the slower hosted CI agents (notably macOS), where 500ms caused intermittent failures.
     private bool WaitForConnection(int timeout)
     {
         var watch = new Stopwatch();

@@ -1,7 +1,7 @@
 {
   "stryker-config": {
     "test-runner": "MTP",
-    "reporters": ["Dots"],
+    "reporters": ["Dots", "Json"],
     "project": "TargetProject.csproj",
     "ignore-mutations": ["string"],
     "mutate": ["!Person.cs"],
