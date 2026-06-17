@@ -387,16 +387,18 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         capturedTests.Count.ShouldBe(2, "Both tests should have been captured individually");
         coverage.Count.ShouldBe(2, "Should return one coverage result per test");
 
+        // Plain perTest (no CaptureCoveragePerTest flag) -> Normal confidence.
+        // perTestInIsolation -> Exact is covered by CaptureCoverage_ShouldUseExactConfidence_WhenPerTestInIsolationEnabled.
         var cov1 = coverage.First(c => c.TestId == desc1.Id);
         cov1.MutationsCovered.ShouldContain(1);
         cov1.MutationsCovered.ShouldContain(2);
         cov1.MutationsCovered.ShouldNotContain(3);
-        cov1.Confidence.ShouldBe(CoverageConfidence.Exact);
+        cov1.Confidence.ShouldBe(CoverageConfidence.Normal);
 
         var cov2 = coverage.First(c => c.TestId == desc2.Id);
         cov2.MutationsCovered.ShouldContain(3);
         cov2.MutationsCovered.ShouldNotContain(1);
-        cov2.Confidence.ShouldBe(CoverageConfidence.Exact);
+        cov2.Confidence.ShouldBe(CoverageConfidence.Normal);
     }
 
     [TestMethod]

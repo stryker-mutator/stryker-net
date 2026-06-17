@@ -19,7 +19,9 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 {
     private readonly SemaphoreSlim _runnerAvailable;
     private readonly ConcurrentBag<SingleMicrosoftTestPlatformRunner> _availableRunners = new();
-    private static readonly List<SingleMicrosoftTestPlatformRunner> _allRunners = new();
+    // Instance-scoped: there is one pool per run, and a static list would leak disposed runners
+    // across pool instances (notably between unit tests, and across solution-project pools).
+    private readonly List<SingleMicrosoftTestPlatformRunner> _allRunners = new();
     private bool _disposed;
     private readonly ILogger _logger;
     private readonly int _countOfRunners;
@@ -166,7 +168,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         }
         finally
         {
-            foreach (var runner in _allRunners)
+            foreach (var runner in _availableRunners)
             {
                 runner.SetCoverageMode(false);
             }
@@ -178,7 +180,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     {
         _logger.LogInformation("Starting per-test coverage capture for MTP runner");
 
-        foreach (var runner in _allRunners)
+        foreach (var runner in _availableRunners)
         {
             runner.SetCoverageMode(true);
         }
@@ -223,7 +225,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         }
         finally
         {
-            foreach (var runner in _allRunners)
+            foreach (var runner in _availableRunners)
             {
                 runner.SetCoverageMode(false);
             }
