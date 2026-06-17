@@ -316,7 +316,7 @@ public static class IAnalyzerResultExtensions
         analyzerResult.Properties.GetValueOrDefault(name, defaultValue);
 
     public static bool TryGetProperty(this IAnalyzerResult analyzerResult, string name, [NotNullWhen(true)] out string? value) =>
-        analyzerResult.Properties.TryGetValue(name, out value);
+        analyzerResult.Properties.TryGetValue(name, out value) && !string.IsNullOrEmpty(value);
 
     private static IProjectItem[] GetItem(this IAnalyzerResult analyzerResult, string name) => !analyzerResult.Items.TryGetValue(name, out var item) ? [] : item;
 

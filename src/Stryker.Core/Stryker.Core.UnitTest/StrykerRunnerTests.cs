@@ -43,7 +43,10 @@ public class StrykerRunnerTests : TestBase
             Mutants = new List<IMutant> { new Mutant { Id = 1 } }
         });
 
-        var info = new SourceProjectInfo(null, new TestProjectsInfo(null)) { ProjectContents = folder };
+        var info = new SourceProjectInfo(TestHelper.SetupProjectAnalyzerResult(references: []).Object, new TestProjectsInfo(null))
+        {
+            ProjectContents = folder
+        };
 
         var mutationTestInput = new MutationTestInput()
         {
@@ -110,9 +113,9 @@ public class StrykerRunnerTests : TestBase
             Mutants = new Collection<IMutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
         });
 
-        var mutationTestInput = new MutationTestInput()
+        var mutationTestInput = new MutationTestInput
         {
-            SourceProjectInfo = new SourceProjectInfo(null, null)
+            SourceProjectInfo = new SourceProjectInfo(TestHelper.SetupProjectAnalyzerResult(references: []).Object, null)
             {
                 ProjectContents = folder
             },

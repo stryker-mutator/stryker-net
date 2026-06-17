@@ -187,7 +187,7 @@ public class InputFileResolver(
                 [
                     .. result.Where(p =>
                         testProjectFileNames.TrueForAll(n =>
-                            p.TestProjectsInfo.TestProjects.Any(t => t.ProjectFilePath == n)))
+                            p.TestProjectsInfo?.TestProjects.Any(t => t.ProjectFilePath == n) == true))
                 ];
                 if (result.Count == 1)
                 {

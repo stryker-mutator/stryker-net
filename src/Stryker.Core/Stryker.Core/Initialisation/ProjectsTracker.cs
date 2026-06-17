@@ -33,7 +33,7 @@ public class ProjectsTracker
         _buildalyzerProvider = buildalyzerProvider ?? throw new ArgumentNullException(nameof(buildalyzerProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _nugetRestoreProcess = nugetRestoreProcess ?? throw new ArgumentNullException(nameof(nugetRestoreProcess));
-        _fileSystem = fileSystem;
+        _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         Solution = file;
         SelectConfiguration();
     }
@@ -50,7 +50,7 @@ public class ProjectsTracker
 
     public int ProjectCount => _selectedProjects.Count;
 
-    public List<string> SelectedProjects => _selectedProjects;
+    public IReadOnlyList<string> SelectedProjects => _selectedProjects.AsReadOnly();
 
     public void AddProjects(IEnumerable<string> projectFiles) => _selectedProjects.AddRange(projectFiles);
 
