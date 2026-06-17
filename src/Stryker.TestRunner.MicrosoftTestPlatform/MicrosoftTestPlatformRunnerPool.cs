@@ -19,6 +19,8 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 {
     private readonly SemaphoreSlim _runnerAvailable;
     private readonly ConcurrentBag<SingleMicrosoftTestPlatformRunner> _availableRunners = new();
+    private static readonly List<SingleMicrosoftTestPlatformRunner> _allRunners = new();
+    private bool _disposed;
     private readonly ILogger _logger;
     private readonly int _countOfRunners;
     private readonly TestSet _testSet = new();
@@ -64,6 +66,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
                 _logger,
                 _options);
             _availableRunners.Add(runner);
+            _allRunners.Add(runner);
             _runnerAvailable.Release();
         });
     }
@@ -117,7 +120,8 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     {
         _logger.LogInformation("Starting aggregate coverage capture for MTP runner");
 
-        foreach (var runner in _availableRunners)
+        // Enable coverage mode on all runners
+        foreach (var runner in _allRunners)
         {
             runner.SetCoverageMode(true);
         }
@@ -162,7 +166,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         }
         finally
         {
-            foreach (var runner in _availableRunners)
+            foreach (var runner in _allRunners)
             {
                 runner.SetCoverageMode(false);
             }
@@ -174,7 +178,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     {
         _logger.LogInformation("Starting per-test coverage capture for MTP runner");
 
-        foreach (var runner in _availableRunners)
+        foreach (var runner in _allRunners)
         {
             runner.SetCoverageMode(true);
         }
@@ -219,7 +223,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         }
         finally
         {
-            foreach (var runner in _availableRunners)
+            foreach (var runner in _allRunners)
             {
                 runner.SetCoverageMode(false);
             }
@@ -279,7 +283,14 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     public void Dispose()
     {
-        foreach (var runner in _availableRunners)
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        foreach (var runner in _allRunners)
         {
             runner.Dispose();
         }

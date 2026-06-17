@@ -2,9 +2,6 @@ stages:
 - stage: UpdatePackageLockFiles
   condition: and(eq(variables['system.pullRequest.isFork'], 'False'), startsWith(variables['system.pullRequest.sourceBranch'], 'renovate'))
   jobs:
-  - job: DisableRestoreLockedMode
-    steps:
-    - script: echo "##vso[task.setvariable variable=RestoreLockedMode]false"
   - job: RestoreAndUpdate
     steps:
     - checkout: self

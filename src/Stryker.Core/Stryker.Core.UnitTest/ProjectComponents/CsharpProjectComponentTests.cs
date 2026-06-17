@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Configuration.Options;
 using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 
 namespace Stryker.Core.UnitTest.ProjectComponents;
@@ -109,7 +110,7 @@ public class CsharpProjectComponentTests : TestBase
     [TestMethod]
     public void ReportComponent_ShouldCalculateMutationScoreNaN_NoMutations()
     {
-        var target = new CsharpFolderComposite();
+        var target = new FolderComposite();
         target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { } });
 
         var result = target.GetMutationScore();
@@ -119,7 +120,7 @@ public class CsharpProjectComponentTests : TestBase
     [TestMethod]
     public void ReportComponent_ShouldCalculateMutationScore_OneMutation()
     {
-        var target = new CsharpFolderComposite();
+        var target = new FolderComposite();
         target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed } } });
 
         var result = target.GetMutationScore();
@@ -129,7 +130,7 @@ public class CsharpProjectComponentTests : TestBase
     [TestMethod]
     public void ReportComponent_ShouldCalculateMutationScore_TwoFolders()
     {
-        var target = new CsharpFolderComposite();
+        var target = new FolderComposite();
         target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed } } });
         target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived } } });
 
@@ -140,8 +141,8 @@ public class CsharpProjectComponentTests : TestBase
     [TestMethod]
     public void ReportComponent_ShouldCalculateMutationScore_Recursive()
     {
-        var target = new CsharpFolderComposite();
-        var subFolder = new CsharpFolderComposite();
+        var target = new FolderComposite();
+        var subFolder = new FolderComposite();
         target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed } } });
         target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived } } });
         target.Add(subFolder);
@@ -154,8 +155,8 @@ public class CsharpProjectComponentTests : TestBase
     [TestMethod]
     public void ReportComponent_ShouldCalculateMutationScore_Recursive2()
     {
-        var target = new CsharpFolderComposite();
-        var subFolder = new CsharpFolderComposite();
+        var target = new FolderComposite();
+        var subFolder = new FolderComposite();
         target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived } } });
         target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived } } });
         target.Add(subFolder);
@@ -176,7 +177,7 @@ public class CsharpProjectComponentTests : TestBase
     [DataRow(MutantStatus.Pending, double.NaN)]
     public void ReportComponent_ShouldCalculateMutationScore_OnlyKilledIsSuccessful(MutantStatus status, double expectedScore)
     {
-        var target = new CsharpFolderComposite();
+        var target = new FolderComposite();
         target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = status } } });
 
         var result = target.GetMutationScore();
@@ -186,7 +187,7 @@ public class CsharpProjectComponentTests : TestBase
     [TestMethod]
     public void ReportComponent_ShouldCalculateMutationScore_BuildErrorIsNull()
     {
-        var target = new CsharpFolderComposite();
+        var target = new FolderComposite();
         target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.CompileError } } });
 
         var result = target.GetMutationScore();
