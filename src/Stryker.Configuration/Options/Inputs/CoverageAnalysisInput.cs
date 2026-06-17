@@ -38,9 +38,9 @@ public class CoverageAnalysisInput : Input<string>
             (OptimizationModes.CaptureCoveragePerTest | OptimizationModes.CoverageBasedTest, "'perTest' but coverage of each test is captured in isolation. Increase coverage accuracy at the expense of a slow init phase."),
     };
 
-    public OptimizationModes Validate(TestRunner testRunner = TestRunner.VsTest, ILogger<CoverageAnalysisInput> logger = null)
+    public OptimizationModes Validate(TestRunner testRunner = TestRunner.VsTest, ILogger<CoverageAnalysisInput>? logger = null)
     {
-        var value = (SuppliedInput ?? Default).ToLower();
+        var value = (SuppliedInput ?? Default).ToLowerInvariant();
         if (!_possibleValues.TryGetValue(value, out var entry))
         {
             throw new InputException(
