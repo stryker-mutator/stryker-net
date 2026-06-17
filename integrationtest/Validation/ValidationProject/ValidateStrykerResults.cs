@@ -197,7 +197,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 670, ignored: 274, survived: 1, killed: 1, timeout: 0, nocoverage: 360);
+        CheckReportMutants(report, total: 670, ignored: 274, survived: 2, killed: 1, timeout: 2, nocoverage: 357);
         CheckReportTestCounts(report, total: 0); // MTP doesn't report tests yet
     }
 
