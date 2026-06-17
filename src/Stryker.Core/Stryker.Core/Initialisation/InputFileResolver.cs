@@ -494,14 +494,14 @@ public class InputFileResolver(
         {
             foreach (var projectReference in variant.ProjectReferences)
             {
-                var candidateProject = mutableProjects.FirstOrDefault(p => p.ProjectFileName == projectReference);
+                var candidateProject = mutableProjects.FirstOrDefault(p => string.Compare(p.ProjectFileName, projectReference, StringComparison.OrdinalIgnoreCase) == 0);
                 var candidateProjectVariants = candidateProject?.AnalyzerLastResults;
                 if (candidateProjectVariants == null)
                 {
                     // probably another test project
                     continue;
                 }
-                // we try to find a target with the same target framework or one of the same kind (full or core
+                // we try to find a target with the same target framework, or one of the same kind (full or core)
                 var candidateVariant = candidateProjectVariants.FirstOrDefault( v=> v.TargetFramework == variant.TargetFramework) ??
                                        candidateProjectVariants.FirstOrDefault( v=> v.TargetsDesktop() == variant.TargetsDesktop());
                 if (candidateVariant == null)

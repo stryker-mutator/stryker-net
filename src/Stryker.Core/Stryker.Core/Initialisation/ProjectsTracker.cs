@@ -141,7 +141,7 @@ public class ProjectsTracker
     /// Gets a project analysis context for the given project file, using the configuration and platform from the solution if available, otherwise using the configuration and platform from the options.
     /// </summary>
     /// <param name="projectFile">target project file</param>
-    /// <returns>a <see cref="ProjectSimulatedBuildHandler"/> instance for <param name="projectFile">.</param></returns>
+    /// <returns>a <see cref="ProjectSimulatedBuildHandler"/> instance for <paramref name="projectFile">.</paramref></returns>
     public ProjectSimulatedBuildHandler GetProjectAnalysisContext(string projectFile)
     {
         string configuration;
