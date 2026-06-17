@@ -7,7 +7,7 @@ using Stryker.Core.InjectedHelpers;
 
 namespace Stryker.Core.ProjectComponents.SourceProjects;
 
-public class SourceProjectInfo(IAnalyzerResult analyzerResult, ITestProjectsInfo testProjectsInfo)
+public class SourceProjectInfo(IAnalyzerResult analyzerResult, ITestProjectsInfo? testProjectsInfo)
     : IProjectAndTests
 {
     private readonly List<string> _warnings = [];
@@ -16,7 +16,7 @@ public class SourceProjectInfo(IAnalyzerResult analyzerResult, ITestProjectsInfo
 
     public IAnalyzerResult AnalyzerResult { get; } = analyzerResult;
 
-    public ITestProjectsInfo TestProjectsInfo { get; } = testProjectsInfo;
+    public ITestProjectsInfo? TestProjectsInfo { get; } = testProjectsInfo;
 
     /// <summary>
     /// The Folder/File structure found in the project under test.
