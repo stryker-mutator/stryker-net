@@ -1,0 +1,11 @@
+{
+  "stryker-config": {
+    "test-runner": "MTP",
+    "reporters": ["Dots", "Json"],
+    "project": "TargetProject.csproj",
+    "ignore-mutations": ["string"],
+    "mutate": ["!Person.cs"],
+    "mutation-level": "Complete",
+    "coverage-analysis": "perTest"
+  }
+}
