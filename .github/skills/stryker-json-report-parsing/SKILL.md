@@ -137,7 +137,7 @@ for path, fdata in data['files'].items():
 LATEST=$(ls -td StrykerOutput/*/ | head -1)
 MUTANT_ID=0
 cat "$LATEST/reports/mutation-report.json" | python3 -c "
-import sys, json, sys
+import sys, json
 data = json.load(sys.stdin)
 target = int(sys.argv[1])
 for path, fdata in data['files'].items():
