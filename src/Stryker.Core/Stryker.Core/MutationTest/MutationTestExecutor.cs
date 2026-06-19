@@ -57,26 +57,19 @@ public class MutationTestExecutor : IMutationTestExecutor
             var remainingMutants = mutantsToTest.Where((m) => m.ResultStatus == MutantStatus.Pending).ToList();
             if (remainingMutants.Count == mutantsToTest.Count)
             {
-                // the test failed to get any conclusive results
-                if (!result.SessionTimedOut)
+                // No mutant in this session got a conclusive result. A single mutant is already
+                // classified by Mutant.AnalyzeTestRun, so reaching here means the whole batch was
+                // inconclusive: rerun one mutant at a time to isolate the culprit, unless nothing
+                // ran at all.
+                if (result.SessionTimedOut || result.SessionRuntimeError)
+                {
+                    forceSingle = true;
+                }
+                else
                 {
                     // something bad happened.
                     Logger.LogError("Stryker failed to test {RemainingMutantsCount} mutant(s).", remainingMutants.Count);
                     return;
-                }
-
-                // test session's results have been corrupted by the time out
-                // we retry and run tests one by one, if necessary
-                if (remainingMutants.Count == 1)
-                {
-                    // only one mutant was tested, we mark it as timeout.
-                    remainingMutants[0].ResultStatus = MutantStatus.Timeout;
-                    remainingMutants.Clear();
-                }
-                else
-                {
-                    // we don't know which tests timed out, we rerun all tests in dedicated sessions
-                    forceSingle = true;
                 }
             }
 
@@ -100,12 +93,13 @@ public class MutationTestExecutor : IMutationTestExecutor
             {
                 var localResult =
                     await TestRunner.TestMultipleMutantsAsync(projectAndTests, timeoutMs, new[] { mutant }, updateHandler).ConfigureAwait(false);
-                if (updateHandler == null || localResult.SessionTimedOut)
+                if (updateHandler == null || localResult.SessionTimedOut || localResult.SessionRuntimeError)
                 {
                     mutant.AnalyzeTestRun(localResult.FailingTests,
                         localResult.ExecutedTests,
                         localResult.TimedOutTests,
-                        localResult.SessionTimedOut);
+                        localResult.SessionTimedOut,
+                        localResult.SessionRuntimeError);
                 }
             }
 
@@ -113,7 +107,7 @@ public class MutationTestExecutor : IMutationTestExecutor
         }
 
         var result = await TestRunner.TestMultipleMutantsAsync(projectAndTests, timeoutMs, mutantsToTest.ToList(), updateHandler).ConfigureAwait(false);
-        if (updateHandler != null && !result.SessionTimedOut)
+        if (updateHandler != null && !result.SessionTimedOut && !result.SessionRuntimeError)
         {
             return result;
         }
@@ -123,7 +117,8 @@ public class MutationTestExecutor : IMutationTestExecutor
             mutant.AnalyzeTestRun(result.FailingTests,
                 result.ExecutedTests,
                 result.TimedOutTests,
-                mutantsToTest.Count == 1 && result.SessionTimedOut);
+                mutantsToTest.Count == 1 && result.SessionTimedOut,
+                mutantsToTest.Count == 1 && result.SessionRuntimeError);
         }
 
         return result;

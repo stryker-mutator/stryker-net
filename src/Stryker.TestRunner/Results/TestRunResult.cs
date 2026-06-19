@@ -46,10 +46,24 @@ public class TestRunResult : ITestRunResult
         IEnumerable<string> messages,
         TimeSpan duration) => new(vsTestDescriptions, ranTests, failedTest, timedOutTests, message, messages, duration) { SessionTimedOut = true };
 
+    /// <summary>
+    /// Creates a result signalling that the test host crashed and the run could not be completed.
+    /// The covered mutants cannot be conclusively tested and are reported as a runtime error.
+    /// </summary>
+    public static TestRunResult RuntimeError(
+        IEnumerable<IFrameworkTestDescription> vsTestDescriptions,
+        ITestIdentifiers ranTests,
+        ITestIdentifiers failedTest,
+        ITestIdentifiers timedOutTests,
+        string message,
+        IEnumerable<string> messages,
+        TimeSpan duration) => new(vsTestDescriptions, ranTests, failedTest, timedOutTests, message, messages, duration) { SessionRuntimeError = true };
+
     public ITestIdentifiers FailingTests { get; }
     public ITestIdentifiers ExecutedTests { get; }
     public ITestIdentifiers TimedOutTests { get; }
     public bool SessionTimedOut { get; private init; }
+    public bool SessionRuntimeError { get; private init; }
     public string ResultMessage { get; }
     public IEnumerable<string> Messages { get; } = [];
     public TimeSpan Duration { get; }

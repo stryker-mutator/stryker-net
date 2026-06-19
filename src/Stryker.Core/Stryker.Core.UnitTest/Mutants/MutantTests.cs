@@ -27,6 +27,7 @@ public class MutantTests : TestBase
 
     [TestMethod]
     [DataRow(MutantStatus.CompileError, false)]
+    [DataRow(MutantStatus.RuntimeError, false)]
     [DataRow(MutantStatus.Ignored, false)]
     [DataRow(MutantStatus.Killed, true)]
     [DataRow(MutantStatus.NoCoverage, true)]
@@ -130,5 +131,42 @@ public class MutantTests : TestBase
             true);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
+    }
+
+    [TestMethod]
+    public void ShouldSetRuntimeErrorStateWhenSessionHasRuntimeError()
+    {
+        var mutant = new Mutant
+        {
+            AssessingTests = TestIdentifierList.EveryTest()
+        };
+
+        mutant.AnalyzeTestRun(TestIdentifierList.NoTest(),
+            TestIdentifierList.NoTest(),
+            TestIdentifierList.NoTest(),
+            sessionTimedOut: false,
+            sessionRuntimeError: true);
+
+        mutant.ResultStatus.ShouldBe(MutantStatus.RuntimeError);
+        mutant.ResultStatusReason.ShouldNotBeNullOrEmpty();
+    }
+
+    [TestMethod]
+    public void ShouldNotSetRuntimeErrorWhenAnAssessingTestFailed()
+    {
+        // A real failing test takes precedence: the mutant is killed, not flagged as a runtime error.
+        var failingTest = Guid.NewGuid().ToString();
+        var mutant = new Mutant
+        {
+            AssessingTests = new TestIdentifierList(new[] { failingTest })
+        };
+
+        mutant.AnalyzeTestRun(new TestIdentifierList(new[] { failingTest }),
+            TestIdentifierList.NoTest(),
+            TestIdentifierList.NoTest(),
+            sessionTimedOut: false,
+            sessionRuntimeError: true);
+
+        mutant.ResultStatus.ShouldBe(MutantStatus.Killed);
     }
 }

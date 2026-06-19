@@ -36,7 +36,7 @@ public abstract class ProjectComponent : IProjectComponent
         .Union(DetectedMutants());
 
     public IEnumerable<IReadOnlyMutant> InvalidMutants() => Mutants
-        .Where(m => m.ResultStatus == MutantStatus.CompileError);
+        .Where(m => m.ResultStatus is MutantStatus.CompileError or MutantStatus.RuntimeError);
 
     public IEnumerable<IReadOnlyMutant> UndetectedMutants() => Mutants
         .Where(m =>

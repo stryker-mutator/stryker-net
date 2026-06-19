@@ -650,13 +650,13 @@ public class SingleMicrosoftTestPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task RunAllTestsAsync_CrashedAssembly_DoesNotMarkMutantsAsExecuted()
+    public async Task RunAllTestsAsync_CrashedAssembly_ReportsRuntimeError()
     {
         // Regression: a crashed test host makes an assembly run return the failure sentinel
         // (TestRunResult(false) => FailingTests == EveryTest). The accumulator must NOT fold that
         // into "every test ran, none failed" (EveryTest.GetIdentifiers() is empty), which would
-        // mark otherwise-untested mutants as Survived. The mutants must be left untested instead:
-        // ranTests is not EveryTest and failedTests is empty, so Mutant.AnalyzeTestRun keeps Pending.
+        // mark otherwise-untested mutants as Survived. Instead it surfaces a runtime error so the
+        // mutants are classified as RuntimeError (excluded from the score) by the executor.
         const string assembly = "/path/to/tests.dll";
         var discovered = new List<TestNode>
         {
@@ -682,11 +682,12 @@ public class SingleMicrosoftTestPlatformRunnerTests
         var result = await runner.RunAllTestsAsync(
             new[] { assembly }, mutantId: 1, mutants: new[] { mutant.Object }, update: Update);
 
+        result.SessionRuntimeError.ShouldBeTrue();             // signals the host crash to the executor
+        result.SessionTimedOut.ShouldBeFalse();
         capturedRan.ShouldNotBeNull();
         capturedRan!.IsEveryTest.ShouldBeFalse();              // would be true (=> Survived) before the fix
         capturedFailed.ShouldNotBeNull();
         capturedFailed!.GetIdentifiers().ShouldBeEmpty();
-        result.SessionTimedOut.ShouldBeFalse();
         result.ResultMessage.ShouldContain("crash");           // failure reason is surfaced, not swallowed
     }
 

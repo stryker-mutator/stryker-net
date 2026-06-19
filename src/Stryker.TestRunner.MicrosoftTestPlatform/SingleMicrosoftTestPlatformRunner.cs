@@ -486,11 +486,6 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
                 }
             }
 
-            if (accumulator.HasError)
-            {
-                _logger.LogWarning("{RunnerId}: One or more test assemblies could not be run (the test host likely crashed). The affected mutants are left untested instead of being reported as survived.", RunnerId);
-            }
-
             var executedTests = accumulator.BuildExecutedTests();
             var failedTestIds = accumulator.BuildFailedTests();
             var timedOutTestIds = accumulator.BuildTimedOutTests();
@@ -504,6 +499,22 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             if (update is not null && mutants is not null)
             {
                 update.Invoke(mutants, failedTestIds, executedTests, timedOutTestIds);
+            }
+
+            if (accumulator.HasError)
+            {
+                // The test host crashed (e.g. a mutation caused a fatal fault). Signal a runtime error
+                // so the affected mutants are classified as RuntimeError (excluded from the score)
+                // rather than reported as survived or logged as a test failure.
+                _logger.LogDebug("{RunnerId}: A test host crashed during this run; reporting a runtime error for the affected mutant(s).", RunnerId);
+                return TestRunResult.RuntimeError(
+                    testDescriptionValues,
+                    executedTests,
+                    failedTestIds,
+                    timedOutTestIds,
+                    accumulator.BuildErrorMessage(),
+                    accumulator.Messages,
+                    accumulator.TotalDuration);
             }
 
             if (accumulator.HasTimeout)
