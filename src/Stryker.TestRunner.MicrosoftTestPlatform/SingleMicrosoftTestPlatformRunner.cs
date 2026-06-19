@@ -235,17 +235,32 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
     private async Task<AssemblyTestServer> GetOrCreateServerAsync(string assembly)
     {
-        AssemblyTestServer? server;
+        AssemblyTestServer? deadServer = null;
         lock (_serverLock)
         {
-            if (_assemblyServers.TryGetValue(assembly, out server) && server.IsInitialized)
+            if (_assemblyServers.TryGetValue(assembly, out var existing))
             {
-                return server;
+                if (existing.IsAlive)
+                {
+                    return existing;
+                }
+
+                // The server process is no longer alive (e.g. it crashed during a previous run).
+                // Drop it so a fresh server is started rather than reusing a dead RPC connection,
+                // which would fail every subsequent test run instantly.
+                _logger.LogDebug("{RunnerId}: Test server for {Assembly} is no longer alive; recreating", RunnerId, assembly);
+                _assemblyServers.Remove(assembly);
+                deadServer = existing;
             }
         }
 
+        if (deadServer is not null)
+        {
+            await deadServer.StopAsync(force: true).ConfigureAwait(false);
+        }
+
         var environmentVariables = BuildEnvironmentVariables();
-        server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options);
+        var server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options);
 
         var started = await server.StartAsync().ConfigureAwait(false);
         if (!started)
@@ -259,6 +274,25 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
 
         return server;
+    }
+
+    /// <summary>
+    /// Force-stops and removes the server for the given assembly so the next run starts a fresh one.
+    /// Used after a run fails because the test host crashed and tore down the RPC connection.
+    /// </summary>
+    private async Task DiscardServerAsync(string assembly)
+    {
+        AssemblyTestServer? server;
+        lock (_serverLock)
+        {
+            _assemblyServers.TryGetValue(assembly, out server);
+            _assemblyServers.Remove(assembly);
+        }
+
+        if (server is not null)
+        {
+            await server.StopAsync(force: true).ConfigureAwait(false);
+        }
     }
 
     private async Task<bool> DiscoverTestsInternalAsync(string assembly)
@@ -360,10 +394,27 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
         public List<string> TimedOutTests { get; } = [];
         public bool HasTimeout { get; set; }
+        public bool HasError { get; private set; }
         public TimeSpan TotalDuration { get; private set; }
 
         public void Aggregate(TestRunResult result, List<TestNode>? discoveredTests)
         {
+            // A failure sentinel (FailingTests == EveryTest, produced only by the TestRunResult(false)
+            // path when an assembly run crashes) must NOT be folded into the executed/failed sets:
+            // EveryTest.GetIdentifiers() is empty, so doing so would record "every test ran, none
+            // failed" and report otherwise-untested mutants as Survived. Treat it as an error instead,
+            // leaving those mutants Pending so they are surfaced as "failed to test".
+            if (result.FailingTests.IsEveryTest)
+            {
+                HasError = true;
+                if (!string.IsNullOrWhiteSpace(result.ResultMessage))
+                {
+                    _errorMessages.Add(result.ResultMessage);
+                }
+                TotalDuration += result.Duration;
+                return;
+            }
+
             if (result.ExecutedTests.IsEveryTest)
             {
                 _totalExecutedTests += discoveredTests?.Count ?? 0;
@@ -433,6 +484,11 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
                 {
                     accumulator.Aggregate(result, discoveredTests);
                 }
+            }
+
+            if (accumulator.HasError)
+            {
+                _logger.LogWarning("{RunnerId}: One or more test assemblies could not be run (the test host likely crashed). The affected mutants are left untested instead of being reported as survived.", RunnerId);
             }
 
             var executedTests = accumulator.BuildExecutedTests();
@@ -505,35 +561,61 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         Func<TestNode, bool>? testUidFilter,
         TimeSpan? timeout = null)
     {
-        var startTime = DateTime.UtcNow;
+        // A crashed test host tears down the RPC connection, so the run throws (rather than timing out).
+        // Retry once on a freshly started server: a crash caused by a *previous* mutant then self-heals
+        // for the current mutant instead of corrupting its result.
+        const int maxRunAttempts = 2;
+        Exception? lastRunException = null;
 
-        try
+        for (var attempt = 1; attempt <= maxRunAttempts; attempt++)
         {
-            // Get or create the server for this assembly (reuses existing server)
-            var server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
-
-            List<TestNode>? tests = null;
-            lock (_discoveryLock)
+            AssemblyTestServer server;
+            try
             {
-                if (_testsByAssembly.TryGetValue(assembly, out var assemblyTests))
-                {
-                    tests = assemblyTests;
-                }
+                // Get or create the server for this assembly (reuses an existing, live server)
+                server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // The server could not be started at all; retrying immediately would not help.
+                return (new TestRunResult(false, ex.Message), false);
             }
 
-            var testsToRun = tests?.Where(t => testUidFilter is null || testUidFilter(t)).ToArray();
+            var startTime = DateTime.UtcNow;
+            try
+            {
+                List<TestNode>? tests = null;
+                lock (_discoveryLock)
+                {
+                    if (_testsByAssembly.TryGetValue(assembly, out var assemblyTests))
+                    {
+                        tests = assemblyTests;
+                    }
+                }
 
-            var (testResults, timedOut) = await server.RunTestsAsync(testsToRun, timeout).ConfigureAwait(false);
+                var testsToRun = tests?.Where(t => testUidFilter is null || testUidFilter(t)).ToArray();
 
-            var duration = DateTime.UtcNow - startTime;
-            var result = BuildTestRunResult(testResults, tests?.Count ?? 0, duration);
+                var (testResults, timedOut) = await server.RunTestsAsync(testsToRun, timeout).ConfigureAwait(false);
 
-            return (result, timedOut);
+                var duration = DateTime.UtcNow - startTime;
+                var result = BuildTestRunResult(testResults, tests?.Count ?? 0, duration);
+
+                return (result, timedOut);
+            }
+            catch (Exception ex)
+            {
+                lastRunException = ex;
+                _logger.LogDebug(ex, "{RunnerId}: Test run for {Assembly} failed on attempt {Attempt}/{MaxAttempts}; discarding crashed server",
+                    RunnerId, Path.GetFileName(assembly), attempt, maxRunAttempts);
+
+                // The server most likely crashed; drop it so the next attempt starts a fresh one.
+                await DiscardServerAsync(assembly).ConfigureAwait(false);
+            }
         }
-        catch (Exception ex)
-        {
-            return (new TestRunResult(false, ex.Message), false);
-        }
+
+        // Every attempt failed. Return the failure sentinel; the accumulator recognises it and keeps
+        // the affected mutants Pending (surfaced as "failed to test") rather than marking them Survived.
+        return (new TestRunResult(false, lastRunException?.Message ?? "Test run failed: the test host could not be reached."), false);
     }
 
     /// <summary>

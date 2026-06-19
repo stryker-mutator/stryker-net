@@ -141,6 +141,42 @@ public class AssemblyTestServerTests
     }
 
     [TestMethod]
+    public void Constructor_ShouldNotBeAlive()
+    {
+        using var server = CreateServer();
+
+        server.IsAlive.ShouldBeFalse();
+    }
+
+    [TestMethod]
+    public async Task StartAsync_ShouldMakeServerAlive_WhenProcessIsRunning()
+    {
+        SetupSuccessfulConnection();
+
+        using var server = CreateServer();
+        await server.StartAsync();
+
+        server.IsAlive.ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public async Task IsAlive_ShouldBeFalse_WhenProcessHasExitedAfterStart()
+    {
+        SetupSuccessfulConnection();
+
+        using var server = CreateServer();
+        await server.StartAsync();
+        server.IsAlive.ShouldBeTrue();
+
+        // Simulate the test host crashing after the server was started:
+        // it stays "initialized" but the underlying process is gone.
+        _processMock.SetupGet(p => p.HasExited).Returns(true);
+
+        server.IsInitialized.ShouldBeTrue();
+        server.IsAlive.ShouldBeFalse();
+    }
+
+    [TestMethod]
     public async Task StartAsync_ShouldReturnTrue_WhenAlreadyInitialized()
     {
         SetupSuccessfulConnection();

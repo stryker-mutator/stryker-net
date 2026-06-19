@@ -42,6 +42,14 @@ internal sealed class AssemblyTestServer : IDisposable
 
     public bool IsInitialized => _isInitialized;
 
+    /// <summary>
+    /// True when the server has been initialized and its underlying process is still running.
+    /// A test host that crashed mid-run (e.g. a mutation causing a fatal fault such as a
+    /// <see cref="StackOverflowException"/>) leaves <see cref="IsInitialized"/> true while the
+    /// process is gone; this flag detects that so the server can be recreated instead of reused.
+    /// </summary>
+    public bool IsAlive => _isInitialized && !_disposed && _process is { HasExited: false };
+
     public async Task<bool> StartAsync(CancellationToken cancellationToken = default)
     {
         if (_isInitialized)

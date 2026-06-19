@@ -649,6 +649,70 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.ResultMessage.ShouldNotContain("passed");
     }
 
+    [TestMethod, Timeout(1000)]
+    public async Task RunAllTestsAsync_CrashedAssembly_DoesNotMarkMutantsAsExecuted()
+    {
+        // Regression: a crashed test host makes an assembly run return the failure sentinel
+        // (TestRunResult(false) => FailingTests == EveryTest). The accumulator must NOT fold that
+        // into "every test ran, none failed" (EveryTest.GetIdentifiers() is empty), which would
+        // mark otherwise-untested mutants as Survived. The mutants must be left untested instead:
+        // ranTests is not EveryTest and failedTests is empty, so Mutant.AnalyzeTestRun keeps Pending.
+        const string assembly = "/path/to/tests.dll";
+        var discovered = new List<TestNode>
+        {
+            new("uid-1", "Test1", "test", "passed"),
+            new("uid-2", "Test2", "test", "passed"),
+        };
+
+        using var runner = new CrashingAssemblyRunner(
+            _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, discovered);
+
+        var mutant = new Mock<IMutant>();
+        mutant.Setup(m => m.Id).Returns(1);
+
+        ITestIdentifiers? capturedFailed = null;
+        ITestIdentifiers? capturedRan = null;
+        bool Update(IReadOnlyList<IMutant> _, ITestIdentifiers failed, ITestIdentifiers ran, ITestIdentifiers __)
+        {
+            capturedFailed = failed;
+            capturedRan = ran;
+            return true;
+        }
+
+        var result = await runner.RunAllTestsAsync(
+            new[] { assembly }, mutantId: 1, mutants: new[] { mutant.Object }, update: Update);
+
+        capturedRan.ShouldNotBeNull();
+        capturedRan!.IsEveryTest.ShouldBeFalse();              // would be true (=> Survived) before the fix
+        capturedFailed.ShouldNotBeNull();
+        capturedFailed!.GetIdentifiers().ShouldBeEmpty();
+        result.SessionTimedOut.ShouldBeFalse();
+        result.ResultMessage.ShouldContain("crash");           // failure reason is surfaced, not swallowed
+    }
+
+    /// <summary>
+    /// Simulates an assembly whose test host crashes: <see cref="RunAssemblyTestsAsync"/> returns the
+    /// failure sentinel produced by the real exception path, without starting any server process.
+    /// </summary>
+    private sealed class CrashingAssemblyRunner : SingleMicrosoftTestPlatformRunner
+    {
+        private readonly List<TestNode> _discovered;
+
+        public CrashingAssemblyRunner(
+            Dictionary<string, List<TestNode>> testsByAssembly,
+            Dictionary<string, MtpTestDescription> testDescriptions,
+            TestSet testSet,
+            object discoveryLock,
+            List<TestNode> discovered)
+            : base(0, testsByAssembly, testDescriptions, testSet, discoveryLock, NullLogger.Instance)
+            => _discovered = discovered;
+
+        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
+            string assembly, ITimeoutValueCalculator? timeoutCalc)
+            => Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>(
+                (new TestRunResult(false, "simulated test host crash"), false, _discovered));
+    }
+
     [TestCleanup]
     public void Cleanup()
     {
