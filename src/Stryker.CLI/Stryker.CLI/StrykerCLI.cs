@@ -185,7 +185,7 @@ public class StrykerCli
         }
     }
 
-private void PrintStrykerASCIIName(IStrykerInputs inputs)
+    private void PrintStrykerASCIIName(IStrykerInputs inputs)
     {
         var logLevel = inputs.VerbosityInput.Validate();
 
