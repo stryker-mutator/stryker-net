@@ -119,7 +119,7 @@ public class StrykerCli
         {
             // app started
             _configReader.Build(inputs, args, app, cmdConfigReader);
-            
+
             PrintStrykerASCIIName(inputs);
 
             _loggingInitializer.SetupLogOptions(inputs);
