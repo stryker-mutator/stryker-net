@@ -10,11 +10,7 @@ stages:
         git fetch
         git checkout $(system.pullRequest.sourceBranch)
     - task: UseDotNet@2
-      displayName: 'Use dotnet'
-      inputs:
-        version: 8.x
-    - task: UseDotNet@2
-      displayName: 'Use dotnet'
+      displayName: 'Use dotnet 10'
       inputs:
         version: 10.x
     - task: DotNetCoreCLI@2

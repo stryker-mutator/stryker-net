@@ -8,6 +8,16 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 
 This guide instructs how to update major versions of Stryker.NET.
 
+## V4.x --> V5.x
+
+### ⏭ Updated runtime
+
+The .NET runtime requirement for Stryker.NET has been changed. Dotnet 10 runtime is now required.
+
+Please [download and install the dotnet 10 runtime](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) and update your pipeline have the dotnet 10 runtime available.
+
+_Note it is not neccesary to target dotnet 10 in your projects. Dotnet 10 is a runtime requirement for stryker, we will still compile your project to your existing target frameworks._
+
 ## V3.x --> V4.x
 
 ### ⏭ Updated runtime
