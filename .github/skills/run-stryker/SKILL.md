@@ -32,7 +32,6 @@ This runs Stryker with no startup banner and outputs basic result in the termina
 | Option | Short | Example | Purpose |
 |--------|-------|---------|---------|
 | `--solution` | `-s` | `-s "../solution.sln"` | Path to solution file (required for .NET Framework projects) |
-| `--no-logo` | | `--no-logo` | Suppress startup banner |
 | `--project` | `-p` | `-p "MyProject.csproj"` | Project file name to mutate |
 | `--test-runner` | `-t` | `-t "mtp"` | Test runner (vstest or mtp) |
 | `--reporter` | `-r` | `-r "html" -r "json"` | Output reporters (repeatable) |
@@ -44,7 +43,7 @@ This runs Stryker with no startup banner and outputs basic result in the termina
 | `--mutate` | `-m` | `-m "**/*Services.cs"` | Files to mutate (glob pattern) |
 | `--config-file` | `-f` | `-f "custom.json"` | Config file path |
 | `--output` | `-O` | `-O "./results"` | Output directory |
-| `--verbosity` | `-V` | `-V "trace"` | Log level (debug, info, warning, error) |
+| `--verbosity` | `-V` | `-V "warning"` | Log level (trace, debug, info, warning, error). Using `warning` or higher also suppresses the startup banner. |
 
 ## Configuration File Approach (Recommended)
 
