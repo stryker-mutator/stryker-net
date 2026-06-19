@@ -23,7 +23,7 @@ This will look for a `stryker-config.json` file in the current directory and run
 dotnet stryker --verbosity "warning" --reporter "cleartext" --reporter "json"
 ```
 
-This runs Stryker with no startup banner and outputs basic result in the terminal and a JSON report in the output directory. Ideal for ai agents to use less tokens while still getting rich output. Parse the output for quick results. Parse the json file for detailed results if needed.
+This runs Stryker without the startup banner and outputs a basic result in the terminal plus a JSON report in the output directory. Ideal for AI agents to use fewer tokens while still getting rich output. Parse the terminal output for quick results, and parse the JSON report for details when needed.
 
 ## Command-Line Options
 
