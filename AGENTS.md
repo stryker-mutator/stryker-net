@@ -3,14 +3,18 @@
 This document provides guidance for AI agents, such as GitHub Copilot, when working with the Stryker.NET repository.
 
 Reference these instruction files when applicable:
-- **Always**: [Taming Copilot](./instructions/taming-copilot.instructions.md)
-- **Always**: [Conventional Commit Guidelines](./instructions/conventional-commit.instructions.md)
-- **Always**: [Security Best Practices](./instructions/security-and-owasp.instructions.md)
-- **Always**: [Self-Explanatory Code Commenting](./instructions/self-explanatory-code-commenting.instructions.md)
-- **When writing documentation**: [Markdown Instructions](./instructions/markdown.instructions.md)
-- **When writing C#**: [C# Instructions](./instructions/csharp.instructions.md)
-- **When working with Azure Pipelines**: [Azure DevOps Pipelines](./instructions/azure-devops-pipelines.instructions.md)
-- **When working with GitHub Actions**: [GitHub Actions](./instructions/github-actions-ci-cd-best-practices.instructions.md)
+- **Always**: [Taming Copilot](.github/instructions/taming-copilot.instructions.md)
+- **Always**: [Conventional Commit Guidelines](.github/instructions/conventional-commit.instructions.md)
+- **Always**: [Security Best Practices](.github/instructions/security-and-owasp.instructions.md)
+- **Always**: [Self-Explanatory Code Commenting](.github/instructions/self-explanatory-code-commenting.instructions.md)
+- **When writing documentation**: [Markdown Instructions](.github/instructions/markdown.instructions.md)
+- **When writing C#**: [C# Instructions](.github/instructions/csharp.instructions.md)
+- **When working with Azure Pipelines**: [Azure DevOps Pipelines](.github/instructions/azure-devops-pipelines.instructions.md)
+- **When working with GitHub Actions**: [GitHub Actions](.github/instructions/github-actions-ci-cd-best-practices.instructions.md)
+
+Reference these skill files when applicable:
+- **When running stryker on a project**: [Running Stryker](.github/skills/run-stryker/skill.md)
+- **When parsing a json stryker report**: [Parsing Stryker Report](.github/skills/stryker-json-report-parsing/skill.md)
 
 ## Project Overview
 
