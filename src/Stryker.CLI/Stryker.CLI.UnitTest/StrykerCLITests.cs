@@ -164,9 +164,7 @@ Options:";
         var console = new TestConsole().EmitAnsiSequences().Width(160);
         var target = new StrykerCli(strykerRunnerMock.Object, new ConfigBuilder(), _loggingInitializerMock.Object, _nugetClientMock.Object, console, Mock.Of<IFileSystem>());
 
-        await target.RunAsync(new[] { "--verbosity", "warning" });
-
-        Thread.Sleep(20);
+        await target.RunAsync(new[] { "--verbosity", "warning", "--skip-version-check" });
 
         var consoleOutput = console.Output;
         consoleOutput.ShouldNotContain("_____ _");
