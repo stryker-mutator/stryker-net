@@ -626,8 +626,8 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
 
         // Every attempt failed. Return the crash sentinel; the accumulator recognises it and flags the
-        // run as an error, so the affected mutants are reported as RuntimeError rather than Survived.
-        return (new TestRunResult(false, lastRunException?.Message ?? "Test run failed: the test host could not be reached."), false);
+        // run as crashed, so the affected mutants are reported as RuntimeError rather than Survived.
+        return (new TestRunResult(false, lastRunException!.Message), false);
     }
 
     /// <summary>
