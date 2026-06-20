@@ -26,7 +26,6 @@ public class ProgressBarReporter : IProgressBarReporter, IDisposable
     private int _mutantsKilledCount;
     private int _mutantsSurvivedCount;
     private int _mutantsTimeoutCount;
-    private int _mutantsCompileErrorCount;
     private int _mutantsRuntimeErrorCount;
 
     public ProgressBarReporter(IProgressBar progressBar, IStopWatchProvider stopWatch, IAnsiConsole console = null)
@@ -59,9 +58,6 @@ public class ProgressBarReporter : IProgressBarReporter, IDisposable
             case MutantStatus.Timeout:
                 _mutantsTimeoutCount++;
                 break;
-            case MutantStatus.CompileError:
-                _mutantsCompileErrorCount++;
-                break;
             case MutantStatus.RuntimeError:
                 _mutantsRuntimeErrorCount++;
                 break;
@@ -81,8 +77,7 @@ public class ProgressBarReporter : IProgressBarReporter, IDisposable
         _console.MarkupLine($"Killed:   [Magenta]{_mutantsKilledCount.ToString().PadLeft(length)}[/]");
         _console.MarkupLine($"Survived: [Magenta]{_mutantsSurvivedCount.ToString().PadLeft(length)}[/]");
         _console.MarkupLine($"Timeout:  [Magenta]{_mutantsTimeoutCount.ToString().PadLeft(length)}[/]");
-        _console.MarkupLine($"Compile Errors: [Magenta]{_mutantsCompileErrorCount.ToString().PadLeft(length)}[/]");
-        _console.MarkupLine($"Runtime Errors: [Magenta]{_mutantsRuntimeErrorCount.ToString().PadLeft(length)}[/]");
+        _console.MarkupLine($"Errors: [Magenta]{_mutantsRuntimeErrorCount.ToString().PadLeft(length)}[/]");
     }
 
     private string RemainingTime()
