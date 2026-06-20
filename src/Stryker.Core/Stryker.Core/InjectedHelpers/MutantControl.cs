@@ -16,6 +16,20 @@ namespace Stryker
         private static string _cachedMutantFilePath = string.Empty;
         private static bool _mutantFilePathCached;
 
+        // The MTP runner reuses a single test host process across mutant runs and signals the active
+        // mutant by rewriting a file (see SingleMicrosoftTestPlatformRunner). IsActive runs in the hot
+        // path of mutated code - potentially millions of calls per test run - so reading that file on
+        // every call (the original behaviour) made the MTP runner far slower than the VSTest runner.
+        // A FileSystemWatcher flips _mutantFileDirty only when the runner writes a new mutant id
+        // between runs; within a run every check is then a cheap bool + int comparison with no I/O.
+        // Held as object (initialized to a non-null sentinel) only to root the watcher against
+        // garbage collection; it is never read back. Typing it as the watcher would require a
+        // nullable-friendly initializer that is not available in the C# v2 feature set this file targets.
+        private static object _mutantFileWatcher = new System.Object();
+        private static bool _mutantFileWatcherInitialized;
+        private static bool _mutantFileWatcherFailed;
+        private static volatile bool _mutantFileDirty = true;
+
         // Coverage file path for MTP runner (file-based IPC)
         private static string _cachedCoverageFilePath = string.Empty;
         private static bool _coverageFilePathCached;
@@ -87,7 +101,55 @@ namespace Stryker
                 _mutantFilePathCached = true;
             }
 
-            if (string.IsNullOrEmpty(_cachedMutantFilePath) || !System.IO.File.Exists(_cachedMutantFilePath))
+            if (string.IsNullOrEmpty(_cachedMutantFilePath))
+            {
+                return false;
+            }
+
+            EnsureMutantFileWatcher();
+
+            if (_mutantFileWatcherFailed)
+            {
+                // No watcher could be created on this platform; fall back to detecting changes via the
+                // file's last-write timestamp. Correct, just slower (a file stat per check).
+                return TryReadMutantFromFileByTimestamp(out mutantId);
+            }
+
+            // Fast path: nothing has changed since the last successful read, so reuse the cached
+            // ActiveMutant without touching the filesystem.
+            if (!_mutantFileDirty && ActiveMutant != ActiveMutantNotInitValue)
+            {
+                return false;
+            }
+
+            if (!System.IO.File.Exists(_cachedMutantFilePath))
+            {
+                return false;
+            }
+
+            try
+            {
+                string content = System.IO.File.ReadAllText(_cachedMutantFilePath).Trim();
+                if (int.TryParse(content, out mutantId))
+                {
+                    // Only clear the dirty flag on a successful read so a partial/mid-write read is
+                    // retried on the next call instead of silently caching a stale mutant id.
+                    _mutantFileDirty = false;
+                    return true;
+                }
+            }
+            catch
+            {
+                // Ignore file read errors; the dirty flag stays set so the next call retries.
+            }
+            return false;
+        }
+
+        private static bool TryReadMutantFromFileByTimestamp(out int mutantId)
+        {
+            mutantId = -1;
+
+            if (!System.IO.File.Exists(_cachedMutantFilePath))
             {
                 return false;
             }
@@ -113,6 +175,48 @@ namespace Stryker
                 // Ignore file read errors
             }
             return false;
+        }
+
+        private static void EnsureMutantFileWatcher()
+        {
+            if (_mutantFileWatcherInitialized)
+            {
+                return;
+            }
+            _mutantFileWatcherInitialized = true;
+
+            try
+            {
+                string directory = System.IO.Path.GetDirectoryName(_cachedMutantFilePath) ?? string.Empty;
+                string fileName = System.IO.Path.GetFileName(_cachedMutantFilePath);
+                if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(fileName))
+                {
+                    _mutantFileWatcherFailed = true;
+                    return;
+                }
+
+                System.IO.FileSystemWatcher watcher = new System.IO.FileSystemWatcher(directory, fileName);
+                watcher.NotifyFilter = System.IO.NotifyFilters.LastWrite
+                    | System.IO.NotifyFilters.Size
+                    | System.IO.NotifyFilters.CreationTime
+                    | System.IO.NotifyFilters.FileName;
+                // C# 2.0 allows a parameterless anonymous method to match any delegate signature.
+                watcher.Changed += delegate { _mutantFileDirty = true; };
+                watcher.Created += delegate { _mutantFileDirty = true; };
+                watcher.Deleted += delegate { _mutantFileDirty = true; };
+                watcher.Renamed += delegate { _mutantFileDirty = true; };
+                watcher.EnableRaisingEvents = true;
+
+                // Keep a static reference so the watcher lives for the (reused) test host process and
+                // is not collected.
+                _mutantFileWatcher = watcher;
+            }
+            catch
+            {
+                // FileSystemWatcher may be unavailable in some environments. Fall back to the
+                // timestamp-based change detection, which works correctly without a watcher.
+                _mutantFileWatcherFailed = true;
+            }
         }
 
         public static System.Collections.Generic.IList<int>[] GetCoverageData()

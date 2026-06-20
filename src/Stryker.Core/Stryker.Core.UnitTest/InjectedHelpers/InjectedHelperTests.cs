@@ -30,9 +30,13 @@ public class InjectedHelperTests : TestBase
     [DataRow(LanguageVersion.Preview)]
     public void InjectHelpers_ShouldCompile_ForAllLanguageVersions(LanguageVersion version)
     {
+        // MutantControl references FileSystemWatcher for the MTP runner's file-based mutant control.
+        // Construct one so its defining assembly is loaded before the snapshot is taken below.
+        _ = new System.IO.FileSystemWatcher();
+
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-        var needed = new[] { ".CoreLib", ".Runtime", "System.IO.Pipes", ".Collections", ".Console" };
+        var needed = new[] { ".CoreLib", ".Runtime", "System.IO.Pipes", "System.IO.FileSystem.Watcher", ".Collections", ".Console" };
         var references = new List<MetadataReference>();
         foreach (var assembly in assemblies)
         {
@@ -72,9 +76,13 @@ public class InjectedHelperTests : TestBase
     [DataRow(LanguageVersion.Preview)]
     public void InjectHelpers_ShouldCompile_ForAllLanguageVersionsWithNullableOptions(LanguageVersion version)
     {
+        // MutantControl references FileSystemWatcher for the MTP runner's file-based mutant control.
+        // Construct one so its defining assembly is loaded before the snapshot is taken below.
+        _ = new System.IO.FileSystemWatcher();
+
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-        var needed = new[] { ".CoreLib", ".Runtime", "System.IO.Pipes", ".Collections", ".Console" };
+        var needed = new[] { ".CoreLib", ".Runtime", "System.IO.Pipes", "System.IO.FileSystem.Watcher", ".Collections", ".Console" };
         var references = new List<MetadataReference>();
         var hack = new NamedPipeClientStream("test");
         foreach (var assembly in assemblies)
