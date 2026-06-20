@@ -399,11 +399,12 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
         public void Aggregate(TestRunResult result, List<TestNode>? discoveredTests)
         {
-            // A failure sentinel (FailingTests == EveryTest, produced only by the TestRunResult(false)
+            // A crash sentinel (FailingTests == EveryTest, produced only by the TestRunResult(false)
             // path when an assembly run crashes) must NOT be folded into the executed/failed sets:
             // EveryTest.GetIdentifiers() is empty, so doing so would record "every test ran, none
-            // failed" and report otherwise-untested mutants as Survived. Treat it as an error instead,
-            // leaving those mutants Pending so they are surfaced as "failed to test".
+            // failed" and report otherwise-untested mutants as Survived. Flag it as an error instead;
+            // RunAllTestsAsync then returns a RuntimeError result so the affected mutants are
+            // classified as RuntimeError (excluded from the score) rather than Survived or Killed.
             if (result.FailingTests.IsEveryTest)
             {
                 HasError = true;
@@ -624,8 +625,8 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             }
         }
 
-        // Every attempt failed. Return the failure sentinel; the accumulator recognises it and keeps
-        // the affected mutants Pending (surfaced as "failed to test") rather than marking them Survived.
+        // Every attempt failed. Return the crash sentinel; the accumulator recognises it and flags the
+        // run as an error, so the affected mutants are reported as RuntimeError rather than Survived.
         return (new TestRunResult(false, lastRunException?.Message ?? "Test run failed: the test host could not be reached."), false);
     }
 

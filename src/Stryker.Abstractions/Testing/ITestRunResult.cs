@@ -17,7 +17,7 @@ public interface ITestRunResult
     /// (e.g. a mutation caused a fatal fault such as a stack overflow). The affected mutants
     /// cannot be conclusively tested and are reported as <see cref="MutantStatus.RuntimeError"/>.
     /// </summary>
-    bool SessionRuntimeError { get; }
+    bool SessionHadRuntimeIssue { get; }
     ITestIdentifiers TimedOutTests { get; }
     IEnumerable<IFrameworkTestDescription> TestDescriptions { get; }
 }

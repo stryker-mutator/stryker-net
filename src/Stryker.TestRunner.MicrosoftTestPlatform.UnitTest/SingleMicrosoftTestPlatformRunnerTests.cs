@@ -682,7 +682,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         var result = await runner.RunAllTestsAsync(
             new[] { assembly }, mutantId: 1, mutants: new[] { mutant.Object }, update: Update);
 
-        result.SessionRuntimeError.ShouldBeTrue();             // signals the host crash to the executor
+        result.SessionHadRuntimeIssue.ShouldBeTrue();             // signals the host crash to the executor
         result.SessionTimedOut.ShouldBeFalse();
         capturedRan.ShouldNotBeNull();
         capturedRan!.IsEveryTest.ShouldBeFalse();              // would be true (=> Survived) before the fix

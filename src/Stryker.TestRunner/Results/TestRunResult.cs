@@ -57,15 +57,15 @@ public class TestRunResult : ITestRunResult
         ITestIdentifiers timedOutTests,
         string message,
         IEnumerable<string> messages,
-        TimeSpan duration) => new(vsTestDescriptions, ranTests, failedTest, timedOutTests, message, messages, duration) { SessionRuntimeError = true };
+        TimeSpan duration) => new(vsTestDescriptions, ranTests, failedTest, timedOutTests, message, messages, duration) { SessionHadRuntimeIssue = true };
 
     public ITestIdentifiers FailingTests { get; }
     public ITestIdentifiers ExecutedTests { get; }
     public ITestIdentifiers TimedOutTests { get; }
     public bool SessionTimedOut { get; private init; }
-    public bool SessionRuntimeError { get; private init; }
+    public bool SessionHadRuntimeIssue { get; private init; }
     public string ResultMessage { get; }
-    public IEnumerable<string> Messages { get; } = [];
+    public IEnumerable<string> Messages { get; }
     public TimeSpan Duration { get; }
     public IEnumerable<IFrameworkTestDescription> TestDescriptions { get; }
 }

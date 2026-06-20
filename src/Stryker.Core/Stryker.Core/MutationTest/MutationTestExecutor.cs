@@ -61,7 +61,7 @@ public class MutationTestExecutor : IMutationTestExecutor
                 // classified by Mutant.AnalyzeTestRun, so reaching here means the whole batch was
                 // inconclusive: rerun one mutant at a time to isolate the culprit, unless nothing
                 // ran at all.
-                if (result.SessionTimedOut || result.SessionRuntimeError)
+                if (result.SessionTimedOut || result.SessionHadRuntimeIssue)
                 {
                     forceSingle = true;
                 }
@@ -93,13 +93,13 @@ public class MutationTestExecutor : IMutationTestExecutor
             {
                 var localResult =
                     await TestRunner.TestMultipleMutantsAsync(projectAndTests, timeoutMs, new[] { mutant }, updateHandler).ConfigureAwait(false);
-                if (updateHandler == null || localResult.SessionTimedOut || localResult.SessionRuntimeError)
+                if (updateHandler == null || localResult.SessionTimedOut || localResult.SessionHadRuntimeIssue)
                 {
                     mutant.AnalyzeTestRun(localResult.FailingTests,
                         localResult.ExecutedTests,
                         localResult.TimedOutTests,
                         localResult.SessionTimedOut,
-                        localResult.SessionRuntimeError);
+                        localResult.SessionHadRuntimeIssue);
                 }
             }
 
@@ -107,7 +107,7 @@ public class MutationTestExecutor : IMutationTestExecutor
         }
 
         var result = await TestRunner.TestMultipleMutantsAsync(projectAndTests, timeoutMs, mutantsToTest.ToList(), updateHandler).ConfigureAwait(false);
-        if (updateHandler != null && !result.SessionTimedOut && !result.SessionRuntimeError)
+        if (updateHandler != null && !result.SessionTimedOut && !result.SessionHadRuntimeIssue)
         {
             return result;
         }
@@ -118,7 +118,7 @@ public class MutationTestExecutor : IMutationTestExecutor
                 result.ExecutedTests,
                 result.TimedOutTests,
                 mutantsToTest.Count == 1 && result.SessionTimedOut,
-                mutantsToTest.Count == 1 && result.SessionRuntimeError);
+                mutantsToTest.Count == 1 && result.SessionHadRuntimeIssue);
         }
 
         return result;
