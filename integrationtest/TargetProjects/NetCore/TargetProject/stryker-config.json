@@ -9,6 +9,9 @@
       "../NetCoreTestProject.XUnit/NetCoreTestProject.XUnit.csproj",
       "../NetCoreTestProject.NUnit/NetCoreTestProject.NUnit.csproj"
     ],
+    "mutate": [
+      "!**/StackOverflow.cs"
+    ],
     "mutation-level": "Complete"
   }
 }

@@ -24,4 +24,14 @@ public class SampleTests
 
         sut.SomeLoop();
     }
+
+    [TestMethod]
+    public void TestStackOverflow()
+    {
+        var sut = new TargetProject.StrykerFeatures.StackOverflow();
+
+        // Mutating the recursion makes this overflow the stack and crash the test host,
+        // which the MTP runner reports as a RuntimeError mutant.
+        Assert.AreEqual(6, sut.SumTo(3));
+    }
 }
