@@ -412,6 +412,47 @@ public class AssemblyTestServerTests
     }
 
     [TestMethod]
+    public async Task RunTestsAsync_WithTimeout_ShouldThrowTestHostCrashed_WhenProcessExitsDuringRun()
+    {
+        SetupSuccessfulConnection();
+
+        // Listener that never completes (a crashed host never sends a completion signal)
+        var listener = new TestNodeUpdatesResponseListener(Guid.NewGuid(), _ => Task.CompletedTask);
+        _clientMock.Setup(c => c.RunTestsAsync(It.IsAny<Guid>(), It.IsAny<Func<TestNodeUpdate[], Task>>(), null))
+            .ReturnsAsync(listener);
+
+        using var server = CreateServer();
+        await server.StartAsync();
+
+        // Simulate the test host crashing during the run: the process exits before completion.
+        _processMock.Setup(p => p.WaitForExitAsync()).Returns(Task.CompletedTask);
+        _processMock.SetupGet(p => p.HasExited).Returns(true);
+
+        // A crash must be detected immediately as a runtime error, not waited out as a timeout.
+        await Should.ThrowAsync<TestHostCrashedException>(
+            async () => await server.RunTestsAsync(null, TimeSpan.FromSeconds(30)));
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_WithoutTimeout_ShouldThrowTestHostCrashed_WhenProcessExitsDuringRun()
+    {
+        SetupSuccessfulConnection();
+
+        var listener = new TestNodeUpdatesResponseListener(Guid.NewGuid(), _ => Task.CompletedTask);
+        _clientMock.Setup(c => c.RunTestsAsync(It.IsAny<Guid>(), It.IsAny<Func<TestNodeUpdate[], Task>>(), null))
+            .ReturnsAsync(listener);
+
+        using var server = CreateServer();
+        await server.StartAsync();
+
+        _processMock.Setup(p => p.WaitForExitAsync()).Returns(Task.CompletedTask);
+        _processMock.SetupGet(p => p.HasExited).Returns(true);
+
+        await Should.ThrowAsync<TestHostCrashedException>(
+            async () => await server.RunTestsAsync(null));
+    }
+
+    [TestMethod]
     public async Task RunTestsAsync_WithTimeout_ShouldReturnTimedOutTrue_WhenRpcCallBlocks()
     {
         SetupSuccessfulConnection();
