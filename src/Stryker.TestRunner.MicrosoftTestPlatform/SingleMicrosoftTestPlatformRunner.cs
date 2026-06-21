@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO.MemoryMappedFiles;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
@@ -110,13 +111,26 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     {
         try
         {
-            File.WriteAllText(_mutantFilePath, mutantId.ToString());
-            _logger.LogDebug("{RunnerId}: Wrote mutant ID {MutantId} to file {FilePath}",
+            // Publish the active mutant id as a fixed 4-byte int through a file-backed memory-mapped view.
+            // The injected MutantControl maps the same file and reads the id on every IsActive call, so the
+            // reused test host always sees the current mutant with no per-call file I/O. Both sides use
+            // CreateFromFile with a null map name (file-backed maps work cross-platform, unlike named maps
+            // which are Windows-only), and FileShare.ReadWrite lets the host keep the file mapped while we
+            // update it between runs.
+            using (var stream = new FileStream(_mutantFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+            using (var mmf = MemoryMappedFile.CreateFromFile(stream, null, sizeof(int), MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, leaveOpen: true))
+            using (var accessor = mmf.CreateViewAccessor(0, sizeof(int), MemoryMappedFileAccess.Write))
+            {
+                accessor.Write(0, mutantId);
+                accessor.Flush();
+            }
+
+            _logger.LogDebug("{RunnerId}: Wrote mutant ID {MutantId} to memory-mapped file {FilePath}",
                 RunnerId, mutantId, _mutantFilePath);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "{RunnerId}: Failed to write mutant ID to file {FilePath}",
+            _logger.LogWarning(ex, "{RunnerId}: Failed to write mutant ID to memory-mapped file {FilePath}",
                 RunnerId, _mutantFilePath);
         }
     }

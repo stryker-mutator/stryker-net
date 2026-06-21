@@ -11,10 +11,22 @@ namespace Stryker
         private static System.Collections.Generic.List<int> _coveredStaticMutants = new System.Collections.Generic.List<int>();
         private static string envName = string.Empty;
         private static System.Object _coverageLock = new System.Object();
-        private static long _lastMutantFileVersion = -1;
         // Initialized to avoid nullable warnings/errors
         private static string _cachedMutantFilePath = string.Empty;
         private static bool _mutantFilePathCached;
+
+        // Memory-mapped view of the mutant-id file used by the MTP runner. The runner writes the active
+        // mutant id (a 4-byte int) to the file between runs; reading it through a memory-mapped view is a
+        // plain memory access (no syscall), so it is cheap enough for the IsActive hot path while still
+        // always reflecting the latest value the runner wrote. The test host process is reused across
+        // mutant runs and has no per-run reset hook, so reading every call (rather than caching) is what
+        // keeps this correct: any cached or event-based scheme would race the start of the next run.
+        // _mutantMmf / _mutantAccessor are typed as object and initialized to a non-null sentinel only to
+        // root them (and avoid nullable warnings); the accessor is cast back to its real type when read.
+        private static object _mutantMmf = new System.Object();
+        private static object _mutantAccessor = new System.Object();
+        private static bool _mutantMmfReady;
+        private static bool _mutantMmfFailed;
 
         // Coverage file path for MTP runner (file-based IPC)
         private static string _cachedCoverageFilePath = string.Empty;
@@ -87,25 +99,102 @@ namespace Stryker
                 _mutantFilePathCached = true;
             }
 
-            if (string.IsNullOrEmpty(_cachedMutantFilePath) || !System.IO.File.Exists(_cachedMutantFilePath))
+            if (string.IsNullOrEmpty(_cachedMutantFilePath))
+            {
+                return false;
+            }
+
+            // Fast path: read the active mutant id from a memory-mapped view of the file (see the field
+            // comments above). This is a plain memory read - no filesystem stat or content read per call.
+            if (!_mutantMmfFailed)
+            {
+                if (!_mutantMmfReady)
+                {
+                    EnsureMutantMmf();
+                }
+
+                if (_mutantMmfReady)
+                {
+                    try
+                    {
+                        mutantId = ((System.IO.MemoryMappedFiles.MemoryMappedViewAccessor)_mutantAccessor).ReadInt32(0);
+                        return true;
+                    }
+                    catch
+                    {
+                        // The mapping became unusable; fall back to reading the file directly from now on.
+                        _mutantMmfFailed = true;
+                    }
+                }
+            }
+
+            // Fallback (no memory-mapped view could be created): read the 4-byte mutant id straight from
+            // the file on every call. Correct but slower; only used if memory mapping is unavailable.
+            return TryReadMutantFromFileDirect(out mutantId);
+        }
+
+        private static void EnsureMutantMmf()
+        {
+            if (_mutantMmfReady || _mutantMmfFailed)
+            {
+                return;
+            }
+
+            // The runner creates the file (with the initial -1) before the test host starts, so it
+            // normally exists on the first call. If it is not there yet, leave things unmapped and retry
+            // on a later call rather than giving up permanently.
+            if (!System.IO.File.Exists(_cachedMutantFilePath))
+            {
+                return;
+            }
+
+            try
+            {
+                // FileShare.ReadWrite lets the runner keep writing the file while the test host keeps it
+                // mapped. leaveOpen: false means the mapping owns and disposes the stream with it.
+                System.IO.FileStream stream = new System.IO.FileStream(
+                    _cachedMutantFilePath,
+                    System.IO.FileMode.Open,
+                    System.IO.FileAccess.Read,
+                    System.IO.FileShare.ReadWrite);
+                System.IO.MemoryMappedFiles.MemoryMappedFile mmf = System.IO.MemoryMappedFiles.MemoryMappedFile.CreateFromFile(
+                    stream,
+                    null,
+                    4,
+                    System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read,
+                    System.IO.HandleInheritability.None,
+                    false);
+                System.IO.MemoryMappedFiles.MemoryMappedViewAccessor accessor = mmf.CreateViewAccessor(
+                    0, 4, System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read);
+
+                _mutantMmf = mmf;
+                _mutantAccessor = accessor;
+                _mutantMmfReady = true;
+            }
+            catch
+            {
+                // Memory mapping is unavailable in this environment; the direct-read fallback keeps the
+                // active mutant correct (just slower).
+                _mutantMmfFailed = true;
+            }
+        }
+
+        private static bool TryReadMutantFromFileDirect(out int mutantId)
+        {
+            mutantId = -1;
+
+            if (!System.IO.File.Exists(_cachedMutantFilePath))
             {
                 return false;
             }
 
             try
             {
-                System.IO.FileInfo fileInfo = new System.IO.FileInfo(_cachedMutantFilePath);
-                long currentVersion = fileInfo.LastWriteTimeUtc.Ticks;
-
-                // Only re-read if file has changed or we haven't read it yet
-                if (currentVersion != _lastMutantFileVersion || ActiveMutant == ActiveMutantNotInitValue)
+                byte[] bytes = System.IO.File.ReadAllBytes(_cachedMutantFilePath);
+                if (bytes.Length >= 4)
                 {
-                    string content = System.IO.File.ReadAllText(_cachedMutantFilePath).Trim();
-                    if (int.TryParse(content, out mutantId))
-                    {
-                        _lastMutantFileVersion = currentVersion;
-                        return true;
-                    }
+                    mutantId = System.BitConverter.ToInt32(bytes, 0);
+                    return true;
                 }
             }
             catch
