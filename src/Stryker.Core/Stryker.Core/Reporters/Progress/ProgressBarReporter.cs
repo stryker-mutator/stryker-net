@@ -13,7 +13,7 @@ public interface IProgressBarReporter
 
 public class ProgressBarReporter : IProgressBarReporter, IDisposable
 {
-    private const string LoggingFormat = "│ Testing mutant {0} / {1} │ K {2} │ S {3} │ T {4} │ {5} │";
+    private const string LoggingFormat = "│ Testing mutant {0} / {1} │ K {2} │ S {3} │ T {4} │ E {5} │ {6} │";
 
     private readonly IProgressBar _progressBar;
     private readonly IStopWatchProvider _stopWatch;
@@ -26,6 +26,7 @@ public class ProgressBarReporter : IProgressBarReporter, IDisposable
     private int _mutantsKilledCount;
     private int _mutantsSurvivedCount;
     private int _mutantsTimeoutCount;
+    private int _mutantsRuntimeErrorCount;
 
     public ProgressBarReporter(IProgressBar progressBar, IStopWatchProvider stopWatch, IAnsiConsole console = null)
     {
@@ -39,7 +40,7 @@ public class ProgressBarReporter : IProgressBarReporter, IDisposable
         _stopWatch.Start();
         _mutantsToBeTested = mutantsToBeTested;
 
-        _progressBar.Start(_mutantsToBeTested, string.Format(LoggingFormat, 0, _mutantsToBeTested, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, RemainingTime()));
+        _progressBar.Start(_mutantsToBeTested, string.Format(LoggingFormat, 0, _mutantsToBeTested, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, _mutantsRuntimeErrorCount, RemainingTime()));
     }
 
     public void ReportRunTest(IReadOnlyMutant mutantTestResult)
@@ -57,14 +58,17 @@ public class ProgressBarReporter : IProgressBarReporter, IDisposable
             case MutantStatus.Timeout:
                 _mutantsTimeoutCount++;
                 break;
+            case MutantStatus.RuntimeError:
+                _mutantsRuntimeErrorCount++;
+                break;
         }
 
-        _progressBar.Tick(string.Format(LoggingFormat, _numberOfMutantsRan, _mutantsToBeTested, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, RemainingTime()));
+        _progressBar.Tick(string.Format(LoggingFormat, _numberOfMutantsRan, _mutantsToBeTested, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, _mutantsRuntimeErrorCount, RemainingTime()));
     }
 
     public void ReportFinalState()
     {
-        _progressBar.Tick(string.Format(LoggingFormat, _numberOfMutantsRan, _mutantsToBeTested, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, RemainingTime()));
+        _progressBar.Tick(string.Format(LoggingFormat, _numberOfMutantsRan, _mutantsToBeTested, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, _mutantsRuntimeErrorCount, RemainingTime()));
         Dispose();
 
         var length = _mutantsToBeTested.ToString().Length;
@@ -73,6 +77,7 @@ public class ProgressBarReporter : IProgressBarReporter, IDisposable
         _console.MarkupLine($"Killed:   [Magenta]{_mutantsKilledCount.ToString().PadLeft(length)}[/]");
         _console.MarkupLine($"Survived: [Magenta]{_mutantsSurvivedCount.ToString().PadLeft(length)}[/]");
         _console.MarkupLine($"Timeout:  [Magenta]{_mutantsTimeoutCount.ToString().PadLeft(length)}[/]");
+        _console.MarkupLine($"Errors:  [Magenta]{_mutantsRuntimeErrorCount.ToString().PadLeft(length)}[/]");
     }
 
     private string RemainingTime()

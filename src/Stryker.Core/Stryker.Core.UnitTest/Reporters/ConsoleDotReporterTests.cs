@@ -14,6 +14,7 @@ public class ConsoleDotReporterTests : TestBase
     [DataRow(MutantStatus.Killed, ".", "default")]
     [DataRow(MutantStatus.Survived, "S", "red")]
     [DataRow(MutantStatus.Timeout, "T", "default")]
+    [DataRow(MutantStatus.RuntimeError, "E", "yellow")]
     public void ConsoleDotReporter_ShouldPrintRightCharOnMutation(MutantStatus givenStatus, string expectedOutput, string color)
     {
         var console = new TestConsole().EmitAnsiSequences();
@@ -32,6 +33,11 @@ public class ConsoleDotReporterTests : TestBase
         if (color == "red")
         {
             console.Output.RedSpanCount().ShouldBe(1);
+        }
+
+        if (color == "yellow")
+        {
+            console.Output.YellowSpanCount().ShouldBe(1);
         }
 
         console.Output.RemoveAnsi().ShouldBe(expectedOutput);

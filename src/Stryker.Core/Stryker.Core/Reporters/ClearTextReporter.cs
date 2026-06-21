@@ -112,7 +112,7 @@ public class ClearTextReporter : IReporter
         columns.Add(new Text(mutants.Count(m => m.ResultStatus == MutantStatus.Timeout).ToString()));
         columns.Add(new Text((inputComponent.TotalMutants().Count() - inputComponent.DetectedMutants().Count()).ToString()));
         columns.Add(new Text(mutants.Count(m => m.ResultStatus == MutantStatus.NoCoverage).ToString()));
-        columns.Add(new Text(mutants.Count(m => m.ResultStatus == MutantStatus.CompileError).ToString()));
+        columns.Add(new Text(mutants.Count(m => m.ResultStatus is MutantStatus.CompileError or MutantStatus.RuntimeError).ToString()));
 
         table.AddRow(columns);
     }

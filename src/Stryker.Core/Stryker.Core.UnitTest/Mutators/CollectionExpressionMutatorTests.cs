@@ -470,6 +470,13 @@ public class CollectionExpressionMutatorTests : TestBase
             typeof(Enumerable).Assembly.Location,
             typeof(ImmutableArray<>).Assembly.Location,
             typeof(ValueType).Assembly.Location,
+            // MutantControl uses MemoryMappedFile for the MTP runner's file-based mutant control.
+            // MemoryMappedViewAccessor.ReadInt32 is inherited from UnmanagedMemoryAccessor, whose reference
+            // identity is System.Runtime.InteropServices (at runtime the type is forwarded to CoreLib, so it
+            // must be loaded by assembly name rather than via typeof). Both assemblies are required for the
+            // injected helper to compile.
+            typeof(System.IO.MemoryMappedFiles.MemoryMappedFile).Assembly.Location,
+            Assembly.Load("System.Runtime.InteropServices").Location,
             ..Assembly.GetEntryAssembly()?.GetReferencedAssemblies().Select(a => Assembly.Load(a).Location) ?? []
         ];
 
@@ -506,7 +513,7 @@ public class CollectionExpressionMutatorTests : TestBase
             result.Success.ShouldBe(true);
             result.RolledbackIds.ShouldBeEmpty();
         }
-        catch (CompilationException)
+        catch (CompilationException ex)
         {
             Assert.Fail($"Compilation failed with code: {syntaxTree}");
         }

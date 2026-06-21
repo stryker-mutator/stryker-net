@@ -492,8 +492,18 @@ public class Calculator
                         { "AssemblyName", "AssemblyName" },
                         { "TargetFileName", "TargetFileName.dll" },
                     },
-                    // add a reference to system so the example code can compile
-                    references: [typeof(object).Assembly.Location]
+                    // add a reference to system so the example code can compile, plus the assemblies the
+                    // injected MutantControl needs for its MemoryMappedFile-based MTP mutant control. The
+                    // MemoryMappedFiles assembly is compiled against the contract assemblies, so resolving it
+                    // also requires System.Runtime (FileStream/FileMode/Object/Enum) and
+                    // System.Runtime.InteropServices (UnmanagedMemoryAccessor, the base of the view accessor).
+                    references:
+                    [
+                        typeof(object).Assembly.Location,
+                        typeof(System.IO.MemoryMappedFiles.MemoryMappedFile).Assembly.Location,
+                        Assembly.Load("System.Runtime").Location,
+                        Assembly.Load("System.Runtime.InteropServices").Location
+                    ]
                 ).Object,
                 TestProjectsInfo = new TestProjectsInfo(fileSystem)
                 {
