@@ -77,7 +77,7 @@ public class ProgressBarReporter : IProgressBarReporter, IDisposable
         _console.MarkupLine($"Killed:   [Magenta]{_mutantsKilledCount.ToString().PadLeft(length)}[/]");
         _console.MarkupLine($"Survived: [Magenta]{_mutantsSurvivedCount.ToString().PadLeft(length)}[/]");
         _console.MarkupLine($"Timeout:  [Magenta]{_mutantsTimeoutCount.ToString().PadLeft(length)}[/]");
-        _console.MarkupLine($"Errors: [Magenta]{_mutantsRuntimeErrorCount.ToString().PadLeft(length)}[/]");
+        _console.MarkupLine($"Errors:  [Magenta]{_mutantsRuntimeErrorCount.ToString().PadLeft(length)}[/]");
     }
 
     private string RemainingTime()
