@@ -47,7 +47,7 @@ public class Mutant : IMutant
             // The test host crashed (e.g. a mutation caused a fatal fault). The mutant cannot be
             // conclusively tested, so it is a runtime error (excluded from the mutation score).
             ResultStatus = MutantStatus.RuntimeError;
-            ResultStatusReason = "The test host crashed while testing this mutant";
+            ResultStatusReason = "The test host crashed or became unreachable while testing this mutant";
         }
         else if (resultRanTests.IsEveryTest || !resultRanTests.IsEveryTest && AssessingTests.IsIncludedIn(resultRanTests))
         {
