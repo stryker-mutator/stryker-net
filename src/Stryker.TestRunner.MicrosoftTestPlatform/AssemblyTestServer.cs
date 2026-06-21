@@ -42,6 +42,14 @@ internal sealed class AssemblyTestServer : IDisposable
 
     public bool IsInitialized => _isInitialized;
 
+    /// <summary>
+    /// True when the server has been initialized and its underlying process is still running.
+    /// A test host that crashed mid-run (e.g. a mutation causing a fatal fault such as a
+    /// <see cref="StackOverflowException"/>) leaves <see cref="IsInitialized"/> true while the
+    /// process is gone; this flag detects that so the server can be recreated instead of reused.
+    /// </summary>
+    public bool IsAlive => _isInitialized && !_disposed && _process is { HasExited: false };
+
     public async Task<bool> StartAsync(CancellationToken cancellationToken = default)
     {
         if (_isInitialized)
@@ -157,13 +165,35 @@ internal sealed class AssemblyTestServer : IDisposable
                 return (testResults.ToList(), true);
             }
 
-            var completed = await executeTestsResponse.WaitCompletionAsync(timeout.Value).ConfigureAwait(false);
+            var completionTask = executeTestsResponse.WaitCompletionAsync(timeout.Value);
+            await Task.WhenAny(completionTask, _process!.WaitForExitAsync()).ConfigureAwait(false);
+            ThrowIfHostCrashed(completionTask);
+
+            var completed = await completionTask.ConfigureAwait(false);
             return (testResults.ToList(), !completed);
         }
 
         var response = await _client.RunTestsAsync(runId, onUpdate, testsToRun).ConfigureAwait(false);
-        await response.WaitCompletionAsync().ConfigureAwait(false);
+        var responseCompletion = response.WaitCompletionAsync();
+        await Task.WhenAny(responseCompletion, _process!.WaitForExitAsync()).ConfigureAwait(false);
+        ThrowIfHostCrashed(responseCompletion);
+
+        await responseCompletion.ConfigureAwait(false);
         return (testResults.ToList(), false);
+    }
+
+    /// <summary>
+    /// Throws a <see cref="Stryker.TestRunner.TestHostCrashedException"/> when the test host process has exited before the
+    /// run completed. A crashed host never sends a completion signal, so without this check the run would
+    /// otherwise wait out the full timeout and be misreported as a timeout instead of a runtime error.
+    /// </summary>
+    private void ThrowIfHostCrashed(Task runCompletion)
+    {
+        if (_process is { HasExited: true } && !runCompletion.IsCompletedSuccessfully)
+        {
+            _logger.LogDebug("{RunnerId}: Test host for {Assembly} exited unexpectedly during the test run", _runnerId, _assembly);
+            throw new Stryker.TestRunner.TestHostCrashedException($"The test host for {_assembly} exited unexpectedly during the test run.");
+        }
     }
 
     public async Task RestartAsync(bool force = false)
