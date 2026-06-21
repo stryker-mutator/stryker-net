@@ -143,6 +143,11 @@ public class CSharpRollbackProcessTests : TestBase
             typeof(List<string>).Assembly.Location,
             typeof(Enumerable).Assembly.Location,
             typeof(PipeStream).Assembly.Location,
+            // MutantControl maps the mutant-id file via MemoryMappedFile (MTP runner). ReadInt32 comes from
+            // UnmanagedMemoryAccessor, whose reference identity is System.Runtime.InteropServices (loaded by
+            // name because the runtime type is forwarded to CoreLib).
+            typeof(System.IO.MemoryMappedFiles.MemoryMappedFile).Assembly.Location,
+            Assembly.Load("System.Runtime.InteropServices").Location,
         };
         Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
 
@@ -229,6 +234,11 @@ public class CSharpRollbackProcessTests : TestBase
             typeof(List<string>).Assembly.Location,
             typeof(Enumerable).Assembly.Location,
             typeof(PipeStream).Assembly.Location,
+            // MutantControl maps the mutant-id file via MemoryMappedFile (MTP runner). ReadInt32 comes from
+            // UnmanagedMemoryAccessor, whose reference identity is System.Runtime.InteropServices (loaded by
+            // name because the runtime type is forwarded to CoreLib).
+            typeof(System.IO.MemoryMappedFiles.MemoryMappedFile).Assembly.Location,
+            Assembly.Load("System.Runtime.InteropServices").Location,
         };
         Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
 
