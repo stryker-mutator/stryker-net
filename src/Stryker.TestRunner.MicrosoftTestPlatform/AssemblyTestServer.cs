@@ -183,7 +183,7 @@ internal sealed class AssemblyTestServer : IDisposable
     }
 
     /// <summary>
-    /// Throws a <see cref="TestHostCrashedException"/> when the test host process has exited before the
+    /// Throws a <see cref="Stryker.TestRunner.TestHostCrashedException"/> when the test host process has exited before the
     /// run completed. A crashed host never sends a completion signal, so without this check the run would
     /// otherwise wait out the full timeout and be misreported as a timeout instead of a runtime error.
     /// </summary>
@@ -192,7 +192,7 @@ internal sealed class AssemblyTestServer : IDisposable
         if (_process is { HasExited: true } && !runCompletion.IsCompletedSuccessfully)
         {
             _logger.LogDebug("{RunnerId}: Test host for {Assembly} exited unexpectedly during the test run", _runnerId, _assembly);
-            throw new TestHostCrashedException($"The test host for {_assembly} exited unexpectedly during the test run.");
+            throw new Stryker.TestRunner.TestHostCrashedException($"The test host for {_assembly} exited unexpectedly during the test run.");
         }
     }
 

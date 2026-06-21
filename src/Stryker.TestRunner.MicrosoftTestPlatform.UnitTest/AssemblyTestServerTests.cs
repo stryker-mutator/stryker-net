@@ -429,7 +429,7 @@ public class AssemblyTestServerTests
         _processMock.SetupGet(p => p.HasExited).Returns(true);
 
         // A crash must be detected immediately as a runtime error, not waited out as a timeout.
-        await Should.ThrowAsync<TestHostCrashedException>(
+        await Should.ThrowAsync<Stryker.TestRunner.TestHostCrashedException>(
             async () => await server.RunTestsAsync(null, TimeSpan.FromSeconds(30)));
     }
 
@@ -448,7 +448,7 @@ public class AssemblyTestServerTests
         _processMock.Setup(p => p.WaitForExitAsync()).Returns(Task.CompletedTask);
         _processMock.SetupGet(p => p.HasExited).Returns(true);
 
-        await Should.ThrowAsync<TestHostCrashedException>(
+        await Should.ThrowAsync<Stryker.TestRunner.TestHostCrashedException>(
             async () => await server.RunTestsAsync(null));
     }
 
