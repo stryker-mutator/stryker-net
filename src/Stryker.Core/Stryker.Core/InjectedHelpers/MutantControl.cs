@@ -152,24 +152,51 @@ namespace Stryker
             {
                 // FileShare.ReadWrite lets the runner keep writing the file while the test host keeps it
                 // mapped. leaveOpen: false means the mapping owns and disposes the stream with it.
-                System.IO.FileStream stream = new System.IO.FileStream(
-                    _cachedMutantFilePath,
-                    System.IO.FileMode.Open,
-                    System.IO.FileAccess.Read,
-                    System.IO.FileShare.ReadWrite);
-                System.IO.MemoryMappedFiles.MemoryMappedFile mmf = System.IO.MemoryMappedFiles.MemoryMappedFile.CreateFromFile(
-                    stream,
-                    null,
-                    4,
-                    System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read,
-                    System.IO.HandleInheritability.None,
-                    false);
-                System.IO.MemoryMappedFiles.MemoryMappedViewAccessor accessor = mmf.CreateViewAccessor(
-                    0, 4, System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read);
+                System.IO.FileStream stream = null;
+                System.IO.MemoryMappedFiles.MemoryMappedFile mmf = null;
+                System.IO.MemoryMappedFiles.MemoryMappedViewAccessor accessor = null;
 
-                _mutantMmf = mmf;
-                _mutantAccessor = accessor;
-                _mutantMmfReady = true;
+                try
+                {
+                    stream = new System.IO.FileStream(
+                        _cachedMutantFilePath,
+                        System.IO.FileMode.Open,
+                        System.IO.FileAccess.Read,
+                        System.IO.FileShare.ReadWrite);
+
+                    mmf = System.IO.MemoryMappedFiles.MemoryMappedFile.CreateFromFile(
+                        stream,
+                        null,
+                        4,
+                        System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read,
+                        System.IO.HandleInheritability.None,
+                        false);
+
+                    accessor = mmf.CreateViewAccessor(0, 4, System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read);
+
+                    _mutantMmf = mmf;
+                    _mutantAccessor = accessor;
+                    _mutantMmfReady = true;
+                }
+                finally
+                {
+                    if (!_mutantMmfReady)
+                    {
+                        if (accessor != null)
+                        {
+                            accessor.Dispose();
+                        }
+
+                        if (mmf != null)
+                        {
+                            mmf.Dispose();
+                        }
+                        else if (stream != null)
+                        {
+                            stream.Dispose();
+                        }
+                    }
+                }
             }
             catch
             {
