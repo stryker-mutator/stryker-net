@@ -31,7 +31,7 @@ public class Mutant : IMutant
 
     public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
 
-    public void AnalyzeTestRun(ITestIdentifiers failedTests, ITestIdentifiers resultRanTests, ITestIdentifiers timedOutTests, bool sessionTimedOut, bool sessionRuntimeError = false)
+    public void AnalyzeTestRun(ITestIdentifiers failedTests, ITestIdentifiers resultRanTests, ITestIdentifiers timedOutTests, bool sessionTimedOut, bool sessionRuntimeError)
     {
         if (AssessingTests.ContainsAny(failedTests))
         {
