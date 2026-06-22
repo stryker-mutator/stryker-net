@@ -310,8 +310,8 @@ public class ValidateStrykerResults
 
     private void CheckReportTestCounts(IJsonReport report, int total)
     {
-        var actualTotal = report.TestFiles.Sum(tf => tf.Value.Tests.Count);
+        var actualTestCount = report.TestFiles.Sum(tf => tf.Value.Tests.Count);
 
-        actualTotal.ShouldBe(total);
+        actualTestCount.ShouldBe(total);
     }
 }

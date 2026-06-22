@@ -33,7 +33,7 @@ public class ProjectMutator : IProjectMutator
         process.Initialize(input, options, reporters);
 
         // Enrich test projects info with unit tests
-        EnrichTestProjectsWithTestInfo(input.InitialTestRun, input.TestProjectsInfo);
+        EnrichTestProjectsWithTestInfo(input.InitialTestRun, input.SourceProjectInfo.TestProjectsInfo);
 
         // mutate
         process.Mutate();
