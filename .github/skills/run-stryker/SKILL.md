@@ -96,4 +96,3 @@ For comprehensive configuration reference, see the [official Stryker.NET Configu
 ## Related Skills and Documentation
 
 - [Configuration Reference](../../../docs/configuration.md) - Complete configuration options
-- [Mutation Report Parsing](../stryker-json-report-parsing/SKILL.md) - Analyze JSON reports from terminal after running Stryker
