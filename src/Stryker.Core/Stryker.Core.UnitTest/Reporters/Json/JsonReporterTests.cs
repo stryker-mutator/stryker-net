@@ -23,7 +23,7 @@ using Stryker.Core.Reporters.Json.SourceFiles;
 namespace Stryker.Core.UnitTest.Reporters.Json;
 
 [TestClass]
-public class JsonReporterTests : TestBase
+public class GitlabQualityReporterTests : TestBase
 {
     private readonly IFileSystem _fileSystemMock = new MockFileSystem();
     private readonly string _testFilePath = "c:\\mytestfile.cs";
@@ -41,7 +41,7 @@ namespace ExtraProject.XUnit
     }
 }
 ";
-    public JsonReporterTests() => _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
+    public GitlabQualityReporterTests() => _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
 
     [TestMethod]
     public void JsonMutantPositionLine_ThrowsArgumentExceptionWhenSetToLessThan1()

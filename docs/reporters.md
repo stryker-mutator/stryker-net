@@ -101,6 +101,13 @@ This reporter outputs a json file with all mutation testrun info of the last run
 dotnet stryker --reporter "json"
 ```
 
+## GitLab Code Quality reporter
+This reporter outputs a json file named `gitlab_quality.json` with all mutation testrun info of the last run. The json structure follows the GitLab Code Quality report format defined in (GitLab Docs)[https://docs.gitlab.com/ci/testing/code_quality/#code-quality-report-format].
+
+```bash
+dotnet stryker --reporter "gitlabqualityreport"
+```
+
 ## Markdown summary reporter
 This reporter outputs a Markdown formatted summary file called `mutation-report.md` (by default) in the `StrykerOutput/{date-time}/reports` directory.  
 

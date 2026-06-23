@@ -14,7 +14,7 @@ public class ReportersInputTests : TestBase
     public void ShouldHaveHelpText()
     {
         var target = new ReportersInput();
-        target.HelpText.ShouldBe("Reporters inform about various stages in the mutation testrun. | default: ['Progress', 'Html'] | allowed: All, Progress, Dots, ClearText, ClearTextTree, Json, Html, Dashboard, RealTimeDashboard, Markdown, Baseline");
+        target.HelpText.ShouldBe("Reporters inform about various stages in the mutation testrun. | default: ['Progress', 'Html'] | allowed: All, Progress, Dots, ClearText, ClearTextTree, Json, Html, Dashboard, RealTimeDashboard, Markdown, Baseline, GitlabQualityReport");
     }
 
     [TestMethod]
@@ -45,20 +45,21 @@ public class ReportersInputTests : TestBase
         var target = new ReportersInput
         {
             SuppliedInput = new[] {
-            Reporter.Html.ToString(),
-            Reporter.Json.ToString(),
-            Reporter.Progress.ToString(),
-            Reporter.Baseline.ToString(),
-            Reporter.ClearText.ToString(),
-            Reporter.ClearTextTree.ToString(),
-            Reporter.Dashboard.ToString(),
-            Reporter.Dots.ToString(),
-        }
+                Reporter.Html.ToString(),
+                Reporter.Json.ToString(),
+                Reporter.Progress.ToString(),
+                Reporter.Baseline.ToString(),
+                Reporter.ClearText.ToString(),
+                Reporter.ClearTextTree.ToString(),
+                Reporter.Dashboard.ToString(),
+                Reporter.Dots.ToString(),
+                Reporter.GitlabQualityReport.ToString(),
+            }
         };
 
         var result = target.Validate(false);
 
-        result.Count().ShouldBe(8);
+        result.Count().ShouldBe(9);
         result.ShouldContain(Reporter.Html);
         result.ShouldContain(Reporter.Json);
         result.ShouldContain(Reporter.Progress);
@@ -67,6 +68,7 @@ public class ReportersInputTests : TestBase
         result.ShouldContain(Reporter.ClearTextTree);
         result.ShouldContain(Reporter.Dashboard);
         result.ShouldContain(Reporter.Dots);
+        result.ShouldContain(Reporter.GitlabQualityReport);
     }
 
     [TestMethod]
@@ -76,7 +78,7 @@ public class ReportersInputTests : TestBase
 
         var ex = Should.Throw<InputException>(() => target.Validate(false));
 
-        ex.Message.ShouldBe($"These reporter values are incorrect: Gibberish, Test.");
+        ex.Message.ShouldBe("These reporter values are incorrect: Gibberish, Test.");
     }
 
     [TestMethod]

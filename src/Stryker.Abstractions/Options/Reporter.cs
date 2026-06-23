@@ -12,5 +12,6 @@ public enum Reporter
     Dashboard,
     RealTimeDashboard,
     Markdown,
-    Baseline
+    Baseline,
+    GitlabQualityReport
 }
