@@ -83,6 +83,8 @@ public class SolutionInputTests : TestBase
 $@"Expected exactly one solution file (.sln or .slnx), found more than one:
 {solution1}
 {solution2}
+
+Please specify the solution file to use with the -s/--solution option.
 ";
 
         var ex = Should.Throw<InputException>(() =>
