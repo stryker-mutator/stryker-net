@@ -90,4 +90,4 @@ Running Stryker on itself doesn't work as assemblies will be in use. To run Stry
 
 ## Adding a mutator
 
-When adding a mutator see the full guide in [adding_a_mutator.md](../adding_a_mutator.md).
+When adding a mutator see the full guide in [adding_a_mutator.md](adding_a_mutator.md).
