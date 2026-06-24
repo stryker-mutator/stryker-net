@@ -44,6 +44,8 @@ public class SolutionInput : Input<string>
         {
             sb.AppendLine(file);
         }
+        sb.AppendLine();
+        sb.AppendLine("Please specify the solution file to use with the -s/--solution option.");
         throw new InputException(sb.ToString());
     }
 }
