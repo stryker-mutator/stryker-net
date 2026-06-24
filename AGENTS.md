@@ -14,7 +14,6 @@ Reference these instruction files when applicable:
 
 Reference these skill files when applicable:
 - **When running stryker on a project**: [Running Stryker](.github/skills/run-stryker/skill.md)
-- **When parsing a json stryker report**: [Parsing Stryker Report](.github/skills/stryker-json-report-parsing/skill.md)
 
 ## Project Overview
 
