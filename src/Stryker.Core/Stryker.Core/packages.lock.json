@@ -4,18 +4,18 @@
     "net8.0": {
       "AWSSDK.S3": {
         "type": "Direct",
-        "requested": "[4.0.25.2, )",
-        "resolved": "4.0.25.2",
-        "contentHash": "RZ71S6Ra8rw0jS813PM6FNzFx5gaAL4/gO8ZQoO2dcHCPMwCepCwvb/kJdOCknLnZaqdHIGJcmjCvW3622O9jw==",
+        "requested": "[4.0.25.3, )",
+        "resolved": "4.0.25.3",
+        "contentHash": "xfvFNskg5x/Z10UkRA2XdQxADgMoBPE4LwrGDvE7EGoK7nqoO1CCmLNy1jteprZDBEHwUAZcIfagEDN7YFhH0Q==",
         "dependencies": {
-          "AWSSDK.Core": "[4.0.9.6, 5.0.0)"
+          "AWSSDK.Core": "[4.0.9.7, 5.0.0)"
         }
       },
       "Azure.Storage.Files.Shares": {
         "type": "Direct",
-        "requested": "[12.27.0, )",
-        "resolved": "12.27.0",
-        "contentHash": "IRQ/RmweKaTNm9uVbzLP59CBCydjhNQYK0JLxMdHhf0zSOHwDEj9+l6QNKQpyqjkFzhUxLL4f3rZIds99Es87A==",
+        "requested": "[12.27.1, )",
+        "resolved": "12.27.1",
+        "contentHash": "JMcZ8i0JbL0gJI7OpLt/RprxmcblH/3zxndTv8onUEV7slQMFg0M3f0KVNLwILEcCUI2qZZS6s9TbHpr4rZWEQ==",
         "dependencies": {
           "Azure.Core": "1.55.0",
           "Azure.Storage.Common": "12.28.0"
@@ -215,11 +215,11 @@
       },
       "Spectre.Console": {
         "type": "Direct",
-        "requested": "[0.57.0, )",
-        "resolved": "0.57.0",
-        "contentHash": "X5+4ZsUYTPlTs5PEoKRlxUuKOa1AkEoAGM34pUeJPjsBdtOnvnaVb31hqewhooomihl1i9fEBid1fz8XxZTacQ==",
+        "requested": "[0.57.1, )",
+        "resolved": "0.57.1",
+        "contentHash": "h/B0CJLR5Ba8yq+iVjjZR9JXMS+8a1syHmHhyZ6w5m8rHDWLGOlaKAhzJanHJL62rZxynLeVOx+43MKvskJ1lA==",
         "dependencies": {
-          "Spectre.Console.Ansi": "0.57.0"
+          "Spectre.Console.Ansi": "0.57.1"
         }
       },
       "Spectre.Console.Analyzer": {
@@ -245,8 +245,8 @@
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "4.0.9.6",
-        "contentHash": "Lzi5hMHNB+ApeMbQxNDCUNa+Lta00ozr1okKUGqUyNXUC/OG136k8M6jXgNrbwsRxDmVdHHY6UdD4aoUaGVzkQ=="
+        "resolved": "4.0.9.7",
+        "contentHash": "zCk+WKedXq45u92RcqWcZodzwvQryrqNpUWFdEPBm3ExuwDhY3BMF0VYMWiD/ko0ThhChqf9libgIpd/hQuBPQ=="
       },
       "Azure.Core": {
         "type": "Transitive",
@@ -572,8 +572,8 @@
       },
       "Spectre.Console.Ansi": {
         "type": "Transitive",
-        "resolved": "0.57.0",
-        "contentHash": "DGeYljyWAIHSeUAoUGqyzyOqS8WlsHKW+y4zOZ0OO61oqrhx90jHS+XG5Kpq/wWz6ovIs2VL/0CTKpUVa7tdWg=="
+        "resolved": "0.57.1",
+        "contentHash": "IFlXdGXOGD4XCK5ybZsXgQo7PE0ZE/pt9YFFWo2cECTipS8DrViLFazx+K00/A+fY1PlHYt1Vqwrjfod4EEckw=="
       },
       "System.ClientModel": {
         "type": "Transitive",
