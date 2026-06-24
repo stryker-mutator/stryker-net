@@ -884,7 +884,7 @@
         "type": "Project",
         "dependencies": {
           "AWSSDK.S3": "[4.0.25.2, )",
-          "Azure.Storage.Files.Shares": "[12.27.0, )",
+          "Azure.Storage.Files.Shares": "[12.27.1, )",
           "Buildalyzer": "[8.0.0, )",
           "DotNet.Glob": "[3.1.3, )",
           "Grynwald.MarkdownGenerator": "[3.0.106, )",
@@ -1033,9 +1033,9 @@
       },
       "Azure.Storage.Files.Shares": {
         "type": "CentralTransitive",
-        "requested": "[12.27.0, )",
-        "resolved": "12.27.0",
-        "contentHash": "IRQ/RmweKaTNm9uVbzLP59CBCydjhNQYK0JLxMdHhf0zSOHwDEj9+l6QNKQpyqjkFzhUxLL4f3rZIds99Es87A==",
+        "requested": "[12.27.1, )",
+        "resolved": "12.27.1",
+        "contentHash": "JMcZ8i0JbL0gJI7OpLt/RprxmcblH/3zxndTv8onUEV7slQMFg0M3f0KVNLwILEcCUI2qZZS6s9TbHpr4rZWEQ==",
         "dependencies": {
           "Azure.Core": "1.55.0",
           "Azure.Storage.Common": "12.28.0"
