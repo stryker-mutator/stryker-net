@@ -400,8 +400,8 @@
       },
       "Spectre.Console.Ansi": {
         "type": "Transitive",
-        "resolved": "0.57.0",
-        "contentHash": "DGeYljyWAIHSeUAoUGqyzyOqS8WlsHKW+y4zOZ0OO61oqrhx90jHS+XG5Kpq/wWz6ovIs2VL/0CTKpUVa7tdWg=="
+        "resolved": "0.57.1",
+        "contentHash": "IFlXdGXOGD4XCK5ybZsXgQo7PE0ZE/pt9YFFWo2cECTipS8DrViLFazx+K00/A+fY1PlHYt1Vqwrjfod4EEckw=="
       },
       "System.ClientModel": {
         "type": "Transitive",
@@ -797,7 +797,7 @@
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
           "Serilog.Sinks.Console": "[6.1.1, )",
           "ShellProgressBar": "[5.2.0, )",
-          "Spectre.Console": "[0.57.0, )",
+          "Spectre.Console": "[0.57.1, )",
           "Stryker.Abstractions": "[4.15.0, )",
           "Stryker.Configuration": "[4.15.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
@@ -1130,11 +1130,11 @@
       },
       "Spectre.Console": {
         "type": "CentralTransitive",
-        "requested": "[0.57.0, )",
-        "resolved": "0.57.0",
-        "contentHash": "X5+4ZsUYTPlTs5PEoKRlxUuKOa1AkEoAGM34pUeJPjsBdtOnvnaVb31hqewhooomihl1i9fEBid1fz8XxZTacQ==",
+        "requested": "[0.57.1, )",
+        "resolved": "0.57.1",
+        "contentHash": "h/B0CJLR5Ba8yq+iVjjZR9JXMS+8a1syHmHhyZ6w5m8rHDWLGOlaKAhzJanHJL62rZxynLeVOx+43MKvskJ1lA==",
         "dependencies": {
-          "Spectre.Console.Ansi": "0.57.0"
+          "Spectre.Console.Ansi": "0.57.1"
         }
       },
       "StreamJsonRpc": {
