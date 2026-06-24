@@ -41,7 +41,7 @@ namespace ExtraProject.XUnit
     }
 }
 ";
-    public GitlabQualityReporterTests() => _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
+    public JsonReporterTests() => _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
 
     [TestMethod]
     public void JsonMutantPositionLine_ThrowsArgumentExceptionWhenSetToLessThan1()
