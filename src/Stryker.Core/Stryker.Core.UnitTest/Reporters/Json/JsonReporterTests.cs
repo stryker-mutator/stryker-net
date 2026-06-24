@@ -23,7 +23,7 @@ using Stryker.Core.Reporters.Json.SourceFiles;
 namespace Stryker.Core.UnitTest.Reporters.Json;
 
 [TestClass]
-public class GitlabQualityReporterTests : TestBase
+public class JsonReporterTests : TestBase
 {
     private readonly IFileSystem _fileSystemMock = new MockFileSystem();
     private readonly string _testFilePath = "c:\\mytestfile.cs";
