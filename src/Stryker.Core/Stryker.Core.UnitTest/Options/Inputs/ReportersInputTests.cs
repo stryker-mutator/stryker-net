@@ -14,7 +14,7 @@ public class ReportersInputTests : TestBase
     public void ShouldHaveHelpText()
     {
         var target = new ReportersInput();
-        target.HelpText.ShouldBe("Reporters inform about various stages in the mutation testrun. | default: ['Progress', 'Html'] | allowed: All, Progress, Dots, ClearText, ClearTextTree, Json, Html, Dashboard, RealTimeDashboard, Markdown, Baseline, GitlabQualityReport");
+        target.HelpText.ShouldBe("Reporters inform about various stages in the mutation testrun. | default: ['Progress', 'Html'] | allowed: All, Progress, Dots, ClearText, ClearTextTree, Json, Html, Dashboard, RealTimeDashboard, Markdown, Baseline, Gitlab");
     }
 
     [TestMethod]
@@ -53,7 +53,7 @@ public class ReportersInputTests : TestBase
                 Reporter.ClearTextTree.ToString(),
                 Reporter.Dashboard.ToString(),
                 Reporter.Dots.ToString(),
-                Reporter.GitlabQualityReport.ToString(),
+                Reporter.Gitlab.ToString(),
             }
         };
 
@@ -68,7 +68,7 @@ public class ReportersInputTests : TestBase
         result.ShouldContain(Reporter.ClearTextTree);
         result.ShouldContain(Reporter.Dashboard);
         result.ShouldContain(Reporter.Dots);
-        result.ShouldContain(Reporter.GitlabQualityReport);
+        result.ShouldContain(Reporter.Gitlab);
     }
 
     [TestMethod]
