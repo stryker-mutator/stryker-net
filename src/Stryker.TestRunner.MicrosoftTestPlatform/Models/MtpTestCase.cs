@@ -22,7 +22,7 @@ public sealed class MtpTestCase : ITestCase
     public string Source { get; init; } = string.Empty;
     public string CodeFilePath { get; }
 
-    public string AssemblyPath { get; init; }
+    public string AssemblyPath { get; init; } = string.Empty;
 
     public Guid Guid { get; }
     public string Name => _testNode.DisplayName;
