@@ -58,10 +58,13 @@ public class ProjectMutator : IProjectMutator
                 testFile = testProjectsInfo.TestFiles.SingleOrDefault(tf => tf.FilePath == unitTest.CodeFilePath);
                 if (testFile is not null)
                 {
-                    var lineSpan = testFile.SyntaxTree.GetText().Lines[unitTest.LineNumber - 1].Span;
-                    var nodesInSpan = testFile.SyntaxTree.GetRoot().DescendantNodes(lineSpan);
-                    node = nodesInSpan.FirstOrDefault(n => n is MethodDeclarationSyntax);
-                }
+                    var lines = testFile.SyntaxTree.GetText().Lines;
+                    if (unitTest.LineNumber <= lines.Count)
+                    {
+                        var lineSpan = lines[unitTest.LineNumber - 1].Span;
+                        var nodesInSpan = testFile.SyntaxTree.GetRoot().DescendantNodes(lineSpan);
+                        node = nodesInSpan.FirstOrDefault(n => n is MethodDeclarationSyntax);
+                    }
             }
 
             // Fallback: search by method name when location info is missing (e.g. NUnit and MSTest with MTP)
