@@ -27,8 +27,9 @@ public class DiskBaselineProvider : IBaselineProvider
 
     public async Task<IJsonReport> Load(string version)
     {
+        // at this point, BaseLineOutputPath is a fully qualified path
         var reportPath = FilePathUtils.NormalizePathSeparators(
-            Path.Combine(_options.ProjectPath, _options.BaselineOutputPath, version, "stryker-report.json"));
+            Path.Combine(_options.BaselineOutputPath, version, "stryker-report.json"));
 
         if (_fileSystem.File.Exists(reportPath))
         {
@@ -43,8 +44,9 @@ public class DiskBaselineProvider : IBaselineProvider
 
     public async Task Save(IJsonReport report, string version)
     {
+        // at this point, BaseLineOutputPath is a fully qualified path
         var reportDirectory = FilePathUtils.NormalizePathSeparators(
-            Path.Combine(_options.ProjectPath, _options.BaselineOutputPath, version));
+            Path.Combine(_options.BaselineOutputPath, version));
 
         _fileSystem.Directory.CreateDirectory(reportDirectory);
 

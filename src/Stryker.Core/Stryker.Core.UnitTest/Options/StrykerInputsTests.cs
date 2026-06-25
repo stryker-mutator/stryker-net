@@ -176,7 +176,7 @@ public class StrykerInputsTests : TestBase
         _target.BaselineProviderInput.SuppliedInput = "disk";
         _target.WithBaselineInput.SuppliedInput = true;
         _target.ProjectVersionInput.SuppliedInput = "develop";
-        _target.BaselineOutputInput.SuppliedInput = "StrykerOutput";
+        _target.BaselineOutputInput.SuppliedInput = Path.GetFullPath("StrykerOutput");
 
         var result = _target.ValidateAll();
 
@@ -198,8 +198,8 @@ public class StrykerInputsTests : TestBase
     {
         _target.ProjectVersionInput.SuppliedInput = "1";
         _target.WithBaselineInput.SuppliedInput = true;
-        // the disk baseline output is mandatory and is set from the output path by the CLI before validation
-        _target.BaselineOutputInput.SuppliedInput = "StrykerOutput";
+        // the disk baseline output is mandatory and is set from the output path (a full path) by the CLI before validation
+        _target.BaselineOutputInput.SuppliedInput = Path.GetFullPath("StrykerOutput");
 
         Should.NotThrow(() => _target.ValidateAll());
     }
@@ -226,11 +226,12 @@ public class StrykerInputsTests : TestBase
     {
         _target.ProjectVersionInput.SuppliedInput = "1";
         _target.WithBaselineInput.SuppliedInput = true;
-        _target.BaselineOutputInput.SuppliedInput = "custom-baseline";
+        var fullPath = Path.GetFullPath("custom-baseline");
+        _target.BaselineOutputInput.SuppliedInput = fullPath;
 
         var result = _target.ValidateAll();
 
-        result.BaselineOutputPath.ShouldBe("custom-baseline");
+        result.BaselineOutputPath.ShouldBe(fullPath);
     }
 
     [TestMethod]
