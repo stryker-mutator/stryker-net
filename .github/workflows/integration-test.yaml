@@ -1,7 +1,9 @@
 name: integration test
 run-name: e2e ${{ github.head_ref }}
 
-on: [pull_request]
+on:
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   integration-test:
@@ -38,7 +40,7 @@ jobs:
       CATEGORY: ${{ matrix.category }}
       RUNTIME: ${{ matrix.runtime }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |

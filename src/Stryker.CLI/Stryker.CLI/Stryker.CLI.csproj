@@ -11,8 +11,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <VersionPrefix>4.14.0</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
     <PackageId>dotnet-stryker</PackageId>
     <Authors>Richard Werkman, Rouke Broersma</Authors>
     <Product>Mutation Testing</Product>

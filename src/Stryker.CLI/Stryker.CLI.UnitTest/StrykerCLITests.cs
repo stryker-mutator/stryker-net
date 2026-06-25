@@ -95,6 +95,101 @@ Options:";
     }
 
     [TestMethod]
+    public async Task ShouldDisplayLogoWithInfoVerbosity()
+    {
+        var strykerRunnerMock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+        var strykerRunResult = new StrykerRunResult(_options, 0.3);
+
+        strykerRunnerMock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
+            .Returns(Task.FromResult(strykerRunResult))
+            .Verifiable();
+
+        var console = new TestConsole().EmitAnsiSequences().Width(160);
+        var target = new StrykerCli(strykerRunnerMock.Object, new ConfigBuilder(), _loggingInitializerMock.Object, _nugetClientMock.Object, console, Mock.Of<IFileSystem>());
+
+        await target.RunAsync(new[] { "--verbosity", "info", "--skip-version-check" });
+
+        var consoleOutput = console.Output;
+        consoleOutput.ShouldContain("_____ _");
+    }
+
+    [TestMethod]
+    public async Task ShouldDisplayLogoWithDebugVerbosity()
+    {
+        var strykerRunnerMock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+        var strykerRunResult = new StrykerRunResult(_options, 0.3);
+
+        strykerRunnerMock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
+            .Returns(Task.FromResult(strykerRunResult))
+            .Verifiable();
+
+        var console = new TestConsole().EmitAnsiSequences().Width(160);
+        var target = new StrykerCli(strykerRunnerMock.Object, new ConfigBuilder(), _loggingInitializerMock.Object, _nugetClientMock.Object, console, Mock.Of<IFileSystem>());
+
+        await target.RunAsync(new[] { "--verbosity", "debug", "--skip-version-check" });
+
+        var consoleOutput = console.Output;
+        consoleOutput.ShouldContain("_____ _");
+    }
+
+    [TestMethod]
+    public async Task ShouldDisplayLogoWithTraceVerbosity()
+    {
+        var strykerRunnerMock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+        var strykerRunResult = new StrykerRunResult(_options, 0.3);
+
+        strykerRunnerMock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
+            .Returns(Task.FromResult(strykerRunResult))
+            .Verifiable();
+
+        var console = new TestConsole().EmitAnsiSequences().Width(160);
+        var target = new StrykerCli(strykerRunnerMock.Object, new ConfigBuilder(), _loggingInitializerMock.Object, _nugetClientMock.Object, console, Mock.Of<IFileSystem>());
+
+        await target.RunAsync(new[] { "--verbosity", "trace", "--skip-version-check" });
+
+        var consoleOutput = console.Output;
+        consoleOutput.ShouldContain("_____ _");
+    }
+
+    [TestMethod]
+    public async Task ShouldNotDisplayLogoWithWarningVerbosity()
+    {
+        var strykerRunnerMock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+        var strykerRunResult = new StrykerRunResult(_options, 0.3);
+
+        strykerRunnerMock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
+            .Returns(Task.FromResult(strykerRunResult))
+            .Verifiable();
+
+        var console = new TestConsole().EmitAnsiSequences().Width(160);
+        var target = new StrykerCli(strykerRunnerMock.Object, new ConfigBuilder(), _loggingInitializerMock.Object, _nugetClientMock.Object, console, Mock.Of<IFileSystem>());
+
+        await target.RunAsync(new[] { "--verbosity", "warning", "--skip-version-check" });
+
+        var consoleOutput = console.Output;
+        consoleOutput.ShouldNotContain("_____ _");
+    }
+
+    [TestMethod]
+    public async Task ShouldNotDisplayLogoWithErrorVerbosity()
+    {
+        var strykerRunnerMock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+        var strykerRunResult = new StrykerRunResult(_options, 0.3);
+
+        strykerRunnerMock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
+            .Returns(Task.FromResult(strykerRunResult))
+            .Verifiable();
+
+        var console = new TestConsole().EmitAnsiSequences().Width(160);
+        var target = new StrykerCli(strykerRunnerMock.Object, new ConfigBuilder(), _loggingInitializerMock.Object, _nugetClientMock.Object, console, Mock.Of<IFileSystem>());
+
+        await target.RunAsync(new[] { "--verbosity", "error", "--skip-version-check" });
+
+        var consoleOutput = console.Output;
+        consoleOutput.ShouldNotContain("_____ _");
+    }
+
+    [TestMethod]
     public async Task ShouldCallNugetClient()
     {
         await _target.RunAsync([]);

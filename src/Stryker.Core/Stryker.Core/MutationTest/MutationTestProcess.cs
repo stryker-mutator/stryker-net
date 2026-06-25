@@ -131,7 +131,7 @@ public class MutationTestProcess : IMutationTestProcess
 
         foreach (var mutant in testedMutants)
         {
-            mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest, false);
+            mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest, false, false);
 
             if (mutant.ResultStatus == MutantStatus.Pending)
             {

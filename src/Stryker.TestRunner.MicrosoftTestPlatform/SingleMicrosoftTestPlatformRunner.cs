@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO.MemoryMappedFiles;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
@@ -110,13 +111,26 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     {
         try
         {
-            File.WriteAllText(_mutantFilePath, mutantId.ToString());
-            _logger.LogDebug("{RunnerId}: Wrote mutant ID {MutantId} to file {FilePath}",
+            // Publish the active mutant id as a fixed 4-byte int through a file-backed memory-mapped view.
+            // The injected MutantControl maps the same file and reads the id on every IsActive call, so the
+            // reused test host always sees the current mutant with no per-call file I/O. Both sides use
+            // CreateFromFile with a null map name (file-backed maps work cross-platform, unlike named maps
+            // which are Windows-only), and FileShare.ReadWrite lets the host keep the file mapped while we
+            // update it between runs.
+            using (var stream = new FileStream(_mutantFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+            using (var mmf = MemoryMappedFile.CreateFromFile(stream, null, sizeof(int), MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, leaveOpen: true))
+            using (var accessor = mmf.CreateViewAccessor(0, sizeof(int), MemoryMappedFileAccess.Write))
+            {
+                accessor.Write(0, mutantId);
+                accessor.Flush();
+            }
+
+            _logger.LogDebug("{RunnerId}: Wrote mutant ID {MutantId} to memory-mapped file {FilePath}",
                 RunnerId, mutantId, _mutantFilePath);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "{RunnerId}: Failed to write mutant ID to file {FilePath}",
+            _logger.LogWarning(ex, "{RunnerId}: Failed to write mutant ID to memory-mapped file {FilePath}",
                 RunnerId, _mutantFilePath);
         }
     }
@@ -127,6 +141,8 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         {
             ["STRYKER_MUTANT_FILE"] = _mutantFilePath
         };
+
+        ExternalEnvironmentVariables.Add(envVars);
 
         // Add coverage filename when in coverage mode (MutantControl will combine with temp path)
         if (_coverageMode)
@@ -233,17 +249,32 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
     private async Task<AssemblyTestServer> GetOrCreateServerAsync(string assembly)
     {
-        AssemblyTestServer? server;
+        AssemblyTestServer? deadServer = null;
         lock (_serverLock)
         {
-            if (_assemblyServers.TryGetValue(assembly, out server) && server.IsInitialized)
+            if (_assemblyServers.TryGetValue(assembly, out var existing))
             {
-                return server;
+                if (existing.IsAlive)
+                {
+                    return existing;
+                }
+
+                // The server process is no longer alive (e.g. it crashed during a previous run).
+                // Drop it so a fresh server is started rather than reusing a dead RPC connection,
+                // which would fail every subsequent test run instantly.
+                _logger.LogDebug("{RunnerId}: Test server for {Assembly} is no longer alive; recreating", RunnerId, assembly);
+                _assemblyServers.Remove(assembly);
+                deadServer = existing;
             }
         }
 
+        if (deadServer is not null)
+        {
+            await deadServer.StopAsync(force: true).ConfigureAwait(false);
+        }
+
         var environmentVariables = BuildEnvironmentVariables();
-        server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options);
+        var server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options);
 
         var started = await server.StartAsync().ConfigureAwait(false);
         if (!started)
@@ -257,6 +288,25 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
 
         return server;
+    }
+
+    /// <summary>
+    /// Force-stops and removes the server for the given assembly so the next run starts a fresh one.
+    /// Used after a run fails because the test host crashed and tore down the RPC connection.
+    /// </summary>
+    private async Task DiscardServerAsync(string assembly)
+    {
+        AssemblyTestServer? server;
+        lock (_serverLock)
+        {
+            _assemblyServers.TryGetValue(assembly, out server);
+            _assemblyServers.Remove(assembly);
+        }
+
+        if (server is not null)
+        {
+            await server.StopAsync(force: true).ConfigureAwait(false);
+        }
     }
 
     private async Task<bool> DiscoverTestsInternalAsync(string assembly)
@@ -358,10 +408,28 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
         public List<string> TimedOutTests { get; } = [];
         public bool HasTimeout { get; set; }
+        public bool HasError { get; private set; }
         public TimeSpan TotalDuration { get; private set; }
 
         public void Aggregate(TestRunResult result, List<TestNode>? discoveredTests)
         {
+            // A crash sentinel (FailingTests == EveryTest, produced only by the TestRunResult(false)
+            // path when an assembly run crashes) must NOT be folded into the executed/failed sets:
+            // EveryTest.GetIdentifiers() is empty, so doing so would record "every test ran, none
+            // failed" and report otherwise-untested mutants as Survived. Flag it as an error instead;
+            // RunAllTestsAsync then returns a RuntimeError result so the affected mutants are
+            // classified as RuntimeError (excluded from the score) rather than Survived or Killed.
+            if (result.FailingTests.IsEveryTest)
+            {
+                HasError = true;
+                if (!string.IsNullOrWhiteSpace(result.ResultMessage))
+                {
+                    _errorMessages.Add(result.ResultMessage);
+                }
+                TotalDuration += result.Duration;
+                return;
+            }
+
             if (result.ExecutedTests.IsEveryTest)
             {
                 _totalExecutedTests += discoveredTests?.Count ?? 0;
@@ -448,6 +516,22 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
                 update.Invoke(mutants, failedTestIds, executedTests, timedOutTestIds);
             }
 
+            if (accumulator.HasError)
+            {
+                // The test host crashed (e.g. a mutation caused a fatal fault). Signal a runtime error
+                // so the affected mutants are classified as RuntimeError (excluded from the score)
+                // rather than reported as survived or logged as a test failure.
+                _logger.LogDebug("{RunnerId}: A test host crashed during this run; reporting a runtime error for the affected mutant(s).", RunnerId);
+                return TestRunResult.RuntimeError(
+                    testDescriptionValues,
+                    executedTests,
+                    failedTestIds,
+                    timedOutTestIds,
+                    accumulator.BuildErrorMessage(),
+                    accumulator.Messages,
+                    accumulator.TotalDuration);
+            }
+
             if (accumulator.HasTimeout)
             {
                 return TestRunResult.TimedOut(
@@ -503,81 +587,144 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         Func<TestNode, bool>? testUidFilter,
         TimeSpan? timeout = null)
     {
-        var startTime = DateTime.UtcNow;
+        // A crashed test host tears down the RPC connection, so the run throws (rather than timing out).
+        // Retry once on a freshly started server: a crash caused by a *previous* mutant then self-heals
+        // for the current mutant instead of corrupting its result.
+        const int maxRunAttempts = 2;
+        Exception? lastRunException = null;
 
-        try
+        for (var attempt = 1; attempt <= maxRunAttempts; attempt++)
         {
-            // Get or create the server for this assembly (reuses existing server)
-            var server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
-
-            List<TestNode>? tests = null;
-            lock (_discoveryLock)
+            AssemblyTestServer server;
+            try
             {
-                if (_testsByAssembly.TryGetValue(assembly, out var assemblyTests))
+                // Get or create the server for this assembly (reuses an existing, live server)
+                server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // The server could not be started at all; retrying immediately would not help.
+                return (new TestRunResult(false, ex.Message), false);
+            }
+
+            var startTime = DateTime.UtcNow;
+            try
+            {
+                List<TestNode>? tests = null;
+                lock (_discoveryLock)
                 {
-                    tests = assemblyTests;
+                    if (_testsByAssembly.TryGetValue(assembly, out var assemblyTests))
+                    {
+                        tests = assemblyTests;
+                    }
                 }
+
+                var testsToRun = tests?.Where(t => testUidFilter is null || testUidFilter(t)).ToArray();
+
+                var (testResults, timedOut) = await server.RunTestsAsync(testsToRun, timeout).ConfigureAwait(false);
+
+                var duration = DateTime.UtcNow - startTime;
+                var result = BuildTestRunResult(testResults, tests?.Count ?? 0, duration);
+
+                return (result, timedOut);
             }
-
-            var testsToRun = tests?.Where(t => testUidFilter is null || testUidFilter(t)).ToArray();
-
-            var (testResults, timedOut) = await server.RunTestsAsync(testsToRun, timeout).ConfigureAwait(false);
-
-            var duration = DateTime.UtcNow - startTime;
-            var finishedTests = testResults.Where(x => x.Node.ExecutionState is not "in-progress").ToList();
-            var failedTests = finishedTests.Where(x => x.Node.ExecutionState is "failed").Select(x => x.Node.Uid).ToList();
-
-            lock (_discoveryLock)
+            catch (Exception ex)
             {
-                // MTP doesn't report per-test timing, so approximate with the average
-                var perTestDuration = finishedTests.Count > 0
-                    ? TimeSpan.FromTicks(duration.Ticks / finishedTests.Count)
-                    : TimeSpan.Zero;
+                lastRunException = ex;
+                _logger.LogDebug(ex, "{RunnerId}: Test run for {Assembly} failed on attempt {Attempt}/{MaxAttempts}; discarding crashed server",
+                    RunnerId, Path.GetFileName(assembly), attempt, maxRunAttempts);
 
-                foreach (var testResult in finishedTests.Where(tr => _testDescriptions.ContainsKey(tr.Node.Uid)))
-                {
-                    var testDescription = _testDescriptions[testResult.Node.Uid];
-                    testDescription.RegisterInitialTestResult(new MtpTestResult(perTestDuration));
-                }
+                // The server most likely crashed; drop it so the next attempt starts a fresh one.
+                await DiscardServerAsync(assembly).ConfigureAwait(false);
             }
-
-            var errorMessagesStr = string.Join(Environment.NewLine,
-                finishedTests.Where(x => x.Node.ExecutionState is "failed")
-                    .Select(x => $"{x.Node.DisplayName}{Environment.NewLine}{Environment.NewLine}Test failed"));
-
-            var messages = finishedTests.Select(x =>
-                $"{x.Node.DisplayName}{Environment.NewLine}{Environment.NewLine}State: {x.Node.ExecutionState}");
-
-            var totalDiscoveredTests = tests?.Count ?? 0;
-            var executedTestCount = finishedTests.Count;
-            var executedTests = totalDiscoveredTests > 0 && executedTestCount >= totalDiscoveredTests
-                ? TestIdentifierList.EveryTest()
-                : new TestIdentifierList(finishedTests.Select(x => x.Node.Uid));
-
-            var failedTestIds = new TestIdentifierList(failedTests);
-
-
-            IEnumerable<MtpTestDescription> testDescriptionValues;
-            lock (_discoveryLock)
-            {
-                testDescriptionValues = _testDescriptions.Values.ToList();
-            }
-
-            var result = new TestRunResult(
-                testDescriptionValues,
-                executedTests,
-                failedTestIds,
-                TestIdentifierList.NoTest(),
-                errorMessagesStr,
-                messages,
-                duration);
-
-            return (result, timedOut);
         }
-        catch (Exception ex)
+
+        // Every attempt failed. Return the crash sentinel; the accumulator recognises it and flags the
+        // run as crashed, so the affected mutants are reported as RuntimeError rather than Survived.
+        return (new TestRunResult(false, lastRunException!.Message), false);
+    }
+
+    /// <summary>
+    /// Maps a list of <see cref="TestNodeUpdate"/>s returned by the MTP server
+    /// to a <see cref="TestRunResult"/>. Exposed for unit testing.
+    /// </summary>
+    /// <remarks>
+    /// Classification of execution states goes through <see cref="TestNodeStates"/>
+    /// so that failure attribution (the bug this adapter originally had) stays in
+    /// one place:
+    /// <list type="bullet">
+    ///   <item><description><c>failed</c>/<c>error</c>/<c>cancelled</c> → failing tests (mutant killed)</description></item>
+    ///   <item><description><c>timed-out</c> → timed-out tests (mutant timeout)</description></item>
+    ///   <item><description><c>passed</c>/<c>skipped</c> → executed but neither failing nor timed-out</description></item>
+    ///   <item><description><c>in-progress</c>/<c>discovered</c> → excluded from executed tests</description></item>
+    /// </list>
+    /// </remarks>
+    internal TestRunResult BuildTestRunResult(
+        IReadOnlyCollection<TestNodeUpdate> testResults,
+        int totalDiscoveredTests,
+        TimeSpan duration)
+    {
+        var finishedTests = testResults
+            .Where(x => TestNodeStates.IsFinished(x.Node.ExecutionState))
+            .ToList();
+
+        var failedTests = finishedTests
+            .Where(x => TestNodeStates.IsFailure(x.Node.ExecutionState))
+            .Select(x => x.Node.Uid)
+            .ToList();
+
+        var timedOutTests = finishedTests
+            .Where(x => TestNodeStates.IsTimeout(x.Node.ExecutionState))
+            .Select(x => x.Node.Uid)
+            .ToList();
+
+        lock (_discoveryLock)
         {
-            return (new TestRunResult(false, ex.Message), false);
+            // MTP doesn't report per-test timing, so approximate with the average
+            var perTestDuration = finishedTests.Count > 0
+                ? TimeSpan.FromTicks(duration.Ticks / finishedTests.Count)
+                : TimeSpan.Zero;
+
+            foreach (var testResult in finishedTests.Where(tr => _testDescriptions.ContainsKey(tr.Node.Uid)))
+            {
+                var testDescription = _testDescriptions[testResult.Node.Uid];
+                testDescription.RegisterInitialTestResult(new MtpTestResult(perTestDuration));
+            }
         }
+
+        var errorMessagesStr = string.Join(Environment.NewLine,
+            finishedTests
+                .Where(x => TestNodeStates.IsFailure(x.Node.ExecutionState)
+                         || TestNodeStates.IsTimeout(x.Node.ExecutionState))
+                .Select(x => $"{x.Node.DisplayName}{Environment.NewLine}{Environment.NewLine}State: {x.Node.ExecutionState}"));
+
+        var messages = finishedTests.Select(x =>
+            $"{x.Node.DisplayName}{Environment.NewLine}{Environment.NewLine}State: {x.Node.ExecutionState}");
+
+        var executedTestCount = finishedTests.Count;
+        var executedTests = totalDiscoveredTests > 0 && executedTestCount >= totalDiscoveredTests
+            ? TestIdentifierList.EveryTest()
+            : new TestIdentifierList(finishedTests.Select(x => x.Node.Uid));
+
+        var failedTestIds = new TestIdentifierList(failedTests);
+        var timedOutTestIds = timedOutTests.Count == 0
+            ? TestIdentifierList.NoTest()
+            : new TestIdentifierList(timedOutTests);
+
+        IEnumerable<MtpTestDescription> testDescriptionValues;
+        lock (_discoveryLock)
+        {
+            testDescriptionValues = _testDescriptions.Values.ToList();
+        }
+
+        return new TestRunResult(
+            testDescriptionValues,
+            executedTests,
+            failedTestIds,
+            timedOutTestIds,
+            errorMessagesStr,
+            messages,
+            duration);
     }
 
     public void Dispose()
