@@ -65,6 +65,7 @@ public class ProjectMutator : IProjectMutator
                         var nodesInSpan = testFile.SyntaxTree.GetRoot().DescendantNodes(lineSpan);
                         node = nodesInSpan.FirstOrDefault(n => n is MethodDeclarationSyntax);
                     }
+                }
             }
 
             // Fallback: search by method name when location info is missing (e.g. NUnit and MSTest with MTP)
