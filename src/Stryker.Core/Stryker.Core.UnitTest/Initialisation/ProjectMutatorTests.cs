@@ -106,6 +106,7 @@ namespace ExtraProject.XUnit
         // arrange
         var fileSystem = new MockFileSystem();
         const string filePath = "C:\\tests\\SampleTests.cs";
+        fileSystem.Directory.CreateDirectory("C:\\tests");
         fileSystem.File.WriteAllText(filePath, @"
 namespace MyProject.NUnit
 {
@@ -135,6 +136,7 @@ namespace MyProject.NUnit
         // arrange
         var fileSystem = new MockFileSystem();
         const string filePath = "C:\\tests\\SampleTests.cs";
+        fileSystem.Directory.CreateDirectory("C:\\tests");
         fileSystem.File.WriteAllText(filePath, @"
 namespace MyProject.NUnit
 {
@@ -164,6 +166,7 @@ namespace MyProject.NUnit
         // arrange
         var fileSystem = new MockFileSystem();
         const string filePath = "C:\\tests\\SampleTests.cs";
+        fileSystem.Directory.CreateDirectory("C:\\tests");
         fileSystem.File.WriteAllText(filePath, @"
 namespace MyProject.MSTest
 {
@@ -193,6 +196,7 @@ namespace MyProject.MSTest
         // arrange
         var fileSystem = new MockFileSystem();
         const string filePath = "C:\\tests\\SampleTests.cs";
+        fileSystem.Directory.CreateDirectory("C:\\tests");
         fileSystem.File.WriteAllText(filePath, @"
 namespace MyProject.MSTest
 {
@@ -223,6 +227,7 @@ namespace MyProject.MSTest
         var fileSystem = new MockFileSystem();
         const string fileA = "C:\\tests\\NUnitTests.cs";
         const string fileB = "C:\\tests\\XUnitTests.cs";
+        fileSystem.Directory.CreateDirectory("C:\\tests");
         fileSystem.File.WriteAllText(fileA, @"
 namespace MyProject.NUnit
 {
@@ -262,6 +267,7 @@ namespace MyProject.XUnit
         // arrange
         var fileSystem = new MockFileSystem();
         const string filePath = "c:\\tests\\SampleTests.cs";
+        fileSystem.Directory.CreateDirectory("c:\\tests");
         fileSystem.File.WriteAllText(filePath, @"
 namespace MyProject.Tests
 {
