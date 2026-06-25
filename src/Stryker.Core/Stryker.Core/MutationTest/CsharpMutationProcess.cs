@@ -70,7 +70,7 @@ public class CsharpMutationProcess : IMutationProcess
             }
 
             file.Mutants = orchestrator.GetLatestMutantBatch();
-        }
+        });
 
         _logger.LogDebug("{MutantsCount} mutants created", projectInfo.Mutants.Count());
     }
