@@ -53,6 +53,7 @@ public class ProjectMutator : IProjectMutator
             SyntaxNode? node = null;
 
             // Primary: use location info when the framework provides it (e.g. XUnit v3, TUnit)
+            // When the test framework doesn't provide location info, we will try to find the test method by name (e.g. NUnit and MSTest with MTP).
             if (Path.GetExtension(unitTest.CodeFilePath) == ".cs" && unitTest.LineNumber > 0)
             {
                 testFile = testProjectsInfo.TestFiles.SingleOrDefault(tf => tf.FilePath == unitTest.CodeFilePath);

@@ -11,7 +11,9 @@ public sealed class MtpTestCase : ITestCase
     {
         _testNode = testNode;
         CodeFilePath = testNode.LocationFile ?? string.Empty;
-        LineNumber = testNode.LocationLineStart ?? 0;
+        // If the test framework doesn't provide location info, we will use -1 to indicate that the line number is unknown.
+        // ProjectMutator will try to find the test method by name in this case.
+        LineNumber = testNode.LocationLineStart ?? -1;
         FullyQualifiedName = BuildFullyQualifiedName(testNode);
     }
 
