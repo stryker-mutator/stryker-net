@@ -1,3 +1,4 @@
+using System.IO;
 using Shouldly;
 using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.Exceptions;
@@ -30,11 +31,23 @@ public class BaselineOutputInputTests : TestBase
     [TestMethod]
     public void ShouldReturnSuppliedValue_WhenDiskBaseline()
     {
-        var target = new BaselineOutputInput { SuppliedInput = "custom-baseline" };
+        // a path that is fully qualified on whatever OS the tests run on
+        var fullPath = Path.GetFullPath("custom-baseline");
+        var target = new BaselineOutputInput { SuppliedInput = fullPath };
 
         var result = target.Validate(BaselineProvider.Disk, withBaseline: true);
 
-        result.ShouldBe("custom-baseline");
+        result.ShouldBe(fullPath);
+    }
+
+    [TestMethod]
+    [DataRow("custom-baseline")]
+    [DataRow("relative/baseline")]
+    public void ShouldThrow_WhenDiskBaselineAndNotFullyQualified(string input)
+    {
+        var target = new BaselineOutputInput { SuppliedInput = input };
+
+        Should.Throw<InputException>(() => target.Validate(BaselineProvider.Disk, withBaseline: true));
     }
 
     [TestMethod]

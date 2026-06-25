@@ -1,3 +1,4 @@
+using System.IO;
 using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.Exceptions;
 
@@ -16,6 +17,11 @@ public class BaselineOutputInput : Input<string>
             if (string.IsNullOrWhiteSpace(SuppliedInput))
             {
                 throw new InputException("BaselineOutput can't be null or whitespace");
+            }
+
+            if (!Path.IsPathFullyQualified(SuppliedInput))
+            {
+                throw new InputException($"BaselineOutput must be a fully qualified path, but was: {SuppliedInput}");
             }
 
             return SuppliedInput;

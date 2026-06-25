@@ -25,7 +25,7 @@ public class DiskBaselineProviderTests : TestBase
         var options = new StrykerOptions()
         {
             ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder",
-            BaselineOutputPath = "StrykerOutput"
+            BaselineOutputPath = @"C:/Users/JohnDoe/Project/TestFolder/StrykerOutput"
         };
         var sut = new DiskBaselineProvider(options, fileSystemMock);
 
@@ -46,7 +46,7 @@ public class DiskBaselineProviderTests : TestBase
         var options = new StrykerOptions()
         {
             ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder",
-            BaselineOutputPath = "custom-baseline"
+            BaselineOutputPath = @"C:/Users/JohnDoe/Project/TestFolder/custom-baseline"
         };
         var sut = new DiskBaselineProvider(options, fileSystemMock);
 
@@ -84,7 +84,7 @@ public class DiskBaselineProviderTests : TestBase
         var options = new StrykerOptions()
         {
             ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder",
-            BaselineOutputPath = "custom-baseline"
+            BaselineOutputPath = @"C:/Users/JohnDoe/Project/TestFolder/custom-baseline"
         };
         var report = JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<ITestProjectsInfo>());
 
@@ -103,7 +103,7 @@ public class DiskBaselineProviderTests : TestBase
     {
         // Arrange
         var fileSystemMock = new MockFileSystem();
-        var options = new StrykerOptions { ProjectPath = "C:/Dev", BaselineOutputPath = "StrykerOutput" };
+        var options = new StrykerOptions { ProjectPath = "C:/Dev", BaselineOutputPath = "C:/Dev/StrykerOutput" };
         var sut = new DiskBaselineProvider(options, fileSystemMock);
 
         // Act
@@ -120,7 +120,7 @@ public class DiskBaselineProviderTests : TestBase
         var options = new StrykerOptions()
         {
             ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder",
-            BaselineOutputPath = "StrykerOutput"
+            BaselineOutputPath = @"C:/Users/JohnDoe/Project/TestFolder/StrykerOutput"
         };
         var report = JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<ITestProjectsInfo>());
 
