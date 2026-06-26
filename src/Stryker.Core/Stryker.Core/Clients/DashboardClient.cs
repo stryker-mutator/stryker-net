@@ -98,9 +98,6 @@ public class DashboardClient : IDashboardClient
                 batchResponse.EnsureSuccessStatusCode();
                 _batch.Clear();
             }
-
-            var deleteResponse = await _httpClient.DeleteAsync(url);
-            deleteResponse.EnsureSuccessStatusCode();
         }
         catch (Exception exception)
         {
