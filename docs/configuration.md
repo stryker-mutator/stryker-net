@@ -1,4 +1,4 @@
----
+/---
 title: Configuration
 sidebar_position: 30
 custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/configuration.md
@@ -691,8 +691,22 @@ Default: `false`
 Command line: `--dev-mode`  
 Config file: `N/A`
 
-You should activate `dev mode` when diagnosing an issue with Stryker. This will enable additional logging, specific checks, disable some optimizations...
+You should activate `dev mode` when diagnosing an issue with Stryker. This will enable additional logging, specific checks, disable some optimizations...  
 As a result, Stryker will be slower, but the log file should help diagnose the hardest issues.
+
+### `disable-timeouts` &lt;`flag`&gt;
+
+Default: `false`  
+Command line: `--disable-timeouts`  
+Config file: `"disable-timeouts": true`
+
+When enabled, Stryker will automatically inject `// Stryker disable once` comments for mutants that cause timeouts. This helps speed up subsequent test runs by skipping known problematic mutations.
+
+The injected comments follow the format: `// Stryker disable once MutatorType: this mutation causes a timeout`
+
+When multiple timeouts occur on the same line, they are merged into a single comment: `// Stryker disable once Mutator1,Mutator2: this mutation causes a timeout`
+
+Existing disable comments are preserved and respected, preventing duplicate injections across runs.
 
 ## Misc
 

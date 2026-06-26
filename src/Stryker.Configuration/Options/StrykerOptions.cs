@@ -277,6 +277,11 @@ public class StrykerOptions : IStrykerOptions
     /// </summary>
     public IProvideId MutantIdProvider {get; set;}
 
+    /// <summary>
+    /// When true, after a mutation test run, adds Stryker disable comments to source files for mutants that caused timeouts.
+    /// </summary>
+    public bool DisableTimeouts { get; init; }
+
     private readonly string _workingDirectoryField;
     private string _configuration;
 }

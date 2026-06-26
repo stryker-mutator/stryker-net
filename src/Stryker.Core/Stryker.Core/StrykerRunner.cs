@@ -11,6 +11,7 @@ using Stryker.Abstractions.ProjectComponents;
 using Stryker.Configuration.Options;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
+using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
@@ -99,6 +100,11 @@ public class StrykerRunner : IStrykerRunner
                 }
 
                 reporters.OnAllMutantsTested(rootComponent, combinedTestProjectsInfo);
+
+                // Apply disable timeouts feature if enabled
+                var disableTimeoutsFeature = new DisableTimeoutsFeature();
+                disableTimeoutsFeature.Apply(rootComponent, options);
+
                 _projectOrchestrator.Dispose();
                 return new StrykerRunResult(options, rootComponent.GetMutationScore());
             }
@@ -121,6 +127,10 @@ public class StrykerRunner : IStrykerRunner
             }
 
             reporters.OnAllMutantsTested(rootComponent, combinedTestProjectsInfo);
+
+            // Apply disable timeouts feature if enabled
+            var disableTimeoutsFeature2 = new DisableTimeoutsFeature();
+            disableTimeoutsFeature2.Apply(rootComponent, options);
 
             return new StrykerRunResult(options, rootComponent.GetMutationScore());
         }
