@@ -270,7 +270,12 @@ public class StrykerOptions : IStrykerOptions
     /// </summary>
     /// The test runner to use for executing tests
     /// <summary>
-    public TestRunner TestRunner { get; init; }
+    public TestRunner TestRunner { get; set; }
+
+    /// <summary>
+    /// When true, the test runner was explicitly configured by the user
+    /// </summary>
+    public bool IsTestRunnerExplicitlyConfigured { get; set; }
 
     /// <summary>
     /// Get/set the mutation id provider
