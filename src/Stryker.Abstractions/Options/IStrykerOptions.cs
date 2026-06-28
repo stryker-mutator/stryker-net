@@ -47,7 +47,11 @@ public interface IStrykerOptions
     string SinceTarget { get; init; }
     string SolutionPath { get; init; }
     string SourceProjectName { get; init; }
-    string TargetFramework { get; init; } Thresholds { get; init; }
+    string TargetFramework { get; init; }
+    string TestCaseFilter { get; init; }
+    IEnumerable<string> TestProjects { get; init; }
+    TestRunner TestRunner { get; init; }
+    IThresholds Thresholds { get; init; }
     bool WithBaseline { get; init; }
     string WorkingDirectory { get; init; }
     IProvideId MutantIdProvider { get; set; }
