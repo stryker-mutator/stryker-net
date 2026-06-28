@@ -42,6 +42,8 @@ internal sealed class AssemblyTestServer : IDisposable
 
     public bool IsInitialized => _isInitialized;
 
+    public Dictionary<string, string?> EnvironmentVariables => _environmentVariables;
+
     /// <summary>
     /// True when the server has been initialized and its underlying process is still running.
     /// A test host that crashed mid-run (e.g. a mutation causing a fatal fault such as a
