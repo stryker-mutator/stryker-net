@@ -133,7 +133,15 @@ internal sealed class AssemblyTestServer : IDisposable
         return results;
     }
 
-    public async Task<(List<TestNodeUpdate> Results, bool TimedOut)> RunTestsAsync(TestNode[]? testsToRun, TimeSpan? timeout)
+    /// <summary>
+    /// Runs the given tests. When <paramref name="shouldBail"/> is supplied it is invoked with every batch of
+    /// streamed test results; returning <c>true</c> cancels the remaining tests (bail), leaving the test host
+    /// idle and reusable. The results gathered before the bail are still returned.
+    /// </summary>
+    public async Task<(List<TestNodeUpdate> Results, bool TimedOut)> RunTestsAsync(
+        TestNode[]? testsToRun,
+        TimeSpan? timeout,
+        Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null)
     {
         if (!_isInitialized || _client is null)
         {
@@ -142,6 +150,7 @@ internal sealed class AssemblyTestServer : IDisposable
 
         var runId = Guid.NewGuid();
         var testResults = new System.Collections.Concurrent.ConcurrentBag<TestNodeUpdate>();
+        using var bailSource = new CancellationTokenSource();
 
         Func<TestNodeUpdate[], Task> onUpdate = updates =>
         {
@@ -149,6 +158,13 @@ internal sealed class AssemblyTestServer : IDisposable
             {
                 testResults.Add(update);
             }
+
+            if (shouldBail is not null && !bailSource.IsCancellationRequested && shouldBail(updates))
+            {
+                _logger.LogDebug("{RunnerId}: Each tested mutant's fate is decided; bailing out of the remaining tests for {Assembly}", _runnerId, _assembly);
+                bailSource.Cancel();
+            }
+
             return Task.CompletedTask;
         };
 
@@ -158,8 +174,12 @@ internal sealed class AssemblyTestServer : IDisposable
             try
             {
                 // The RPC call itself can block when the server is stuck (e.g. infinite loop in mutated code)
-                executeTestsResponse = await _client.RunTestsAsync(runId, onUpdate, testsToRun)
+                executeTestsResponse = await _client.RunTestsAsync(runId, onUpdate, testsToRun, bailSource.Token)
                     .WaitAsync(timeout.Value).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (bailSource.IsCancellationRequested)
+            {
+                return (testResults.ToList(), false);
             }
             catch (TimeoutException ex)
             {
@@ -175,12 +195,20 @@ internal sealed class AssemblyTestServer : IDisposable
             return (testResults.ToList(), !completed);
         }
 
-        var response = await _client.RunTestsAsync(runId, onUpdate, testsToRun).ConfigureAwait(false);
-        var responseCompletion = response.WaitCompletionAsync();
-        await Task.WhenAny(responseCompletion, _process!.WaitForExitAsync()).ConfigureAwait(false);
-        ThrowIfHostCrashed(responseCompletion);
+        try
+        {
+            var response = await _client.RunTestsAsync(runId, onUpdate, testsToRun, bailSource.Token).ConfigureAwait(false);
+            var responseCompletion = response.WaitCompletionAsync();
+            await Task.WhenAny(responseCompletion, _process!.WaitForExitAsync()).ConfigureAwait(false);
+            ThrowIfHostCrashed(responseCompletion);
 
-        await responseCompletion.ConfigureAwait(false);
+            await responseCompletion.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (bailSource.IsCancellationRequested)
+        {
+            return (testResults.ToList(), false);
+        }
+
         return (testResults.ToList(), false);
     }
 
