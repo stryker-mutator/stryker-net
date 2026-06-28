@@ -125,7 +125,8 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     {
         var envVars = new Dictionary<string, string?>
         {
-            ["STRYKER_MUTANT_FILE"] = _mutantFilePath
+            ["STRYKER_MUTANT_FILE"] = _mutantFilePath,
+            ["MinVerSkip"] = "true"
         };
 
         ExternalEnvironmentVariables.Add(envVars);
@@ -259,7 +260,9 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             await deadServer.StopAsync(force: true).ConfigureAwait(false);
         }
 
-        var environmentVariables = BuildEnvironmentVariables();
+        var environmentVariables = deadServer is not null
+            ? deadServer.EnvironmentVariables
+            : BuildEnvironmentVariables();
         var server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options);
 
         var started = await server.StartAsync().ConfigureAwait(false);
