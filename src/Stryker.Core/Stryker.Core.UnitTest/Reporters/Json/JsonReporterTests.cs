@@ -13,9 +13,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions;
-using Stryker.Abstractions.Testing;
 using Stryker.Configuration.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
@@ -78,7 +77,7 @@ namespace ExtraProject.XUnit
     public void JsonReportFileComponent_ShouldHaveLanguageSet()
     {
         var folderComponent = ReportTestHelper.CreateProjectWith();
-        var fileComponent = (CsharpFileLeaf)(folderComponent as CsharpFolderComposite).GetAllFiles().First();
+        var fileComponent = (CsharpFileLeaf)(folderComponent as FolderComposite).GetAllFiles().First();
 
         new SourceFile(fileComponent).Language.ShouldBe("cs");
     }
@@ -87,7 +86,7 @@ namespace ExtraProject.XUnit
     public void JsonReportFileComponent_ShouldContainOriginalSource()
     {
         var folderComponent = ReportTestHelper.CreateProjectWith();
-        var fileComponent = (CsharpFileLeaf)(folderComponent as CsharpFolderComposite).GetAllFiles().First();
+        var fileComponent = (CsharpFileLeaf)(folderComponent as FolderComposite).GetAllFiles().First();
 
         new SourceFile(fileComponent).Source.ShouldBe(fileComponent.SourceCode);
     }
@@ -96,7 +95,7 @@ namespace ExtraProject.XUnit
     public void JsonReportFileComponents_ShouldContainMutants()
     {
         var folderComponent = ReportTestHelper.CreateProjectWith();
-        foreach (var file in (folderComponent as CsharpFolderComposite).GetAllFiles())
+        foreach (var file in (folderComponent as FolderComposite).GetAllFiles())
         {
             var jsonReportComponent = new SourceFile((CsharpFileLeaf)file);
             foreach (var mutant in file.Mutants)
@@ -111,7 +110,7 @@ namespace ExtraProject.XUnit
     {
         var loggerMock = Mock.Of<ILogger>();
         var folderComponent = ReportTestHelper.CreateProjectWith(duplicateMutant: true);
-        foreach (var file in (folderComponent as CsharpFolderComposite).GetAllFiles())
+        foreach (var file in (folderComponent as FolderComposite).GetAllFiles())
         {
             var jsonReportComponent = new SourceFile((CsharpFileLeaf)file, loggerMock);
             foreach (var mutant in file.Mutants)

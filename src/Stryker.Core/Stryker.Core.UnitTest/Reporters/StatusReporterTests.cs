@@ -1,15 +1,12 @@
 using Microsoft.Extensions.Logging;
 using Moq;
-using Shouldly;
-using Stryker.Abstractions.ProjectComponents;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Core.Reporters;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Abstractions;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.UnitTest.Reporters;
 
@@ -18,16 +15,12 @@ public class StatusReporterTests : TestBase
 {
     private Mock<ILogger<FilteredMutantsLogger>> _loggerMock = new Mock<ILogger<FilteredMutantsLogger>>();
 
-    public StatusReporterTests()
-    {
-    }
-
     [TestMethod]
     public void ShouldPrintNoMutations()
     {
         var target = new FilteredMutantsLogger(_loggerMock.Object);
 
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf()
         {
             Mutants = new Collection<IMutant>()
@@ -46,7 +39,7 @@ public class StatusReporterTests : TestBase
     {
         var target = new FilteredMutantsLogger(_loggerMock.Object);
 
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf()
         {
             Mutants = new Collection<IMutant>()
@@ -68,7 +61,7 @@ public class StatusReporterTests : TestBase
     {
         var target = new FilteredMutantsLogger(_loggerMock.Object);
 
-        var folder = new CsharpFolderComposite();
+        var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf()
         {
             Mutants = new Collection<IMutant>()

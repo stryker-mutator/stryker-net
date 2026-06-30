@@ -9,8 +9,8 @@ public interface IReadOnlyProjectComponent
     IEnumerable<IMutant> Mutants { get; }
     IFolderComposite Parent { get; }
     string RelativePath { get; set; }
-    public Display DisplayFile { get; set; }
-    public Display DisplayFolder { get; set; }
+    Display DisplayFile { get; set; }
+    Display DisplayFolder { get; set; }
     IEnumerable<IReadOnlyMutant> TotalMutants();
     IEnumerable<IReadOnlyMutant> ValidMutants();
     IEnumerable<IReadOnlyMutant> UndetectedMutants();

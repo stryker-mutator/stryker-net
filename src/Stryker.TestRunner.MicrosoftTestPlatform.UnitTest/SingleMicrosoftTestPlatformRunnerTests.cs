@@ -478,6 +478,242 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.ResultMessage.ShouldNotBeNull();
     }
 
+    // --- BuildTestRunResult / execution-state attribution tests ---
+    //
+    // Regression coverage for the MTP false-negative kill attribution bug:
+    // Microsoft Testing Platform emits seven execution states. The original
+    // adapter treated only "failed" as a test failure, so tests that ended in
+    // "error" (e.g. NSubstitute's ReceivedCallsException routed through
+    // TUnit's ErrorTestNode path), "timed-out" or "cancelled" were silently
+    // dropped and their mutants were reported as Survived.
+
+    private static TestNodeUpdate Update(string uid, string state) =>
+        new(new TestNode(uid, uid, "test", state), ParentUid: "root");
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_FailedState_IsReportedAsFailing()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("t1", TestNodeStates.Failed)],
+            totalDiscoveredTests: 1,
+            duration: TimeSpan.FromMilliseconds(10));
+
+        result.FailingTests.GetIdentifiers().ShouldBe(["t1"]);
+        result.TimedOutTests.IsEmpty.ShouldBeTrue();
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_ErrorState_IsReportedAsFailing()
+    {
+        // The regression: a non-assertion exception (e.g. NSubstitute's
+        // ReceivedCallsException) is routed by TUnit through ErrorTestNode,
+        // which serialises as "error" on the wire. Before the fix this was
+        // silently dropped and the mutant was reported as Survived.
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("t1", TestNodeStates.Error)],
+            totalDiscoveredTests: 1,
+            duration: TimeSpan.FromMilliseconds(10));
+
+        result.FailingTests.GetIdentifiers().ShouldBe(["t1"]);
+        result.TimedOutTests.IsEmpty.ShouldBeTrue();
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_TimedOutState_IsReportedAsTimedOut_NotFailing()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("t1", TestNodeStates.TimedOut)],
+            totalDiscoveredTests: 1,
+            duration: TimeSpan.FromMilliseconds(10));
+
+        result.TimedOutTests.GetIdentifiers().ShouldBe(["t1"]);
+        result.FailingTests.IsEmpty.ShouldBeTrue();
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_CancelledState_IsReportedAsFailing()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("t1", TestNodeStates.Cancelled)],
+            totalDiscoveredTests: 1,
+            duration: TimeSpan.FromMilliseconds(10));
+
+        result.FailingTests.GetIdentifiers().ShouldBe(["t1"]);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_PassedAndSkippedStates_AreNeitherFailingNorTimedOut()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("t1", TestNodeStates.Passed), Update("t2", TestNodeStates.Skipped)],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromMilliseconds(10));
+
+        result.FailingTests.IsEmpty.ShouldBeTrue();
+        result.TimedOutTests.IsEmpty.ShouldBeTrue();
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_InProgressAndDiscoveredStates_AreExcludedFromExecutedTests()
+    {
+        // "in-progress" = still running, "discovered" = pre-run: neither counts
+        // as an executed test.
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [
+                Update("t1", TestNodeStates.Passed),
+                Update("t2", TestNodeStates.InProgress),
+                Update("t3", TestNodeStates.Discovered),
+            ],
+            totalDiscoveredTests: 3,
+            duration: TimeSpan.FromMilliseconds(10));
+
+        result.ExecutedTests.GetIdentifiers().ShouldBe(["t1"]);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_AllKnownStates_MapToExpectedBuckets()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [
+                Update("passed",    TestNodeStates.Passed),
+                Update("skipped",   TestNodeStates.Skipped),
+                Update("failed",    TestNodeStates.Failed),
+                Update("error",     TestNodeStates.Error),
+                Update("timed-out", TestNodeStates.TimedOut),
+                Update("cancelled", TestNodeStates.Cancelled),
+                Update("in-prog",   TestNodeStates.InProgress),
+                Update("disc",      TestNodeStates.Discovered),
+            ],
+            totalDiscoveredTests: 8,
+            duration: TimeSpan.FromMilliseconds(10));
+
+        result.FailingTests.GetIdentifiers().ShouldBe(["failed", "error", "cancelled"], ignoreOrder: true);
+        result.TimedOutTests.GetIdentifiers().ShouldBe(["timed-out"]);
+        result.ExecutedTests.GetIdentifiers()
+            .ShouldBe(["passed", "skipped", "failed", "error", "timed-out", "cancelled"], ignoreOrder: true);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_ExecutedTests_CollapsesToEveryTest_WhenAllFinished()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("t1", TestNodeStates.Passed), Update("t2", TestNodeStates.Failed)],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromMilliseconds(10));
+
+        // When every discovered test finished, ExecutedTests is the sentinel
+        // "every test" (IsEveryTest == true). Downstream Mutant.AnalyzeTestRun
+        // uses this sentinel to mark mutants as Survived when they weren't
+        // covered.
+        result.ExecutedTests.IsEveryTest.ShouldBeTrue();
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_ErrorMessages_IncludeErrorAndTimedOutAndCancelledStates()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [
+                Update("passed",    TestNodeStates.Passed),
+                Update("failed",    TestNodeStates.Failed),
+                Update("error",     TestNodeStates.Error),
+                Update("timed-out", TestNodeStates.TimedOut),
+                Update("cancelled", TestNodeStates.Cancelled),
+            ],
+            totalDiscoveredTests: 5,
+            duration: TimeSpan.FromMilliseconds(10));
+
+        // The free-form error message surfaces every non-passing state so users
+        // can tell why the mutant was killed.
+        result.ResultMessage.ShouldContain("failed");
+        result.ResultMessage.ShouldContain("error");
+        result.ResultMessage.ShouldContain("timed-out");
+        result.ResultMessage.ShouldContain("cancelled");
+        result.ResultMessage.ShouldNotContain("passed");
+    }
+
+    [TestMethod, Timeout(1000)]
+    public async Task RunAllTestsAsync_CrashedAssembly_ReportsRuntimeError()
+    {
+        // Regression: a crashed test host makes an assembly run return the failure sentinel
+        // (TestRunResult(false) => FailingTests == EveryTest). The accumulator must NOT fold that
+        // into "every test ran, none failed" (EveryTest.GetIdentifiers() is empty), which would
+        // mark otherwise-untested mutants as Survived. Instead it surfaces a runtime error so the
+        // mutants are classified as RuntimeError (excluded from the score) by the executor.
+        const string assembly = "/path/to/tests.dll";
+        var discovered = new List<TestNode>
+        {
+            new("uid-1", "Test1", "test", "passed"),
+            new("uid-2", "Test2", "test", "passed"),
+        };
+
+        using var runner = new CrashingAssemblyRunner(
+            _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, discovered);
+
+        var mutant = new Mock<IMutant>();
+        mutant.Setup(m => m.Id).Returns(1);
+
+        ITestIdentifiers? capturedFailed = null;
+        ITestIdentifiers? capturedRan = null;
+        bool Update(IReadOnlyList<IMutant> _, ITestIdentifiers failed, ITestIdentifiers ran, ITestIdentifiers __)
+        {
+            capturedFailed = failed;
+            capturedRan = ran;
+            return true;
+        }
+
+        var result = await runner.RunAllTestsAsync(
+            new[] { assembly }, mutantId: 1, mutants: new[] { mutant.Object }, update: Update);
+
+        result.SessionHadRuntimeIssue.ShouldBeTrue();             // signals the host crash to the executor
+        result.SessionTimedOut.ShouldBeFalse();
+        capturedRan.ShouldNotBeNull();
+        capturedRan!.IsEveryTest.ShouldBeFalse();              // would be true (=> Survived) before the fix
+        capturedFailed.ShouldNotBeNull();
+        capturedFailed!.GetIdentifiers().ShouldBeEmpty();
+        result.ResultMessage.ShouldContain("crash");           // failure reason is surfaced, not swallowed
+    }
+
+    /// <summary>
+    /// Simulates an assembly whose test host crashes: <see cref="RunAssemblyTestsAsync"/> returns the
+    /// failure sentinel produced by the real exception path, without starting any server process.
+    /// </summary>
+    private sealed class CrashingAssemblyRunner : SingleMicrosoftTestPlatformRunner
+    {
+        private readonly List<TestNode> _discovered;
+
+        public CrashingAssemblyRunner(
+            Dictionary<string, List<TestNode>> testsByAssembly,
+            Dictionary<string, MtpTestDescription> testDescriptions,
+            TestSet testSet,
+            object discoveryLock,
+            List<TestNode> discovered)
+            : base(0, testsByAssembly, testDescriptions, testSet, discoveryLock, NullLogger.Instance)
+            => _discovered = discovered;
+
+        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
+            string assembly, ITimeoutValueCalculator? timeoutCalc)
+            => Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>(
+                (new TestRunResult(false, "simulated test host crash"), false, _discovered));
+    }
+
     [TestCleanup]
     public void Cleanup()
     {
@@ -1154,9 +1390,9 @@ public class SingleMicrosoftTestPlatformRunnerTests
 
         public override void Dispose(bool disposing)
         {
-            var disposedField = typeof(SingleMicrosoftTestPlatformRunner).GetField("_disposed", 
+            var disposedField = typeof(SingleMicrosoftTestPlatformRunner).GetField("_disposed",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
+
             var wasDisposedBefore = (bool)disposedField!.GetValue(this)!;
 
             base.Dispose(disposing);

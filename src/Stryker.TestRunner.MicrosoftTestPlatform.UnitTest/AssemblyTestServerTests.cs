@@ -141,6 +141,42 @@ public class AssemblyTestServerTests
     }
 
     [TestMethod]
+    public void Constructor_ShouldNotBeAlive()
+    {
+        using var server = CreateServer();
+
+        server.IsAlive.ShouldBeFalse();
+    }
+
+    [TestMethod]
+    public async Task StartAsync_ShouldMakeServerAlive_WhenProcessIsRunning()
+    {
+        SetupSuccessfulConnection();
+
+        using var server = CreateServer();
+        await server.StartAsync();
+
+        server.IsAlive.ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public async Task IsAlive_ShouldBeFalse_WhenProcessHasExitedAfterStart()
+    {
+        SetupSuccessfulConnection();
+
+        using var server = CreateServer();
+        await server.StartAsync();
+        server.IsAlive.ShouldBeTrue();
+
+        // Simulate the test host crashing after the server was started:
+        // it stays "initialized" but the underlying process is gone.
+        _processMock.SetupGet(p => p.HasExited).Returns(true);
+
+        server.IsInitialized.ShouldBeTrue();
+        server.IsAlive.ShouldBeFalse();
+    }
+
+    [TestMethod]
     public async Task StartAsync_ShouldReturnTrue_WhenAlreadyInitialized()
     {
         SetupSuccessfulConnection();
@@ -373,6 +409,47 @@ public class AssemblyTestServerTests
         var (_, timedOut) = await server.RunTestsAsync(null, TimeSpan.FromMilliseconds(50));
 
         timedOut.ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_WithTimeout_ShouldThrowTestHostCrashed_WhenProcessExitsDuringRun()
+    {
+        SetupSuccessfulConnection();
+
+        // Listener that never completes (a crashed host never sends a completion signal)
+        var listener = new TestNodeUpdatesResponseListener(Guid.NewGuid(), _ => Task.CompletedTask);
+        _clientMock.Setup(c => c.RunTestsAsync(It.IsAny<Guid>(), It.IsAny<Func<TestNodeUpdate[], Task>>(), null))
+            .ReturnsAsync(listener);
+
+        using var server = CreateServer();
+        await server.StartAsync();
+
+        // Simulate the test host crashing during the run: the process exits before completion.
+        _processMock.Setup(p => p.WaitForExitAsync()).Returns(Task.CompletedTask);
+        _processMock.SetupGet(p => p.HasExited).Returns(true);
+
+        // A crash must be detected immediately as a runtime error, not waited out as a timeout.
+        await Should.ThrowAsync<Stryker.TestRunner.TestHostCrashedException>(
+            async () => await server.RunTestsAsync(null, TimeSpan.FromSeconds(30)));
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_WithoutTimeout_ShouldThrowTestHostCrashed_WhenProcessExitsDuringRun()
+    {
+        SetupSuccessfulConnection();
+
+        var listener = new TestNodeUpdatesResponseListener(Guid.NewGuid(), _ => Task.CompletedTask);
+        _clientMock.Setup(c => c.RunTestsAsync(It.IsAny<Guid>(), It.IsAny<Func<TestNodeUpdate[], Task>>(), null))
+            .ReturnsAsync(listener);
+
+        using var server = CreateServer();
+        await server.StartAsync();
+
+        _processMock.Setup(p => p.WaitForExitAsync()).Returns(Task.CompletedTask);
+        _processMock.SetupGet(p => p.HasExited).Returns(true);
+
+        await Should.ThrowAsync<Stryker.TestRunner.TestHostCrashedException>(
+            async () => await server.RunTestsAsync(null));
     }
 
     [TestMethod]

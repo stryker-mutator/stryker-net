@@ -46,4 +46,14 @@ internal abstract class BaseEngine<T> : IInstrumentCode where T : CSharpSyntaxNo
         }
         throw new InvalidOperationException($"Expected a {typeof(T).Name}, found:\n{node.ToFullString()}.");
     }
+
+    protected abstract bool Erases(T node, Func<SyntaxNode, bool> predicate);
+
+    /// <summary>
+    /// Checks if the engine erases a node that matches a given predicate.
+    /// </summary>
+    /// <param name="node">node to check</param>
+    /// <param name="predicate">predicate</param>
+    /// <returns>true if the default path in this node contains a match and another path contains no match</returns>
+    public bool Erases(SyntaxNode node, Func<SyntaxNode, bool> predicate) => node is T tNode && Erases(tNode, predicate);
 }
