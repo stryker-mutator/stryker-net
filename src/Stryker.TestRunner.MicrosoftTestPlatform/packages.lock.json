@@ -123,11 +123,7 @@
       "Microsoft.NET.StringTools": {
         "type": "Transitive",
         "resolved": "18.4.0",
-        "contentHash": "iQWOKi3L5QStmWqDjDubcr1KlTDy88qBTe88I0etlUUo1l0zSNebGJXl1Xetyl+ACA+ujP3YUtxo3Nz54JPriw==",
-        "dependencies": {
-          "System.Memory": "4.6.3",
-          "System.Runtime.CompilerServices.Unsafe": "6.1.2"
-        }
+        "contentHash": "iQWOKi3L5QStmWqDjDubcr1KlTDy88qBTe88I0etlUUo1l0zSNebGJXl1Xetyl+ACA+ujP3YUtxo3Nz54JPriw=="
       },
       "Microsoft.VisualStudio.Threading.Only": {
         "type": "Transitive",
@@ -166,8 +162,7 @@
         "dependencies": {
           "Microsoft.NET.StringTools": "18.4.0",
           "Microsoft.VisualStudio.Validation": "17.13.22",
-          "PolyType": "1.3.1",
-          "System.IO.Pipelines": "8.0.0"
+          "PolyType": "1.3.1"
         }
       },
       "Nerdbank.Streams": {
@@ -365,18 +360,14 @@
         "resolved": "10.0.9",
         "contentHash": "9S/DFt4cohlMPpzIxjG6kk0L8MuN2vDm9pbMCulxtJzzk82oJHVLBd8vuQxaPskaYQwKqmFmbannf5eoChgjYg==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9",
-          "System.Diagnostics.DiagnosticSource": "10.0.9"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9"
         }
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "CentralTransitive",
         "requested": "[18.7.0, )",
         "resolved": "18.7.0",
-        "contentHash": "6rmgU4q3/WOpOPcncI0YW0Q/QpcQtwR2TTEXDR5+4TfSimPBAk6Z/BgKLeGgp1SOun0ROVUCCafXhRLwsHaPpA==",
-        "dependencies": {
-          "System.Reflection.Metadata": "8.0.0"
-        }
+        "contentHash": "6rmgU4q3/WOpOPcncI0YW0Q/QpcQtwR2TTEXDR5+4TfSimPBAk6Z/BgKLeGgp1SOun0ROVUCCafXhRLwsHaPpA=="
       },
       "Microsoft.VisualStudio.SolutionPersistence": {
         "type": "CentralTransitive",
