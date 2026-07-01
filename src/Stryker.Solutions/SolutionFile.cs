@@ -194,7 +194,6 @@ public class SolutionFile
     {
         // extract needed information
         var result = new SolutionFile{ FileName = solutionPath };
-        var referencePath = Path.GetDirectoryName(solutionPath);
         foreach (var buildType in solution.BuildTypes)
         {
             foreach (var solutionPlatform in solution.Platforms)
@@ -209,7 +208,7 @@ public class SolutionFile
                         continue;
                     }
 
-                    projects[Path.Combine(referencePath, solutionProject.FilePath)] = (projectBuildType, projectPlatform);
+                    projects[solutionProject.FilePath] = (projectBuildType, projectPlatform);
                 }
                 if (projects.Count == 0)
                 {

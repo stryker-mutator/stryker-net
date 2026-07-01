@@ -207,9 +207,10 @@ public class InputFileResolver : IInputFileResolver
         _logger.LogInformation("Identifying projects to mutate in {Solution}. This can take a while.", options.SolutionPath);
 
         var solutionInfo = new StrykerSolutionInfo(solution.FileName, actualBuildType, actualPlatform);
+        var referencePath = FileSystem.Path.GetDirectoryName(solutionInfo.SolutionFilePath) ?? "";
         // analyze all projects
         var projectsWithDetails = solution.GetProjectsWithDetails(actualBuildType, actualPlatform)
-            .Select(p => (p.file, options.TargetFramework, p.buildType, NormalizePlatform(p.platform))).ToList();
+            .Select(p => (FileSystem.Path.Combine(referencePath, p.file), options.TargetFramework, p.buildType, NormalizePlatform(p.platform))).ToList();
 
         _logger.LogDebug("Analyzing {0} projects.", projectsWithDetails.Count);
         // we match test projects to mutable projects
@@ -358,7 +359,6 @@ public class InputFileResolver : IInputFileResolver
                         {
                             manager.SetGlobalProperty(Platform, entry.platform);
                         }
-
                         var buildResult = AnalyzeThisProject(manager.GetProject(entry.projectFile),
                             entry.framework,
                             normalizedProjectUnderTestNameFilter,
