@@ -8,7 +8,7 @@ using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.ProjectComponents.SourceProjects;
 
-public class SolutionInfo(string file, string configuration, string platform)
+public class StrykerSolutionInfo(string file, string configuration, string platform)
 {
     public string SolutionFilePath { get; init; } = file;
     public string Configuration { get; init; } = configuration;
@@ -21,7 +21,7 @@ public class SourceProjectInfo : IProjectAndTests
 
     public Action OnProjectBuilt { get; set; }
 
-    public SolutionInfo SolutionInfo { get; set; }
+    public StrykerSolutionInfo SolutionInfo { get; set; }
 
     public IAnalyzerResult AnalyzerResult { get; init; }
 
