@@ -250,7 +250,7 @@
       },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "CentralTransitive",
-        "requested": "[5.3.0, )",
+        "requested": "[5.6.0, )",
         "resolved": "5.3.0-2.25625.1",
         "contentHash": "4Yhh2fnu3G+J0J1lDc8WZVgMjgbynSeTfkl5IFJMFrmiIO0sc7Tjx+f3sFVV8Sd35PrIUWfof0RWc3lAMl7Azg=="
       },
