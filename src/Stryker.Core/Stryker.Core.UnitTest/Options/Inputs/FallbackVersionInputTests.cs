@@ -23,7 +23,7 @@ Example: If the current branch is based on the main branch, set 'main' as the fa
     {
         var input = new FallbackVersionInput { SuppliedInput = "master" };
 
-        var validatedInput = input.Validate(withBaseline: false, projectVersion: "master", sinceTarget: "master");
+        var validatedInput = input.Validate(baselineEnabled: false, sinceTarget: "master");
 
         validatedInput.ShouldBe(new SinceTargetInput().Default);
     }
@@ -33,7 +33,7 @@ Example: If the current branch is based on the main branch, set 'main' as the fa
     {
         var input = new FallbackVersionInput { SuppliedInput = "development" };
 
-        var validatedInput = input.Validate(withBaseline: true, projectVersion: "feat/feat4", sinceTarget: "master");
+        var validatedInput = input.Validate(baselineEnabled: true, sinceTarget: "master");
 
         validatedInput.ShouldBe("development");
     }
@@ -43,7 +43,7 @@ Example: If the current branch is based on the main branch, set 'main' as the fa
     {
         var input = new FallbackVersionInput();
 
-        var validatedInput = input.Validate(withBaseline: true, projectVersion: "development", sinceTarget: "main");
+        var validatedInput = input.Validate(baselineEnabled: true, sinceTarget: "main");
 
         validatedInput.ShouldBe("main");
     }

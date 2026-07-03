@@ -49,7 +49,7 @@ public class StrykerInputsTests : TestBase
         ThresholdBreakInput = new ThresholdBreakInput(),
         ThresholdHighInput = new ThresholdHighInput(),
         ThresholdLowInput = new ThresholdLowInput(),
-        WithBaselineInput = new WithBaselineInput(),
+        BaselineEnabledInput = new BaselineEnabledInput(),
         BreakOnInitialTestFailureInput = new BreakOnInitialTestFailureInput(),
     };
 
@@ -154,12 +154,12 @@ public class StrykerInputsTests : TestBase
     }
 
     [TestMethod]
-    public void UsingDashboardBaselineStorageWithBaselineShouldEnableDashboardApiKey()
+    public void UsingDashboardBaselineStorageBaselineShouldEnableDashboardApiKey()
     {
         _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
         _target.ReportersInput.SuppliedInput = new[] { "html" };
         _target.BaselineProviderInput.SuppliedInput = "dashboard";
-        _target.WithBaselineInput.SuppliedInput = true;
+        _target.BaselineEnabledInput.SuppliedInput = true;
         _target.ProjectVersionInput.SuppliedInput = "develop";
 
         var result = _target.ValidateAll();
@@ -168,12 +168,12 @@ public class StrykerInputsTests : TestBase
     }
 
     [TestMethod]
-    public void NotUsingDashboardBaselineStorageWithBaselineOrDashboardReporterShouldDisableDashboardApiKey()
+    public void NotUsingDashboardBaselineStorageBaselineOrDashboardReporterShouldDisableDashboardApiKey()
     {
         _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
         _target.ReportersInput.SuppliedInput = new[] { "html" };
         _target.BaselineProviderInput.SuppliedInput = "disk";
-        _target.WithBaselineInput.SuppliedInput = true;
+        _target.BaselineEnabledInput.SuppliedInput = true;
         _target.ProjectVersionInput.SuppliedInput = "develop";
 
         var result = _target.ValidateAll();
@@ -182,9 +182,9 @@ public class StrykerInputsTests : TestBase
     }
 
     [TestMethod]
-    public void WithBaselineAndSinceShouldBeMutuallyExclusive()
+    public void BaselineAndSinceShouldBeMutuallyExclusive()
     {
-        _target.WithBaselineInput.SuppliedInput = true;
+        _target.BaselineEnabledInput.SuppliedInput = true;
         _target.SinceInput.SuppliedInput = true;
 
         var exception = Should.Throw<InputException>(() => _target.ValidateAll());
@@ -192,10 +192,10 @@ public class StrykerInputsTests : TestBase
     }
 
     [TestMethod]
-    public void WithBaselineShouldNotThrow_2743() // https://github.com/stryker-mutator/stryker-net/issues/2743
+    public void BaselineShouldNotThrow_2743() // https://github.com/stryker-mutator/stryker-net/issues/2743
     {
         _target.ProjectVersionInput.SuppliedInput = "1";
-        _target.WithBaselineInput.SuppliedInput = true;
+        _target.BaselineEnabledInput.SuppliedInput = true;
 
         Should.NotThrow(() => _target.ValidateAll());
     }
@@ -203,14 +203,14 @@ public class StrykerInputsTests : TestBase
     [TestMethod]
     public void BaseLineOptionsShouldBeSetToDefaultWhenBaselineIsDisabled()
     {
-        _target.WithBaselineInput.SuppliedInput = false;
+        _target.BaselineEnabledInput.SuppliedInput = false;
         _target.BaselineProviderInput.SuppliedInput = "azurefilestorage";
         _target.AzureFileStorageSasInput.SuppliedInput = "sasCredential";
         _target.AzureFileStorageUrlInput.SuppliedInput = "azureUrl";
 
         var result = _target.ValidateAll();
 
-        result.WithBaseline.ShouldBeFalse();
+        result.BaselineEnabled.ShouldBeFalse();
         result.BaselineProvider.ShouldBe(BaselineProvider.Disk);
         result.AzureFileStorageSas.ShouldBe(string.Empty);
         result.AzureFileStorageUrl.ShouldBe(string.Empty);

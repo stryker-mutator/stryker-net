@@ -13,14 +13,16 @@ public class SinceTargetInputTests : TestBase
     public void ShouldHaveHelpText()
     {
         var target = new SinceTargetInput();
-        target.HelpText.ShouldBe(@"The target branch/commit to compare with the current codebase when the since feature is enabled. | default: 'master'");
+        target.HelpText.ShouldBe(
+            @"The target branch/commit to compare with the current codebase when the since feature is enabled. | default: 'master'");
     }
 
     [TestMethod]
     public void ShouldUseSuppliedInputWhenSinceEnabled()
     {
         var suppliedInput = "develop";
-        var validatedSinceBranch = new SinceTargetInput { SuppliedInput = suppliedInput }.Validate(sinceEnabled: true);
+        var validatedSinceBranch =
+            new SinceTargetInput { SuppliedInput = suppliedInput }.Validate(sinceEnabled: true);
         validatedSinceBranch.ShouldBe(suppliedInput);
     }
 
@@ -45,7 +47,8 @@ public class SinceTargetInputTests : TestBase
     [TestMethod]
     public void ShouldNotValidateSinceTargetWhenSinceDisabled()
     {
-        var validatedSinceBranch = new SinceTargetInput { SuppliedInput = "develop" }.Validate(sinceEnabled: false);
-        validatedSinceBranch.ShouldBe("master");
+        var input = new SinceTargetInput { SuppliedInput = "develop" };
+        var validatedSinceBranch = input.Validate(sinceEnabled: false);
+        validatedSinceBranch.ShouldBe(input.Default);
     }
 }

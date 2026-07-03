@@ -71,6 +71,44 @@ public class CommandLineConfigReader
             });
         });
 
+    public void RegisterBaselineCommand(CommandLineApplication app, IStrykerInputs inputs, string[] args, StrykerCli strykerCli)
+    {
+        app.Command("baseline", baselineCmd =>
+        {
+            baselineCmd.AddName("with-baseline");
+            RegisterCliInputs(baselineCmd);
+
+            var committishArg = baselineCmd.Argument("target", "The target to compare with the current version. This can be any version indicator like branch, tag, commit-id or semver.");
+            committishArg.IsRequired(true, "The target argument is required. Example: dotnet stryker baseline main.");
+            baselineCmd.HelpOption();
+
+            baselineCmd.OnExecute(() =>
+            {
+                inputs.BaselineTargetInput.SuppliedInput = committishArg.Value;
+                inputs.BaselineEnabledInput.SuppliedInput = true;
+                baselineCmd.Description = "Starts a stryker run based on the results of a previous run.";
+                return strykerCli.StartApp(inputs, args, app, this);
+            });
+
+            baselineCmd.Command("recreate", createCmd =>
+            {
+                RegisterCliInputs(createCmd);
+
+                createCmd.HelpOption();
+
+                createCmd.OnExecute(() =>
+                {
+                    inputs.BaselineTargetInput.SuppliedInput = committishArg.Value;
+                    inputs.BaselineEnabledInput.SuppliedInput = true;
+                    createCmd.Description = "Creates a new baseline by doing a full stryker run";
+                    // Enable recreate
+                    inputs.BaselineRecreateEnabledInput.SuppliedInput = true;
+                    return strykerCli.StartApp(inputs, args, app, this);
+                });
+            });
+        });
+    }
+
     public CommandOption GetConfigFileOption(string[] args, CommandLineApplication app)
     {
         var commands = app.Parse(args);
@@ -160,8 +198,8 @@ public class CommandLineConfigReader
                 inputs.SinceTargetInput.SuppliedInput = cliInput.Value();
                 break;
 
-            case WithBaselineInput withBaselineInput:
-                withBaselineInput.SuppliedInput = true;
+            case BaselineEnabledInput baselineEnabledInput:
+                baselineEnabledInput.SuppliedInput = true;
                 inputs.SinceTargetInput.SuppliedInput = cliInput.Value();
                 break;
 
@@ -197,7 +235,7 @@ public class CommandLineConfigReader
         AddCliInput(inputs.MutateInput, "mutate", "m", optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern", category: InputCategory.Mutation);
         AddCliInput(inputs.MutationLevelInput, "mutation-level", "l", category: InputCategory.Mutation);
         AddCliInput(inputs.SinceInput, "since", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish", category: InputCategory.Mutation);
-        AddCliInput(inputs.WithBaselineInput, "with-baseline", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish", category: InputCategory.Mutation);
+        AddCliInput(inputs.BaselineEnabledInput, "with-baseline", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish", category: InputCategory.Mutation);
         // Category: Reporting
         AddCliInput(inputs.OpenReportInput, "open-report", "o", CommandOptionType.SingleOrNoValue, argumentHint: "report-type", category: InputCategory.Reporting);
         AddCliInput(inputs.ReportersInput, "reporter", "r", optionType: CommandOptionType.MultipleValue, category: InputCategory.Reporting);

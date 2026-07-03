@@ -170,6 +170,36 @@ function Run-Category {
       }
       break
     }
+    'BaselineRecreate' {
+      if ($Runtime -ne 'netcore') { throw "BaselineRecreate only supports runtime 'netcore'." }
+      $netcoreWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore\NetCoreTestProject.XUnit'
+
+      # Step 1: Run stryker with baseline enabled to create initial baseline
+      Write-Info "Creating initial baseline..."
+      Run-Stryker -WorkingDirectory $netcoreWd -Arguments @('with-baseline', 'main')
+
+      # Step 2: Find and corrupt the baseline JSON file
+      $baselineDir = Join-Path $netcoreWd 'StrykerOutput\baseline'
+      $baselineFiles = Get-ChildItem -Path $baselineDir -Filter 'stryker-report.json' -Recurse
+      if ($baselineFiles.Count -eq 0) { throw "No baseline files found to corrupt" }
+
+      Write-Info "Corrupting baseline files..."
+      foreach ($baselineFile in $baselineFiles) {
+        $originalContent = Get-Content $baselineFile.FullName -Raw
+        # Corrupt the JSON by replacing valid JSON with invalid content
+        Set-Content -Path $baselineFile.FullName -Value "{invalid json content}"
+        Write-Info "Corrupted: $($baselineFile.FullName)"
+      }
+
+      # Step 3: Clean existing output to ensure recreate creates fresh output
+      $outputDir = Join-Path $netcoreWd 'StrykerOutput'
+      if (Test-Path $outputDir) { Remove-Item $outputDir -Recurse -Force }
+
+      # Step 4: Run stryker with baseline recreate
+      Write-Info "Running stryker with baseline recreate..."
+      Run-Stryker -WorkingDirectory $netcoreWd -Arguments @('with-baseline', 'main', 'recreate')
+      break
+    }
     Default { throw "Unknown category: $Category" }
   }
 }

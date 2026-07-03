@@ -118,9 +118,6 @@ public class Since : IExtraData
 
 public class Baseline : IExtraData
 {
-    [JsonPropertyName("enabled")]
-    public bool? Enabled { get; init; }
-
     [JsonPropertyName("provider")]
     public string Provider { get; init; }
 

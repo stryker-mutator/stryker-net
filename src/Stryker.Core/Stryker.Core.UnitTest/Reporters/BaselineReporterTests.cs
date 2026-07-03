@@ -27,7 +27,7 @@ public class BaselineReporterTests : TestBase
         {
             ProjectVersion = "new-feature",
             SinceTarget = "master",
-            WithBaseline = true
+            BaselineEnabled = true
         };
 
         gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns("new-feature");

@@ -18,7 +18,6 @@
     "mutation-level": "",
     "break-on-initial-test-failure": false,
     "since": {
-      "enabled": false,
       "target": "main",
       "ignore-changes-in": [
         ""
@@ -49,7 +48,6 @@
       "module": "cli"
     },
     "baseline": {
-      "enabled": false,
       "fallback-version": "master",
       "azure-fileshare-url": "",
       "s3-bucket-name": "my-bucket",

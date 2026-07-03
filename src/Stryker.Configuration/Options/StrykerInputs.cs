@@ -49,7 +49,9 @@ public interface IStrykerInputs
     ThresholdHighInput ThresholdHighInput { get; init; }
     ThresholdLowInput ThresholdLowInput { get; init; }
     VerbosityInput VerbosityInput { get; init; }
-    WithBaselineInput WithBaselineInput { get; init; }
+    BaselineEnabledInput BaselineEnabledInput { get; init; }
+    BaselineTargetInput BaselineTargetInput { get; init; }
+    BaselineRecreateEnabledInput BaselineRecreateEnabledInput { get; init; }
     OpenReportInput OpenReportInput { get; init; }
     OpenReportEnabledInput OpenReportEnabledInput { get; init; }
     BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; }
@@ -87,7 +89,9 @@ public class StrykerInputs : IStrykerInputs
     public SourceProjectNameInput SourceProjectNameInput { get; init; } = new();
     public TestProjectsInput TestProjectsInput { get; init; } = new();
     public TestCaseFilterInput TestCaseFilterInput { get; init; } = new();
-    public WithBaselineInput WithBaselineInput { get; init; } = new();
+    public BaselineEnabledInput BaselineEnabledInput { get; init; } = new();
+    public BaselineTargetInput BaselineTargetInput { get; init; } = new();
+    public BaselineRecreateEnabledInput BaselineRecreateEnabledInput { get; init; } = new();
     public ReportersInput ReportersInput { get; init; } = new();
     public BaselineProviderInput BaselineProviderInput { get; init; } = new();
     public AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; } = new();
@@ -121,12 +125,13 @@ public class StrykerInputs : IStrykerInputs
         var basePath = BasePathInput.Validate(_fileSystem);
         var outputPath = OutputPathInput.Validate(_fileSystem);
         var reportFileNameInput = ReportFileNameInput.Validate();
-        var withBaseline = WithBaselineInput.Validate();
-        var reporters = ReportersInput.Validate(withBaseline);
-        var baselineProvider = BaselineProviderInput.Validate(reporters, withBaseline);
-        var sinceEnabled = SinceInput.Validate(WithBaselineInput.SuppliedInput);
+        var baselineEnabled = BaselineEnabledInput.Validate();
+        var reporters = ReportersInput.Validate(baselineEnabled);
+        var baselineProvider = BaselineProviderInput.Validate(reporters, baselineEnabled);
+        var sinceEnabled = SinceInput.Validate(BaselineEnabledInput.SuppliedInput);
         var sinceTarget = SinceTargetInput.Validate(sinceEnabled);
-        var projectVersion = ProjectVersionInput.Validate(reporters, withBaseline);
+        var projectVersion = ProjectVersionInput.Validate(reporters, baselineEnabled);
+        var baselineTarget = BaselineTargetInput.Validate(sinceEnabled);
 
         _strykerOptionsCache ??= new StrykerOptions()
         {
@@ -163,21 +168,23 @@ public class StrykerInputs : IStrykerInputs
             TestProjects = TestProjectsInput.Validate(),
             TestCaseFilter = TestCaseFilterInput.Validate(),
             DashboardUrl = DashboardUrlInput.Validate(),
-            DashboardApiKey = DashboardApiKeyInput.Validate(withBaseline, baselineProvider, reporters),
+            DashboardApiKey = DashboardApiKeyInput.Validate(baselineEnabled, baselineProvider, reporters),
             ProjectName = ProjectNameInput.Validate(),
             ModuleName = ModuleNameInput.Validate(),
-            ProjectVersion = ProjectVersionInput.Validate(reporters, withBaseline),
+            ProjectVersion = ProjectVersionInput.Validate(reporters, baselineEnabled),
             DiffIgnoreChanges = DiffIgnoreChangesInput.Validate(),
-            AzureFileStorageSas = AzureFileStorageSasInput.Validate(baselineProvider, withBaseline),
-            AzureFileStorageUrl = AzureFileStorageUrlInput.Validate(baselineProvider, withBaseline),
-            S3BucketName = S3BucketNameInput.Validate(baselineProvider, withBaseline),
-            S3Endpoint = S3EndpointInput.Validate(baselineProvider, withBaseline),
-            S3Region = S3RegionInput.Validate(baselineProvider, withBaseline),
-            WithBaseline = withBaseline,
+            AzureFileStorageSas = AzureFileStorageSasInput.Validate(baselineProvider, baselineEnabled),
+            AzureFileStorageUrl = AzureFileStorageUrlInput.Validate(baselineProvider, baselineEnabled),
+            S3BucketName = S3BucketNameInput.Validate(baselineProvider, baselineEnabled),
+            S3Endpoint = S3EndpointInput.Validate(baselineProvider, baselineEnabled),
+            S3Region = S3RegionInput.Validate(baselineProvider, baselineEnabled),
+            BaselineEnabled = baselineEnabled,
             BaselineProvider = baselineProvider,
-            FallbackVersion = FallbackVersionInput.Validate(withBaseline, projectVersion, sinceTarget),
+            FallbackVersion = FallbackVersionInput.Validate(baselineEnabled, sinceTarget),
             Since = sinceEnabled,
             SinceTarget = sinceTarget,
+            BaselineTarget = baselineTarget,
+            BaselineRecreate = BaselineRecreateEnabledInput.Validate(),
             ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate()),
             BreakOnInitialTestFailure = BreakOnInitialTestFailureInput.Validate(),
             TestRunner = TestRunnerInput.Validate(),

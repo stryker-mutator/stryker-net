@@ -14,7 +14,7 @@ namespace Stryker.Core.UnitTest.Mutators;
 public class NullCoalescingExpressionMutatorTests : TestBase
 {
     [TestMethod]
-    public void ShouldBeMutationLevelStandard()
+    public void ShouldBeMutationLevelBasic()
     {
         var target = new NullCoalescingExpressionMutator();
         target.MutationLevel.ShouldBe(MutationLevel.Basic);

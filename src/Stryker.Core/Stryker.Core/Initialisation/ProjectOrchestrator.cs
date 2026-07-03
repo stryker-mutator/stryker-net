@@ -91,7 +91,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
     private void InitializeDashboardProjectInformation(IStrykerOptions options, SourceProjectInfo projectInfo)
     {
         var dashboardReporterEnabled = options.Reporters.Contains(Reporter.Dashboard) || options.Reporters.Contains(Reporter.All);
-        var dashboardBaselineEnabled = options.WithBaseline && options.BaselineProvider == BaselineProvider.Dashboard;
+        var dashboardBaselineEnabled = options.BaselineEnabled && options.BaselineProvider == BaselineProvider.Dashboard;
         var requiresProjectInformation = dashboardReporterEnabled || dashboardBaselineEnabled;
         var missingProjectName = string.IsNullOrEmpty(options.ProjectName);
         var missingProjectVersion = string.IsNullOrEmpty(options.ProjectVersion);

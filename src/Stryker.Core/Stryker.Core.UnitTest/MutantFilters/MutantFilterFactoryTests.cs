@@ -117,7 +117,7 @@ public class MutantFilterFactoryTests : TestBase
     {
         var options = new StrykerOptions()
         {
-            WithBaseline = true,
+            BaselineEnabled = true,
             ProjectVersion = "foo"
         };
 
@@ -141,7 +141,7 @@ public class MutantFilterFactoryTests : TestBase
         var options = new StrykerOptions()
         {
             // These options are added here to make sure this test covers all branches in the source method.
-            WithBaseline = true,
+            BaselineEnabled = true,
             ExcludedLinqExpressions = new List<LinqExpression>
             {
                 LinqExpression.Distinct

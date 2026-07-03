@@ -52,7 +52,9 @@ public interface IStrykerOptions
     IEnumerable<string> TestProjects { get; init; }
     TestRunner TestRunner { get; init; }
     IThresholds Thresholds { get; init; }
-    bool WithBaseline { get; init; }
+    bool BaselineEnabled { get; init; }
+    string BaselineTarget { get; init; }
+    bool BaselineRecreate { get; init; }
     string WorkingDirectory { get; init; }
     IProvideId MutantIdProvider { get; set; }
 }

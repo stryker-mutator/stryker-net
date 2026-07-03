@@ -58,9 +58,9 @@ public class StrykerCLITests
 
         await target.RunAsync(new string[] { "--help" });
 
-        var expected = @"Stryker: Stryker mutator for .Net
+        var expected = @"Stryker: The mutation test framework for .Net
 
-Stryker mutator for .Net
+The mutation test framework for .Net
 
 Usage: Stryker [command] [options]
 
@@ -530,13 +530,13 @@ Options:";
 
     [TestMethod]
     [DataRow("--with-baseline")]
-    public async Task ShouldSupplyWithBaselineWhenPassed(params string[] argName)
+    public async Task ShouldSupplyBaselineWhenPassed(params string[] argName)
     {
         await _target.RunAsync(argName);
 
         _strykerRunnerMock.VerifyAll();
 
-        _inputs.WithBaselineInput.SuppliedInput.Value.ShouldBeTrue();
+        _inputs.BaselineEnabledInput.SuppliedInput.Value.ShouldBeTrue();
     }
 
     [TestMethod]

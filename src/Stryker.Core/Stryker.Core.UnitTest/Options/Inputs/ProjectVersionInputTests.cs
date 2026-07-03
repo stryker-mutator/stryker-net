@@ -24,7 +24,7 @@ public class ProjectVersionInputTests : TestBase
         var suppliedInput = "test";
         var input = new ProjectVersionInput { SuppliedInput = suppliedInput };
 
-        var result = input.Validate(reporters: new[] { Reporter.Dashboard }, withBaseline: false);
+        var result = input.Validate(reporters: new[] { Reporter.Dashboard }, baselineEnabled: false);
         result.ShouldBe(suppliedInput);
     }
 
@@ -34,7 +34,7 @@ public class ProjectVersionInputTests : TestBase
         var suppliedInput = "test";
         var input = new ProjectVersionInput { SuppliedInput = suppliedInput };
 
-        var result = input.Validate(reporters: Enumerable.Empty<Reporter>(), withBaseline: true);
+        var result = input.Validate(reporters: Enumerable.Empty<Reporter>(), baselineEnabled: true);
         result.ShouldBe(suppliedInput);
     }
 
@@ -44,7 +44,7 @@ public class ProjectVersionInputTests : TestBase
         var suppliedInput = "test";
         var input = new ProjectVersionInput { SuppliedInput = suppliedInput };
 
-        var result = input.Validate(reporters: Enumerable.Empty<Reporter>(), withBaseline: false);
+        var result = input.Validate(reporters: Enumerable.Empty<Reporter>(), baselineEnabled: false);
         result.ShouldBe(string.Empty);
     }
 
@@ -53,7 +53,7 @@ public class ProjectVersionInputTests : TestBase
     {
         var input = new ProjectVersionInput();
 
-        var result = input.Validate(reporters: new[] { Reporter.Dashboard }, withBaseline: false);
+        var result = input.Validate(reporters: new[] { Reporter.Dashboard }, baselineEnabled: false);
         result.ShouldBe(string.Empty);
     }
 
@@ -64,7 +64,7 @@ public class ProjectVersionInputTests : TestBase
 
         var exception = Should.Throw<InputException>(() =>
         {
-            input.Validate(reporters: Enumerable.Empty<Reporter>(), withBaseline: true);
+            input.Validate(reporters: Enumerable.Empty<Reporter>(), baselineEnabled: true);
         });
 
         exception.Message.ShouldBe("Project version cannot be empty when baseline is enabled");

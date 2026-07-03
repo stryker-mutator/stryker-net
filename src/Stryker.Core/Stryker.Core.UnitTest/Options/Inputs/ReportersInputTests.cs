@@ -82,11 +82,11 @@ public class ReportersInputTests : TestBase
     }
 
     [TestMethod]
-    public void ShouldEnableBaselineReporterWhenWithBaselineEnabled()
+    public void ShouldEnableBaselineReporterWhenBaselineEnabled()
     {
         var target = new ReportersInput { SuppliedInput = null };
 
-        var validatedReporters = target.Validate(withBaseline: true);
+        var validatedReporters = target.Validate(baselineEnabled: true);
 
         validatedReporters.ShouldContain(Reporter.Baseline);
     }
