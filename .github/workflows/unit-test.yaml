@@ -3,6 +3,9 @@ run-name: unit tests ${{ github.event_name == 'schedule' && 'nightly' || github.
 
 on:
   pull_request:
+  push:
+    branches:
+      - master
   schedule:
     - cron: '0 1 * * *'
   workflow_dispatch:
