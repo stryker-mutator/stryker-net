@@ -308,6 +308,32 @@ public class ValidateStrykerResults
         CheckMutationKindsValidity(report);
     }
 
+    [Fact]
+    [Trait("Category", "BaselineRecreate")]
+    [Trait("Runtime", "netcore")]
+    public async Task CSharp_NetCore_BaselineRecreate()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/NetCoreTestProject.XUnit/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        // When baseline recreate is used, all mutants should have a real status (killed/survived/etc.)
+        // rather than "Pending" status from a corrupted/missing baseline
+        var actualTotal = report.Files.Select(f => f.Value.Mutants.Count()).Sum();
+        var actualPending = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Pending.ToString())).Sum();
+
+        // The recreated baseline should have NO pending mutants (all should be tested)
+        actualPending.ShouldBe(0, "Recreated baseline should have no pending mutants - all should be tested");
+        actualTotal.ShouldBeGreaterThanOrEqualTo(0);
+    }
+
     private void CheckReportTestCounts(IJsonReport report, int total)
     {
         var actualTotal = report.TestFiles.Sum(tf => tf.Value.Tests.Count);
