@@ -1,0 +1,58 @@
+name: unit test
+run-name: unit tests ${{ github.event_name == 'schedule' && 'nightly' || github.head_ref || github.ref_name }}
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  unit-test:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.x
+      - name: Run unit tests
+        run: dotnet test src/Stryker.slnx --configuration Debug --results-directory TestResults --logger trx
+
+      - name: Upload unit test results
+        if: (!cancelled())
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-test-results-${{ matrix.os }}
+          path: TestResults/**/*.trx
+          if-no-files-found: error
+
+  # Fan-in job that depends on all matrix combinations
+  # This job can be used as a single required check in PR rules
+  unit-test-complete:
+    name: Unit Tests Complete
+    runs-on: ubuntu-latest
+    needs: unit-test
+    if: always()
+    steps:
+      - name: Check unit test results
+        run: |
+          if [ "${{ needs.unit-test.result }}" != "success" ]; then
+            echo "Unit tests failed or were cancelled"
+            exit 1
+          fi
+          echo "All unit tests passed successfully"
