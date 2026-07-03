@@ -72,7 +72,7 @@ stages:
       inputs:
         command: 'build'
         projects: 'src/Stryker.slnx'
-    - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage collect "dotnet test" -f xml -o "$(Agent.BuildDirectory)\TestResults\coverage.xml"'
+    - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage collect "dotnet test Stryker.vstest.slnf" -f xml -o "$(Agent.BuildDirectory)\TestResults\coverage.xml"'
       displayName: 'Run unit tests'
       workingDirectory: 'src'
     - task: SonarCloudAnalyze@4
