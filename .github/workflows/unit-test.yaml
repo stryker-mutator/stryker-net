@@ -26,16 +26,22 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
           dotnet-version: 10.x
       - name: Run unit tests
-        run: dotnet test src/Stryker.slnx --configuration Debug --results-directory TestResults --logger trx
+        run: dotnet test src/Stryker.vstest.slnf --configuration Debug --results-directory TestResults --logger trx
+
+      - name: Run Microsoft.Testing.Platform unit tests
+        # global.json in this project's directory opts it into the MTP dotnet test runner;
+        # working-directory ensures that global.json is discovered (resolved relative to cwd).
+        run: dotnet test --configuration Debug --report-trx --results-directory ${{ github.workspace }}/TestResults
+        working-directory: src/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest
 
       - name: Upload unit test results
         if: (!cancelled())
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: unit-test-results-${{ matrix.os }}
           path: TestResults/**/*.trx
