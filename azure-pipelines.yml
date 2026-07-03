@@ -23,8 +23,8 @@ pr:
     - '.github/*'
 
 variables:
-  PackageVersion: '4.15.0'
-  VersionBuildNumber: $[counter('4.15.0', 1)]
+  PackageVersion: '4.16.0'
+  VersionBuildNumber: $[counter('4.16.0', 1)]
   NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
   LibManCacheWindows: $(USERPROFILE)/.librarymanager/cache
   LibManCacheMacLinux: $(HOME)/.librarymanager/cache
