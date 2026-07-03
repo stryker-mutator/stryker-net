@@ -31,7 +31,13 @@ jobs:
         with:
           dotnet-version: 10.x
       - name: Run unit tests
-        run: dotnet test src/Stryker.slnx --configuration Debug --results-directory TestResults --logger trx
+        run: dotnet test src/Stryker.vstest.slnf --configuration Debug --results-directory TestResults --logger trx
+
+      - name: Run Microsoft.Testing.Platform unit tests
+        # global.json in this project's directory opts it into the MTP dotnet test runner;
+        # working-directory ensures that global.json is discovered (resolved relative to cwd).
+        run: dotnet test --configuration Debug --report-trx --results-directory ${{ github.workspace }}/TestResults
+        working-directory: src/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest
 
       - name: Upload unit test results
         if: (!cancelled())
