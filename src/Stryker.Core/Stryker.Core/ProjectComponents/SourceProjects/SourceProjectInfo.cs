@@ -30,8 +30,6 @@ public class SourceProjectInfo : IProjectAndTests
     /// </summary>
     public IReadOnlyProjectComponent ProjectContents { get; set; }
 
-    public bool IsFullFramework => AnalyzerResult.TargetsFullFramework();
-
     public string HelperNamespace => CodeInjector.HelperNamespace;
 
     public CodeInjection CodeInjector { get; } = new();

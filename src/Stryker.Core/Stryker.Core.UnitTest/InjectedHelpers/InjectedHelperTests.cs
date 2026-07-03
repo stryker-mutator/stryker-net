@@ -30,9 +30,13 @@ public class InjectedHelperTests : TestBase
     [DataRow(LanguageVersion.Preview)]
     public void InjectHelpers_ShouldCompile_ForAllLanguageVersions(LanguageVersion version)
     {
+        // MutantControl maps the mutant-id file via MemoryMappedFile for the MTP runner; touch the type
+        // so its defining assembly is loaded before the snapshot below and can be referenced.
+        _ = typeof(System.IO.MemoryMappedFiles.MemoryMappedFile);
+
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-        var needed = new[] { ".CoreLib", ".Runtime", "System.IO.Pipes", ".Collections", ".Console" };
+        var needed = new[] { ".CoreLib", ".Runtime", "System.IO.Pipes", "System.IO.MemoryMappedFiles", ".Collections", ".Console" };
         var references = new List<MetadataReference>();
         foreach (var assembly in assemblies)
         {
@@ -72,9 +76,13 @@ public class InjectedHelperTests : TestBase
     [DataRow(LanguageVersion.Preview)]
     public void InjectHelpers_ShouldCompile_ForAllLanguageVersionsWithNullableOptions(LanguageVersion version)
     {
+        // MutantControl maps the mutant-id file via MemoryMappedFile for the MTP runner; touch the type
+        // so its defining assembly is loaded before the snapshot below and can be referenced.
+        _ = typeof(System.IO.MemoryMappedFiles.MemoryMappedFile);
+
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-        var needed = new[] { ".CoreLib", ".Runtime", "System.IO.Pipes", ".Collections", ".Console" };
+        var needed = new[] { ".CoreLib", ".Runtime", "System.IO.Pipes", "System.IO.MemoryMappedFiles", ".Collections", ".Console" };
         var references = new List<MetadataReference>();
         var hack = new NamedPipeClientStream("test");
         foreach (var assembly in assemblies)

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
@@ -18,6 +17,7 @@ using Stryker.Abstractions.Testing;
 using Stryker.Configuration.Options;
 using Stryker.Core.Compiling;
 using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -61,11 +61,11 @@ public class Calculator
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
-        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees:[syntaxTree]);
 
         using var ms = new MemoryStream();
         using var symbol = new MemoryStream();
-        var result = target.Compile(new Collection<SyntaxTree> { syntaxTree }, ms, symbol);
+        var result = target.Compile(ms, symbol);
         result.Success.ShouldBe(true);
         ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
     }
@@ -112,11 +112,11 @@ public class Calculator
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
 
-        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees:[syntaxTree]);
 
         using (var ms = new MemoryStream())
         {
-            var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+            var result = target.Compile(ms, null);
             result.Success.ShouldBe(true);
             ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
         }
@@ -155,17 +155,16 @@ public class Calculator
             }
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
-        rollbackProcessMock.Setup(x => x.Start(It.IsAny<Compilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<ICSharpRollbackProcess.Mode>(), false))
-                        .Returns((Compilation compilation, ImmutableArray<Diagnostic> _, ICSharpRollbackProcess.Mode _, bool _) =>
-                        new CSharpRollbackProcessResult(compilation, null));
+        rollbackProcessMock.Setup(x => x.RollbackMutationsInError(It.IsAny<ICompilationContent>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<ICSharpRollbackProcess.Mode>(), false))
+                        .Returns((ICompilationContent _, ImmutableArray<Diagnostic> _, ICSharpRollbackProcess.Mode _, bool _) => null);
 
-        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, new StrykerOptions());
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, new StrykerOptions(), [syntaxTree]);
 
         using (var ms = new MemoryStream())
         {
-            Should.Throw<CompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null));
+            Should.Throw<CompilationException>(() => target.Compile(ms, null));
         }
-        rollbackProcessMock.Verify(x => x.Start(It.IsAny<Compilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), ICSharpRollbackProcess.Mode.Normal, false),
+        rollbackProcessMock.Verify(x => x.RollbackMutationsInError(It.IsAny<ICompilationContent>(), It.IsAny<ImmutableArray<Diagnostic>>(), ICSharpRollbackProcess.Mode.Normal, false),
             Times.AtLeast(2));
     }
 
@@ -203,10 +202,10 @@ public class Calculator
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
-        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees:[syntaxTree]);
 
         using var ms = new MemoryStream();
-        target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+        target.Compile(ms, null);
 
         ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
     }
@@ -246,10 +245,10 @@ public class Calculator
             }
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
-        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees:[syntaxTree]);
 
         using var ms = new MemoryStream();
-        var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+        var result = target.Compile(ms, null);
         result.Success.ShouldBe(true);
 
         var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
@@ -272,7 +271,7 @@ public class Calculator
     }
 }
 }");
-        var input = new MutationTestInput()
+        var input = new MutationTestInput
         {
             SourceProjectInfo = new SourceProjectInfo
             {
@@ -293,10 +292,10 @@ public class Calculator
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
-        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees: [syntaxTree]);
 
         using var ms = new MemoryStream();
-        var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+        var result = target.Compile(ms, null);
         result.Success.ShouldBe(true);
 
         var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
@@ -340,10 +339,10 @@ public class Calculator
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
-        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees: [syntaxTree]);
 
         using var ms = new MemoryStream();
-        Should.Throw<CompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null));
+        Should.Throw<CompilationException>(() => target.Compile(ms, null));
     }
 
     [TestMethod]
@@ -380,11 +379,11 @@ public class Calculator
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
-        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees:[syntaxTree]);
 
         using (var ms = new MemoryStream())
         {
-            var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+            var result = target.Compile(ms, null);
             result.Success.ShouldBe(true);
 
             Assembly.Load(ms.ToArray()).GetName().Version.ToString().ShouldBe("0.0.0.0");
@@ -493,8 +492,18 @@ public class Calculator
                         { "AssemblyName", "AssemblyName" },
                         { "TargetFileName", "TargetFileName.dll" },
                     },
-                    // add a reference to system so the example code can compile
-                    references: [typeof(object).Assembly.Location]
+                    // add a reference to system so the example code can compile, plus the assemblies the
+                    // injected MutantControl needs for its MemoryMappedFile-based MTP mutant control. The
+                    // MemoryMappedFiles assembly is compiled against the contract assemblies, so resolving it
+                    // also requires System.Runtime (FileStream/FileMode/Object/Enum) and
+                    // System.Runtime.InteropServices (UnmanagedMemoryAccessor, the base of the view accessor).
+                    references:
+                    [
+                        typeof(object).Assembly.Location,
+                        typeof(System.IO.MemoryMappedFiles.MemoryMappedFile).Assembly.Location,
+                        Assembly.Load("System.Runtime").Location,
+                        Assembly.Load("System.Runtime.InteropServices").Location
+                    ]
                 ).Object,
                 TestProjectsInfo = new TestProjectsInfo(fileSystem)
                 {
@@ -516,7 +525,7 @@ public class Calculator
 
             TestRunner = new Mock<ITestRunner>(MockBehavior.Default).Object
         };
-        var folder = new CsharpFolderComposite();
+         var folder = new FolderComposite();
         var injector = input.SourceProjectInfo.CodeInjector;
         folder.Add(inputFile);
         foreach (var (name, code) in injector.MutantHelpers)

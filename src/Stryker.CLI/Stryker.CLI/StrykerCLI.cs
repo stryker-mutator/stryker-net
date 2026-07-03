@@ -118,9 +118,10 @@ public class StrykerCli
         app.OnExecuteAsync(async (cancellationToken) =>
         {
             // app started
-            PrintStrykerASCIIName();
-
             _configReader.Build(inputs, args, app, cmdConfigReader);
+
+            PrintStrykerASCIIName(inputs);
+
             _loggingInitializer.SetupLogOptions(inputs);
 
             // Print version info. Don't await, let it run in the background for performance reasons
@@ -184,8 +185,15 @@ public class StrykerCli
         }
     }
 
-    private void PrintStrykerASCIIName()
+    private void PrintStrykerASCIIName(IStrykerInputs inputs)
     {
+        var logLevel = inputs.VerbosityInput.Validate();
+
+        if (logLevel > Serilog.Events.LogEventLevel.Information)
+        {
+            return;
+        }
+
         _console.MarkupLine(@"[Yellow]
    _____ _              _               _   _ ______ _______  
   / ____| |            | |             | \ | |  ____|__   __| 

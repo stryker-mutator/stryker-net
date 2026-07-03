@@ -179,6 +179,27 @@ public class AnalyzerResultExtensionsTests
     }
 
     [TestMethod]
+    [DataRow("8.0", LanguageVersion.CSharp8)]
+    [DataRow("7.1", LanguageVersion.CSharp7_1)]
+    [DataRow("latest", LanguageVersion.CSharp14)]
+    [DataRow("dontCare", LanguageVersion.CSharp14)] // it will return the latest version
+    public void GetParseOptions_ShouldReturnActualCSharpVersion(string actualLangVersion, LanguageVersion expected)
+    {
+        // Arrange
+        var properties = new Dictionary<string, string>();
+        var preprocessorSymbols = new[] { "DEBUG" };
+        properties["LangVersion"] = actualLangVersion;
+        var analyzerResult = CreateAnalyzerResultWithProperties(properties, preprocessorSymbols);
+        var options = CreateStrykerOptions(LanguageVersion.Default);
+
+        // Act
+        var parseOptions = analyzerResult.GetParseOptions(options);
+
+        // Assert
+        parseOptions.LanguageVersion.ShouldBe(expected);
+        }
+
+    [TestMethod]
     public void GetParseOptions_ShouldReturnBasicOptions_WhenNoFeaturesAreUsed()
     {
         // Arrange
@@ -195,6 +216,7 @@ public class AnalyzerResultExtensionsTests
         parseOptions.PreprocessorSymbolNames.ShouldContain("DEBUG");
         parseOptions.Features.ShouldBeEmpty();
     }
+
 
     [TestMethod]
     [DataRow("Features", "InterceptorsPreview", "InterceptorsPreview", null)]
@@ -398,6 +420,10 @@ public class AnalyzerResultExtensionsTests
         Mock.Get(analyzerResult)
             .SetupGet(g => g.Properties)
             .Returns(properties);
+
+        Mock.Get(analyzerResult).Setup(p => p.GetProperty(It.IsAny<string>()))
+            .Returns((string key) => properties.TryGetValue(key, out var value) ? value : null);
+
         Mock.Get(analyzerResult)
             .SetupGet(g => g.PreprocessorSymbols)
             .Returns(preprocessorSymbols ?? ["NET10_0"]);

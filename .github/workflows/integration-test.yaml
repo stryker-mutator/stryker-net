@@ -1,13 +1,21 @@
 name: integration test
-run-name: e2e ${{ github.head_ref }}
+run-name: e2e ${{ github.event_name == 'schedule' && 'nightly' || github.head_ref || github.ref_name }}
 
 on:
   pull_request:
+  schedule:
+    - cron: '0 1 * * *'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 jobs:
   integration-test:
-    if: github.event.pull_request.draft == false
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     strategy:
       fail-fast: false
       matrix:
@@ -40,7 +48,7 @@ jobs:
       CATEGORY: ${{ matrix.category }}
       RUNTIME: ${{ matrix.runtime }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
