@@ -1,5 +1,5 @@
 name: integration test
-run-name: e2e ${{ github.event_name == 'schedule' && 'nightly' || github.head_ref }}
+run-name: e2e ${{ github.event_name == 'schedule' && 'nightly' || github.head_ref || github.ref_name }}
 
 on:
   pull_request:
