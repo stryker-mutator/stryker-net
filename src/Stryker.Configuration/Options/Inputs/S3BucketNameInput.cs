@@ -9,9 +9,9 @@ public class S3BucketNameInput : Input<string>
 
     public override string Default => string.Empty;
 
-    public string Validate(BaselineProvider baselineProvider, bool withBaseline)
+    public string Validate(BaselineProvider baselineProvider, bool baselineEnabled)
     {
-        if (withBaseline && baselineProvider == BaselineProvider.S3)
+        if (baselineEnabled && baselineProvider == BaselineProvider.S3)
         {
             if (string.IsNullOrWhiteSpace(SuppliedInput))
             {

@@ -6,19 +6,19 @@ using Stryker.Core.UnitTest;
 namespace Stryker.Core.UnitTest.Options.Inputs;
 
 [TestClass]
-public class WithBaselineInputTests : TestBase
+public class BaselineEnabledInputTests : TestBase
 {
     [TestMethod]
     public void ShouldHaveHelpText()
     {
-        var target = new WithBaselineInput();
+        var target = new BaselineEnabledInput();
         target.HelpText.ShouldBe(@"EXPERIMENTAL: Use results stored in stryker dashboard to only test new mutants. | default: 'False'");
     }
 
     [TestMethod]
     public void ShouldBeEnabledWhenTrue()
     {
-        var target = new WithBaselineInput { SuppliedInput = true };
+        var target = new BaselineEnabledInput { SuppliedInput = true };
 
         var result = target.Validate();
 
@@ -28,7 +28,7 @@ public class WithBaselineInputTests : TestBase
     [TestMethod]
     public void ShouldProvideDefaultFalseWhenNull()
     {
-        var target = new WithBaselineInput { SuppliedInput = null };
+        var target = new BaselineEnabledInput { SuppliedInput = null };
 
         var result = target.Validate();
 
@@ -38,7 +38,7 @@ public class WithBaselineInputTests : TestBase
     [TestMethod]
     public void ShouldNotBeEnabledWhenFalse()
     {
-        var target = new WithBaselineInput { SuppliedInput = false };
+        var target = new BaselineEnabledInput { SuppliedInput = false };
 
         var result = target.Validate();
 

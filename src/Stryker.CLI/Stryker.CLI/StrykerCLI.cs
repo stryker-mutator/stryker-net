@@ -102,8 +102,8 @@ public class StrykerCli
         var app = new CommandLineApplication(new ConsoleWrapper(_console))
         {
             Name = "Stryker",
-            FullName = "Stryker: Stryker mutator for .Net",
-            Description = "Stryker mutator for .Net",
+            FullName = "Stryker: The mutation test framework for .Net",
+            Description = "The mutation test framework for .Net",
             ExtendedHelpText = "Welcome to Stryker for .Net! Run dotnet stryker to kick off a mutation test run",
             HelpTextGenerator = new GroupedHelpTextGenerator()
         };
@@ -114,20 +114,11 @@ public class StrykerCli
 
         cmdConfigReader.RegisterCommandLineOptions(app, inputs);
         cmdConfigReader.RegisterInitCommand(app, _fileSystem, inputs, args);
+        cmdConfigReader.RegisterBaselineCommand(app, inputs, args, this);
 
-        app.OnExecuteAsync(async (cancellationToken) =>
+        app.OnExecute(() =>
         {
-            // app started
-            _configReader.Build(inputs, args, app, cmdConfigReader);
-
-            PrintStrykerASCIIName(inputs);
-
-            _loggingInitializer.SetupLogOptions(inputs);
-
-            // Print version info. Don't await, let it run in the background for performance reasons
-            _ = PrintStrykerVersionInformationAsync(cmdConfigReader.GetSkipVersionCheckOption(args, app).HasValue());
-            await RunStrykerAsync(inputs);
-            return ExitCode;
+            return StartApp(inputs, args, app, cmdConfigReader);
         });
 
         try
@@ -142,9 +133,9 @@ public class StrykerCli
             {
                 Console.Error.WriteLine();
                 Console.Error.WriteLine("Did you mean this?");
-                foreach (var match in uex.NearestMatches)
+                foreach (var nearMatch in uex.NearestMatches)
                 {
-                    Console.Error.WriteLine("    " + match);
+                    Console.Error.WriteLine("    " + nearMatch);
                 }
             }
 
@@ -152,9 +143,24 @@ public class StrykerCli
         }
     }
 
-    private async Task RunStrykerAsync(IStrykerInputs inputs)
+    internal int StartApp(IStrykerInputs inputs, string[] args, CommandLineApplication app, CommandLineConfigReader cmdConfigReader)
     {
-        var result = await _stryker.RunMutationTestAsync(inputs).ConfigureAwait(false);
+        // app started
+        _configReader.Build(inputs, args, app, cmdConfigReader);
+
+        PrintStrykerASCIIName(inputs);
+
+        _loggingInitializer.SetupLogOptions(inputs);
+
+        // Print version info. Don't await, let it run in the background for performance reasons
+        _ = PrintStrykerVersionInformationAsync(cmdConfigReader.GetSkipVersionCheckOption(args, app).HasValue());
+        RunStryker(inputs);
+        return ExitCode;
+    }
+
+    private void RunStryker(IStrykerInputs inputs)
+    {
+        var result = _stryker.RunMutationTestAsync(inputs).ConfigureAwait(false).GetAwaiter().GetResult();
 
         HandleStrykerRunResult(result);
     }

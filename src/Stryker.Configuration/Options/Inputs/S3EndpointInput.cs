@@ -10,9 +10,9 @@ public class S3EndpointInput : Input<string>
 
     public override string Default => string.Empty;
 
-    public string Validate(BaselineProvider baselineProvider, bool withBaseline)
+    public string Validate(BaselineProvider baselineProvider, bool baselineEnabled)
     {
-        if (withBaseline && baselineProvider == BaselineProvider.S3 && !string.IsNullOrWhiteSpace(SuppliedInput))
+        if (baselineEnabled && baselineProvider == BaselineProvider.S3 && !string.IsNullOrWhiteSpace(SuppliedInput))
         {
             if (!Uri.IsWellFormedUriString(SuppliedInput, UriKind.Absolute))
             {

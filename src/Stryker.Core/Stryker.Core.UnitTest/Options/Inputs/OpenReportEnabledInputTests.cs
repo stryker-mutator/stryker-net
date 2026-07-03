@@ -9,10 +9,10 @@ namespace Stryker.Core.UnitTest.Options.Inputs;
 public class OpenReportEnabledInputTests : TestBase
 {
     [TestMethod]
-    public void ShouldHaveNoHelpText()
+    public void ShouldHaveHelpText()
     {
         var target = new OpenReportEnabledInput();
-        target.HelpText.ShouldBe(@" | default: 'False'");
+        target.HelpText.ShouldBe(@"When enabled the report will open automatically after stryker has generated the report. | default: 'False'");
     }
 
     [TestMethod]

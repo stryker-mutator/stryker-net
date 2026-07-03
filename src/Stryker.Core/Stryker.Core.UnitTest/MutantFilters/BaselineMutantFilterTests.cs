@@ -51,7 +51,7 @@ public class BaselineMutantFilterTests : TestBase
 
         var options = new StrykerOptions()
         {
-            WithBaseline = true,
+            BaselineEnabled = true,
             DashboardApiKey = "Acces_Token",
             ProjectName = "github.com/JohnDoe/project",
             ProjectVersion = "version/human/readable",
@@ -88,7 +88,7 @@ public class BaselineMutantFilterTests : TestBase
 
         var options = new StrykerOptions()
         {
-            WithBaseline = true,
+            BaselineEnabled = true,
             DashboardApiKey = "Acces_Token",
             ProjectName = "github.com/JohnDoe/project",
             ProjectVersion = "version/human/readable",
@@ -126,7 +126,7 @@ public class BaselineMutantFilterTests : TestBase
 
         var options = new StrykerOptions()
         {
-            WithBaseline = true,
+            BaselineEnabled = true,
             DashboardApiKey = "Access_Token",
             ProjectName = "github.com/JohnDoe/project",
             ProjectVersion = "version/human/readable",
@@ -160,7 +160,7 @@ public class BaselineMutantFilterTests : TestBase
 
         var options = new StrykerOptions()
         {
-            WithBaseline = true,
+            BaselineEnabled = true,
             ProjectVersion = "version",
         };
 
@@ -192,7 +192,7 @@ public class BaselineMutantFilterTests : TestBase
 
         var options = new StrykerOptions()
         {
-            WithBaseline = true,
+            BaselineEnabled = true,
             ProjectVersion = "version",
         };
         var file = new CsharpFileLeaf
@@ -244,7 +244,7 @@ public class BaselineMutantFilterTests : TestBase
 
         var options = new StrykerOptions()
         {
-            WithBaseline = true,
+            BaselineEnabled = true,
             ProjectVersion = "version",
         };
         var file = new CsharpFileLeaf
@@ -307,7 +307,7 @@ public class BaselineMutantFilterTests : TestBase
 
         var options = new StrykerOptions()
         {
-            WithBaseline = true,
+            BaselineEnabled = true,
             ProjectVersion = "version",
         };
         var file = new CsharpFileLeaf
@@ -380,7 +380,7 @@ public class BaselineMutantFilterTests : TestBase
 
         var options = new StrykerOptions
         {
-            WithBaseline = true,
+            BaselineEnabled = true,
             ProjectVersion = "version"
         };
 

@@ -21,17 +21,17 @@ public class SinceInputTests : TestBase
     {
         var target = new SinceInput { SuppliedInput = true };
 
-        var result = target.Validate(withBaseline: null);
+        var result = target.Validate(baselineEnabled: null);
 
         result.ShouldBeTrue();
     }
 
     [TestMethod]
-    public void ShouldBeEnabledWhenTrueEvenIfWithBaselineFalse()
+    public void ShouldBeEnabledWhenTrueEvenIfBaselineEnabledFalse()
     {
         var target = new SinceInput { SuppliedInput = true };
 
-        var result = target.Validate(withBaseline: false);
+        var result = target.Validate(baselineEnabled: false);
 
         result.ShouldBeTrue();
     }
@@ -41,7 +41,7 @@ public class SinceInputTests : TestBase
     {
         var target = new SinceInput();
 
-        var result = target.Validate(withBaseline: null);
+        var result = target.Validate(baselineEnabled: null);
 
         result.ShouldBe(target.Default.Value);
     }
@@ -51,7 +51,7 @@ public class SinceInputTests : TestBase
     {
         var target = new SinceInput { SuppliedInput = false };
 
-        var result = target.Validate(withBaseline: null);
+        var result = target.Validate(baselineEnabled: null);
 
         result.ShouldBeFalse();
     }
@@ -59,7 +59,7 @@ public class SinceInputTests : TestBase
     [TestMethod]
     public void ShouldBeImplicitlyEnabledWithBaseline()
     {
-        var sinceEnabled = new SinceInput().Validate(withBaseline: true);
+        var sinceEnabled = new SinceInput().Validate(baselineEnabled: true);
 
         sinceEnabled.ShouldBeTrue();
     }
@@ -69,7 +69,7 @@ public class SinceInputTests : TestBase
     {
         var sinceEnabled = new SinceInput { SuppliedInput = true };
 
-        var exception = Should.Throw<InputException>(() => sinceEnabled.Validate(withBaseline: true));
+        var exception = Should.Throw<InputException>(() => sinceEnabled.Validate(baselineEnabled: true));
         exception.Message.ShouldBe("The since and baseline features are mutually exclusive.");
     }
 }

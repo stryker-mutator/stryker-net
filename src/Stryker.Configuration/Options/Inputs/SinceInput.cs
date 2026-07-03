@@ -8,9 +8,9 @@ public class SinceInput : Input<bool?>
 
     protected override string Description => "Enables diff compare. Only test changed files.";
 
-    public bool Validate(bool? withBaseline)
+    public bool Validate(bool? baselineEnabled)
     {
-        if (withBaseline.IsNotNullAndTrue())
+        if (baselineEnabled.IsNotNullAndTrue())
         {
             if (SuppliedInput.HasValue && SuppliedInput.Value)
             {

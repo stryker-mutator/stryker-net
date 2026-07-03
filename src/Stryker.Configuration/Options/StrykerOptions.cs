@@ -151,7 +151,15 @@ public class StrykerOptions : IStrykerOptions
     /// <summary>
     /// When true, the baseline feature should be enabled.
     /// </summary>
-    public bool WithBaseline { get; init; }
+    public bool BaselineEnabled { get; init; }
+
+    /// When using the baseline feature, this specifies the target branch/commit for comparison.
+    /// </summary>
+    public string BaselineTarget { get; init; }
+
+    /// When true, a new baseline will be created by doing a full run.
+    /// </summary>
+    public bool BaselineRecreate { get; init; }
 
     /// <summary>
     /// When the baseline feature is enabled, this selects the source of the baseline.

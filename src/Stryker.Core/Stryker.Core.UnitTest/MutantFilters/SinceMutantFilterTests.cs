@@ -241,7 +241,7 @@ public class SinceMutantFilterTests : TestBase
 
         var options = new StrykerOptions()
         {
-            WithBaseline = false,
+            BaselineEnabled = false,
             ProjectVersion = "version"
         };
 
@@ -285,7 +285,7 @@ public class SinceMutantFilterTests : TestBase
 
         var options = new StrykerOptions()
         {
-            WithBaseline = false,
+            BaselineEnabled = false,
             ProjectVersion = "version"
         };
 
@@ -316,7 +316,7 @@ public class SinceMutantFilterTests : TestBase
         // Arrange
         var options = new StrykerOptions()
         {
-            WithBaseline = true,
+            BaselineEnabled = true,
             ProjectVersion = "version"
         };
 

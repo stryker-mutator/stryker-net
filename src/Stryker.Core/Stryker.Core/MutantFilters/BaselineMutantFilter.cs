@@ -39,7 +39,7 @@ public class BaselineMutantFilter : IMutantFilter
 
         _options = options;
 
-        if (options.WithBaseline)
+        if (options.BaselineEnabled)
         {
             _baseline = GetBaselineAsync().Result;
         }
@@ -49,7 +49,7 @@ public class BaselineMutantFilter : IMutantFilter
     public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file,
         IStrykerOptions options)
     {
-        if (options.WithBaseline)
+        if (options.BaselineEnabled)
         {
             if (_baseline == null)
             {
