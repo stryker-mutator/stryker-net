@@ -1,13 +1,15 @@
 name: integration test
-run-name: e2e ${{ github.head_ref }}
+run-name: e2e ${{ github.event_name == 'schedule' && 'nightly' || github.head_ref }}
 
 on:
   pull_request:
+  schedule:
+    - cron: '0 1 * * *'
   workflow_dispatch:
 
 jobs:
   integration-test:
-    if: github.event.pull_request.draft == false
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     strategy:
       fail-fast: false
       matrix:
