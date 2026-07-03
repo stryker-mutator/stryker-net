@@ -46,9 +46,15 @@ namespace Stryker
         private static bool _epochMmfReady;
         private static bool _epochMmfFailed;
         private static bool _epochPollerStarted;
-        // Sentinel guarantees the poller's first observation differs from the runner's initial request
-        // value (0), so it performs one harmless empty flush before the first test even starts.
-        private static int _lastHandledEpoch = int.MinValue;
+        // Must match the request value the runner writes via InitializeEpochFile (0), NOT a sentinel
+        // distinct from it. The poller thread only starts once MutantControl is first touched, which is
+        // the first IsActive() call from mutated code - i.e., only once the first test has already begun
+        // running, with unpredictable OS thread-start latency before this thread gets its first time
+        // slice. A sentinel that guarantees "the first observed value looks new" would flush+reset
+        // whatever that already-running test registered before the runner ever requests epoch 1,
+        // discarding real coverage into a flush nobody reads. Starting equal to the file's true initial
+        // value means the poller does nothing until the runner's first genuine request (>= 1) arrives.
+        private static int _lastHandledEpoch = 0;
 
         // this attribute will be set by the Stryker Data Collector before each test
         public static bool CaptureCoverage;
