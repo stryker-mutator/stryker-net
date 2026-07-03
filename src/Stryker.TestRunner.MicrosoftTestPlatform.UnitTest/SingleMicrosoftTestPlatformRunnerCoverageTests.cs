@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
+using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 using Stryker.TestRunner.Tests;
 
@@ -484,5 +485,138 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
 
         var serversAfter = (Dictionary<string, AssemblyTestServer>)serversField.GetValue(runner)!;
         serversAfter.ShouldBeEmpty("all servers should be disposed and removed after reset");
+    }
+
+    // --- Per-test coverage epoch relay tests ---
+    //
+    // These exercise the runner side of the handshake documented on MutantControl's epoch poller:
+    // the runner writes a request epoch, the (here: simulated) test host writes back an ack epoch once
+    // it has flushed, and the runner waits for that ack before reading the coverage file.
+
+    private static object InvokePrivate(SingleMicrosoftTestPlatformRunner runner, string method, params object[] args)
+    {
+        var m = typeof(SingleMicrosoftTestPlatformRunner).GetMethod(method,
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        return m.Invoke(runner, args)!;
+    }
+
+    [TestMethod]
+    public void EpochRelay_WriteEpochRequest_DoesNotTouchAckHalf()
+    {
+        var runnerId = 700;
+        var epochFilePath = Path.Combine(Path.GetTempPath(), $"stryker-epoch-{runnerId}-roundtrip.txt");
+
+        try
+        {
+            using var runner = new SingleMicrosoftTestPlatformRunner(
+                runnerId, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+            InvokePrivate(runner, "InitializeEpochFile", epochFilePath);
+            InvokePrivate(runner, "WriteEpochRequest", epochFilePath, 5);
+
+            var args = new object[] { epochFilePath, 0 };
+            var found = (bool)typeof(SingleMicrosoftTestPlatformRunner)
+                .GetMethod("TryReadEpochAck", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+                .Invoke(runner, args)!;
+
+            found.ShouldBeTrue();
+            ((int)args[1]).ShouldBe(0, "ack should still be 0; WriteEpochRequest only touches the request half");
+        }
+        finally
+        {
+            if (File.Exists(epochFilePath)) File.Delete(epochFilePath);
+        }
+    }
+
+    [TestMethod]
+    public async Task EpochRelay_WaitForAck_ReturnsTrue_WhenAckAlreadyMatches()
+    {
+        var runnerId = 701;
+        var epochFilePath = Path.Combine(Path.GetTempPath(), $"stryker-epoch-{runnerId}-match.txt");
+
+        try
+        {
+            using var runner = new SingleMicrosoftTestPlatformRunner(
+                runnerId, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+            InvokePrivate(runner, "InitializeEpochFile", epochFilePath);
+
+            // Write request AND ack = 3 directly, simulating the test host having already caught up.
+            using (var stream = new FileStream(epochFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+            using (var mmf = System.IO.MemoryMappedFiles.MemoryMappedFile.CreateFromFile(stream, null, 8,
+                       System.IO.MemoryMappedFiles.MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, leaveOpen: true))
+            using (var accessor = mmf.CreateViewAccessor(0, 8, System.IO.MemoryMappedFiles.MemoryMappedFileAccess.ReadWrite))
+            {
+                accessor.Write(0, 3);
+                accessor.Write(4, 3);
+            }
+
+            var method = typeof(SingleMicrosoftTestPlatformRunner).GetMethod("WaitForEpochAckAsync",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+            var task = (Task<bool>)method.Invoke(runner, new object[] { epochFilePath, 3, TimeSpan.FromSeconds(5) })!;
+
+            (await task).ShouldBeTrue();
+        }
+        finally
+        {
+            if (File.Exists(epochFilePath)) File.Delete(epochFilePath);
+        }
+    }
+
+    [TestMethod, Timeout(2000)]
+    public async Task EpochRelay_WaitForAck_TimesOut_WhenAckNeverArrives()
+    {
+        var runnerId = 702;
+        var epochFilePath = Path.Combine(Path.GetTempPath(), $"stryker-epoch-{runnerId}-timeout.txt");
+
+        try
+        {
+            using var runner = new SingleMicrosoftTestPlatformRunner(
+                runnerId, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+            InvokePrivate(runner, "InitializeEpochFile", epochFilePath);
+            InvokePrivate(runner, "WriteEpochRequest", epochFilePath, 1);
+
+            var method = typeof(SingleMicrosoftTestPlatformRunner).GetMethod("WaitForEpochAckAsync",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+            // Nothing ever writes ack=1, so this must time out quickly rather than hang.
+            var task = (Task<bool>)method.Invoke(runner, new object[] { epochFilePath, 1, TimeSpan.FromMilliseconds(100) })!;
+
+            (await task).ShouldBeFalse();
+        }
+        finally
+        {
+            if (File.Exists(epochFilePath)) File.Delete(epochFilePath);
+        }
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task RunSingleTestForCoverageInReusedProcessAsync_ReturnsDubious_WhenServerCannotStart()
+    {
+        using var runner = new SingleMicrosoftTestPlatformRunner(
+            703, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+        runner.SetPerTestCoverageMode(true);
+        var testNode = new TestNode("test-1", "Test1", "test", "discovered");
+
+        var result = await runner.RunSingleTestForCoverageInReusedProcessAsync("/nonexistent/assembly.dll", testNode, "test-1");
+
+        result.Confidence.ShouldBe(CoverageConfidence.Dubious);
+        result.MutationsCovered.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void SetPerTestCoverageMode_ShouldResetPerAssemblyState_WhenToggled()
+    {
+        using var runner = new SingleMicrosoftTestPlatformRunner(
+            704, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+        runner.SetPerTestCoverageMode(true);
+        var modeField = typeof(SingleMicrosoftTestPlatformRunner)
+            .GetField("_perTestCoverageMode", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        ((bool)modeField.GetValue(runner)!).ShouldBeTrue();
+
+        runner.SetPerTestCoverageMode(false);
+        ((bool)modeField.GetValue(runner)!).ShouldBeFalse();
     }
 }

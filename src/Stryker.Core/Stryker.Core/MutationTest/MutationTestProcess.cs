@@ -172,7 +172,11 @@ public class MutationTestProcess : IMutationTestProcess
     private IEnumerable<List<IMutant>> BuildMutantGroupsForTest(IReadOnlyCollection<IMutant> mutantsNotRun)
     {
         if (_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants) ||
-            !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+            !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) ||
+            // The MTP runner can only activate a single mutant per test run (one memory-mapped id
+            // shared by the whole run), so grouping mutants together would test them with no
+            // mutation active at all and falsely report them as survived.
+            _options.TestRunner == Stryker.Abstractions.Options.TestRunner.MicrosoftTestPlatform)
         {
             return mutantsNotRun.Select(x => new List<IMutant> { x });
         }

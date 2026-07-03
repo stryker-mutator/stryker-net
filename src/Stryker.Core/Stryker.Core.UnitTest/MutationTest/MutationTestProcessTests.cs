@@ -12,6 +12,7 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Reporting;
+using Stryker.Abstractions.Testing;
 using Stryker.Configuration.Options;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Initialisation;
@@ -240,6 +241,57 @@ public class MutationTestProcessTests : TestBase
         TestScenario.GetMutantStatus(2).ShouldBe(MutantStatus.Survived);
         // third mutant appears as no coverage
         TestScenario.GetMutantStatus(3).ShouldBe(MutantStatus.NoCoverage);
+    }
+
+    [TestMethod]
+    public async Task ShouldNotMixMutants_WhenUsingMicrosoftTestPlatformRunner()
+    {
+        var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+        TestScenario.CreateMutants(1, 2);
+
+        Folder.Add(new CsharpFileLeaf()
+        {
+            SourceCode = SourceFile,
+            Mutants = TestScenario.GetMutants()
+        });
+        TestScenario.CreateTests(1, 2);
+
+        // mutant 1 and mutant 2 are covered by disjoint tests, so a coverage-based runner would
+        // normally pack them into a single test run together.
+        TestScenario.DeclareCoverageForMutant(1, 1);
+        TestScenario.DeclareCoverageForMutant(2, 2);
+
+        var loggerMock = new Mock<ILogger<MutationTestExecutor>>();
+        var executor = new MutationTestExecutor(loggerMock.Object);
+        var runnerMock = TestScenario.GetTestRunnerMock();
+        executor.TestRunner = runnerMock.Object;
+
+        var options = new StrykerOptions
+        {
+            ProjectPath = basePath,
+            Concurrency = 1,
+            OptimizationMode = OptimizationModes.CoverageBasedTest,
+            TestRunner = Stryker.Abstractions.Options.TestRunner.MicrosoftTestPlatform
+        };
+        Input.InitialTestRun = new InitialTestRun(TestScenario.GetInitialRunResult(), new TimeoutValueCalculator(500));
+
+        var coverageAnalyzer = new CoverageAnalyser(TestLoggerFactory.CreateLogger<CoverageAnalyser>());
+        var mutationProcessMock = Mock.Of<IMutationProcess>();
+        var target = new MutationTestProcess(executor, coverageAnalyzer, mutationProcessMock, TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        target.Initialize(Input, options, null);
+        target.GetCoverage();
+
+        var mutantsToTest = Input.SourceProjectInfo.ProjectContents.Mutants
+            .Where(m => m.ResultStatus == MutantStatus.Pending)
+            .ToList();
+        await target.TestAsync(mutantsToTest);
+
+        var testRunCalls = runnerMock.Invocations
+            .Where(i => i.Method.Name == nameof(ITestRunner.TestMultipleMutantsAsync))
+            .ToList();
+
+        testRunCalls.Count.ShouldBe(2, "MTP can only activate one mutant per run, so each mutant must get its own test run");
+        testRunCalls.ShouldAllBe(call => ((IReadOnlyList<IMutant>)call.Arguments[2]).Count == 1);
     }
 
     [TestMethod]

@@ -478,6 +478,86 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.ResultMessage.ShouldNotBeNull();
     }
 
+    // --- BuildTestUidFilter tests ---
+    //
+    // Coverage-based optimisation is only worth anything if the MTP runner actually restricts
+    // execution to a mutant's AssessingTests. These call the private static builder via reflection
+    // to verify the filter predicate in isolation, without needing a live test host.
+
+    private static Func<TestNode, bool>? InvokeBuildTestUidFilter(IReadOnlyList<IMutant>? mutants)
+    {
+        var method = typeof(SingleMicrosoftTestPlatformRunner).GetMethod(
+            "BuildTestUidFilter", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
+        return (Func<TestNode, bool>?)method.Invoke(null, new object?[] { mutants });
+    }
+
+    private static Mock<IMutant> MockMutant(int id, ITestIdentifiers assessingTests)
+    {
+        var mutant = new Mock<IMutant>();
+        mutant.Setup(x => x.Id).Returns(id);
+        mutant.Setup(x => x.AssessingTests).Returns(assessingTests);
+        return mutant;
+    }
+
+    [TestMethod]
+    public void BuildTestUidFilter_ReturnsNull_WhenMutantsIsNullOrEmpty()
+    {
+        InvokeBuildTestUidFilter(null).ShouldBeNull();
+        InvokeBuildTestUidFilter(Array.Empty<IMutant>()).ShouldBeNull();
+    }
+
+    [TestMethod]
+    public void BuildTestUidFilter_ReturnsNull_WhenAnyMutantNeedsEveryTest()
+    {
+        var mutants = new IMutant[]
+        {
+            MockMutant(1, new TestIdentifierList(new[] { "test-1" })).Object,
+            MockMutant(2, TestIdentifierList.EveryTest()).Object
+        };
+
+        InvokeBuildTestUidFilter(mutants).ShouldBeNull();
+    }
+
+    [TestMethod]
+    public void BuildTestUidFilter_ReturnsNull_WhenAssessingTestsIsMissing()
+    {
+        var mutant = new Mock<IMutant>();
+        mutant.Setup(x => x.Id).Returns(1);
+        // AssessingTests left unconfigured (null) - defensive fallback must run every test.
+
+        InvokeBuildTestUidFilter(new[] { mutant.Object }).ShouldBeNull();
+    }
+
+    [TestMethod]
+    public void BuildTestUidFilter_RestrictsToAssessingTests_ForSingleMutant()
+    {
+        var mutant = MockMutant(1, new TestIdentifierList(new[] { "test-1", "test-2" }));
+
+        var filter = InvokeBuildTestUidFilter(new[] { mutant.Object });
+
+        filter.ShouldNotBeNull();
+        filter!(new TestNode("test-1", "Test1", "test", "discovered")).ShouldBeTrue();
+        filter(new TestNode("test-2", "Test2", "test", "discovered")).ShouldBeTrue();
+        filter(new TestNode("test-3", "Test3", "test", "discovered")).ShouldBeFalse();
+    }
+
+    [TestMethod]
+    public void BuildTestUidFilter_UnionsAssessingTests_AcrossGroupedMutants()
+    {
+        var mutants = new IMutant[]
+        {
+            MockMutant(1, new TestIdentifierList(new[] { "test-1" })).Object,
+            MockMutant(2, new TestIdentifierList(new[] { "test-2" })).Object
+        };
+
+        var filter = InvokeBuildTestUidFilter(mutants);
+
+        filter.ShouldNotBeNull();
+        filter!(new TestNode("test-1", "Test1", "test", "discovered")).ShouldBeTrue();
+        filter(new TestNode("test-2", "Test2", "test", "discovered")).ShouldBeTrue();
+        filter(new TestNode("test-3", "Test3", "test", "discovered")).ShouldBeFalse();
+    }
+
     // --- BuildTestRunResult / execution-state attribution tests ---
     //
     // Regression coverage for the MTP false-negative kill attribution bug:
@@ -709,7 +789,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
             => _discovered = discovered;
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<TestNode, bool>? testUidFilter = null)
             => Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>(
                 (new TestRunResult(false, "simulated test host crash"), false, _discovered));
     }
@@ -1448,7 +1528,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<TestNode, bool>? testUidFilter = null)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
             var result = new TestRunResult(
@@ -1475,7 +1555,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<TestNode, bool>? testUidFilter = null)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
             var result = new TestRunResult(
