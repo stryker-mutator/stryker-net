@@ -22,7 +22,7 @@ public class ProgressBarReporterTests
 
         progressBarMock.Verify(x => x.Start(
             It.Is<int>(a => a == 3),
-            It.Is<string>(b => b == "│ Testing mutant 0 / 3 │ K 0 │ S 0 │ T 0 │ NA │")
+            It.Is<string>(b => b == "│ Testing mutant 0 / 3 │ K 0 │ S 0 │ T 0 │ E 0 │ NA │")
         ));
     }
 
@@ -40,9 +40,10 @@ public class ProgressBarReporterTests
     }
 
     [TestMethod]
-    [DataRow(MutantStatus.Killed, "│ Testing mutant 1 / 2 │ K 1 │ S 0 │ T 0 │ ~0m 00s │")]
-    [DataRow(MutantStatus.Survived, "│ Testing mutant 1 / 2 │ K 0 │ S 1 │ T 0 │ ~0m 00s │")]
-    [DataRow(MutantStatus.Timeout, "│ Testing mutant 1 / 2 │ K 0 │ S 0 │ T 1 │ ~0m 00s │")]
+    [DataRow(MutantStatus.Killed, "│ Testing mutant 1 / 2 │ K 1 │ S 0 │ T 0 │ E 0 │ ~0m 00s │")]
+    [DataRow(MutantStatus.Survived, "│ Testing mutant 1 / 2 │ K 0 │ S 1 │ T 0 │ E 0 │ ~0m 00s │")]
+    [DataRow(MutantStatus.Timeout, "│ Testing mutant 1 / 2 │ K 0 │ S 0 │ T 1 │ E 0 │ ~0m 00s │")]
+    [DataRow(MutantStatus.RuntimeError, "│ Testing mutant 1 / 2 │ K 0 │ S 0 │ T 0 │ E 1 │ ~0m 00s │")]
     public void ReportRunTest_ShouldReportTestProgressAs50PercentageDone_And_FirstTestExecutionTime_WhenHalfOfTestsAreDone(MutantStatus status, string expected)
     {
         var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
@@ -65,9 +66,10 @@ public class ProgressBarReporterTests
     }
 
     [TestMethod]
-    [DataRow(MutantStatus.Killed, "│ Testing mutant 1 / 10000 │ K 1 │ S 0 │ T 0 │ ~1m 39s │")]
-    [DataRow(MutantStatus.Survived, "│ Testing mutant 1 / 10000 │ K 0 │ S 1 │ T 0 │ ~1m 39s │")]
-    [DataRow(MutantStatus.Timeout, "│ Testing mutant 1 / 10000 │ K 0 │ S 0 │ T 1 │ ~1m 39s │")]
+    [DataRow(MutantStatus.Killed, "│ Testing mutant 1 / 10000 │ K 1 │ S 0 │ T 0 │ E 0 │ ~1m 39s │")]
+    [DataRow(MutantStatus.Survived, "│ Testing mutant 1 / 10000 │ K 0 │ S 1 │ T 0 │ E 0 │ ~1m 39s │")]
+    [DataRow(MutantStatus.Timeout, "│ Testing mutant 1 / 10000 │ K 0 │ S 0 │ T 1 │ E 0 │ ~1m 39s │")]
+    [DataRow(MutantStatus.RuntimeError, "│ Testing mutant 1 / 10000 │ K 0 │ S 0 │ T 0 │ E 1 │ ~1m 39s │")]
     public void ReportRunTest_TestExecutionTimeInMinutes(MutantStatus status, string expected)
     {
         var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
@@ -90,9 +92,10 @@ public class ProgressBarReporterTests
     }
 
     [TestMethod]
-    [DataRow(MutantStatus.Killed, "│ Testing mutant 1 / 1000000 │ K 1 │ S 0 │ T 0 │ ~2h 46m │")]
-    [DataRow(MutantStatus.Survived, "│ Testing mutant 1 / 1000000 │ K 0 │ S 1 │ T 0 │ ~2h 46m │")]
-    [DataRow(MutantStatus.Timeout, "│ Testing mutant 1 / 1000000 │ K 0 │ S 0 │ T 1 │ ~2h 46m │")]
+    [DataRow(MutantStatus.Killed, "│ Testing mutant 1 / 1000000 │ K 1 │ S 0 │ T 0 │ E 0 │ ~2h 46m │")]
+    [DataRow(MutantStatus.Survived, "│ Testing mutant 1 / 1000000 │ K 0 │ S 1 │ T 0 │ E 0 │ ~2h 46m │")]
+    [DataRow(MutantStatus.Timeout, "│ Testing mutant 1 / 1000000 │ K 0 │ S 0 │ T 1 │ E 0 │ ~2h 46m │")]
+    [DataRow(MutantStatus.RuntimeError, "│ Testing mutant 1 / 1000000 │ K 0 │ S 0 │ T 0 │ E 1 │ ~2h 46m │")]
     public void ReportRunTest_TestExecutionTimeInHours(MutantStatus status, string expected)
     {
         var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
@@ -114,9 +117,10 @@ public class ProgressBarReporterTests
     }
 
     [TestMethod]
-    [DataRow(MutantStatus.Killed, "│ Testing mutant 1 / 100000000 │ K 1 │ S 0 │ T 0 │ ~11d 13h │")]
-    [DataRow(MutantStatus.Survived, "│ Testing mutant 1 / 100000000 │ K 0 │ S 1 │ T 0 │ ~11d 13h │")]
-    [DataRow(MutantStatus.Timeout, "│ Testing mutant 1 / 100000000 │ K 0 │ S 0 │ T 1 │ ~11d 13h │")]
+    [DataRow(MutantStatus.Killed, "│ Testing mutant 1 / 100000000 │ K 1 │ S 0 │ T 0 │ E 0 │ ~11d 13h │")]
+    [DataRow(MutantStatus.Survived, "│ Testing mutant 1 / 100000000 │ K 0 │ S 1 │ T 0 │ E 0 │ ~11d 13h │")]
+    [DataRow(MutantStatus.Timeout, "│ Testing mutant 1 / 100000000 │ K 0 │ S 0 │ T 1 │ E 0 │ ~11d 13h │")]
+    [DataRow(MutantStatus.RuntimeError, "│ Testing mutant 1 / 100000000 │ K 0 │ S 0 │ T 0 │ E 1 │ ~11d 13h │")]
     public void ReportRunTest_TestExecutionTimeInDays(MutantStatus status, string expected)
     {
         var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);

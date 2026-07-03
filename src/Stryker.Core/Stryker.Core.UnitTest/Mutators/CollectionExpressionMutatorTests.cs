@@ -43,7 +43,7 @@ public class CollectionExpressionMutatorTests : TestBase
         var expressionSyntax = SyntaxFactory.ParseExpression(expression) as CollectionExpressionSyntax;
         var target = new CollectionExpressionMutator();
         var result = target.ApplyMutations(expressionSyntax, null);
-        
+
         var mutation = result.ShouldHaveSingleItem();
         mutation.DisplayName.ShouldBe("Collection expression mutation");
         var replacement = mutation.ReplacementNode.ShouldBeOfType<CollectionExpressionSyntax>();
@@ -151,7 +151,7 @@ public class CollectionExpressionMutatorTests : TestBase
 
                                  class ClassName {
                                      public IEnumerable<int> M() => Iter([ 1 ]);
-                                 
+
                                      public IEnumerable<T> Iter<T>(IList<T> list) {
                                          foreach (var l in list) {
                                              yield return l;
@@ -168,25 +168,25 @@ public class CollectionExpressionMutatorTests : TestBase
 
                                  class ClassName {
                                      public IEnumerable<int> M() => Iter([ 1 ]);
-                                 
+
                                      public IEnumerable<T> Iter<T>(IList<T> list) {
                                          foreach (var l in list) {
                                              yield return l;
                                          }
                                      }
-                                 
+
                                      public IEnumerable<T> Iter<T>(IReadOnlyCollection<T> list) {
                                          foreach (var l in list) {
                                              yield return l;
                                          }
                                      }
-                                 
+
                                      public IEnumerable<T> Iter<T>(T[] list) {
                                          foreach (var l in list) {
                                              yield return l;
                                          }
                                      }
-                                 
+
                                      public IEnumerable<T> Iter<T>(ReadOnlyMemory<T> list) {
                                          for (var i = 0; i < list.Length; i++) {
                                              yield return list.Span[i];
@@ -317,7 +317,7 @@ public class CollectionExpressionMutatorTests : TestBase
                                      {
                                          return [1, 2, 3]; // ok: span refers to assembly data section
                                      }
-                                     
+
                                      static ReadOnlySpan<T> AsSpan3<T>(T x, T y, T z)
                                      {
                                          return (T[])[x, y, z]; // ok: span refers to T[] on heap
@@ -340,7 +340,7 @@ public class CollectionExpressionMutatorTests : TestBase
                                      public static void Method() {
                                         var a = AsArray([1, 2, 3]);          // AsArray<int>(int[])
                                         var b = AsListOfArray([[4, 5], []]); // AsListOfArray<int>(List<int[]>)
-                                 
+
                                         static T[] AsArray<T>(T[] arg) => arg;
                                         static List<T[]> AsListOfArray<T>(List<T[]> arg) => arg;
                                      }
@@ -360,19 +360,19 @@ public class CollectionExpressionMutatorTests : TestBase
                                  class ClassName {
                                      static void Generic<T>(Span<T> value) { }
                                      static void Generic<T>(T[] value) { }
-                                     
+
                                      static void SpanDerived(Span<string> value) { }
                                      static void SpanDerived(object[] value) { }
-                                     
+
                                      static void ArrayDerived(Span<object> value) { }
                                      static void ArrayDerived(string[] value) { }
-                                     
+
                                      // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions#overload-resolution
                                      public static void Method() {
                                          // Array initializers
                                          Generic(new[] { "" });      // string[]
                                          ArrayDerived(new[] { "" }); // string[]
-                                         
+
                                          // Collection expressions
                                          Generic([""]);              // Span<string>
                                          SpanDerived([""]);          // Span<string>
@@ -393,13 +393,13 @@ public class CollectionExpressionMutatorTests : TestBase
                                  class ClassName {
                                      static void Generic<T>(Span<T> value) { }
                                      static void Generic<T>(T[] value) { }
-                                     
+
                                      static void SpanDerived(Span<string> value) { }
                                      static void SpanDerived(object[] value) { }
-                                     
+
                                      static void ArrayDerived(Span<object> value) { }
                                      static void ArrayDerived(string[] value) { }
-                                     
+
                                      // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions#syntax-ambiguities
                                      public static void Method() {
                                          Range range1 = default;
@@ -423,13 +423,13 @@ public class CollectionExpressionMutatorTests : TestBase
                                  class ClassName {
                                      static void Generic<T>(Span<T> value) { }
                                      static void Generic<T>(T[] value) { }
-                                     
+
                                      static void SpanDerived(Span<string> value) { }
                                      static void SpanDerived(object[] value) { }
-                                     
+
                                      static void ArrayDerived(Span<object> value) { }
                                      static void ArrayDerived(string[] value) { }
-                                     
+
                                      // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions#resolved-questions
                                      public static void Method() {
                                          void DoWork(IEnumerable<long> values) { }
@@ -470,6 +470,13 @@ public class CollectionExpressionMutatorTests : TestBase
             typeof(Enumerable).Assembly.Location,
             typeof(ImmutableArray<>).Assembly.Location,
             typeof(ValueType).Assembly.Location,
+            // MutantControl uses MemoryMappedFile for the MTP runner's file-based mutant control.
+            // MemoryMappedViewAccessor.ReadInt32 is inherited from UnmanagedMemoryAccessor, whose reference
+            // identity is System.Runtime.InteropServices (at runtime the type is forwarded to CoreLib, so it
+            // must be loaded by assembly name rather than via typeof). Both assemblies are required for the
+            // injected helper to compile.
+            typeof(System.IO.MemoryMappedFiles.MemoryMappedFile).Assembly.Location,
+            Assembly.Load("System.Runtime.InteropServices").Location,
             ..Assembly.GetEntryAssembly()?.GetReferencedAssemblies().Select(a => Assembly.Load(a).Location) ?? []
         ];
 
@@ -493,21 +500,20 @@ public class CollectionExpressionMutatorTests : TestBase
             }
         };
 
-        var target = new CsharpCompilingProcess(input);
+        var target = new CsharpCompilingProcess(input, syntaxTrees:[
+            syntaxTree,
+            ..injector.MutantHelpers.Select(a => CSharpSyntaxTree.ParseText(a.Value, path: a.Key,
+                encoding: Encoding.UTF32))
+        ]);
 
         try
         {
             var result =
-                target.Compile([
-                                   syntaxTree,
-                                   ..injector.MutantHelpers.Select(a => CSharpSyntaxTree.ParseText(a.Value, path: a.Key,
-                                                                    encoding: Encoding.UTF32))
-                               ],
-                               Stream.Null, Stream.Null);
+                target.Compile(Stream.Null, Stream.Null);
             result.Success.ShouldBe(true);
-            result.RollbackedIds.ShouldBeEmpty();
+            result.RolledbackIds.ShouldBeEmpty();
         }
-        catch (CompilationException)
+        catch (CompilationException ex)
         {
             Assert.Fail($"Compilation failed with code: {syntaxTree}");
         }

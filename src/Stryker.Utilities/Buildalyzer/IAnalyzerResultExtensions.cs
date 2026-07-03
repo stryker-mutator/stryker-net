@@ -5,9 +5,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
 using Stryker.Abstractions;
@@ -84,6 +87,23 @@ public static class IAnalyzerResultExtensions
         return generators;
     }
 
+    public static IEnumerable<AdditionalText> GetAdditionalTexts(this IAnalyzerResult result) =>
+        result.AdditionalFiles?.Select(additionalFile => new AdditionalTextFromFile(additionalFile)) ?? [];
+
+    // Roslyn does not appear to expose usable implementations of these types (required for additional files support)
+    private sealed class AdditionalTextFromFile(string path) : AdditionalText
+    {
+        private readonly Lazy<string> _source = new(() => File.ReadAllText(path));
+
+        public override SourceText? GetText(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return SourceText.From(_source.Value, Encoding.UTF8);
+        }
+
+        public override string Path => path;
+    }
+
     [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]
     private static void LogAnalyzerLoadError(ILogger? logger, object? sender, AnalyzerLoadFailureEventArgs e)
     {
@@ -140,7 +160,7 @@ public static class IAnalyzerResultExtensions
         throw new InputException(message);
     }
 
-    public static bool TargetsFullFramework(this IAnalyzerResult analyzerResult) => analyzerResult.GetNuGetFramework()?.IsDesktop() == true;
+    public static bool TargetsDesktop(this IAnalyzerResult analyzerResult) => analyzerResult.GetNuGetFramework()?.IsDesktop() == true;
 
     public static Language GetLanguage(this IAnalyzerResult analyzerResult) =>
         analyzerResult.GetPropertyOrDefault("Language") switch

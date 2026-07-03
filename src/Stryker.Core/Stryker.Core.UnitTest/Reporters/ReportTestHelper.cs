@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.TestRunner.Tests;
 
@@ -25,11 +26,11 @@ public static class ReportTestHelper
             Type = Mutator.Arithmetic
         };
 
-        var folder = new CsharpFolderComposite { FullPath = $"{root}home/user/src/project/", RelativePath = "" };
+        var folder = new FolderComposite { FullPath = $"{root}home/user/src/project/", RelativePath = "" };
         var mutantCount = 0;
         for (var i = 1; i <= folders; i++)
         {
-            var addedFolder = new CsharpFolderComposite
+            var addedFolder = new FolderComposite
             {
                 RelativePath = $"{i}",
                 FullPath = $"{root}home/user/src/project/{i}",

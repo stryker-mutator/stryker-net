@@ -25,7 +25,7 @@ public static class IAnalyzerResultCSharpExtensions
             .WithSpecificDiagnosticOptions(analyzerResult.GetDiagnosticOptions())
             .WithWarningLevel(analyzerResult.GetWarningLevel());
 
-        if (analyzerResult.IsSignedAssembly() && analyzerResult.GetAssemblyOriginatorKeyFile() is var keyFile && keyFile is not null)
+        if (analyzerResult.IsSignedAssembly() && analyzerResult.GetAssemblyOriginatorKeyFile() is { } keyFile)
         {
             compilationOptions = compilationOptions.WithCryptoKeyFile(keyFile)
                 .WithStrongNameProvider(new DesktopStrongNameProvider())
@@ -34,37 +34,38 @@ public static class IAnalyzerResultCSharpExtensions
         return compilationOptions;
     }
 
-    public static CSharpParseOptions GetParseOptions(this IAnalyzerResult analyzerResult, IStrykerOptions options)
-    {
-        var parseOptions = new CSharpParseOptions(
-            options.LanguageVersion,
+    public static CSharpParseOptions GetParseOptions(this IAnalyzerResult analyzerResult, IStrykerOptions options) =>
+        new CSharpParseOptions(
+            GetLanguageVersion(analyzerResult, options),
             DocumentationMode.None,
             preprocessorSymbols: analyzerResult.PreprocessorSymbols
-        );
+        ).WithFeatures(ExtractCSharpFeatures(analyzerResult));
 
-        var features = ExtractCSharpFeatures(analyzerResult);
 
-        if (features.Count > 0)
+    private static LanguageVersion GetLanguageVersion(this IAnalyzerResult analyzerResult, IStrykerOptions options)
+    {
+        if (options.LanguageVersion != LanguageVersion.Default)
         {
-            parseOptions = parseOptions.WithFeatures(features);
+            return options.LanguageVersion;
         }
-
-        return parseOptions;
+        var version = analyzerResult.GetProperty("LangVersion");
+        return !string.IsNullOrWhiteSpace(version) && LanguageVersionFacts.TryParse(version, out var parsedVersion)
+            ? parsedVersion
+            : LanguageVersion.Default;
     }
-
     /// <summary>
-    /// The <Features> MSBuild property is an internal Roslyn mechanism that passes a key-value dictionary directly to CSharpParseOptions.WithFeatures().
+    /// The Features MSBuild property is an internal Roslyn mechanism that passes a key-value dictionary directly to CSharpParseOptions.WithFeatures().
     /// It is not publicly documented by Microsoft as it is primarily intended for internal compiler development.
     /// Interceptors are a use case relying on this mechanism, using the features InterceptorsNamespaces and InterceptorsPreviewNamespaces.
     ///
     /// About the Interceptors:
-    /// 
-    /// This feature allow the user to specify namespaces that should be considered as containing interceptor types.
+    ///
+    /// This feature allows the user to specify namespaces that should be considered as containing interceptor types.
     /// This is necessary for the Roslyn compiler to properly handle them during compilation and enable the associated features and behaviors.
-    /// 
+    ///
     /// Here is a doc explaining the interceptors feature:
     /// https://github.com/dotnet/roslyn/blob/main/docs/features/interceptors.md.
-    /// 
+    ///
     /// And here is the part where the user configure the namespaces which are allowed to use interceptors in their project file:
     /// https://github.com/dotnet/roslyn/blob/main/docs/features/interceptors.md#user-opt-in
     /// </summary>

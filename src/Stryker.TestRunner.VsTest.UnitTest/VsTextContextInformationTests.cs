@@ -13,9 +13,9 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Moq;
 using Serilog.Events;
 using Shouldly;
-using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Configuration.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.UnitTest;
@@ -63,7 +63,7 @@ public class VsTextContextInformationTests : TestBase
         var firstTest = BuildCase("T0");
         var secondTest = BuildCaseMsTest("T1");
 
-        var content = new CsharpFolderComposite();
+        var content = new FolderComposite();
         _fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
             { projectUnderTestPath, new MockFileData(DefaultTestProjectFileContents)},
