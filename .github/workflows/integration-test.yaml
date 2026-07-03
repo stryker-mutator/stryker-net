@@ -7,8 +7,6 @@ on:
     - cron: '0 1 * * *'
   workflow_dispatch:
 
-# Cancel older, superseded runs on the same branch/PR to free up CI capacity for newer commits
-# (equivalent to `batch: true` in the previous Azure Pipelines setup).
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
