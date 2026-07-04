@@ -191,13 +191,11 @@ function Run-Category {
         Write-Info "Corrupted: $($baselineFile.FullName)"
       }
 
-      # Step 3: Clean existing output to ensure recreate creates fresh output
-      $outputDir = Join-Path $netcoreWd 'StrykerOutput'
-      if (Test-Path $outputDir) { Remove-Item $outputDir -Recurse -Force }
-
-      # Step 4: Run stryker with baseline recreate
+      # Step 3: Run stryker with baseline recreate
       Write-Info "Running stryker with baseline recreate..."
       Run-Stryker -WorkingDirectory $netcoreWd -Arguments @('with-baseline', 'main', 'recreate')
+
+      # Step 4: Verify that the baseline files have been recreated in the C# validation test project
       break
     }
     Default { throw "Unknown category: $Category" }
