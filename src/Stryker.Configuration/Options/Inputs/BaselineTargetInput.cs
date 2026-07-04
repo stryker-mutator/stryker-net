@@ -21,7 +21,7 @@ public class BaselineTargetInput : Input<string>
 
             if (string.IsNullOrEmpty(SuppliedInput))
             {
-                throw new InputException("The baseline target cannot be empty when the since feature is enabled");
+                throw new InputException("The baseline target cannot be empty when the baseline feature is enabled");
             }
 
             return SuppliedInput;
