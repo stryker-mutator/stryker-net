@@ -93,7 +93,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     ";
         var expected = @"public void Test()
 {    if(StrykerNamespace.MutantControl.IsActive(0))    {}else{
-           if(StrykerNamespace.MutantControl.IsActive(1)){;}else{Console.WriteLine((StrykerNamespace.MutantControl.IsActive(2)?new[] { 1, 2, 3, 4 } is not [>= 0, .., 2 or 4]:(StrykerNamespace.MutantControl.IsActive(5)?new[] { 1, 2, 3, 4 } is [>= 0, .., 2 and 4]:(StrykerNamespace.MutantControl.IsActive(4)?new[] { 1, 2, 3, 4 } is [< 0, .., 2 or 4]:(StrykerNamespace.MutantControl.IsActive(3)?new[] { 1, 2, 3, 4 } is [> 0, .., 2 or 4]:new[] { 1, 2, 3, 4 } is [>= 0, .., 2 or 4])))));}
+           if(StrykerNamespace.MutantControl.IsActive(1)){;}else{Console.WriteLine((StrykerNamespace.MutantControl.IsActive(2)?new[] { 1, 2, 3, 4 } is not [>= 0, .., 2 or 4]:(StrykerNamespace.MutantControl.IsActive(6)?new[] { 1, 2, 3, 4 } is [>= 0, .., 2 and 4]:(StrykerNamespace.MutantControl.IsActive(5)?new[] { 1, 2, 3, 4 } is [< 0, .., 2 or 4]:(StrykerNamespace.MutantControl.IsActive(4)?new[] { 1, 2, 3, 4 } is [> 0, .., 2 or 4]:(StrykerNamespace.MutantControl.IsActive(3)?new int[] {} :new[] { 1, 2, 3, 4 } ) is [>= 0, .., 2 or 4])))));}
     }
 }
     ";
@@ -617,10 +617,11 @@ int[] test = { 1 };
     }
 
     [TestMethod]
-    public void ShouldNotMutateImplicitArrayCreationProperties()
+    public void ShouldMutateImplicitArrayCreationProperties()
     {
         var source = @"public int[] Foo() => new [] { 1 };";
-        var expected = @"public int[] Foo() => new [] { 1 };";
+        var expected =
+            @"public int[] Foo() => (StrykerNamespace.MutantControl.IsActive(0)?new int[] {}:new [] { 1 });";
 
         ShouldMutateSourceInClassToExpected(source, expected);
     }
@@ -822,11 +823,11 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(1)
 			var alt2 = array.Min();
 		}";
         var expected = @"private void Linq()
-{if(StrykerNamespace.MutantControl.IsActive(0)){}else		{
-			var array = new []{1, 2};
+		{if(StrykerNamespace.MutantControl.IsActive(0)){}else		{
+			var array = (StrykerNamespace.MutantControl.IsActive(1)?new int[]{}:new []{1, 2});
 
-			var alt1 = (StrykerNamespace.MutantControl.IsActive(1)?array.Sum(x => x % 2 == 0):array.Count(x => (StrykerNamespace.MutantControl.IsActive(2)?x % 2 != 0:(StrykerNamespace.MutantControl.IsActive(3)?x * 2 :x % 2 )== 0)));
-			var alt2 = (StrykerNamespace.MutantControl.IsActive(4)?array.Max():array.Min());
+			var alt1 = (StrykerNamespace.MutantControl.IsActive(2)?array.Sum(x => x % 2 == 0):array.Count(x => (StrykerNamespace.MutantControl.IsActive(3)?x % 2 != 0:(StrykerNamespace.MutantControl.IsActive(4)?x * 2 :x % 2 )== 0)));
+			var alt2 = (StrykerNamespace.MutantControl.IsActive(5)?array.Max():array.Min());
 		}}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
