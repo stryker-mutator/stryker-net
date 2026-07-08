@@ -717,13 +717,13 @@ public class SingleMicrosoftTestPlatformRunnerTests
     [TestCleanup]
     public void Cleanup()
     {
-        // Clean up any temporary coverage files created during tests
+        // Clean up any temporary coverage files created during tests (one file per assembly,
+        // named stryker-coverage-{processId}-{runnerId}-{assembly}-{hash}.txt)
         for (int id = 1; id <= 20; id++)
         {
-            var coverageFilePath = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{id}.txt");
             try
             {
-                if (File.Exists(coverageFilePath))
+                foreach (var coverageFilePath in Directory.GetFiles(Path.GetTempPath(), $"stryker-coverage-{Environment.ProcessId}-{id}-*.txt"))
                 {
                     File.Delete(coverageFilePath);
                 }
@@ -1409,8 +1409,6 @@ public class SingleMicrosoftTestPlatformRunnerTests
 
     private class TestableRunnerForCoverage : SingleMicrosoftTestPlatformRunner
     {
-        private readonly int _id;
-
         public TestableRunnerForCoverage(
             int id,
             Dictionary<string, List<TestNode>> testsByAssembly,
@@ -1420,10 +1418,9 @@ public class SingleMicrosoftTestPlatformRunnerTests
             ILogger logger)
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger)
         {
-            _id = id;
         }
 
-        public string CoverageFilePath => Path.Combine(Path.GetTempPath(), $"stryker-coverage-{_id}.txt");
+        public string CoverageFilePath => GetCoverageFilePath("TestableCoverage.dll");
 
         public bool IsCoverageModeEnabled
         {
