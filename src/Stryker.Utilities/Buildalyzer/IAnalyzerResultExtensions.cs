@@ -90,6 +90,57 @@ public static class IAnalyzerResultExtensions
     public static IEnumerable<AdditionalText> GetAdditionalTexts(this IAnalyzerResult result) =>
         result.AdditionalFiles?.Select(additionalFile => new AdditionalTextFromFile(additionalFile)) ?? [];
 
+    public static IEnumerable<string> GetAnalyzerConfigFiles(this IAnalyzerResult result)
+    {
+        // Analyzer config paths in the compiler command line are often RELATIVE to the project
+        // directory (e.g. obj/.../<Project>.GeneratedMSBuildEditorConfig.editorconfig, which carries
+        // the CompilerVisibleProperty / CompilerVisibleItemMetadata that generators such as CsWin32
+        // read). They must be resolved against the project directory, not the current working
+        // directory, or File.Exists silently drops them and the generator options are lost.
+        var projectDirectory = Path.GetDirectoryName(result.ProjectFilePath);
+        return (result.CompilerArguments ?? [])
+            .Select(GetAnalyzerConfigPathFromArgument)
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Select(path => ResolveAnalyzerConfigPath(path!, projectDirectory))
+            .Where(File.Exists)
+            .Distinct();
+    }
+
+    private static string ResolveAnalyzerConfigPath(string path, string? projectDirectory) =>
+        Path.IsPathRooted(path) || string.IsNullOrEmpty(projectDirectory)
+            ? path
+            : Path.Combine(projectDirectory, path);
+
+    public static AnalyzerConfigOptionsProvider GetAnalyzerConfigOptionsProvider(this IAnalyzerResult result)
+    {
+        var analyzerConfigFiles = result.GetAnalyzerConfigFiles().ToList();
+        if (analyzerConfigFiles.Any())
+        {
+            var analyzerConfigs = analyzerConfigFiles
+                .Select(path => AnalyzerConfig.Parse(SourceText.From(File.ReadAllText(path)), path))
+                .ToImmutableArray();
+            var set = AnalyzerConfigSet.Create(analyzerConfigs);
+            return new AnalyzerConfigOptionsProviderFromSet(set);
+        }
+
+        return new AnalyzerConfigOptionsProviderFromProperties(result.Properties);
+    }
+
+    private static string? GetAnalyzerConfigPathFromArgument(string arg)
+    {
+        const string slashPrefix = "/analyzerconfig:";
+        const string dashPrefix = "-analyzerconfig:";
+        if (arg.StartsWith(slashPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return arg[slashPrefix.Length..].Trim('"');
+        }
+        if (arg.StartsWith(dashPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return arg[dashPrefix.Length..].Trim('"');
+        }
+        return null;
+    }
+
     // Roslyn does not appear to expose usable implementations of these types (required for additional files support)
     private sealed class AdditionalTextFromFile(string path) : AdditionalText
     {
@@ -102,6 +153,70 @@ public static class IAnalyzerResultExtensions
         }
 
         public override string Path => path;
+    }
+
+    private sealed class AnalyzerConfigOptionsProviderFromSet(AnalyzerConfigSet configSet) : AnalyzerConfigOptionsProvider
+    {
+        private readonly AnalyzerConfigSet _configSet = configSet;
+        private readonly DictionaryAnalyzerConfigOptions _emptyAnalyzerConfigOptions =
+            new(ImmutableDictionary<string, string>.Empty.WithComparers(AnalyzerConfigOptions.KeyComparer));
+
+        public override AnalyzerConfigOptions GlobalOptions => new DictionaryAnalyzerConfigOptions(_configSet.GlobalConfigOptions.AnalyzerOptions);
+
+        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) =>
+            string.IsNullOrEmpty(tree?.FilePath)
+                ? _emptyAnalyzerConfigOptions
+                : new DictionaryAnalyzerConfigOptions(_configSet.GetOptionsForSourcePath(NormalizePath(tree.FilePath)).AnalyzerOptions);
+
+        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) =>
+            string.IsNullOrEmpty(textFile?.Path)
+                ? _emptyAnalyzerConfigOptions
+                : new DictionaryAnalyzerConfigOptions(_configSet.GetOptionsForSourcePath(NormalizePath(textFile.Path)).AnalyzerOptions);
+
+        // Roslyn's AnalyzerConfigSet matches section headers using forward slashes, so a
+        // backslash Windows path must be normalized or per-file build_metadata never resolves.
+        private static string NormalizePath(string path) => path.Replace('\\', '/');
+    }
+
+    private sealed class AnalyzerConfigOptionsProviderFromProperties(IReadOnlyDictionary<string, string> properties) : AnalyzerConfigOptionsProvider
+    {
+        public override AnalyzerConfigOptions GlobalOptions => new AnalyzerConfigOptionsFromProperties(properties);
+        private static readonly AnalyzerConfigOptions NullAnalyzerConfigOptions = new EmptyAnalyzerConfigOptions();
+
+        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => NullAnalyzerConfigOptions;
+
+        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => NullAnalyzerConfigOptions;
+    }
+
+    private sealed class AnalyzerConfigOptionsFromProperties(IReadOnlyDictionary<string, string> properties) : DictionaryAnalyzerConfigOptions(
+        properties
+            .ToImmutableDictionary(
+                keyValuePair => $"build_property.{keyValuePair.Key}",
+                keyValuePair => keyValuePair.Value,
+                AnalyzerConfigOptions.KeyComparer))
+    {
+    }
+
+    private sealed class EmptyAnalyzerConfigOptions : DictionaryAnalyzerConfigOptions
+    {
+        public EmptyAnalyzerConfigOptions() : base(ImmutableDictionary<string, string>.Empty.WithComparers(AnalyzerConfigOptions.KeyComparer)) { }
+    }
+
+    private class DictionaryAnalyzerConfigOptions : AnalyzerConfigOptions
+    {
+        private readonly ImmutableDictionary<string, string> _options;
+
+        public DictionaryAnalyzerConfigOptions(IDictionary<string, string> options) =>
+            _options = options.ToImmutableDictionary(AnalyzerConfigOptions.KeyComparer);
+
+        public DictionaryAnalyzerConfigOptions(ImmutableDictionary<string, string> options)
+        {
+            _options = options;
+        }
+
+        public override bool TryGetValue(string key, out string value) => _options.TryGetValue(key, out value!);
+
+        public override IEnumerable<string> Keys => _options.Keys;
     }
 
     [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]
