@@ -16,7 +16,6 @@ public class DiskBaselineProvider : IBaselineProvider
     private readonly IStrykerOptions _options;
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<DiskBaselineProvider> _logger;
-    private const string _outputPath = "StrykerOutput";
 
     public DiskBaselineProvider(IStrykerOptions options, IFileSystem fileSystem = null)
     {
@@ -28,8 +27,9 @@ public class DiskBaselineProvider : IBaselineProvider
 
     public async Task<IJsonReport> Load(string version)
     {
+        // at this point, BaseLineOutputPath is a fully qualified path
         var reportPath = FilePathUtils.NormalizePathSeparators(
-            Path.Combine(_options.ProjectPath, _outputPath, version, "stryker-report.json"));
+            Path.Combine(_options.BaselineOutputPath, version, "stryker-report.json"));
 
         if (_fileSystem.File.Exists(reportPath))
         {
@@ -44,8 +44,9 @@ public class DiskBaselineProvider : IBaselineProvider
 
     public async Task Save(IJsonReport report, string version)
     {
+        // at this point, BaseLineOutputPath is a fully qualified path
         var reportDirectory = FilePathUtils.NormalizePathSeparators(
-            Path.Combine(_options.ProjectPath, _outputPath, version));
+            Path.Combine(_options.BaselineOutputPath, version));
 
         _fileSystem.Directory.CreateDirectory(reportDirectory);
 

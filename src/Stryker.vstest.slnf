@@ -1,0 +1,23 @@
+{
+  "solution": {
+    "path": "Stryker.slnx",
+    "projects": [
+      "Stryker.Abstractions/Stryker.Abstractions.csproj",
+      "Stryker.CLI/Stryker.CLI.UnitTest/Stryker.CLI.UnitTest.csproj",
+      "Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj",
+      "Stryker.Configuration/Stryker.Configuration.csproj",
+      "Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj",
+      "Stryker.Core/Stryker.Core/Stryker.Core.csproj",
+      "Stryker.DataCollector/Stryker.DataCollector.csproj",
+      "Stryker.RegexMutators/Stryker.RegexMutators.UnitTest/Stryker.RegexMutators.UnitTest.csproj",
+      "Stryker.RegexMutators/Stryker.RegexMutators/Stryker.RegexMutators.csproj",
+      "Stryker.Solutions.Test/Stryker.Solutions.Test.csproj",
+      "Stryker.Solutions/Stryker.Solutions.csproj",
+      "Stryker.TestRunner.MicrosoftTestPlatform/Stryker.TestRunner.MicrosoftTestPlatform.csproj",
+      "Stryker.TestRunner.VsTest.UnitTest/Stryker.TestRunner.VsTest.UnitTest.csproj",
+      "Stryker.TestRunner.VsTest/Stryker.TestRunner.VsTest.csproj",
+      "Stryker.TestRunner/Stryker.TestRunner.csproj",
+      "Stryker.Utilities/Stryker.Utilities.csproj"
+    ]
+  }
+}
