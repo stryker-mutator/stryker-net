@@ -68,8 +68,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
     /// </summary>
     public CompilingProcessResult Compile(Stream ilStream, Stream symbolStream)
     {
-        InitCSharpCompilation();
-        RunSourceGenerators();
+        InitCSharpCompilation(_originalSyntaxTrees);
         // first try compiling
         var retryCount = 1;
         var (rollbackProcessResult, emitResult) = TryCompilation(ilStream, symbolStream, null, ICSharpRollbackProcess.Mode.Normal, retryCount++);
@@ -83,7 +82,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         }
 
         var mode = ICSharpRollbackProcess.Mode.Normal;
-        for (var count = 1; !emitResult.Success && count < MaxAttempt; count++)
+        for (var count = 1; !emitResult.Success && count < MaxAttempt && rollbackProcessResult != null; count++)
         {
             mode = count switch
             {
@@ -105,7 +104,32 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         // compiling failed
         _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");
         DumpErrorDetails(emitResult.Diagnostics);
-        throw new CompilationException("Failed to restore build able state.");
+        if (_options.DiagMode && _input.SourceProjectInfo.ProjectContents != null)
+        {
+            _logger.LogInformation("Diagnostic mode is enabled, attempting to build the non-mutated project to help identify the cause of the compilation failure.");
+            TryBuildNonMutated(ilStream);
+        }
+        throw new CompilationException("Failed to restore the project to a buildable state.");
+    }
+
+    private void TryBuildNonMutated(Stream ilStream)
+    {
+        InitCSharpCompilation(((ProjectComponent) _input.SourceProjectInfo.ProjectContents).UnmutatedSyntaxTrees);
+        var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger);
+
+        // reset the memoryStreams
+        ilStream.SetLength(0);
+        var emitResult = ActualCompilation(ilStream, null, resourceDescriptions, null);
+
+        if (!emitResult.Success)
+        {
+            _logger.LogError("Unable to build the original project, this means project analysis failed. Please report this issue on GitHub.");
+            LogEmitResult(emitResult);
+        }
+        else
+        {
+            _logger.LogError("Able to build the original project, this means mutation and/or rollback logic corrupted the project. Please report this issue on GitHub.");
+        }
     }
 
     /// <summary>
@@ -115,7 +139,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
     /// <returns>Semantic models</returns>
     public SemanticModel GetSemanticModel(SyntaxTree syntaxTree)
     {
-        InitCSharpCompilation();
+        InitCSharpCompilation(_originalSyntaxTrees);
         // extract semantic models from compilation
         return _compilation.GetSemanticModel(syntaxTree);
     }
@@ -142,7 +166,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         throw new CompilationException("Source Generator Failure");
     }
 
-    private void InitCSharpCompilation()
+    private void InitCSharpCompilation(IEnumerable<SyntaxTree> originalSyntaxTrees)
     {
         if (_compilation != null)
         {
@@ -152,13 +176,14 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
         // create the compilation context
         _compilation= CSharpCompilation.Create(AssemblyName,
-            _originalSyntaxTrees,
-            _input.SourceProjectInfo.AnalyzerResult.LoadReferences(),
+            originalSyntaxTrees,
+            analyzerResult.LoadReferences(),
             analyzerResult.GetCompilationOptions());
         // create the driver for source generators
         _generatorDriver = CSharpGeneratorDriver
-            .Create(analyzerResult.GetSourceGenerators(_logger), parseOptions: analyzerResult.GetParseOptions(_options),
-                additionalTexts:[.._input.SourceProjectInfo.AnalyzerResult.GetAdditionalTexts()],
+            .Create(analyzerResult.GetSourceGenerators(_logger),
+                parseOptions: analyzerResult.GetParseOptions(_options),
+                additionalTexts:[..analyzerResult.GetAdditionalTexts()],
                 optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult));
         // run the generators
         _needToRunGenerators = true;
@@ -172,7 +197,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         ICSharpRollbackProcess.Mode mode,
         int retryCount)
     {
-        IEnumerable<int> rollbackProcessResult = null;
+        IEnumerable<int> rollbackProcessResult = [];
 
         _logger.LogDebug("Trying compilation for the {retryCount} time.", ReadableNumber(retryCount));
         var emitOptions = symbolStream == null ? null : new EmitOptions(false, DebugInformationFormat.PortablePdb,
@@ -182,6 +207,11 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         {
             // remove broken mutations
             rollbackProcessResult = _rollbackProcess.RollbackMutationsInError(this, previousEmitResult.Diagnostics, mode, _options.DiagMode);
+            if (rollbackProcessResult == null)
+            {
+                // nothing to be rolled back
+                return (null, previousEmitResult);
+            }
             RunSourceGenerators();
         }
 
@@ -198,7 +228,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
     private EmitResult ActualCompilation(Stream ms, Stream symbolStream, IEnumerable<ResourceDescription> resourceDescriptions,
         EmitOptions emitOptions)
     {
-        EmitResult emitResult = null;
+        EmitResult emitResult;
 
         try
         {

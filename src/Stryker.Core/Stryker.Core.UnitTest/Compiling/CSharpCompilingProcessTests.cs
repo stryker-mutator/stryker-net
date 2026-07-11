@@ -156,7 +156,8 @@ public class Calculator
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
         rollbackProcessMock.Setup(x => x.RollbackMutationsInError(It.IsAny<ICompilationContent>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<ICSharpRollbackProcess.Mode>(), false))
-                        .Returns((ICompilationContent _, ImmutableArray<Diagnostic> _, ICSharpRollbackProcess.Mode _, bool _) => null);
+                        .Returns((ICompilationContent _, ImmutableArray<Diagnostic> _, ICSharpRollbackProcess.Mode _, bool _) =>
+                            []);
 
         var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, new StrykerOptions(), [syntaxTree]);
 
@@ -164,7 +165,9 @@ public class Calculator
         {
             Should.Throw<CompilationException>(() => target.Compile(ms, null));
         }
-        rollbackProcessMock.Verify(x => x.RollbackMutationsInError(It.IsAny<ICompilationContent>(), It.IsAny<ImmutableArray<Diagnostic>>(), ICSharpRollbackProcess.Mode.Normal, false),
+        rollbackProcessMock.Verify(x =>
+                x.RollbackMutationsInError(It.IsAny<ICompilationContent>(),
+                It.IsAny<ImmutableArray<Diagnostic>>(), ICSharpRollbackProcess.Mode.Normal, false),
             Times.AtLeast(2));
     }
 
