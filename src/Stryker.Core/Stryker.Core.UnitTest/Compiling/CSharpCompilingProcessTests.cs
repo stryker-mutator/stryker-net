@@ -123,7 +123,7 @@ public class Calculator
     }
 
     [TestMethod]
-    public void ShouldReportWhenProjectCantBeBuiltWhen()
+    public void ShouldReportWhenProjectCantBeBuilt()
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(GetExampleCode(false));
         var input = new MutationTestInput()

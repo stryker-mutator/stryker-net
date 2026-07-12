@@ -87,7 +87,11 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
 
         _logger.LogInformation("Diagnostic mode is enabled, attempting to build the non-mutated project to help identify the cause of the compilation failure.");
         _compilation = null;
-        InitCSharpCompilation(((ProjectComponent) _input.SourceProjectInfo.ProjectContents).UnmutatedSyntaxTrees);
+        if (_input.SourceProjectInfo.ProjectContents is not ProjectComponent projectContents)
+        {
+            throw new CompilationException("Internal error: project contents type does not support unmutated compilation.");
+        }
+        InitCSharpCompilation(projectContents.UnmutatedSyntaxTrees);
         var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger);
 
         // reset the memoryStreams
@@ -107,9 +111,10 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         }
     }
 
-    private IEnumerable<int> CompileAndFixUntilSuccess(Stream ilStream, Stream symbolStream, out EmitResult emitResult)
+    private IEnumerable<int>? CompileAndFixUntilSuccess(Stream ilStream, Stream symbolStream, out EmitResult emitResult)
     {
         InitCSharpCompilation(_originalSyntaxTrees);
+        RunSourceGenerators();
         // first try compiling
         var retryCount = 1;
         (var rollbackProcessResult, emitResult) = TryCompilation(ilStream, symbolStream, null, ICSharpRollbackProcess.Mode.Normal, retryCount++);
