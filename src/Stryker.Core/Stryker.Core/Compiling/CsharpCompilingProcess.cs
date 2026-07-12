@@ -68,10 +68,50 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
     /// </summary>
     public CompilingProcessResult Compile(Stream ilStream, Stream symbolStream)
     {
+        var rollbackProcessResult = CompileAndFixUntilSuccess(ilStream, symbolStream, out var emitResult);
+
+        if (emitResult.Success)
+        {
+            return new CompilingProcessResult(
+                true,
+                rollbackProcessResult ?? []);
+        }
+
+        // compiling failed
+        _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");
+        DumpErrorDetails(emitResult.Diagnostics);
+        if (!_options.DiagMode || _input.SourceProjectInfo.ProjectContents == null)
+        {
+            throw new CompilationException("Failed to build mutated version.");
+        }
+
+        _logger.LogInformation("Diagnostic mode is enabled, attempting to build the non-mutated project to help identify the cause of the compilation failure.");
+        InitCSharpCompilation(((ProjectComponent) _input.SourceProjectInfo.ProjectContents).UnmutatedSyntaxTrees);
+        var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger);
+
+        // reset the memoryStreams
+        ilStream.SetLength(0);
+        var emitResult1 = ActualCompilation(ilStream, null, resourceDescriptions, null);
+
+        if (!emitResult1.Success)
+        {
+            _logger.LogError("Unable to build the original project, this means project analysis failed. Please report this issue on GitHub.");
+            LogEmitResult(emitResult1);
+            throw new CompilationException("Stryker is unable to build this project.");
+        }
+        else
+        {
+            _logger.LogError("Able to build the original project, this means mutation and/or rollback logic corrupted the project. Please report this issue on GitHub.");
+            throw new CompilationException("Failed to restore the project to a buildable state.");
+        }
+    }
+
+    private IEnumerable<int> CompileAndFixUntilSuccess(Stream ilStream, Stream symbolStream, out EmitResult emitResult)
+    {
         InitCSharpCompilation(_originalSyntaxTrees);
         // first try compiling
         var retryCount = 1;
-        var (rollbackProcessResult, emitResult) = TryCompilation(ilStream, symbolStream, null, ICSharpRollbackProcess.Mode.Normal, retryCount++);
+        (var rollbackProcessResult, emitResult) = TryCompilation(ilStream, symbolStream, null, ICSharpRollbackProcess.Mode.Normal, retryCount++);
         // If compiling failed and the error has no location, log and throw exception.
         if (!emitResult.Success && emitResult.Diagnostics.Any(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error))
         {
@@ -95,41 +135,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
                 emitResult, mode, retryCount++);
         }
 
-        if (emitResult.Success)
-        {
-            return new CompilingProcessResult(
-                true,
-                rollbackProcessResult ?? []);
-        }
-        // compiling failed
-        _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");
-        DumpErrorDetails(emitResult.Diagnostics);
-        if (_options.DiagMode && _input.SourceProjectInfo.ProjectContents != null)
-        {
-            _logger.LogInformation("Diagnostic mode is enabled, attempting to build the non-mutated project to help identify the cause of the compilation failure.");
-            TryBuildNonMutated(ilStream);
-        }
-        throw new CompilationException("Failed to restore the project to a buildable state.");
-    }
-
-    private void TryBuildNonMutated(Stream ilStream)
-    {
-        InitCSharpCompilation(((ProjectComponent) _input.SourceProjectInfo.ProjectContents).UnmutatedSyntaxTrees);
-        var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger);
-
-        // reset the memoryStreams
-        ilStream.SetLength(0);
-        var emitResult = ActualCompilation(ilStream, null, resourceDescriptions, null);
-
-        if (!emitResult.Success)
-        {
-            _logger.LogError("Unable to build the original project, this means project analysis failed. Please report this issue on GitHub.");
-            LogEmitResult(emitResult);
-        }
-        else
-        {
-            _logger.LogError("Able to build the original project, this means mutation and/or rollback logic corrupted the project. Please report this issue on GitHub.");
-        }
+        return rollbackProcessResult;
     }
 
     /// <summary>

@@ -151,15 +151,16 @@ public class Calculator
                     },
                     // add a reference to system so the example code can compile
                     references: [typeof(object).Assembly.Location]
-                ).Object
+                ).Object,
+                ProjectContents = new CsharpFileLeaf{SyntaxTree = syntaxTree, MutatedSyntaxTree = syntaxTree, SourceCode = syntaxTree.ToString()}
             }
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
-        rollbackProcessMock.Setup(x => x.RollbackMutationsInError(It.IsAny<ICompilationContent>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<ICSharpRollbackProcess.Mode>(), false))
+        rollbackProcessMock.Setup(x => x.RollbackMutationsInError(It.IsAny<ICompilationContent>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<ICSharpRollbackProcess.Mode>(), true))
                         .Returns((ICompilationContent _, ImmutableArray<Diagnostic> _, ICSharpRollbackProcess.Mode _, bool _) =>
                             []);
 
-        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, new StrykerOptions(), [syntaxTree]);
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, new StrykerOptions{DiagMode = true}, [syntaxTree]);
 
         using (var ms = new MemoryStream())
         {
@@ -167,7 +168,7 @@ public class Calculator
         }
         rollbackProcessMock.Verify(x =>
                 x.RollbackMutationsInError(It.IsAny<ICompilationContent>(),
-                It.IsAny<ImmutableArray<Diagnostic>>(), ICSharpRollbackProcess.Mode.Normal, false),
+                It.IsAny<ImmutableArray<Diagnostic>>(), ICSharpRollbackProcess.Mode.Normal, true),
             Times.AtLeast(2));
     }
 
