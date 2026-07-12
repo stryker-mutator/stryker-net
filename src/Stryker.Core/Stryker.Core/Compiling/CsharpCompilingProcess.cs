@@ -86,6 +86,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         }
 
         _logger.LogInformation("Diagnostic mode is enabled, attempting to build the non-mutated project to help identify the cause of the compilation failure.");
+        _compilation = null;
         InitCSharpCompilation(((ProjectComponent) _input.SourceProjectInfo.ProjectContents).UnmutatedSyntaxTrees);
         var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger);
 
