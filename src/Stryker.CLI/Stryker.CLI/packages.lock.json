@@ -441,8 +441,8 @@
       },
       "Testably.Abstractions.FileSystem.Interface": {
         "type": "Transitive",
-        "resolved": "10.1.0",
-        "contentHash": "0R+m7DvS2QuDcFOfDGtyGErRrgXOl4/z2tbNLX2RfvlYJjlVcKG+wMIBfZO8vxGtTNwNxffTG4ibFRwd0jkM7w=="
+        "resolved": "10.3.0",
+        "contentHash": "5ebMaoADkzjfW7GnZYKaUebV8XmUn++C/4sKk1PTzCiddEgbSKBq3pW4EWEi70rYJAK0gA1yDWrYFeHq18FvHQ=="
       },
       "stryker": {
         "type": "Project",
@@ -478,7 +478,7 @@
           "Stryker.TestRunner.MicrosoftTestPlatform": "[4.16.0, )",
           "Stryker.TestRunner.VsTest": "[4.16.0, )",
           "Stryker.Utilities": "[4.16.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.1, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.2.0, )"
         }
       },
       "stryker.abstractions": {
@@ -490,7 +490,7 @@
           "Microsoft.CodeAnalysis.Common": "[5.6.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[18.7.0, )",
           "Serilog": "[4.4.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.1, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.2.0, )"
         }
       },
       "stryker.configuration": {
@@ -552,7 +552,7 @@
           "Stryker.DataCollector": "[4.16.0, )",
           "Stryker.TestRunner": "[4.16.0, )",
           "Stryker.Utilities": "[4.16.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.1.1, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[22.2.0, )"
         }
       },
       "stryker.utilities": {
@@ -820,11 +820,11 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[22.1.1, )",
-        "resolved": "22.1.1",
-        "contentHash": "J91zmSwuMY75ybtkqAFMC3vDNMkLJ/kiDDLhORITEwTKNhEwEYfxAQGv+f0jGYZg/H0YbnGcx5Ky0FgFJwrrWQ==",
+        "requested": "[22.2.0, )",
+        "resolved": "22.2.0",
+        "contentHash": "0GW9i46ozm687WGAWsBHWMhLR7l1HmKwhiSU2hQrbFnI5m2YRfqXwqTQNjnOwT8BdbvcGqwMr97/zlnPWa1u1Q==",
         "dependencies": {
-          "Testably.Abstractions.FileSystem.Interface": "10.1.0"
+          "Testably.Abstractions.FileSystem.Interface": "10.3.0"
         }
       }
     }
