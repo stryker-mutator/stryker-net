@@ -23,12 +23,8 @@ pr:
     - '.github/*'
 
 variables:
-  PackageVersion: '4.14.2'
-  VersionBuildNumber: $[counter('4.14.2', 1)]
-  IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
-  ProjectsToPack: src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
-  ForkIntegrationNugetFeedUri: https://f.feedz.io/stryker/stryker-net/nuget/index.json
-  MainIntegrationNugetFeedUri: https://pkgs.dev.azure.com/stryker-mutator/Stryker/_packaging/stryker-net/nuget/v3/index.json
+  PackageVersion: '4.16.0'
+  VersionBuildNumber: $[counter('4.16.0', 1)]
   NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
   LibManCacheWindows: $(USERPROFILE)/.librarymanager/cache
   LibManCacheMacLinux: $(HOME)/.librarymanager/cache
@@ -49,11 +45,7 @@ stages:
     dependsOn: []
     steps:
     - task: UseDotNet@2
-      displayName: 'Install dotnet 8'
-      inputs:
-        version: 8.x
-    - task: UseDotNet@2
-      displayName: 'Install dotnet 9'
+      displayName: 'Use dotnet LTS'
       inputs:
         version: 10.x
     - task: DotNetCoreCLI@2
@@ -80,147 +72,17 @@ stages:
       inputs:
         command: 'build'
         projects: 'src/Stryker.slnx'
-    - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage collect "dotnet test" -f xml -o "$(Agent.BuildDirectory)\TestResults\coverage.xml"'
+    - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage collect "dotnet test Stryker.vstest.slnf" -f xml -o "$(Agent.BuildDirectory)\TestResults\coverage.xml"'
       displayName: 'Run unit tests'
       workingDirectory: 'src'
     - task: SonarCloudAnalyze@4
     - task: SonarCloudPublish@4
       inputs:
         pollingTimeoutSec: '300'
-        
-- stage: PublishIntegrationtestPackage
-  displayName: Publish Integrationtest Package
-  dependsOn: UpdatePackageLockFiles
-  condition: and(not(failed()), not(canceled()))
-  jobs:
-  - deployment: PublishIntegrationTestPackage
-    displayName: Prepare integrationtest package
-    environment: 'integrationtest'
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - checkout: self
-          - template: pipeline-templates/populate-cache-steps.yml
-          - task: UseDotNet@2
-            displayName: 'Use dotnet'
-            inputs:
-              version: 8.x
-          - task: UseDotNet@2
-            displayName: 'Use dotnet'
-            inputs:
-              version: 10.x
-          - task: DotNetCoreCLI@2
-            displayName: 'Pack integrationtest packages'
-            inputs:
-              command: pack
-              versioningScheme: byEnvVar
-              versionEnvVar: IntegrationTestVersion
-              packagesToPack: $(ProjectsToPack)
-              packDirectory: $(Build.ArtifactStagingDirectory)/integrationtest
-              includesymbols: true
-          - task: DotNetCoreCLI@2
-            displayName: 'Publish integrationtest packages'
-            condition: and(succeeded(), eq(variables['System.PullRequest.IsFork'], 'True'))
-            inputs:
-              command: custom
-              custom: 'nuget'
-              arguments: 'push *dotnet-stryker*$(IntegrationTestVersion).nupkg -s $(ForkIntegrationNugetFeedUri) -k $(IntegrationTestFeedKey)'
-              workingDirectory: '$(Build.ArtifactStagingDirectory)/integrationtest'
-          - task: DotNetCoreCLI@2
-            displayName: 'Publish integrationtest packages'
-            condition:  and(succeeded(), eq(variables['System.PullRequest.IsFork'], 'False'))
-            inputs:
-              command: 'push'
-              packagesToPush: '$(Build.ArtifactStagingDirectory)/integrationtest/*$(IntegrationTestVersion).nupkg'
-              nuGetFeedType: 'internal'
-              publishVstsFeed: '506a1f46-900e-434e-805f-ff8d36fc81af/cc8fa47b-395f-417d-8b3d-72618b95ddb8'
-  - job: WaitOnIntegrationFeedProcessing
-    displayName: Wait on pre-release packages to be processed on Integration Feed
-    dependsOn: 'PublishIntegrationTestPackage'
-    pool: server
-    steps:
-    - task: Delay@1
-      inputs:
-        delayForMinutes: '1'
-
-- stage: IntegrationTests
-  dependsOn:
-    - Analysis
-    - PublishIntegrationtestPackage
-  condition: and(not(failed()), not(canceled()))
-  jobs:
-  - job: WindowsTests
-    displayName: Run tests on Windows
-    steps:
-    - task: NuGetToolInstaller@1
-      displayName: 'Install nuget for stryker full framework'
-    - template: pipeline-templates/prepare-integration-test-steps.yml
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
-        testName: 'windows-netframework'
-        workingDirectory: 'integrationtest/TargetProjects/NetFramework/FullFrameworkApp.Test'
-    - task: DotNetCoreCLI@2
-      displayName: 'Assert integration test results (SingleTestProject netframework)'
-      inputs:
-        command: test
-        projects: '**/Validation.csproj'
-        arguments: --filter "Category=SingleTestProject&Runtime=netframework"
-
-  - job: LinuxTests
-    displayName: Run tests on Linux
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-    - template: pipeline-templates/prepare-integration-test-steps.yml
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
-        testName: 'linux-netcore'
-        workingDirectory: 'integrationtest/TargetProjects/NetCore'
-        strykerCommands: --solution '$(Agent.BuildDirectory)/s/integrationtest/TargetProjects/NetCore/IntegrationTestApp.sln'
-    - task: DotNetCoreCLI@2
-      displayName: 'Assert integration test results'
-      inputs:
-        command: test
-        projects: '**/Validation.csproj'
-        arguments: --filter "Category=Solution&Runtime=netcore"
-    - script: $(Agent.BuildDirectory)/tools/dotnet-stryker
-      workingDirectory: 'integrationtest/TargetProjects/NetCore/EmptyTestProject'
-      failOnStderr: false
-      continueOnError: true
-
-  - job: MacOsTests
-    displayName: Run tests on Mac OS
-    pool:
-      vmImage: macOS-latest
-    steps:
-    - template: pipeline-templates/prepare-integration-test-steps.yml
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
-        testName: 'macos-netcore'
-        workingDirectory: 'integrationtest/TargetProjects/NetCore/NetCoreTestProject.XUnit'
-    - task: DotNetCoreCLI@2
-      displayName: 'Assert integration test results SingleTestProject'
-      inputs:
-        command: test
-        projects: '**/Validation.csproj'
-        arguments: --filter "Category=SingleTestProject&Runtime=netcore"
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
-        testName: 'macos-netcore-multi-test-project'
-        workingDirectory: 'integrationtest/TargetProjects/NetCore/TargetProject'
-    - task: DotNetCoreCLI@2
-      displayName: 'Assert integration test results MultipleTestProjects'
-      inputs:
-        command: test
-        projects: '**/Validation.csproj'
-        arguments: --filter "Category=MultipleTestProjects&Runtime=netcore"
 
 - stage: PublishMasterReleaseArtifact
   displayName: Publish Release Artifact
-  dependsOn:
-    - Analysis
-    - IntegrationTests
+  dependsOn: Analysis
   condition: and(and(not(failed()), not(canceled())), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   jobs:
   - job: PublishRelease

@@ -1,0 +1,31 @@
+name: unit test report
+
+# Runs in the context of the default branch with a read/write token, separate from the
+# unprivileged "unit test" workflow that processes untrusted fork PR content. This is the
+# secure pattern for reporting on fork PRs recommended by GitHub:
+# https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#mitigating-the-risks-of-untrusted-code-checkout
+# It never checks out PR code, it only downloads the structured .trx artifacts produced by
+# the "unit test" workflow run.
+on:
+  workflow_run:
+    workflows: ['unit test']
+    types:
+      - completed
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event.workflow_run.conclusion == 'failure'
+    steps:
+      - name: Publish unit test results
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3
+        with:
+          artifact: '/unit-test-results-(.*)/'
+          name: 'Unit Tests ($1)'
+          path: '*.trx'
+          reporter: dotnet-trx
