@@ -12,11 +12,13 @@ public class TypeBasedStrategy<T, THandler> where T : class where THandler : cla
 
     public void RegisterHandler(THandler handler)
     {
-        if (!_handlerMapping.ContainsKey(handler.ManagedType))
+        if (!_handlerMapping.TryGetValue(handler.ManagedType, out var value))
         {
-            _handlerMapping.Add(handler.ManagedType, new List<THandler>());
+            value = new List<THandler>();
+            _handlerMapping.Add(handler.ManagedType, value);
         }
-        _handlerMapping[handler.ManagedType].Add(handler);
+
+        value.Add(handler);
     }
 
     public void RegisterHandlers(List<THandler> handlers)
@@ -27,11 +29,15 @@ public class TypeBasedStrategy<T, THandler> where T : class where THandler : cla
         }
     }
 
-    public THandler FindHandler(T item) => FindHandler(item, item.GetType());
+    public THandler? FindHandler(T item) => FindHandler(item, item.GetType());
 
-    private THandler FindHandler(T item, Type type)
+    private THandler? FindHandler(T? item, Type type)
     {
-        for (; item != null && type != null; type = type.BaseType)
+        if (item == null)
+        {
+            return null;
+        }
+        for (Type? currentType = type; currentType != null; currentType = currentType.BaseType)
         {
             if (!_handlerMapping.TryGetValue(type, out var handlers))
             {

@@ -447,7 +447,6 @@ public class InputFileResolver : IInputFileResolver
             // we need to forward this path to buildalyzer
             env.EnvironmentVariables[EnvironmentVariables.MSBUILD_EXE_PATH] = options.MsBuildPath;
         }
-
         var buildResult = project.Build(env);
         // store the build log
         _buildLogs[projectLogName] = buildLogger.ToString();

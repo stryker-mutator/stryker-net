@@ -23,7 +23,7 @@ public interface IInitialisationProcess
     /// <returns>an enumeration of <see cref="SourceProjectInfo"/>, one for each found project (if any).</returns>
     IReadOnlyCollection<SourceProjectInfo> GetMutableProjectsInfo(IStrykerOptions options);
 
-    void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects);
+    void BuildProjects(IStrykerBuildOptions options, IEnumerable<SourceProjectInfo> projects);
 
     Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
         IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner);
@@ -64,7 +64,7 @@ public class InitialisationProcess : IInitialisationProcess
     }
 
     /// <inheritdoc/>
-    public void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects)
+    public void BuildProjects(IStrykerBuildOptions options, IEnumerable<SourceProjectInfo> projects)
     {
         var solutionInfo = projects.First().SolutionInfo;
         // pick configuration and platform from solution if available

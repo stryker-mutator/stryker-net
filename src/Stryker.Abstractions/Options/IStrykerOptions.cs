@@ -6,7 +6,22 @@ using Stryker.Abstractions.ProjectComponents;
 
 namespace Stryker.Abstractions.Options;
 
-public interface IStrykerOptions
+/// <summary>
+/// Isolate build related options
+/// </summary>
+/// <remarks>Intent is to improve clarity for options</remarks>
+public interface IStrykerBuildOptions
+{
+    string? MsBuildPath { get; init; }
+    string Configuration { get; init; }
+    string Platform { get; }
+    string TargetFramework { get; init; }
+    LanguageVersion LanguageVersion { get; init; }
+    string WorkingDirectory { get; init; }
+    string? SolutionPath { get; init; }
+}
+
+public interface IStrykerOptions : IStrykerBuildOptions
 {
     int AdditionalTimeout { get; init; }
     string AzureFileStorageSas { get; init; }
@@ -18,7 +33,6 @@ public interface IStrykerOptions
     string BaselineOutputPath { get; init; }
     bool BreakOnInitialTestFailure { get; set; }
     int Concurrency { get; init; }
-    string Configuration { get; init; }
     string DashboardApiKey { get; init; }
     string DashboardUrl { get; init; }
     bool DiagMode { get; init; }
@@ -28,15 +42,12 @@ public interface IStrykerOptions
     string FallbackVersion { get; init; }
     IEnumerable<Regex> IgnoredMethods { get; init; }
     bool IsSolutionContext { get; }
-    LanguageVersion LanguageVersion { get; init; }
     ILogOptions LogOptions { get; init; }
     string ModuleName { get; init; }
-    string MsBuildPath { get; init; }
     IEnumerable<IFilePattern> Mutate { get; init; }
     MutationLevel MutationLevel { get; init; }
     OptimizationModes OptimizationMode { get; init; }
     string OutputPath { get; init; }
-    string Platform { get; }
     string ProjectName { get; set; }
     string ProjectPath { get; init; }
     string ProjectVersion { get; set; }
@@ -46,14 +57,11 @@ public interface IStrykerOptions
     ReportType? ReportTypeToOpen { get; init; }
     bool Since { get; init; }
     string SinceTarget { get; init; }
-    string SolutionPath { get; init; }
     string SourceProjectName { get; init; }
-    string TargetFramework { get; init; }
     string TestCaseFilter { get; init; }
     IEnumerable<string> TestProjects { get; init; }
     TestRunner TestRunner { get; init; }
     IThresholds Thresholds { get; init; }
     bool WithBaseline { get; init; }
-    string WorkingDirectory { get; init; }
     IProvideId MutantIdProvider { get; set; }
 }

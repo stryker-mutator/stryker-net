@@ -61,7 +61,7 @@ public interface IStrykerInputs
 
 public class StrykerInputs : IStrykerInputs
 {
-    private IStrykerOptions _strykerOptionsCache;
+    private IStrykerOptions? _strykerOptionsCache;
     private readonly IFileSystem _fileSystem;
 
     public StrykerInputs(IFileSystem fileSystem = null)
