@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Core.Helpers;
+using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Utilities.Logging;
 
@@ -20,6 +21,25 @@ public interface ICompilationContent
     IEnumerable<SyntaxTree> SyntaxTrees { get; }
 
     void ReplaceSyntaxTree(SyntaxTree original, SyntaxTree updated);
+}
+
+/// <summary>
+/// Optional capability - implemented by Stryker's own compilation - to recompile a fully
+/// uninstrumented baseline and report whether it builds. Kept internal so it adds no public
+/// extension-API surface. When a compilation content does not provide it, rollback conservatively
+/// keeps the internal-error path (it never blames the user's build without proof).
+/// </summary>
+internal interface IBaselineCompiler
+{
+    /// <summary>
+    /// True if <paramref name="erroringTree"/> still fails to compile once every trace of Stryker
+    /// instrumentation is removed from the whole compilation (mutations and structural rewrites
+    /// reversed, injected helpers and generated output dropped, generators re-run on the clean
+    /// source). The check is correlated to this specific tree - a baseline error in some other
+    /// tree does not make this one a baseline failure - so a remaining error here means the failure
+    /// is genuinely independent of mutation rather than mutation-induced.
+    /// </summary>
+    bool FailsWithoutInstrumentation(SyntaxTree erroringTree);
 }
 
 
@@ -63,9 +83,70 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         }
 
         // remove the broken mutations from the syntax trees
-        foreach (var syntaxTreeMap in syntaxTreeMapping.Where(x => x.Value.Count != 0))
+        var erroringTrees = syntaxTreeMapping.Where(x => x.Value.Count != 0).ToList();
+        // A mutant in one syntax tree can make Roslyn report the resulting error in a *different*,
+        // mutant-free tree (e.g. mutating a public constant creates a duplicate case value in an
+        // unmutated consumer). So the absence of mutants in the erroring tree alone does not prove
+        // its errors are not mutation-caused: while any erroring tree still carries a mutant, we
+        // let rollback remove it and recompile before concluding anything about a mutant-free tree.
+        var rollbackCandidatesRemain =
+            erroringTrees.Any(x => MutantPlacer.GetAllMutations(x.Key.GetRoot()).Any());
+
+        foreach (var syntaxTreeMap in erroringTrees)
         {
             var originalTree = syntaxTreeMap.Key;
+
+            // A file that carries no mutants cannot have ITS errors removed by rollback. Once no
+            // erroring tree still has a mutant for rollback to try (rollback is exhausted), such a
+            // failure is not mutation-caused, so report it up front instead of running
+            // RemoveCompileErrorMutations - which would only emit misleading "unidentified
+            // mutation" / "Safe Mode" log lines - distinguishing Stryker's own injected helpers
+            // (MutantControl etc.), whose failure is purely an internal Stryker.NET problem, from
+            // an unmutated user file that simply does not build under Stryker's compilation.
+            if (!MutantPlacer.GetAllMutations(originalTree.GetRoot()).Any())
+            {
+                // Defer: a mutant in another erroring tree may be the cause; rolling it back can
+                // clear this tree's errors on the next compile pass.
+                if (rollbackCandidatesRemain)
+                {
+                    continue;
+                }
+
+                var codes = string.Join(", ", syntaxTreeMap.Value.Select(diagnostic => diagnostic.Id).Distinct());
+                if (CodeInjection.IsInjectedHelper(originalTree.FilePath))
+                {
+                    Logger.LogCritical(
+                        "Stryker.NET's own injected helper code failed to compile ({Codes}). This is an internal Stryker.NET error, not a problem with your project. Please report this issue on github with the previous error message.",
+                        codes);
+                    throw new CompilationException("Internal error due to compile error in Stryker.NET injected code.");
+                }
+
+                // Prove it before blaming the user's build. Report a baseline failure only when
+                // THIS tree still fails to compile on a fully-uninstrumented baseline (mutations AND
+                // structural rewrites reversed, generators re-run); if it builds clean there, this
+                // failure was mutation-induced (rollback simply could not attribute it) and stays an
+                // internal error. Content that cannot run that baseline compile falls back to the
+                // conservative internal-error path. With today's mutators the baseline always still
+                // fails here - Stryker only places runtime-wrapped mutations and never mutates
+                // const/enum/attribute/parameter-default contexts, so a mutant-free tree's error is
+                // never mutation-caused - but this keeps the distinction sound if that ever changes.
+                var isBaselineFailure =
+                    wrapper is IBaselineCompiler baselineCompiler && baselineCompiler.FailsWithoutInstrumentation(originalTree);
+                if (!isBaselineFailure)
+                {
+                    Logger.LogCritical(
+                        "Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on github with the previous error message.");
+                    throw new CompilationException("Internal error due to compile error.");
+                }
+
+                var file = string.IsNullOrEmpty(originalTree.FilePath) ? "an unmutated file" : $"'{originalTree.FilePath}'";
+                Logger.LogError(
+                    "Compilation failed in {File} ({Codes}), which has no mutants, so these errors are not caused by mutation. This usually means a build input is missing under Stryker's compilation (for example a source generator produced no output; check analyzer configs / generator setup). If it builds fine outside Stryker.NET, this may be a Stryker.NET issue worth reporting on github.",
+                    file, codes);
+                throw new CompilationException(
+                    $"Compilation failed in {file} ({codes}) with no mutants involved; these errors are not caused by mutation.");
+            }
+
             Logger.LogDebug("RollBacking mutations from {FilePath}.", originalTree.FilePath);
             if (devMode)
             {

@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
@@ -16,6 +17,7 @@ using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.Configuration.Options;
 using Stryker.Core.Compiling;
+using Stryker.Core.InjectedHelpers;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
@@ -68,6 +70,93 @@ public class Calculator
         var result = target.Compile(ms, symbol);
         result.Success.ShouldBe(true);
         ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
+    }
+
+    [TestMethod]
+    public void CompilesWithoutMutations_IsTrue_WhenRemovingMutationsFixesTheBuild()
+    {
+        // A file that only fails to compile because of a mutation: with the mutation stripped and
+        // the generators re-run the baseline builds, so the failure is mutation-induced.
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject
+            {
+                public class Calculator
+                {
+                    public int ActiveMutation = 1;
+                    public string Subtract(string first, string second)
+                    {
+                        if (ActiveMutation == 1) { return first - second; } else { return first + second; }
+                    }
+                }
+            }
+            """);
+        var ifStatement = syntaxTree.GetRoot().DescendantNodes().OfType<IfStatementSyntax>().First();
+        var annotated = syntaxTree.GetRoot()
+            .ReplaceNode(ifStatement, ifStatement.WithAdditionalAnnotations(
+                new SyntaxAnnotation("MutationId", "1"), new SyntaxAnnotation("Injector", "IfInstrumentationEngine")))
+            .SyntaxTree;
+        var target = BuildCompilingProcess(annotated);
+        target.GetSemanticModel(annotated); // initialise the compilation
+
+        // The tree compiles on the uninstrumented baseline, so its failure was mutation-induced.
+        ((IBaselineCompiler)target).FailsWithoutInstrumentation(annotated).ShouldBeFalse();
+    }
+
+    [TestMethod]
+    public void CompilesWithoutMutations_IsFalse_WhenTheFailureIsIndependentOfMutation()
+    {
+        // A file that fails to compile with no mutation involved (a missing symbol): stripping
+        // mutations and re-running generators changes nothing, so the baseline still fails.
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject { public class Anchor { public object Broken() => Missing.Symbol; } }
+            """);
+        var target = BuildCompilingProcess(syntaxTree);
+        target.GetSemanticModel(syntaxTree); // initialise the compilation
+
+        // The tree still fails on the uninstrumented baseline, so the failure is not mutation-caused.
+        ((IBaselineCompiler)target).FailsWithoutInstrumentation(syntaxTree).ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void CompilesWithoutMutations_ExcludesStrykerInjectedHelperTrees()
+    {
+        // A clean user file plus a (deliberately broken) Stryker injected helper tree. The baseline
+        // is the user's source only - Stryker's own injected helpers must be dropped - so it
+        // compiles cleanly; if the helper were kept, its error would wrongly make the baseline fail
+        // and a mutation-induced failure would be misreported as baseline.
+        var userTree = CSharpSyntaxTree.ParseText(
+            "namespace ExampleProject { public class Ok { public int Value => 1; } }");
+        var brokenHelper = CSharpSyntaxTree.ParseText(
+            "namespace Stryker { public class Helper { public object X() => Missing.Symbol; } }",
+            path: CodeInjection.HelperFiles.First());
+
+        var target = BuildCompilingProcess(userTree, brokenHelper);
+        target.GetSemanticModel(userTree); // initialise the compilation
+
+        // The user tree compiles clean on the baseline (helper dropped), so its failure would be
+        // mutation-induced - the broken helper does not turn it into a baseline failure.
+        ((IBaselineCompiler)target).FailsWithoutInstrumentation(userTree).ShouldBeFalse();
+    }
+
+    private static CsharpCompilingProcess BuildCompilingProcess(params SyntaxTree[] syntaxTrees)
+    {
+        var input = new MutationTestInput
+        {
+            SourceProjectInfo = new SourceProjectInfo
+            {
+                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    projectFilePath: "/c/project.csproj",
+                    properties: new Dictionary<string, string>
+                    {
+                        { "TargetDir", "" }, { "AssemblyName", "AssemblyName" }, { "TargetFileName", "TargetFileName.dll" },
+                    },
+                    references: [typeof(object).Assembly.Location]).Object
+            }
+        };
+        var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
+        return new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees: syntaxTrees);
     }
 
     [TestMethod]
