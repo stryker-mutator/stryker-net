@@ -23,13 +23,41 @@ using Stryker.Core.ProjectComponents.SourceProjects;
 
 namespace Stryker.Core.UnitTest.Compiling;
 
-internal class CompilerWrapper(CSharpCompilation compilation) : ICompilationContent
+internal class CompilerWrapper(CSharpCompilation compilation) : ICompilationContent, IBaselineCompiler
 {
     private CSharpCompilation _compilation = compilation;
+
+    // Test seam: force the baseline outcome to exercise the mutation-induced branch, which real
+    // (runtime-wrapped) mutators cannot currently produce in a mutant-free tree.
+    public bool? FailsWithoutInstrumentationOverride { get; set; }
 
     public IEnumerable<SyntaxTree> SyntaxTrees => _compilation.SyntaxTrees;
 
     public void ReplaceSyntaxTree(SyntaxTree original, SyntaxTree updated) => _compilation = _compilation.ReplaceSyntaxTree(original, updated);
+
+    public bool FailsWithoutInstrumentation(SyntaxTree erroringTree)
+    {
+        if (FailsWithoutInstrumentationOverride.HasValue)
+        {
+            return FailsWithoutInstrumentationOverride.Value;
+        }
+
+        SyntaxTree erroringBaseline = null;
+        var unmutatedTrees = new List<SyntaxTree>();
+        foreach (var sourceTree in _compilation.SyntaxTrees)
+        {
+            var cleaned = MutantPlacer.RemoveAllMutations(sourceTree);
+            if (sourceTree == erroringTree)
+            {
+                erroringBaseline = cleaned;
+            }
+
+            unmutatedTrees.Add(cleaned);
+        }
+
+        var baseline = _compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(unmutatedTrees);
+        return erroringBaseline != null && MutantPlacer.HasCompileError(baseline, erroringBaseline);
+    }
 
     public EmitResult Emit(Stream stream) => _compilation.Emit(stream);
 }
@@ -98,6 +126,337 @@ public class CSharpRollbackProcessTests : TestBase
 
         rolledBackResult.Success.ShouldBeTrue();
     }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldReportBaselineFailure_WhenErrorIsInUnmutatedFile()
+    {
+        // An unmutated file that does not compile on its own (e.g. a source generator
+        // produced no output) must be reported as a baseline failure, not as an internal
+        // Stryker rollback error: its diagnostics cannot have been caused by mutation.
+        // Two distinct diagnostics so the message's joined code list (and its separator)
+        // is exercised: NoSuchType -> CS0246, Missing.Symbol -> CS0103.
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject
+            {
+                public class Anchor
+                {
+                    public object Broken() { NoSuchType local; return Missing.Symbol; }
+                }
+            }
+            """,
+            path: "Anchor.cs");
+
+        var compilerWrapper = BaselineFailureCompiler(syntaxTree);
+
+        var target = new CSharpRollbackProcess();
+        using var ms = new MemoryStream();
+        var compileResult = compilerWrapper.Emit(ms);
+        compileResult.Success.ShouldBeFalse();
+
+        var exception = Should.Throw<CompilationException>(() =>
+            target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics,
+                ICSharpRollbackProcess.Mode.Normal, false));
+
+        exception.Message.ShouldContain("not caused by mutation");
+        exception.Message.ShouldContain("Anchor.cs");
+        exception.Message.ShouldContain("CS0103");
+        exception.Message.ShouldContain("CS0246");
+        exception.Message.ShouldContain(", "); // both codes joined with a separator
+        exception.Message.ShouldNotContain("Internal error");
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldReportBaselineFailure_WithGenericLabel_WhenFileHasNoPath()
+    {
+        // Same baseline failure, but the erroring tree has no FilePath (in-memory): the
+        // message must use a generic label, not an empty quoted path. Exercises the
+        // string.IsNullOrEmpty(FilePath) branch.
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject { public class Anchor { public object Broken() => Missing.Symbol; } }
+            """);
+
+        var compilerWrapper = BaselineFailureCompiler(syntaxTree);
+
+        var target = new CSharpRollbackProcess();
+        using var ms = new MemoryStream();
+        var compileResult = compilerWrapper.Emit(ms);
+        compileResult.Success.ShouldBeFalse();
+
+        var exception = Should.Throw<CompilationException>(() =>
+            target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics,
+                ICSharpRollbackProcess.Mode.Normal, false));
+
+        exception.Message.ShouldContain("not caused by mutation");
+        exception.Message.ShouldContain("an unmutated file"); // generic label, not a quoted path
+        exception.Message.ShouldNotContain("''");
+        exception.Message.ShouldNotContain("Internal error");
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldReportInternalError_WhenErroringTreeStillHasMutants()
+    {
+        // A tree that DOES carry a mutant and fails to compile: in LastChance mode rollback
+        // cannot recover, and because the erroring tree still has mutants this is a genuine
+        // Stryker internal error (not a baseline failure) - the message must stay "Internal error".
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject
+            {
+                public class Calculator
+                {
+                    public int ActiveMutation = 1;
+                    public string Ok(string a, string b)
+                    {
+                        if (ActiveMutation == 1) { return a + b; } else { return b + a; }
+                    }
+                    public object Broken() => Missing.Symbol;
+                }
+            }
+            """,
+            path: "Mixed.cs");
+        var ifStatement = syntaxTree.GetRoot().DescendantNodes().First(x => x is IfStatementSyntax);
+        var annotated = syntaxTree.GetRoot()
+            .ReplaceNode(ifStatement, ifStatement.WithAdditionalAnnotations(GetMutationIdMarker(1), _ifEngineMarker))
+            .SyntaxTree;
+
+        var compilerWrapper = BaselineFailureCompiler(annotated);
+        var target = new CSharpRollbackProcess();
+        using var ms = new MemoryStream();
+        var compileResult = compilerWrapper.Emit(ms);
+        compileResult.Success.ShouldBeFalse();
+
+        var exception = Should.Throw<CompilationException>(() =>
+            target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics,
+                ICSharpRollbackProcess.Mode.LastChance, false));
+
+        exception.Message.ShouldContain("Internal error");
+        exception.Message.ShouldNotContain("not caused by mutation");
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldReportInternalError_WhenErrorIsInStrykerInjectedHelper()
+    {
+        // A mutant-free tree can also be one of Stryker's OWN injected helpers (MutantControl
+        // etc.), which are added with their resource name as the FilePath. If one of those fails
+        // to compile it is purely an internal Stryker.NET problem, so it must NOT be reported as
+        // a user-side baseline failure ("check your generator setup") - it keeps the internal
+        // error path just as a mutant-carrying tree would.
+        var helperName = CodeInjection.HelperFiles.First();
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject { public class Helper { public object Broken() => Missing.Symbol; } }
+            """,
+            path: helperName);
+
+        var compilerWrapper = BaselineFailureCompiler(syntaxTree);
+
+        var target = new CSharpRollbackProcess();
+        using var ms = new MemoryStream();
+        var compileResult = compilerWrapper.Emit(ms);
+        compileResult.Success.ShouldBeFalse();
+
+        var exception = Should.Throw<CompilationException>(() =>
+            target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics,
+                ICSharpRollbackProcess.Mode.Normal, false));
+
+        exception.Message.ShouldContain("Internal error");
+        exception.Message.ShouldNotContain("not caused by mutation");
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldNotReportBaselineFailure_WhenAnotherErroringTreeStillHasMutants()
+    {
+        // Cross-tree causality: a mutant in one tree can make Roslyn report the resulting compile
+        // error in a DIFFERENT, mutant-free tree. While an erroring tree still carries a mutant
+        // rollback can remove, a co-erroring mutant-free tree must NOT be reported as a baseline
+        // failure - it is deferred so rolling back the mutant can clear it on the next compile pass.
+        var mutatedTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject
+            {
+                public class Calculator
+                {
+                    public int ActiveMutation = 1;
+                    public string Subtract(string first, string second)
+                    {
+                        if (ActiveMutation == 1) { return first - second; } else { return first + second; }
+                    }
+                }
+            }
+            """,
+            path: "Mutated.cs");
+        var ifStatement = mutatedTree.GetRoot().DescendantNodes().First(x => x is IfStatementSyntax);
+        var annotatedMutated = mutatedTree.GetRoot()
+            .ReplaceNode(ifStatement, ifStatement.WithAdditionalAnnotations(GetMutationIdMarker(1), _ifEngineMarker))
+            .SyntaxTree;
+
+        // A separate mutant-free tree that also fails to compile.
+        var unmutatedTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject { public class Other { public object Broken() => Missing.Symbol; } }
+            """,
+            path: "Unmutated.cs");
+
+        var compilerWrapper = BaselineFailureCompiler(annotatedMutated, unmutatedTree);
+        var target = new CSharpRollbackProcess();
+        using var ms = new MemoryStream();
+        var compileResult = compilerWrapper.Emit(ms);
+        compileResult.Success.ShouldBeFalse();
+
+        // On a normal pass the mutant-free tree is deferred (not misreported as a baseline
+        // failure); the mutant in the other tree is rolled back instead.
+        var rolledBack = Should.NotThrow(() =>
+            target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics,
+                ICSharpRollbackProcess.Mode.Normal, false));
+
+        rolledBack.ShouldContain(1);
+    }
+
+    [TestMethod]
+    public void FailsWithoutInstrumentation_IsFalse_WhenRemovingMutationsFixesTheBuild()
+    {
+        // A file that only fails to compile because of a mutation: stripping the mutation restores
+        // a buildable baseline, so the tree does NOT fail without instrumentation (mutation-induced).
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject
+            {
+                public class Calculator
+                {
+                    public int ActiveMutation = 1;
+                    public string Subtract(string first, string second)
+                    {
+                        if (ActiveMutation == 1) { return first - second; } else { return first + second; }
+                    }
+                }
+            }
+            """,
+            path: "Mutated.cs");
+        var ifStatement = syntaxTree.GetRoot().DescendantNodes().First(x => x is IfStatementSyntax);
+        var annotated = syntaxTree.GetRoot()
+            .ReplaceNode(ifStatement, ifStatement.WithAdditionalAnnotations(GetMutationIdMarker(1), _ifEngineMarker))
+            .SyntaxTree;
+
+        var compilerWrapper = BaselineFailureCompiler(annotated);
+        using var ms = new MemoryStream();
+        compilerWrapper.Emit(ms).Success.ShouldBeFalse();
+
+        compilerWrapper.FailsWithoutInstrumentation(annotated).ShouldBeFalse();
+    }
+
+    [TestMethod]
+    public void FailsWithoutInstrumentation_IsTrue_WhenTheFailureIsIndependentOfMutation()
+    {
+        // A file that fails to compile with no mutation involved (a missing symbol): stripping
+        // mutations changes nothing, so the tree still fails on the baseline - not mutation-induced.
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject { public class Anchor { public object Broken() => Missing.Symbol; } }
+            """,
+            path: "Anchor.cs");
+        var compilerWrapper = BaselineFailureCompiler(syntaxTree);
+        using var ms = new MemoryStream();
+        compilerWrapper.Emit(ms).Success.ShouldBeFalse();
+
+        compilerWrapper.FailsWithoutInstrumentation(syntaxTree).ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void FailsWithoutInstrumentation_IsCorrelatedToTheGivenTree_NotTheWholeCompilation()
+    {
+        // Two mutant-free trees: one compiles, one has a baseline error. The check must correlate to
+        // the queried tree - the clean tree does NOT fail just because another tree fails on the
+        // baseline (otherwise a mutation-induced failure could be misreported as baseline).
+        var clean = CSharpSyntaxTree.ParseText(
+            "namespace ExampleProject { public class Ok { public int Value => 1; } }", path: "Clean.cs");
+        var broken = CSharpSyntaxTree.ParseText(
+            "namespace ExampleProject { public class Bad { public object Broken() => Missing.Symbol; } }", path: "Broken.cs");
+        var compilerWrapper = BaselineFailureCompiler(clean, broken);
+
+        compilerWrapper.FailsWithoutInstrumentation(clean).ShouldBeFalse();
+        compilerWrapper.FailsWithoutInstrumentation(broken).ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldReportInternalError_WhenTheTreeCompilesOnTheBaseline()
+    {
+        // Future-proofing: if a mutant-free tree fails to compile yet its counterpart builds cleanly
+        // on the fully-uninstrumented baseline, the failure was mutation-induced (rollback just could
+        // not attribute it) - it must stay an internal error, not be blamed on the user's build.
+        // Today's runtime-wrapped mutators cannot actually produce this, so the outcome is forced.
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject { public class Anchor { public object Broken() => Missing.Symbol; } }
+            """,
+            path: "Anchor.cs");
+        var compilerWrapper = BaselineFailureCompiler(syntaxTree);
+        compilerWrapper.FailsWithoutInstrumentationOverride = false;
+
+        var target = new CSharpRollbackProcess();
+        using var ms = new MemoryStream();
+        var compileResult = compilerWrapper.Emit(ms);
+        compileResult.Success.ShouldBeFalse();
+
+        var exception = Should.Throw<CompilationException>(() =>
+            target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics,
+                ICSharpRollbackProcess.Mode.Normal, false));
+
+        exception.Message.ShouldContain("Internal error");
+        exception.Message.ShouldNotContain("not caused by mutation");
+    }
+
+    [TestMethod]
+    public void RemoveAllMutations_RestoresTheOriginalSource_IncludingStructuralRewrites()
+    {
+        // Stryker converts an expression-bodied member to a block body - a structural rewrite
+        // tagged with an Injector annotation but no MutationId - to make room for statement-level
+        // mutations. RemoveAllMutations must undo that conversion as well as the mutations, so the
+        // mutation-free baseline it produces is the genuine original source (not a still-rewritten
+        // one that a syntax-sensitive generator could react to).
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            using System;
+
+            namespace ExampleProject
+            {
+                public class Fake { public event Action ValueChanged; }
+
+                public class Test
+                {
+                    private Fake AccountNumber = new Fake();
+                    public void Subscribe() => AccountNumber.ValueChanged += RefreshAccountNumber;
+                    private void RefreshAccountNumber() { }
+                }
+            }
+            """,
+            path: "Original.cs");
+        var codeInjection = new CodeInjection();
+        var mutator = new CsharpMutantOrchestrator(new MutantPlacer(codeInjection),
+            options: new StrykerOptions { MutationLevel = MutationLevel.Complete });
+
+        var mutated = mutator.Mutate(syntaxTree, null);
+        MutantPlacer.GetAllMutations(mutated.GetRoot()).ShouldNotBeEmpty("the orchestrator should have instrumented the code");
+
+        var restored = MutantPlacer.RemoveAllMutations(mutated);
+
+        restored.GetRoot().GetAnnotatedNodes("Injector").ShouldBeEmpty("all instrumentation, including structural rewrites, must be reverted");
+        restored.GetRoot().NormalizeWhitespace().ToFullString()
+            .ShouldBe(syntaxTree.GetRoot().NormalizeWhitespace().ToFullString());
+        // the baseline must be the genuine original project - its metadata is preserved
+        restored.FilePath.ShouldBe("Original.cs");
+        restored.Options.ShouldBe(mutated.Options);
+    }
+
+    private static CompilerWrapper BaselineFailureCompiler(params SyntaxTree[] syntaxTrees) =>
+        new(CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: syntaxTrees,
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            }));
 
     [TestMethod]
     public void ShouldRollbackIssueInExpression()

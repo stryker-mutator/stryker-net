@@ -14,6 +14,8 @@ using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Configuration.Options;
+using Stryker.Core.InjectedHelpers;
+using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents;
 using Stryker.Utilities.Buildalyzer;
@@ -33,7 +35,7 @@ public interface ICSharpCompilingProcess
 /// This process is in control of compiling the assembly and rolling back mutations that cannot compile
 /// Compiles the given input onto the memory stream
 /// </summary>
-public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationContent
+public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationContent, IBaselineCompiler
 {
     private const int MaxAttempt = 50;
     private readonly MutationTestInput _input;
@@ -319,6 +321,37 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
     {
         _compilation = _compilation.ReplaceSyntaxTree(original, updated);
         _needToRunGenerators = true;
+    }
+
+    // Explicit implementation so this does not become public API on this public class; the
+    // capability is only reachable through the internal IBaselineCompiler.
+    bool IBaselineCompiler.FailsWithoutInstrumentation(SyntaxTree erroringTree)
+    {
+        // Build a baseline from the user's original source only: drop the trees the generators
+        // produced from the mutated source AND Stryker's own injected helper trees, reverse every
+        // mutation and structural rewrite from what remains, then re-run the generators on that
+        // clean source so a syntax-sensitive generator sees the genuine original code. Remember which
+        // cleaned tree corresponds to the erroring one so the check can be correlated to it by
+        // identity rather than by file path (which is not unique for path-less trees).
+        SyntaxTree erroringBaseline = null;
+        var originalSource = new List<SyntaxTree>();
+        foreach (var sourceTree in _compilation.RemoveSyntaxTrees(GeneratedTrees).SyntaxTrees
+                     .Where(syntaxTree => !CodeInjection.IsInjectedHelper(syntaxTree.FilePath)))
+        {
+            var cleaned = MutantPlacer.RemoveAllMutations(sourceTree);
+            if (sourceTree == erroringTree)
+            {
+                erroringBaseline = cleaned;
+            }
+
+            originalSource.Add(cleaned);
+        }
+
+        _generatorDriver.RunGeneratorsAndUpdateCompilation(
+            _compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(originalSource), out var baseline, out _);
+        // If the erroring tree's own counterpart still fails, the failure is independent of mutation
+        // (a baseline error in some other tree does not make this one a baseline failure).
+        return erroringBaseline != null && MutantPlacer.HasCompileError(baseline, erroringBaseline);
     }
 
     private static string ReadableNumber(int number) => number switch

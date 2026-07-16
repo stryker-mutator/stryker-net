@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
@@ -10,9 +11,19 @@ namespace Stryker.Core.InjectedHelpers;
 
 public class CodeInjection
 {
-    // files to be injected into the mutated assembly
-    private static readonly string[] Files = {"Stryker.Core.InjectedHelpers.MutantControl.cs",
-        "Stryker.Core.InjectedHelpers.Coverage.MutantContext.cs"};
+    // resource names used as the FilePath of the helper syntax trees Stryker injects into the
+    // mutated assembly (see CsharpProjectComponentsBuilder.InjectMutantHelpers)
+    internal static readonly ImmutableArray<string> HelperFiles =
+        ["Stryker.Core.InjectedHelpers.MutantControl.cs",
+         "Stryker.Core.InjectedHelpers.Coverage.MutantContext.cs"];
+
+    /// <summary>
+    /// True when <paramref name="filePath"/> is one of Stryker's own injected helper files, so
+    /// rollback can tell Stryker's injected code apart from the user's source when a mutant-free
+    /// tree fails to compile. Kept internal and backed by an immutable array so it is not a
+    /// public API surface and cannot be mutated by callers.
+    /// </summary>
+    internal static bool IsInjectedHelper(string filePath) => HelperFiles.Contains(filePath);
     private const string PatternForCheck = "\\/\\/ *check with: *([^\\r\\n]+)";
     private const string MutantContextClassName = "MutantContext";
     private const string StrykerNamespace = "Stryker";
@@ -36,7 +47,7 @@ public class CodeInjection
         HelperNamespace = GetRandomNamespace();
         SelectorExpression = Selector.Replace(StrykerNamespace, HelperNamespace);
 
-        foreach (var file in Files)
+        foreach (var file in HelperFiles)
         {
             var fileContents = GetSourceFromResource(file).Replace(StrykerNamespace, HelperNamespace);
             MutantHelpers.Add(file, fileContents);

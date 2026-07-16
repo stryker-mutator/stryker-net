@@ -225,4 +225,44 @@ public class MutantPlacer(CodeInjection injection)
             let mutationInfo = FindAnnotations(syntaxNode)
             select (syntaxNode, mutationInfo)).ToList();
     }
+
+    /// <summary>
+    /// Returns the syntax tree with every trace of Stryker instrumentation removed, restoring its
+    /// original, un-instrumented form. This reverses not only the mutations themselves but also the
+    /// structural rewrites Stryker applies to make room for them (for example converting an
+    /// expression-bodied member to a block body), so the result is the genuine original source.
+    /// Used to compile a mutation-free baseline so a mutation-induced compile failure can be told
+    /// apart from a failure that exists independently of any mutation.
+    /// </summary>
+    internal static SyntaxTree RemoveAllMutations(SyntaxTree tree)
+    {
+        var root = tree.GetRoot();
+        // Every instrumented node (a mutation or a structural rewrite) carries an Injector
+        // annotation naming the engine that can revert it. Revert the innermost instrumentation
+        // first: an outer rewrite (e.g. block-body -> expression-body) can only be undone once the
+        // mutations nested inside it are already gone.
+        while (true)
+        {
+            var innermost = root.GetAnnotatedNodes(Injector)
+                .FirstOrDefault(node => !node.DescendantNodes().Any(descendant => descendant.HasAnnotations(Injector)));
+            if (innermost == null)
+            {
+                break;
+            }
+
+            root = root.ReplaceNode(innermost, RemoveMutant(innermost));
+        }
+
+        // Rebuild from the original tree so its file path, encoding and parse options are preserved
+        // exactly - the baseline must be the genuine original project, not a re-parsed approximation.
+        return tree.WithRootAndOptions(root, tree.Options);
+    }
+
+    /// <summary>
+    /// True if <paramref name="compilation"/> has an error-level diagnostic in <paramref name="tree"/>.
+    /// The check is correlated to that specific tree by identity (via its semantic model), so an error
+    /// in another tree - even one sharing an empty or duplicate file path - does not count.
+    /// </summary>
+    internal static bool HasCompileError(Compilation compilation, SyntaxTree tree) =>
+        compilation.GetSemanticModel(tree).GetDiagnostics().Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
 }
