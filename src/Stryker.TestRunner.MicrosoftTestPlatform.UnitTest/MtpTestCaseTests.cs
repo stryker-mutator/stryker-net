@@ -40,7 +40,7 @@ public class MtpTestCaseTests
         var testCase = new MtpTestCase(testNode);
 
         testCase.CodeFilePath.ShouldBe(string.Empty);
-        testCase.LineNumber.ShouldBe(-1);
+        testCase.LineNumber.ShouldBe(MtpTestCase.DefaultLineNumber);
         testCase.FullyQualifiedName.ShouldBe("uid-1");
     }
 
