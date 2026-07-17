@@ -39,7 +39,7 @@ public class TypeBasedStrategy<T, THandler> where T : class where THandler : cla
         }
         for (Type? currentType = type; currentType != null; currentType = currentType.BaseType)
         {
-            if (!_handlerMapping.TryGetValue(type, out var handlers))
+            if (!_handlerMapping.TryGetValue(currentType, out var handlers))
             {
                 continue;
             }
