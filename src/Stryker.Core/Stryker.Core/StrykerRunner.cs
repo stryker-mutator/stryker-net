@@ -60,8 +60,10 @@ public class StrykerRunner : IStrykerRunner
             // Mutate
             _mutationTestProcesses = (await _projectOrchestrator.MutateProjectsAsync(options, reporters)).ToList();
 
-            var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
-            var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo).Aggregate((a, b) => (TestProjectsInfo)a + (TestProjectsInfo)b);
+            var rootComponent = AddRootFolderIfMultiProject(
+                _mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
+            var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo)
+                .Aggregate((a, b) => (TestProjectsInfo)a + (TestProjectsInfo)b);
 
             _logger.LogInformation("{MutantsCount} mutants created", rootComponent.Mutants.Count());
 
@@ -83,16 +85,22 @@ public class StrykerRunner : IStrykerRunner
             {
                 if (allMutants.Any(x => x.ResultStatus == MutantStatus.Ignored))
                 {
-                    _logger.LogWarning("It looks like all mutants with tests were ignored. Try a re-run with less ignoring!");
+                    _logger.LogWarning(
+                        "It looks like all mutants with tests were ignored. Try a re-run with less ignoring!");
                 }
+
                 if (allMutants.Any(x => x.ResultStatus == MutantStatus.NoCoverage))
                 {
-                    _logger.LogWarning("It looks like all non-ignored mutants are not covered by a test. Go add some tests!");
+                    _logger.LogWarning(
+                        "It looks like all non-ignored mutants are not covered by a test. Go add some tests!");
                 }
+
                 if (allMutants.Any(x => x.ResultStatus == MutantStatus.CompileError))
                 {
-                    _logger.LogWarning("It looks like all mutants resulted in compile errors. Mutants sure are strange!");
+                    _logger.LogWarning(
+                        "It looks like all mutants resulted in compile errors. Mutants sure are strange!");
                 }
+
                 if (!allMutants.Any())
                 {
                     _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
@@ -109,8 +117,11 @@ public class StrykerRunner : IStrykerRunner
             // Test
             foreach (var project in _mutationTestProcesses)
             {
-                await project.TestAsync(project.Input.SourceProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.Pending).ToList()).ConfigureAwait(false);
+                await project
+                    .TestAsync(project.Input.SourceProjectInfo.ProjectContents.Mutants
+                        .Where(x => x.ResultStatus == MutantStatus.Pending).ToList()).ConfigureAwait(false);
             }
+
             // dispose and stop runners
             _projectOrchestrator.Dispose();
 
@@ -125,7 +136,16 @@ public class StrykerRunner : IStrykerRunner
             return new StrykerRunResult(options, rootComponent.GetMutationScore());
         }
 #if !DEBUG
-        catch (Exception ex) when (!(ex is InputException))
+        catch (AggregateException ex) when  (ex.InnerException is CompilationException)
+        {
+            _logger.LogCritical("Compilation failed: {Message}.", ex.Message);
+            if (!options.DiagMode)
+            {
+                _logger.LogCritical("Run with --diag to get more diagnotic information.");
+            }
+            return new StrykerRunResult(options, 0);
+        }
+        catch (Exception ex) when (ex is not InputException && ex is not CompilationException)
         // let the exception be caught by the debugger when in debug
         {
             _logger.LogError(ex, "An error occurred during the mutation test run ");
