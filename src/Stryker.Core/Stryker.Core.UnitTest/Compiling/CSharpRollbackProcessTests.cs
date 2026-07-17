@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
@@ -46,6 +47,9 @@ public class CSharpRollbackProcessTests : TestBase
     private SyntaxAnnotation GetMutationIdMarker(int id) => new("MutationId", id.ToString());
 
     private SyntaxAnnotation GetMutationTypeMarker(Mutator type) => new("MutationType", type.ToString());
+
+    private static Diagnostic CreateErrorDiagnostic(string id, SyntaxNode node) =>
+        Diagnostic.Create(new DiagnosticDescriptor(id, id, id, "Compiler", DiagnosticSeverity.Error, true), node.GetLocation());
 
     [TestMethod]
     public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompile()
@@ -513,6 +517,193 @@ public class CSharpRollbackProcessTests : TestBase
         rollbackedResult.Success.ShouldBeTrue();
         // validate that only the block mutation was rolled back
         ids.ShouldBe(new Collection<int> { 1 });
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldPreferBlockMutationsWhenSafeModeFindsMixedMutationTypes()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject
+            {
+                public class StringMagic
+                {
+                    public int ActiveMutation = 1;
+
+                    public string Value()
+                    {
+                        if (ActiveMutation == 1) { } else { }
+                        if (ActiveMutation == 2) { } else { }
+                        var broken = "a" - "b";
+                        return broken;
+                    }
+                }
+            }
+            """);
+        var root = syntaxTree.GetRoot();
+        var blockMutation = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(
+            blockMutation,
+            blockMutation.WithAdditionalAnnotations(GetMutationIdMarker(1), GetMutationTypeMarker(Mutator.Block), _ifEngineMarker));
+        var stringMutation = root.DescendantNodes().OfType<IfStatementSyntax>().Last();
+        root = root.ReplaceNode(
+            stringMutation,
+            stringMutation.WithAdditionalAnnotations(GetMutationIdMarker(2), GetMutationTypeMarker(Mutator.String), _ifEngineMarker));
+
+        var annotatedSyntaxTree = root.SyntaxTree;
+        var brokenStatement = annotatedSyntaxTree.GetRoot().DescendantNodes().OfType<LocalDeclarationStatementSyntax>().Single();
+        var compiler = CSharpCompilation.Create("TestCompilation", syntaxTrees: [annotatedSyntaxTree]);
+        var compilerWrapper = new CompilerWrapper(compiler);
+
+        var ids = new CSharpRollbackProcess().RollbackMutationsInError(
+            compilerWrapper,
+            ImmutableArray.Create(CreateErrorDiagnostic("TEST0001", brokenStatement)),
+            ICSharpRollbackProcess.Mode.Normal,
+            false);
+
+        ids.ShouldBe([1]);
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void RollbackProcess_ShouldOnlyScanChildMutationsForExpressionDiagnostics(bool diagnosticOnExpression)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject
+            {
+                public class StringMagic
+                {
+                    public int ActiveMutation = 1;
+
+                    public string Value()
+                    {
+                        var first = (ActiveMutation == 1 ? "first" : "fallback") + "";
+                        var second = (ActiveMutation == 2 ? "second" : "fallback") + "";
+                        return first + second;
+                    }
+                }
+            }
+            """);
+        var root = syntaxTree.GetRoot();
+        var firstMutation = root.DescendantNodes().OfType<ParenthesizedExpressionSyntax>().First();
+        root = root.ReplaceNode(
+            firstMutation,
+            firstMutation.WithAdditionalAnnotations(GetMutationIdMarker(1), _conditionalEngineMarker));
+        var secondMutation = root.DescendantNodes().OfType<ParenthesizedExpressionSyntax>().Last();
+        root = root.ReplaceNode(
+            secondMutation,
+            secondMutation.WithAdditionalAnnotations(GetMutationIdMarker(2), _conditionalEngineMarker));
+
+        var annotatedSyntaxTree = root.SyntaxTree;
+        var secondDeclaration = annotatedSyntaxTree.GetRoot().DescendantNodes().OfType<LocalDeclarationStatementSyntax>().Last();
+        SyntaxNode diagnosticNode = diagnosticOnExpression
+            ? secondDeclaration.Declaration.Variables.Single().Initializer!.Value
+            : secondDeclaration;
+        var compiler = CSharpCompilation.Create("TestCompilation", syntaxTrees: [annotatedSyntaxTree]);
+        var compilerWrapper = new CompilerWrapper(compiler);
+
+        var ids = new CSharpRollbackProcess().RollbackMutationsInError(
+            compilerWrapper,
+            ImmutableArray.Create(CreateErrorDiagnostic("TEST0002", diagnosticNode)),
+            ICSharpRollbackProcess.Mode.Normal,
+            false);
+
+        var expectedIds = diagnosticOnExpression ? new[] { 2 } : new[] { 1, 2 };
+        ids.OrderBy(id => id).ShouldBe(expectedIds);
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbackNearestMutationErasingAssignment()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject
+            {
+                public class StringMagic
+                {
+                    public int ActiveMutation = 1;
+
+                    public string Value()
+                    {
+                        string result;
+                        if (ActiveMutation == 1) { } else { result = "first"; }
+                        if (ActiveMutation == 2) { } else { result = "second"; }
+                        return result;
+                    }
+                }
+            }
+            """);
+        var root = syntaxTree.GetRoot();
+        var firstMutation = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(firstMutation, firstMutation.WithAdditionalAnnotations(GetMutationIdMarker(1), _ifEngineMarker));
+        var secondMutation = root.DescendantNodes().OfType<IfStatementSyntax>().Last();
+        root = root.ReplaceNode(secondMutation, secondMutation.WithAdditionalAnnotations(GetMutationIdMarker(2), _ifEngineMarker));
+
+        var annotatedSyntaxTree = root.SyntaxTree;
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: [annotatedSyntaxTree],
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)]);
+        var compilerWrapper = new CompilerWrapper(compiler);
+        using var initialStream = new MemoryStream();
+        var diagnostic = compiler.Emit(initialStream).Diagnostics.Single(item => item.Id == "CS0165");
+
+        var ids = new CSharpRollbackProcess().RollbackMutationsInError(
+            compilerWrapper,
+            ImmutableArray.Create(diagnostic),
+            ICSharpRollbackProcess.Mode.Normal,
+            false);
+
+        ids.ShouldBe([2]);
+        using var stream = new MemoryStream();
+        compilerWrapper.Emit(stream).Success.ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbackNearestMutationErasingReturn()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject
+            {
+                public class StringMagic
+                {
+                    public int ActiveMutation = 1;
+
+                    public string Value()
+                    {
+                        if (ActiveMutation == 1) { } else { return "first"; }
+                        if (ActiveMutation == 2) { } else { return "second"; }
+                        var marker = 0;
+                    }
+                }
+            }
+            """);
+        var root = syntaxTree.GetRoot();
+        var firstMutation = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(firstMutation, firstMutation.WithAdditionalAnnotations(GetMutationIdMarker(1), _ifEngineMarker));
+        var secondMutation = root.DescendantNodes().OfType<IfStatementSyntax>().Last();
+        root = root.ReplaceNode(secondMutation, secondMutation.WithAdditionalAnnotations(GetMutationIdMarker(2), _ifEngineMarker));
+
+        var annotatedSyntaxTree = root.SyntaxTree;
+        var method = annotatedSyntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: [annotatedSyntaxTree],
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)]);
+        var compilerWrapper = new CompilerWrapper(compiler);
+
+        var ids = new CSharpRollbackProcess().RollbackMutationsInError(
+            compilerWrapper,
+            ImmutableArray.Create(CreateErrorDiagnostic("CS0161", method)),
+            ICSharpRollbackProcess.Mode.Normal,
+            false);
+
+        ids.ShouldBe([2]);
+        using var stream = new MemoryStream();
+        compilerWrapper.Emit(stream).Success.ShouldBeTrue();
     }
 
     [TestMethod]
@@ -1045,9 +1236,9 @@ public class CSharpRollbackProcessTests : TestBase
         var compilerWrapper = new CompilerWrapper(compiler);
 
         // first compilation will roll back the mutation
-        var fixedCompilation = target.RollbackMutationsInError(compilerWrapper, compiler.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        target.RollbackMutationsInError(compilerWrapper, compiler.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.Normal, false).ShouldNotBeEmpty();
 
         // next attempt cannot roll back anything, so it assumes this is not fixable
-        Should.Throw<CompilationException>(() => target.RollbackMutationsInError(compilerWrapper, compilerWrapper.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.LastChance, false));
+        target.RollbackMutationsInError(compilerWrapper, compilerWrapper.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.LastChance, false).ShouldBeNull();
     }
 }
