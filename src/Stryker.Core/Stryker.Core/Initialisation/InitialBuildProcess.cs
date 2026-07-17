@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
@@ -77,7 +76,9 @@ public class InitialBuildProcess : IInitialBuildProcess
                 buildPath,
                 true,
                 configuration,
-                options: "-t:restore -p:RestorePackagesConfig=true", forcedFramework: targetFramework);
+                platform: platform,
+                options: "-t:restore -p:RestorePackagesConfig=true",
+                forcedFramework: targetFramework);
 
             if (result.ExitCode != ExitCodes.Success)
             {
@@ -110,12 +111,8 @@ public class InitialBuildProcess : IInitialBuildProcess
         "Initial build of targeted project failed. Please make sure the targeted project is buildable." +
         $" You can reproduce this error yourself using: \"{QuotesIfNeeded(buildCommand)} {options}\"";
 
-    private static string QuotesIfNeeded(string parameter)
-    {
-        if (!parameter.Contains(' ') || parameter.Length < 3 || parameter[0] == '"' && parameter[^1] == '"')
-        {
-            return parameter;
-        }
-        return $"\"{parameter}\"";
-    }
+    private static string QuotesIfNeeded(string parameter) =>
+        parameter.Length < 3 || !parameter.Contains(' ') || (parameter[0] == '"' && parameter[^1] == '"')
+            ? parameter
+            : $"\"{parameter}\"";
 }

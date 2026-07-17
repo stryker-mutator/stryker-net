@@ -99,6 +99,12 @@ public class StrykerOptions : IStrykerOptions
     public string TargetFramework { get; init; }
 
     /// <summary>
+    /// Build profile to use for analysis. DesignTime is the default, but other profile (e.g. Regular) can be used to
+    /// work around issues
+    /// </summary>
+    public AnalysisProfile Profile { get; init; }
+
+    /// <summary>
     /// The options passed to all logging systems
     /// </summary>
     public ILogOptions LogOptions { get; init; }

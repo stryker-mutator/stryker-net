@@ -364,6 +364,7 @@ public class InputFileResolver : IInputFileResolver
                             normalizedProjectUnderTestNameFilter,
                             logger,
                             options,
+                            options.DiagMode,
                             mutableProjectsAnalyzerResults);
                         // scan references if recursive scan is enabled
                         ScanReferences(mode, buildResult).ForEach(p => list.Add((p, entry.framework, options.Configuration, entry.platform)));
@@ -383,10 +384,11 @@ public class InputFileResolver : IInputFileResolver
         string framework,
         string normalizedProjectUnderTestNameFilter,
         StringWriter buildLogger,
-        IStrykerOptions options,
+        IStrykerBuildOptions options,
+        bool diagMode,
         ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> mutableProjectsAnalyzerResults)
     {
-        IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(project, buildLogger, options);
+        IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(project, buildLogger, diagMode, options);
         if (!buildResult.Any())
         {
             mutableProjectsAnalyzerResults.Add((buildResult, false));
@@ -435,7 +437,10 @@ public class InputFileResolver : IInputFileResolver
         return referencesToAdd;
     }
 
-    private IAnalyzerResults AnalyzeSingleProject(IProjectAnalyzer project, StringWriter buildLogger, IStrykerOptions options)
+    private IAnalyzerResults AnalyzeSingleProject(IProjectAnalyzer project,
+        StringWriter buildLogger,
+        bool optionsDiagMode,
+        IStrykerBuildOptions options)
     {
         var projectLogName = FileSystem.Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
         _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
@@ -459,16 +464,16 @@ public class InputFileResolver : IInputFileResolver
 
         if (!buildResultOverallSuccess)
         {
-            if (options.DiagMode)
+            if (optionsDiagMode)
             {
                 _logger.LogWarning("Project {ProjectFilePath} analysis failed. The MsBuild log is: {Log}", projectLogName, _buildLogs[projectLogName]);
             }
 
             // if this is a full framework project, we can retry after a nuget restore
-            buildResult = RetryBuild(project, options, projectLogName, buildResult, out buildResultOverallSuccess);
+            buildResult = RetryBuild(project, options, projectLogName, buildResult, optionsDiagMode, out buildResultOverallSuccess);
         }
 
-        LogAnalyzerResult(buildResult, options);
+        LogAnalyzerResult(buildResult, optionsDiagMode);
         if (buildResultOverallSuccess)
         {
             _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", projectLogName);
@@ -482,7 +487,7 @@ public class InputFileResolver : IInputFileResolver
             "Analysis of project {ProjectFilePath} failed for frameworks {FrameworkList}.",
             projectLogName, string.Join(',', failedFrameworks));
 
-        if (options.DiagMode)
+        if (optionsDiagMode)
         {
             _logger.LogWarning("Project analysis failed. The MsBuild log: {BuildLog}", buildLogger.ToString());
         }
@@ -490,14 +495,14 @@ public class InputFileResolver : IInputFileResolver
         return buildResult;
     }
 
-    private IAnalyzerResults RetryBuild(IProjectAnalyzer project, IStrykerOptions options, string projectLogName,
-        IAnalyzerResults buildResult, out bool buildResultOverallSuccess)
+    private IAnalyzerResults RetryBuild(IProjectAnalyzer project, IStrykerBuildOptions options, string projectLogName,
+        IAnalyzerResults buildResult, bool diagMode, out bool buildResultOverallSuccess)
     {
         if (Environment.OSVersion.Platform == PlatformID.Win32NT && buildResult.Any(r => !r.IsValid() && r.TargetsDesktop()))
         {
             _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
 
-            if (options.DiagMode)
+            if (diagMode)
             {
                 _logger.LogWarning("The MsBuild log is below.");
                 _logger.LogInformation(_buildLogs[projectLogName]);
@@ -527,10 +532,10 @@ public class InputFileResolver : IInputFileResolver
         return buildResult;
     }
 
-    private void LogAnalyzerResult(IAnalyzerResults analyzerResults, IStrykerOptions options)
+    private void LogAnalyzerResult(IAnalyzerResults analyzerResults, bool diagMode)
     {
         // do not log if trace is not enabled
-        if (!_logger.IsEnabled(LogLevel.Trace) || !options.DiagMode)
+        if (!_logger.IsEnabled(LogLevel.Trace) || !diagMode)
         {
             return;
         }
