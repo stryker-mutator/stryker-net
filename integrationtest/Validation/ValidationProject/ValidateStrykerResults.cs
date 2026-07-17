@@ -201,7 +201,11 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 670, ignored: 274, survived: 1, killed: 1, timeout: 0, nocoverage: 360);
+        // Coverage is the union over all four test projects, so the Timeout.cs mutants covered only
+        // by the MSTest project count as covered (1 survived + 2 timeout), like in the MSTestMTP run.
+        // Before coverage files were split per test host, the final flush overwrote the shared
+        // file, usually losing exactly those three mutants to NoCoverage.
+        CheckReportMutants(report, total: 670, ignored: 274, survived: 2, killed: 1, timeout: 2, nocoverage: 357);
         CheckReportTestCounts(report, total: 10);
     }
 
