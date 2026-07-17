@@ -20,6 +20,12 @@ public class Position : IPosition
         get => _column;
         set => _column = value > 0 ? value : throw new ArgumentException("Column number must be higher than 0");
     }
+
+    public bool Equals(IPosition other) => other is not null && Line == other.Line && Column == other.Column;
+
+    public override bool Equals(object obj) => obj is IPosition other && Equals(other);
+
+    public override int GetHashCode() => HashCode.Combine(Line, Column);
 }
 
 public class PositionConverter : JsonConverter<IPosition>

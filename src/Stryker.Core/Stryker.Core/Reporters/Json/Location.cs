@@ -28,6 +28,12 @@ public class Location : ILocation
             Column = location.EndLinePosition.Character + 1
         };
     }
+
+    public bool Equals(ILocation other) => other is not null && Start.Equals(other.Start) && End.Equals(other.End);
+
+    public override bool Equals(object obj) => obj is ILocation other && Equals(other);
+
+    public override int GetHashCode() => HashCode.Combine(Start, End);
 }
 
 public class LocationConverter : JsonConverter<ILocation>
