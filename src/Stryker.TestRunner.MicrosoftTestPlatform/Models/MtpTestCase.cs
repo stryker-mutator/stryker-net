@@ -7,14 +7,13 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform.Models;
 public sealed class MtpTestCase : ITestCase
 {
     private readonly TestNode _testNode;
-    public static int DefaultLineNumber => -1;
     public MtpTestCase(TestNode testNode)
     {
         _testNode = testNode;
         CodeFilePath = testNode.LocationFile ?? string.Empty;
-        // If the test framework doesn't provide location info, we will use -1 to indicate that the line number is unknown.
+        // If the test framework doesn't provide location info, we will use LineNumberNotFound to indicate that the line number is unknown.
         // ProjectMutator will try to find the test method by name in this case.
-        LineNumber = testNode.LocationLineStart ?? DefaultLineNumber;
+        LineNumber = testNode.LocationLineStart ?? ITestCase.LineNumberNotFound;
         FullyQualifiedName = BuildFullyQualifiedName(testNode);
     }
 

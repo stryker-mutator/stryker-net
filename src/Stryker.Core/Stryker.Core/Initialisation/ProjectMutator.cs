@@ -49,32 +49,15 @@ public class ProjectMutator : IProjectMutator
 
         foreach (var unitTest in unitTests)
         {
-            ITestFile? testFile = null;
-            SyntaxNode? node = null;
-
             // Primary: use location info when the framework provides it (e.g. XUnit v3, TUnit)
-            // When the test framework doesn't provide location info, we will try to find the test method by name (e.g. NUnit and MSTest with MTP).
-            if (Path.GetExtension(unitTest.CodeFilePath) == ".cs" && unitTest.LineNumber > 0)
+            if (unitTest.LineNumber != Stryker.Abstractions.Testing.ITestCase.LineNumberNotFound
+                && TryAddTestByLineNumber(unitTest, testProjectsInfo))
             {
-                testFile = testProjectsInfo.TestFiles.SingleOrDefault(tf => tf.FilePath == unitTest.CodeFilePath);
-                if (testFile is not null)
-                {
-                    var lines = testFile.SyntaxTree.GetText().Lines;
-                    if (unitTest.LineNumber <= lines.Count)
-                    {
-                        var lineSpan = lines[unitTest.LineNumber - 1].Span;
-                        var nodesInSpan = testFile.SyntaxTree.GetRoot().DescendantNodes(lineSpan);
-                        node = nodesInSpan.FirstOrDefault(n => n is MethodDeclarationSyntax);
-                    }
-                }
+                continue;
             }
 
             // Fallback: search by method name when location info is missing (e.g. NUnit and MSTest with MTP)
-            if (node is null)
-            {
-                (testFile, node) = FindTestMethodByName(unitTest, testProjectsInfo.TestFiles);
-            }
-
+            var (testFile, node) = FindTestMethodByName(unitTest, testProjectsInfo.TestFiles);
             if (testFile is not null && node is not null)
             {
                 testFile.AddTest(unitTest.Id, unitTest.FullyQualifiedName, node);
@@ -84,6 +67,36 @@ public class ProjectMutator : IProjectMutator
                 _logger.LogDebug("Could not locate unit test in any testfile. This should not happen and results in incorrect test reporting.");
             }
         }
+    }
+
+    private static bool TryAddTestByLineNumber(Stryker.Abstractions.Testing.ITestCase unitTest, ITestProjectsInfo testProjectsInfo)
+    {
+        if (Path.GetExtension(unitTest.CodeFilePath) != ".cs")
+        {
+            return false;
+        }
+
+        var testFile = testProjectsInfo.TestFiles.SingleOrDefault(tf => tf.FilePath == unitTest.CodeFilePath);
+        if (testFile is null)
+        {
+            return false;
+        }
+
+        var lines = testFile.SyntaxTree.GetText().Lines;
+        if (unitTest.LineNumber > lines.Count)
+        {
+            return false;
+        }
+
+        var lineSpan = lines[unitTest.LineNumber - 1].Span;
+        var node = testFile.SyntaxTree.GetRoot().DescendantNodes(lineSpan).FirstOrDefault(n => n is MethodDeclarationSyntax);
+        if (node is null)
+        {
+            return false;
+        }
+
+        testFile.AddTest(unitTest.Id, unitTest.FullyQualifiedName, node);
+        return true;
     }
 
     private static (ITestFile? testFile, SyntaxNode? node) FindTestMethodByName(Stryker.Abstractions.Testing.ITestCase unitTest, IEnumerable<ITestFile> testFiles)

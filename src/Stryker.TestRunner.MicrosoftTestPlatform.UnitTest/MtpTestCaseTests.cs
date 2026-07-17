@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Shouldly;
+using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
@@ -40,7 +41,7 @@ public class MtpTestCaseTests
         var testCase = new MtpTestCase(testNode);
 
         testCase.CodeFilePath.ShouldBe(string.Empty);
-        testCase.LineNumber.ShouldBe(MtpTestCase.DefaultLineNumber);
+        testCase.LineNumber.ShouldBe(ITestCase.LineNumberNotFound);
         testCase.FullyQualifiedName.ShouldBe("uid-1");
     }
 
