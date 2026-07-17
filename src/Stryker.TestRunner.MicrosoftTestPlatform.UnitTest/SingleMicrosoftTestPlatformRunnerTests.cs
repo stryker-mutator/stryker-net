@@ -691,6 +691,133 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.ResultMessage.ShouldContain("crash");           // failure reason is surfaced, not swallowed
     }
 
+    // --- Bail-on-first-failure tests ---
+    //
+    // The MTP runner now mirrors the VsTest runner: streamed results are fed to the mutation update
+    // handler as they arrive, and once every tested mutant's fate is decided the remaining tests/assemblies
+    // are skipped. The update handler returns true while mutants are pending and always returns true when
+    // --disable-bail is set, so honouring its return value is all that is needed to honour that option.
+
+    [TestMethod, Timeout(1000)]
+    public async Task TestMultipleMutantsAsync_BailsOut_SkippingRemainingAssemblies_OnceMutantIsKilled()
+    {
+        const string assemblyA = "/a.dll";
+        const string assemblyB = "/b.dll";
+        _testsByAssembly[assemblyA] = [new TestNode("a-uid", "TestA", "test", TestNodeStates.Failed)];
+        _testsByAssembly[assemblyB] = [new TestNode("b-uid", "TestB", "test", TestNodeStates.Passed)];
+
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns([assemblyA, assemblyB]);
+
+        var mutant = new Mock<IMutant>();
+        mutant.Setup(m => m.Id).Returns(1);
+
+        var runAssemblies = new List<string>();
+        using var runner = new StreamingAssemblyRunner(
+            _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, runAssemblies);
+
+        // Bail (return false) as soon as any test has failed; continue otherwise.
+        bool Update(IReadOnlyList<IMutant> _, ITestIdentifiers failed, ITestIdentifiers __, ITestIdentifiers ___)
+            => !failed.GetIdentifiers().Any();
+
+        await runner.TestMultipleMutantsAsync(project.Object, null, [mutant.Object], Update);
+
+        // Assembly A streamed a failing test, so the run bailed and never touched assembly B.
+        runAssemblies.ShouldBe([assemblyA]);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public async Task TestMultipleMutantsAsync_DoesNotBail_WhenUpdateHandlerKeepsRunning()
+    {
+        // Mirrors --disable-bail: the handler always returns true, so every assembly must run even
+        // after a test fails.
+        const string assemblyA = "/a.dll";
+        const string assemblyB = "/b.dll";
+        _testsByAssembly[assemblyA] = [new TestNode("a-uid", "TestA", "test", TestNodeStates.Failed)];
+        _testsByAssembly[assemblyB] = [new TestNode("b-uid", "TestB", "test", TestNodeStates.Passed)];
+
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns([assemblyA, assemblyB]);
+
+        var mutant = new Mock<IMutant>();
+        mutant.Setup(m => m.Id).Returns(1);
+
+        var runAssemblies = new List<string>();
+        using var runner = new StreamingAssemblyRunner(
+            _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, runAssemblies);
+
+        bool Update(IReadOnlyList<IMutant> _, ITestIdentifiers __, ITestIdentifiers ___, ITestIdentifiers ____) => true;
+
+        await runner.TestMultipleMutantsAsync(project.Object, null, [mutant.Object], Update);
+
+        runAssemblies.ShouldBe([assemblyA, assemblyB]);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public async Task TestMultipleMutantsAsync_FeedsStreamedResultsToUpdateHandler_BeforeRunCompletes()
+    {
+        const string assembly = "/a.dll";
+        _testsByAssembly[assembly] = [new TestNode("a-uid", "TestA", "test", TestNodeStates.Failed)];
+
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns([assembly]);
+
+        var mutant = new Mock<IMutant>();
+        mutant.Setup(m => m.Id).Returns(1);
+
+        var runAssemblies = new List<string>();
+        using var runner = new StreamingAssemblyRunner(
+            _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, runAssemblies);
+
+        ITestIdentifiers? capturedFailed = null;
+        bool Update(IReadOnlyList<IMutant> _, ITestIdentifiers failed, ITestIdentifiers __, ITestIdentifiers ___)
+        {
+            capturedFailed = failed;
+            return false;
+        }
+
+        await runner.TestMultipleMutantsAsync(project.Object, null, [mutant.Object], Update);
+
+        // The failing test was surfaced to the handler via the incremental streaming path.
+        capturedFailed.ShouldNotBeNull();
+        capturedFailed!.GetIdentifiers().ShouldContain("a-uid");
+    }
+
+    /// <summary>
+    /// Simulates the server streaming each discovered test's result to the bail callback during an assembly
+    /// run, without starting a real test host. Records the assemblies that were actually run so a test can
+    /// assert which ones were skipped after a bail.
+    /// </summary>
+    private sealed class StreamingAssemblyRunner : SingleMicrosoftTestPlatformRunner
+    {
+        private readonly List<string> _runAssemblies;
+
+        public StreamingAssemblyRunner(
+            Dictionary<string, List<TestNode>> testsByAssembly,
+            Dictionary<string, MtpTestDescription> testDescriptions,
+            TestSet testSet,
+            object discoveryLock,
+            List<string> runAssemblies)
+            : base(0, testsByAssembly, testDescriptions, testSet, discoveryLock, NullLogger.Instance)
+            => _runAssemblies = runAssemblies;
+
+        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
+            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null)
+        {
+            _runAssemblies.Add(assembly);
+            var discovered = GetDiscoveredTests(assembly) ?? [];
+
+            // Simulate the server streaming the discovered tests' results to the bail callback.
+            shouldBail?.Invoke(discovered.Select(t => new TestNodeUpdate(t, "root")).ToList());
+
+            var result = BuildTestRunResult(
+                discovered.Select(t => new TestNodeUpdate(t, "root")).ToList(),
+                discovered.Count,
+                TimeSpan.Zero);
+            return Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>((result, false, discovered));
+        }
+    }
+
     /// <summary>
     /// Simulates an assembly whose test host crashes: <see cref="RunAssemblyTestsAsync"/> returns the
     /// failure sentinel produced by the real exception path, without starting any server process.
@@ -709,7 +836,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
             => _discovered = discovered;
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null)
             => Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>(
                 (new TestRunResult(false, "simulated test host crash"), false, _discovered));
     }
@@ -1448,7 +1575,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
             var result = new TestRunResult(
@@ -1475,7 +1602,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
             var result = new TestRunResult(

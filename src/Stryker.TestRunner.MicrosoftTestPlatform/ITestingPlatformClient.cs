@@ -11,5 +11,5 @@ public interface ITestingPlatformClient : IDisposable
     Task ExitAsync(bool gracefully = true);
     Task<int> WaitServerProcessExitAsync();
     Task<ResponseListener> DiscoverTestsAsync(Guid requestId, Func<TestNodeUpdate[], Task> action, bool @checked = true);
-    Task<ResponseListener> RunTestsAsync(Guid requestId, Func<TestNodeUpdate[], Task> action, TestNode[]? testNodes = null);
+    Task<ResponseListener> RunTestsAsync(Guid requestId, Func<TestNodeUpdate[], Task> action, TestNode[]? testNodes = null, CancellationToken cancellationToken = default);
 }
