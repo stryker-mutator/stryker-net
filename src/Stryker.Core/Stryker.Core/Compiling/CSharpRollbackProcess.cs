@@ -22,10 +22,9 @@ public interface ICompilationContent
     void ReplaceSyntaxTree(SyntaxTree original, SyntaxTree updated);
 }
 
-
 public interface ICSharpRollbackProcess
 {
-    IEnumerable<int> RollbackMutationsInError(ICompilationContent wrapper, ImmutableArray<Diagnostic> diagnostics,
+    IEnumerable<int>? RollbackMutationsInError(ICompilationContent wrapper, ImmutableArray<Diagnostic> diagnostics,
         Mode mode, bool devMode);
 
     enum Mode
@@ -44,7 +43,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
     private List<int> RollBackedIds { get; } = [];
     private ILogger Logger { get; } = ApplicationLogging.LoggerFactory.CreateLogger<CSharpRollbackProcess>();
 
-    public IEnumerable<int> RollbackMutationsInError(ICompilationContent wrapper, ImmutableArray<Diagnostic> diagnostics, ICSharpRollbackProcess.Mode mode, bool devMode)
+    public IEnumerable<int>? RollbackMutationsInError(ICompilationContent wrapper, ImmutableArray<Diagnostic> diagnostics, ICSharpRollbackProcess.Mode mode, bool devMode)
     {
         // match the diagnostics with their syntax trees
         var syntaxTreeMapping =
@@ -75,11 +74,10 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
 
             var updatedSyntaxTree = RemoveCompileErrorMutations(originalTree, syntaxTreeMap.Value, mode).SyntaxTree;
 
-            if (updatedSyntaxTree == originalTree || mode == ICSharpRollbackProcess.Mode.LastChance)
+            if (updatedSyntaxTree == originalTree)
             {
-                Logger.LogCritical(
-                    "Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on github with the previous error message.");
-                throw new CompilationException("Internal error due to compile error.");
+                Logger.LogWarning("Unable to fix error(s) in file {FilePath}.", originalTree.FilePath);
+                return null;
             }
 
             Logger.LogTrace("RolledBack to {UpdatedSyntaxTree}", updatedSyntaxTree.ToString());
