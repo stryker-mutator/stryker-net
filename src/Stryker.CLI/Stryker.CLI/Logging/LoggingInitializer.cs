@@ -36,7 +36,17 @@ public class LoggingInitializer : ILoggingInitializer
 
     private string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)
     {
-        var outputPath = inputs.OutputPathInput.SuppliedInput ?? Path.Combine("StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
+        // The stable output root. When no output path is supplied the per-run output lives in a
+        // timestamped subfolder of this root; an explicitly supplied output path is the root itself.
+        // The root is where the disk baseline is stored (so it can be found on the next run) and
+        // where the gitignore is placed (so the baseline and all run outputs are excluded from git).
+        var outputRoot = inputs.OutputPathInput.SuppliedInput ?? "StrykerOutput";
+        var outputPath = inputs.OutputPathInput.SuppliedInput ?? Path.Combine(outputRoot, DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
+
+        if (!Path.IsPathRooted(outputRoot))
+        {
+            outputRoot = Path.Combine(inputs.BasePathInput.SuppliedInput, outputRoot);
+        }
 
         if (!Path.IsPathRooted(outputPath))
         {
@@ -46,8 +56,11 @@ public class LoggingInitializer : ILoggingInitializer
         // outputpath should always be created
         fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
 
-        // add gitignore if it didn't exist yet
-        var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(outputPath, ".gitignore"));
+        // store the baseline under the stable output root so it follows --output and persists across runs
+        inputs.BaselineOutputInput.SuppliedInput = outputRoot;
+
+        // add gitignore to the output root if it didn't exist yet
+        var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(outputRoot, ".gitignore"));
         if (!fileSystem.File.Exists(gitignorePath))
         {
             try
