@@ -8,6 +8,9 @@ namespace TargetProject.Constructs;
 
 public class CSharp3
 {
+    // implicitly typed arrays
+    public static int[] ImplicitArrayCreation() => new[] { 1, 2, 3 };
+
     // anonymous types
     public class Product
     {
