@@ -25,7 +25,6 @@ public interface IInputFileResolver
     IFileSystem FileSystem { get; }
 }
 
-
 /// <summary>
 ///  - Reads .csproj to find project under test
 ///  - Scans project under test and store files to mutate
