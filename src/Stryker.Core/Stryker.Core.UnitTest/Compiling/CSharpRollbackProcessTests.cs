@@ -1237,9 +1237,9 @@ public class CSharpRollbackProcessTests : TestBase
         var compilerWrapper = new CompilerWrapper(compiler);
 
         // first compilation will roll back the mutation
-        var fixedCompilation = target.RollbackMutationsInError(compilerWrapper, compiler.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        target.RollbackMutationsInError(compilerWrapper, compiler.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.Normal, false).ShouldNotBeEmpty();
 
         // next attempt cannot roll back anything, so it assumes this is not fixable
-        Should.Throw<CompilationException>(() => target.RollbackMutationsInError(compilerWrapper, compilerWrapper.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.LastChance, false));
+        target.RollbackMutationsInError(compilerWrapper, compilerWrapper.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.LastChance, false).ShouldBeNull();
     }
 }
