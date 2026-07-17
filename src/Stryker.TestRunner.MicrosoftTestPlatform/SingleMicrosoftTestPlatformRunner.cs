@@ -1,5 +1,8 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.MemoryMappedFiles;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
@@ -26,7 +29,13 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     private readonly object _discoveryLock;
     private readonly ILogger _logger;
     private readonly string _mutantFilePath;
-    private readonly string _coverageFilePath;
+    private readonly string _coverageFilePathBase;
+    // One coverage file per test assembly. The injected MutantControl flushes coverage with an
+    // unconditional overwrite on process exit, so with test hosts sharing a single file the last
+    // flush to land replaces all the others: only one assembly's coverage survives, and which one
+    // depends on server stop order and process shutdown timing. Giving every assembly's host its
+    // own file and unioning them at read time makes coverage independent of both.
+    private readonly ConcurrentDictionary<string, string> _coverageFilePaths = new();
     private readonly IStrykerOptions? _options;
 
     private readonly Dictionary<string, AssemblyTestServer> _assemblyServers = new();
@@ -60,9 +69,16 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         _logger = logger;
         _options = options;
 
-        // Create unique file paths for this runner to communicate with the test process
+        // Create unique file paths for this runner to communicate with the test process.
+        // The coverage base name embeds the process id plus a per-instance nonce: coverage files
+        // are only deleted once their path has been assigned, so a predictable name could let a
+        // run read a stale file left behind by a crashed earlier run (same runner id, same
+        // assembly), and concurrent Stryker processes could clobber each other's files. The nonce
+        // covers what the process id alone does not (pid reuse, several runner instances with the
+        // same id in one process).
         _mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-{_id}.txt");
-        _coverageFilePath = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{_id}.txt");
+        _coverageFilePathBase = Path.Combine(Path.GetTempPath(),
+            $"stryker-coverage-{Environment.ProcessId}-{_id}-{Guid.NewGuid().ToString("N")[..8]}");
 
         // Initialize with no active mutation
         WriteMutantIdToFile(-1);
@@ -161,11 +177,29 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
         else if (_coverageMode)
         {
-            envVars["STRYKER_COVERAGE_FILE"] = Path.GetFileName(_coverageFilePath);
+            envVars["STRYKER_COVERAGE_FILE"] = Path.GetFileName(GetCoverageFilePath(assembly));
         }
 
         return envVars;
     }
+
+    /// <summary>
+    /// Returns the coverage file path assigned to the given test assembly, assigning one on first
+    /// use. The base embeds the process id, runner id and a per-instance nonce (files from other
+    /// processes, runners and runner instances must not collide); the hash of the assembly path
+    /// distinguishes assemblies in different directories that share a file name. The assembly name
+    /// itself is only included, truncated, to keep the file recognizable when debugging.
+    /// </summary>
+    internal string GetCoverageFilePath(string assembly) =>
+        _coverageFilePaths.GetOrAdd(assembly, static (path, basePath) =>
+        {
+            var name = new string(Path.GetFileNameWithoutExtension(path)
+                .Select(c => char.IsLetterOrDigit(c) ? c : '-')
+                .Take(32)
+                .ToArray());
+            var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(path)))[..8];
+            return $"{basePath}-{name}-{hash}.txt";
+        }, _coverageFilePathBase);
 
     /// <summary>
     /// Enables or disables coverage capture mode. When enabled, the test process will track
@@ -192,8 +226,8 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             _assemblyServers.Clear();
         }
 
-        // Clean up any existing coverage file, even when enabling, to ensure we start fresh
-        DeleteCoverageFile();
+        // Clean up any existing coverage files, even when enabling, to ensure we start fresh
+        DeleteCoverageFiles();
     }
 
     /// <summary>
@@ -232,24 +266,44 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         Path.Combine(Path.GetTempPath(), $"stryker-epoch-{_id}-{SanitizeAssemblyName(assembly)}.txt");
 
     /// <summary>
-    /// Reads coverage data from the coverage file written by the test process.
+    /// Reads coverage data from the per-assembly coverage files written by the test processes,
+    /// unioned across all assemblies this runner started a server for.
     /// Returns the covered mutants and static mutants as separate lists.
     /// </summary>
-    public (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants) ReadCoverageData() =>
-        ReadCoverageDataFrom(_coverageFilePath);
+    public (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants) ReadCoverageData()
+    {
+        var coveredMutants = new HashSet<int>();
+        var staticMutants = new HashSet<int>();
 
-    private (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants) ReadCoverageDataFrom(string coverageFilePath)
+        foreach (var (assembly, coverageFilePath) in _coverageFilePaths)
+        {
+            var (covered, statics) = ReadCoverageDataFrom(coverageFilePath, assembly);
+            coveredMutants.UnionWith(covered);
+            staticMutants.UnionWith(statics);
+        }
+
+        return (coveredMutants.ToList(), staticMutants.ToList());
+    }
+
+    /// <summary>
+    /// Reads coverage data from a single coverage file written by a test process. Shared by the
+    /// per-assembly union in <see cref="ReadCoverageData"/> and the single-file, single-test read
+    /// used by <see cref="RunSingleTestForCoverageInReusedProcessAsync"/>.
+    /// </summary>
+    private (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants) ReadCoverageDataFrom(string coverageFilePath, string? assembly = null)
     {
         if (!File.Exists(coverageFilePath))
         {
-            _logger.LogDebug("{RunnerId}: Coverage file not found at {Path}", RunnerId, coverageFilePath);
+            _logger.LogDebug("{RunnerId}: Coverage file{ForAssembly} not found at {Path}",
+                RunnerId, assembly is null ? string.Empty : $" for {Path.GetFileName(assembly)}", coverageFilePath);
             return (Array.Empty<int>(), Array.Empty<int>());
         }
 
         try
         {
             var content = File.ReadAllText(coverageFilePath).Trim();
-            _logger.LogDebug("{RunnerId}: Read coverage data: {Content}", RunnerId, content);
+            _logger.LogDebug("{RunnerId}: Read coverage data{ForAssembly}: {Content}",
+                RunnerId, assembly is null ? string.Empty : $" for {Path.GetFileName(assembly)}", content);
 
             if (string.IsNullOrEmpty(content))
             {
@@ -284,8 +338,6 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             .ToList();
     }
 
-    private void DeleteCoverageFile() => DeleteFileIfExists(_coverageFilePath);
-
     private void DeleteFileIfExists(string path)
     {
         try
@@ -298,6 +350,14 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "{RunnerId}: Failed to delete file at {Path}", RunnerId, path);
+        }
+    }
+
+    private void DeleteCoverageFiles()
+    {
+        foreach (var coverageFilePath in _coverageFilePaths.Values)
+        {
+            DeleteFileIfExists(coverageFilePath);
         }
     }
 
@@ -997,10 +1057,6 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
                 {
                     File.Delete(_mutantFilePath);
                 }
-                if (File.Exists(_coverageFilePath))
-                {
-                    File.Delete(_coverageFilePath);
-                }
                 foreach (var assembly in _initializedPerTestFiles)
                 {
                     DeleteFileIfExists(GetPerTestCoverageFilePath(assembly));
@@ -1012,6 +1068,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
                 // Ignore cleanup errors
                 _logger.LogWarning(ex, "{RunnerId}: Failed to clean up temp files", RunnerId);
             }
+            DeleteCoverageFiles();
         }
         _disposed = true;
     }

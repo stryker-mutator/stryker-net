@@ -17,8 +17,6 @@
   </Folder>
   <Folder Name="/Solution Items/pipeline-templates/">
     <File Path="../pipeline-templates/populate-cache-steps.yml" />
-    <File Path="../pipeline-templates/prepare-integration-test-steps.yml" />
-    <File Path="../pipeline-templates/run-integration-test-steps.yml" />
     <File Path="../pipeline-templates/update-package-lock-files-stage.yml" />
   </Folder>
   <Project Path="Stryker.Abstractions/Stryker.Abstractions.csproj" />

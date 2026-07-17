@@ -9,6 +9,19 @@ For historical release notes prior to the consolidated changelog, see the packag
 
 <!-- changelog -->
 
+# [4.16.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.15.0...dotnet-stryker@4.16.0) (2026-07-03)
+
+
+### Bug Fixes
+
+* **dashboard:** do not delete the dashboard report ([#3669](https://github.com/stryker-mutator/stryker-net/issues/3669)) ([62baf08](https://github.com/stryker-mutator/stryker-net/commit/62baf08074f20f1d1e108bebf1bb31fddbb7c4ac)), closes [#2563](https://github.com/stryker-mutator/stryker-net/issues/2563)
+
+
+### Features
+
+* **no-logo:** Skip printing logo with low verbosity ([#3647](https://github.com/stryker-mutator/stryker-net/issues/3647)) ([d8a1c04](https://github.com/stryker-mutator/stryker-net/commit/d8a1c04b6295b92545ce98d3f60fc50b8d01ddb4))
+* **reporters:** Add GitLab Code Quality reporter ([#3660](https://github.com/stryker-mutator/stryker-net/issues/3660)) ([0d17830](https://github.com/stryker-mutator/stryker-net/commit/0d17830cc81d793ed59276ba610aaa5ce6c05123))
+
 # [4.15.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.14.2...dotnet-stryker@4.15.0) (2026-06-22)
 
 

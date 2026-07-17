@@ -62,6 +62,11 @@ public abstract class ProjectComponent : IProjectComponent
     public abstract IEnumerable<SyntaxTree> MutatedSyntaxTrees { get; }
 
     /// <summary>
+    /// All syntax trees needed to build the original project
+    /// </summary>
+    public abstract IEnumerable<SyntaxTree> UnmutatedSyntaxTrees { get; }
+
+    /// <summary>
     /// Returns the mutation score for this folder / file
     /// </summary>
     /// <returns>double between 0 and 1 or NaN when no score could be calculated</returns>
