@@ -77,7 +77,7 @@ When creating or updating pull requests, **always** use Angular-style convention
 
 To test Stryker.NET on a project in a terminal, you can build Stryker.NET and then run the resulting `Stryker.CLI.dll` on the target project. Run `dotnet <path-to-stryker.dll>` in the root of the project you want to test (adjust path as needed based on your build configuration).
 
-For example in the `/integrationtest/TargetProjects/NetCore/TargetProject` directory, you can run `dotnet ../../../../src/Stryker.CLI/Stryker.CLI/bin/Debug/net8.0/Stryker.CLI.dll` to run the locally built Stryker.NET on the target projects.
+For example in the `/integrationtest/TargetProjects/NetCore/TargetProject` directory, you can run `dotnet ../../../../src/Stryker.CLI/Stryker.CLI/bin/Debug/Stryker.CLI.dll` to run the locally built Stryker.NET on the target projects.
 
 Keep in mind the different run modes of Stryker.NET:
 - **Solution context mode**: Run Stryker.NET from the root of a project containing a solution file (`.sln`). In this mode, Stryker.NET will analyze the solution and run mutation testing on all projects in the solution.
