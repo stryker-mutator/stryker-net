@@ -521,6 +521,51 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
     }
 
+    /// <summary>
+    /// Captures coverage for a single test with full process isolation: the test host is discarded and
+    /// restarted before the test runs and stopped again right after, so no static state or coverage from
+    /// another test can leak in. That is what lets the result be trusted with
+    /// <see cref="CoverageConfidence.Exact"/> - unlike the reused-process "perTest" capture in
+    /// <see cref="RunSingleTestForCoverageInReusedProcessAsync"/>, which can only ever report
+    /// <see cref="CoverageConfidence.Normal"/> since other tests may have already touched shared state
+    /// on the same warm process. Static-mutant tagging is dropped here (an empty array is passed to
+    /// <see cref="CoverageRunResult.Create"/>), mirroring VsTestRunnerPool's per-isolated-test handling:
+    /// that tagging exists to protect mutants that might only be covered via static state left over from
+    /// another test, and true process isolation already rules that out.
+    /// </summary>
+    internal virtual async Task<ICoverageRunResult> RunSingleTestForCoverageInIsolatedProcessAsync(
+        string assembly, TestNode test, string testId)
+    {
+        var coverageFilePath = GetCoverageFilePath(assembly);
+
+        try
+        {
+            // Discard any server left over from a previous isolated test (or another mode) so this
+            // test starts in a fresh process rather than one that already ran other code.
+            await DiscardServerAsync(assembly).ConfigureAwait(false);
+
+            var server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
+            await server.RunTestsAsync(new[] { test }).ConfigureAwait(false);
+
+            // Stop gracefully (not force) so the injected MutantControl's ProcessExit handler flushes
+            // this test's (and only this test's) coverage to file before the process goes away.
+            await server.StopAsync().ConfigureAwait(false);
+
+            var (covered, _) = ReadCoverageDataFrom(coverageFilePath, assembly);
+            return CoverageRunResult.Create(testId, CoverageConfidence.Exact, covered, Array.Empty<int>(), Array.Empty<int>());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex,
+                "{RunnerId}: Failed to capture isolated coverage for {TestId}; marking as Dubious",
+                RunnerId, testId);
+
+            await DiscardServerAsync(assembly).ConfigureAwait(false);
+            return CoverageRunResult.Create(testId, CoverageConfidence.Dubious,
+                Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
+        }
+    }
+
     private async Task<AssemblyTestServer> GetOrCreateServerAsync(string assembly)
     {
         AssemblyTestServer? deadServer = null;
