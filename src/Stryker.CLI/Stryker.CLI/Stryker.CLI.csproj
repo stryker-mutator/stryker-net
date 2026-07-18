@@ -8,6 +8,7 @@
     <ToolCommandName>dotnet-stryker</ToolCommandName>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
