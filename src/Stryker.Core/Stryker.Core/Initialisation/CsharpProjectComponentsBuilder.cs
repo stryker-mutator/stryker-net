@@ -73,10 +73,12 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {
         var generatedAssemblyInfo = analyzerResult.AssemblyAttributeFileName();
         var sourceProjectDir = FileSystem.Path.GetDirectoryName(analyzerResult.ProjectFilePath) ?? "";
+        var runRootDir = GetRunRootDir(options, sourceProjectDir);
         var projectUnderTestFolderComposite = new FolderComposite
         {
             FullPath = sourceProjectDir,
             RelativePath = FileSystem.Path.GetDirectoryName(sourceProjectDir) ?? "",
+            RootRelativePath = FileSystem.Path.GetRelativePath(runRootDir, sourceProjectDir),
         };
         var cache = new Dictionary<string, FolderComposite> { [string.Empty] = projectUnderTestFolderComposite };
 
@@ -87,13 +89,14 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
         {
             var relativePath = FileSystem.Path.GetRelativePath(sourceProjectDir, sourceFile);
             var folderComposite = GetOrBuildFolderComposite(cache, FileSystem.Path.GetDirectoryName(relativePath) ?? string.Empty
-                , sourceProjectDir, projectUnderTestFolderComposite);
+                , sourceProjectDir, projectUnderTestFolderComposite, runRootDir);
 
             var file = new CsharpFileLeaf()
             {
                 SourceCode = FileSystem.File.ReadAllText(sourceFile),
                 FullPath = sourceFile,
-                RelativePath = relativePath
+                RelativePath = relativePath,
+                RootRelativePath = FileSystem.Path.GetRelativePath(runRootDir, sourceFile)
             };
 
             // Get the syntax tree for the source file
@@ -165,6 +168,14 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
     }
 
     /// <summary>
+    /// The root directory of the overall analysis run: the solution directory in solution mode
+    /// (multiple projects), otherwise the project's own directory. Falls back to <paramref name="sourceProjectDir"/>
+    /// if <see cref="IStrykerOptions.ProjectPath"/> is unavailable (e.g. minimal test fixtures).
+    /// </summary>
+    private string GetRunRootDir(IStrykerOptions options, string sourceProjectDir) =>
+        string.IsNullOrEmpty(options?.ProjectPath) ? sourceProjectDir : FileSystem.Path.GetFullPath(options.ProjectPath);
+
+    /// <summary>
     /// Recursively scans the given directory for files to mutate
     /// Deprecated method, should not be maintained
     /// </summary>
@@ -174,7 +185,8 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
         var rootFolderComposite = new FolderComposite
         {
             FullPath = FileSystem.Path.GetFullPath(path),
-            RelativePath = FileSystem.Path.GetRelativePath(sourceProjectDir, FileSystem.Path.GetFullPath(path))
+            RelativePath = FileSystem.Path.GetRelativePath(sourceProjectDir, FileSystem.Path.GetFullPath(path)),
+            RootRelativePath = FileSystem.Path.GetRelativePath(GetRunRootDir(_options, sourceProjectDir), FileSystem.Path.GetFullPath(path))
         };
 
         rootFolderComposite.Add(
@@ -189,10 +201,12 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
     /// </summary>
     private FolderComposite FindInputFiles(string path, string sourceProjectDir, CSharpParseOptions cSharpParseOptions, bool mutate = true)
     {
+        var runRootDir = GetRunRootDir(_options, sourceProjectDir);
         var folderComposite = new FolderComposite
         {
             FullPath = FileSystem.Path.GetFullPath(path),
-            RelativePath = FileSystem.Path.GetRelativePath(sourceProjectDir, FileSystem.Path.GetFullPath(path))
+            RelativePath = FileSystem.Path.GetRelativePath(sourceProjectDir, FileSystem.Path.GetFullPath(path)),
+            RootRelativePath = FileSystem.Path.GetRelativePath(runRootDir, FileSystem.Path.GetFullPath(path))
         };
 
         foreach (var folder in FileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(FileSystem.Path.GetFileName(x))))
@@ -209,7 +223,8 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
             {
                 SourceCode = FileSystem.File.ReadAllText(file),
                 FullPath = file,
-                RelativePath = FileSystem.Path.GetRelativePath(sourceProjectDir, file)
+                RelativePath = FileSystem.Path.GetRelativePath(sourceProjectDir, file),
+                RootRelativePath = FileSystem.Path.GetRelativePath(runRootDir, file)
             };
 
             // Get the syntax tree for the source file
@@ -239,7 +254,7 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
     }
 
     // get the FolderComposite object representing the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path
-    private FolderComposite GetOrBuildFolderComposite(Dictionary<string, FolderComposite> cache, string targetFolder, string sourceProjectDir, FolderComposite inputFiles)
+    private FolderComposite GetOrBuildFolderComposite(Dictionary<string, FolderComposite> cache, string targetFolder, string sourceProjectDir, FolderComposite inputFiles, string runRootDir)
     {
         if (cache.TryGetValue(targetFolder, out var composite))
         {
@@ -264,6 +279,7 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
             {
                 FullPath = fullPath,
                 RelativePath = FileSystem.Path.GetRelativePath(sourceProjectDir, fullPath),
+                RootRelativePath = FileSystem.Path.GetRelativePath(runRootDir, fullPath),
             };
             if (subDir == null)
             {

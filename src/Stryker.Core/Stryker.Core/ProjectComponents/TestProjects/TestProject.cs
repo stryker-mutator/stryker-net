@@ -19,13 +19,22 @@ public sealed class TestProject : IEquatable<ITestProject>, ITestProject
     public string ProjectFilePath => AnalyzerResult.ProjectFilePath;
     public IEnumerable<ITestFile> TestFiles { get; }
 
-    public TestProject(IFileSystem fileSystem, IAnalyzerResult testProjectAnalyzerResult)
+    public TestProject(IFileSystem fileSystem, IAnalyzerResult testProjectAnalyzerResult, string runRootDir = null)
     {
         AssertValidTestProject(testProjectAnalyzerResult);
 
         fileSystem ??= new FileSystem();
 
         AnalyzerResult = testProjectAnalyzerResult;
+
+        // Only touch the file system's Path abstraction when there are actually files to process;
+        // some callers use a strict IFileSystem mock that doesn't set up Path.
+        string rootDir = null;
+        if (testProjectAnalyzerResult.SourceFiles is { Length: > 0 })
+        {
+            var testProjectDir = fileSystem.Path.GetDirectoryName(testProjectAnalyzerResult.ProjectFilePath) ?? string.Empty;
+            rootDir = string.IsNullOrEmpty(runRootDir) ? testProjectDir : fileSystem.Path.GetFullPath(runRootDir);
+        }
 
         var testFiles = new List<TestFile>();
         foreach (var file in testProjectAnalyzerResult.SourceFiles)
@@ -42,12 +51,27 @@ public sealed class TestProject : IEquatable<ITestProject>, ITestProject
                 {
                     SyntaxTree = syntaxTree,
                     FilePath = file,
-                    Source = sourceCode
+                    Source = sourceCode,
+                    RelativePath = GetRelativePathSafe(fileSystem, rootDir, file)
                 });
             }
         }
 
         TestFiles = testFiles;
+    }
+
+    // Falls back to the bare file name if a relative path can't be computed (e.g. malformed paths in
+    // some test doubles) so this never crashes; only used for report/baseline keying, never for I/O.
+    private static string GetRelativePathSafe(IFileSystem fileSystem, string rootDir, string file)
+    {
+        try
+        {
+            return fileSystem.Path.GetRelativePath(rootDir, file);
+        }
+        catch (ArgumentException)
+        {
+            return fileSystem.Path.GetFileName(file);
+        }
     }
 
     private static void AssertValidTestProject(IAnalyzerResult testProjectAnalyzerResult)

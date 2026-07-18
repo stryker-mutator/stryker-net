@@ -11,6 +11,7 @@ public sealed class TestFile : IEquatable<ITestFile>, ITestFile
     public SyntaxTree SyntaxTree { get; init; }
     public string FilePath { get; init; }
     public string Source { get; init; }
+    public string RelativePath { get; init; }
     public IList<ITestCase> Tests { get; private set; } = new List<ITestCase>();
 
     public void AddTest(string id, string name, SyntaxNode node)

@@ -46,7 +46,8 @@ public static class MutantFilterFactory
         if (options.WithBaseline)
         {
             enabledFilters.Add(new BaselineMutantFilter(options,
-                _baselineProvider ?? BaselineProviderFactory.Create(options), _gitInfoProvider ?? new GitInfoProvider(options)));
+                _baselineProvider ?? BaselineProviderFactory.Create(options), _gitInfoProvider ?? new GitInfoProvider(options),
+                testProjectsInfo: _input?.TestProjectsInfo));
         }
         if (options.Since)
         {
