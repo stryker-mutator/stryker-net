@@ -16,8 +16,6 @@ public class SinceInput : Input<bool?>
             {
                 throw new InputException("The since and baseline features are mutually exclusive.");
             }
-
-            return true;
         }
 
         return SuppliedInput ?? false;
