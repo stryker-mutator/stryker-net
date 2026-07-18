@@ -19,6 +19,7 @@ public class ContentMutantMatcher : IContentMutantMatcher
 
         return currentMutants.Where(mutant =>
             mutant.Mutation.DisplayName == baselineMutant.MutatorName &&
+            mutant.Mutation.ReplacementNode.ToString() == baselineMutant.Replacement &&
             newLocation.Equals(GetCurrentLocation(mutant)));
     }
 

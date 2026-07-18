@@ -21,12 +21,14 @@ public class ContentMutantMatcherTests : TestBase
     {
         var tree = CSharpSyntaxTree.ParseText(Source);
         var literal = tree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>().First();
+        var replacement = SyntaxFactory.ParseExpression("\"\"");
 
         var mutant = new Mutant
         {
             Mutation = new Mutation
             {
                 OriginalNode = literal,
+                ReplacementNode = replacement,
                 DisplayName = "String literal"
             }
         };
@@ -34,6 +36,7 @@ public class ContentMutantMatcherTests : TestBase
         var baselineMutant = new JsonMutant
         {
             MutatorName = "String literal",
+            Replacement = replacement.ToString(),
             Location = new Location(literal.GetLocation().GetMappedLineSpan())
         };
 
@@ -103,6 +106,7 @@ public class ContentMutantMatcherTests : TestBase
             Mutation = new Mutation
             {
                 OriginalNode = firstMutant.Mutation.OriginalNode,
+                ReplacementNode = firstMutant.Mutation.ReplacementNode,
                 DisplayName = firstMutant.Mutation.DisplayName
             }
         };
@@ -113,5 +117,30 @@ public class ContentMutantMatcherTests : TestBase
 
         // Assert
         results.Count().ShouldBe(2);
+    }
+
+    [TestMethod]
+    public void MatchByLocation_ReturnsOnlyMutantWithMatchingReplacement_WhenSameLocationHasMultipleReplacements()
+    {
+        // Arrange - e.g. BinaryExpressionMutator yields multiple mutants at the same node with the
+        // same DisplayName ("Equality mutation") but different replacements (`<` vs. `>=` for `>`).
+        // Location + mutator name alone is not enough to identify which specific mutant this is.
+        var (matchingMutant, baselineMutant, diff) = CreateUnchangedScenario();
+        var otherReplacementMutant = new Mutant
+        {
+            Mutation = new Mutation
+            {
+                OriginalNode = matchingMutant.Mutation.OriginalNode,
+                ReplacementNode = SyntaxFactory.ParseExpression("\"other\""),
+                DisplayName = matchingMutant.Mutation.DisplayName
+            }
+        };
+        var target = new ContentMutantMatcher();
+
+        // Act
+        var results = target.MatchByLocation([matchingMutant, otherReplacementMutant], baselineMutant, diff);
+
+        // Assert
+        results.ShouldHaveSingleItem().ShouldBe(matchingMutant);
     }
 }
