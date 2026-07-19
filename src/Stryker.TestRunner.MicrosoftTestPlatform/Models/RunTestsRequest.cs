@@ -7,5 +7,5 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform.Models;
 public sealed record RunTestsRequest(
     [property:JsonPropertyName("runId")]
     Guid RunId,
-    [property:JsonPropertyName("testCases")]
+    [property:JsonPropertyName("tests")]
     TestNode[]? TestCases = null);
