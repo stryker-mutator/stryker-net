@@ -38,12 +38,7 @@ public class CoverageAnalysisInput : Input<string>
 
     public OptimizationModes Validate(TestRunner testRunner = TestRunner.VsTest)
     {
-        // The MTP runner's per-test coverage capture reuses one warm process across all tests and can
-        // never earn CoverageConfidence.Exact, so mutants requiring a "static" fallback end up assessed
-        // against nearly the whole suite (see CoverageAnalyser.CoverageForThisMutant). Defaulting MTP to
-        // "perTestInIsolation" trades init-phase speed for coverage narrowing that actually works.
-        var defaultValue = testRunner == TestRunner.MicrosoftTestPlatform ? "perTestInIsolation" : Default;
-        var value = (SuppliedInput ?? defaultValue).ToLower();
+        var value = (SuppliedInput ?? Default).ToLower();
         if (_possibleValues.ContainsKey(value))
         {
             return _possibleValues[value].mode;
