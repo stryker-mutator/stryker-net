@@ -123,20 +123,9 @@ public class Calculator
     }
 
     [TestMethod]
-    public void CompilingProcessTests_ShouldCallRollbackProcess_OnCompileError()
+    public void ShouldReportWhenProjectCantBeBuilt()
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
-
-namespace ExampleProject
-{
-public class Calculator
-{
-    public int Subtract(string first, string second)
-    {
-        return first - second;
-    }
-}
-}");
+        var syntaxTree = CSharpSyntaxTree.ParseText(GetExampleCode(false));
         var input = new MutationTestInput()
         {
             SourceProjectInfo = new SourceProjectInfo
@@ -151,22 +140,118 @@ public class Calculator
                     },
                     // add a reference to system so the example code can compile
                     references: [typeof(object).Assembly.Location]
-                ).Object
+                ).Object,
+                ProjectContents = new CsharpFileLeaf{SyntaxTree = syntaxTree, MutatedSyntaxTree = syntaxTree, SourceCode = GetExampleCode(false)}
             }
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
         rollbackProcessMock.Setup(x => x.RollbackMutationsInError(It.IsAny<ICompilationContent>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<ICSharpRollbackProcess.Mode>(), false))
-                        .Returns((ICompilationContent _, ImmutableArray<Diagnostic> _, ICSharpRollbackProcess.Mode _, bool _) => null);
+                        .Returns((ICompilationContent _, ImmutableArray<Diagnostic> _, ICSharpRollbackProcess.Mode _, bool _) =>
+                            []);
 
-        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, new StrykerOptions(), [syntaxTree]);
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, new StrykerOptions(
+        ), [syntaxTree]);
 
         using (var ms = new MemoryStream())
         {
-            Should.Throw<CompilationException>(() => target.Compile(ms, null));
+            Should.Throw<CompilationException>(() => target.Compile(ms, null)).Message.ShouldBe("Failed to build mutated version.");
         }
-        rollbackProcessMock.Verify(x => x.RollbackMutationsInError(It.IsAny<ICompilationContent>(), It.IsAny<ImmutableArray<Diagnostic>>(), ICSharpRollbackProcess.Mode.Normal, false),
+        rollbackProcessMock.Verify(x =>
+                x.RollbackMutationsInError(It.IsAny<ICompilationContent>(),
+                It.IsAny<ImmutableArray<Diagnostic>>(), ICSharpRollbackProcess.Mode.Normal, false),
             Times.AtLeast(2));
     }
+
+    [TestMethod]
+    public void ShouldReportWhenProjectCantBeBuiltWhenDiagMode()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(GetExampleCode(false));
+        var input = new MutationTestInput()
+        {
+            SourceProjectInfo = new SourceProjectInfo
+            {
+                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    projectFilePath: "/c/project.csproj",
+                    properties: new Dictionary<string, string>()
+                    {
+                        { "TargetDir", "" },
+                        { "AssemblyName", "AssemblyName"},
+                        { "TargetFileName", "TargetFileName.dll"},
+                    },
+                    // add a reference to system so the example code can compile
+                    references: [typeof(object).Assembly.Location]
+                ).Object,
+                ProjectContents = new CsharpFileLeaf{SyntaxTree = syntaxTree, MutatedSyntaxTree = syntaxTree, SourceCode = GetExampleCode(false)}
+            }
+        };
+        var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
+        rollbackProcessMock.Setup(x => x.RollbackMutationsInError(It.IsAny<ICompilationContent>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<ICSharpRollbackProcess.Mode>(), true))
+                        .Returns((ICompilationContent _, ImmutableArray<Diagnostic> _, ICSharpRollbackProcess.Mode _, bool _) =>
+                            []);
+
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, new StrykerOptions{DiagMode = true}, [syntaxTree]);
+
+        using (var ms = new MemoryStream())
+        {
+            Should.Throw<CompilationException>(() => target.Compile(ms, null)).Message.ShouldBe("Stryker is unable to build this project.");
+        }
+        rollbackProcessMock.Verify(x =>
+                x.RollbackMutationsInError(It.IsAny<ICompilationContent>(),
+                It.IsAny<ImmutableArray<Diagnostic>>(), ICSharpRollbackProcess.Mode.Normal, true),
+            Times.AtLeast(2));
+    }
+
+    [TestMethod]
+    public void ShouldReportWhenProjectCantBeBuiltWhenMutatedWhenDiagMode()
+    {
+        var mutated = CSharpSyntaxTree.ParseText(GetExampleCode(false));
+        var original = CSharpSyntaxTree.ParseText(GetExampleCode(true));
+        var input = new MutationTestInput()
+        {
+            SourceProjectInfo = new SourceProjectInfo
+            {
+                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    projectFilePath: "/c/project.csproj",
+                    properties: new Dictionary<string, string>()
+                    {
+                        { "TargetDir", "" },
+                        { "AssemblyName", "AssemblyName"},
+                        { "TargetFileName", "TargetFileName.dll"},
+                    },
+                    // add a reference to system so the example code can compile
+                    references: [typeof(object).Assembly.Location]
+                ).Object,
+                ProjectContents = new CsharpFileLeaf{SyntaxTree = original, MutatedSyntaxTree = mutated, SourceCode = GetExampleCode(true)}
+            }
+        };
+        var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
+        rollbackProcessMock.Setup(x => x.RollbackMutationsInError(It.IsAny<ICompilationContent>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<ICSharpRollbackProcess.Mode>(), true))
+                        .Returns((ICompilationContent _, ImmutableArray<Diagnostic> _, ICSharpRollbackProcess.Mode _, bool _) =>
+                            []);
+
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, new StrykerOptions{DiagMode = true}, [mutated]);
+
+        using (var ms = new MemoryStream())
+        {
+            Should.Throw<CompilationException>(() => target.Compile(ms, null)).Message.ShouldBe("Failed to restore the project to a buildable state.");
+        }
+    }
+
+    private static string GetExampleCode(bool isBuildable) =>
+        $$"""
+          using System;
+
+          namespace ExampleProject
+          {
+          public class Calculator
+          {
+              public string Subtract(string first, string second)
+              {
+                  return first {{(isBuildable ? "+" : "-")}} second;
+              }
+          }
+          }
+          """;
 
     [TestMethod]
     public void CompilingProcessTests_ShouldOnlyRollbackErrors()
@@ -492,8 +577,18 @@ public class Calculator
                         { "AssemblyName", "AssemblyName" },
                         { "TargetFileName", "TargetFileName.dll" },
                     },
-                    // add a reference to system so the example code can compile
-                    references: [typeof(object).Assembly.Location]
+                    // add a reference to system so the example code can compile, plus the assemblies the
+                    // injected MutantControl needs for its MemoryMappedFile-based MTP mutant control. The
+                    // MemoryMappedFiles assembly is compiled against the contract assemblies, so resolving it
+                    // also requires System.Runtime (FileStream/FileMode/Object/Enum) and
+                    // System.Runtime.InteropServices (UnmanagedMemoryAccessor, the base of the view accessor).
+                    references:
+                    [
+                        typeof(object).Assembly.Location,
+                        typeof(System.IO.MemoryMappedFiles.MemoryMappedFile).Assembly.Location,
+                        Assembly.Load("System.Runtime").Location,
+                        Assembly.Load("System.Runtime.InteropServices").Location
+                    ]
                 ).Object,
                 TestProjectsInfo = new TestProjectsInfo(fileSystem)
                 {

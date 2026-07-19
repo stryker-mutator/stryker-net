@@ -36,7 +36,7 @@ public abstract class ProjectComponent : IProjectComponent
         .Union(DetectedMutants());
 
     public IEnumerable<IReadOnlyMutant> InvalidMutants() => Mutants
-        .Where(m => m.ResultStatus == MutantStatus.CompileError);
+        .Where(m => m.ResultStatus is MutantStatus.CompileError or MutantStatus.RuntimeError);
 
     public IEnumerable<IReadOnlyMutant> UndetectedMutants() => Mutants
         .Where(m =>
@@ -60,6 +60,11 @@ public abstract class ProjectComponent : IProjectComponent
     /// Only those syntax trees that were changed by the mutation process
     /// </summary>
     public abstract IEnumerable<SyntaxTree> MutatedSyntaxTrees { get; }
+
+    /// <summary>
+    /// All syntax trees needed to build the original project
+    /// </summary>
+    public abstract IEnumerable<SyntaxTree> UnmutatedSyntaxTrees { get; }
 
     /// <summary>
     /// Returns the mutation score for this folder / file

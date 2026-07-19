@@ -14,7 +14,7 @@ on:
   # pull_request:
 
 concurrency:
-  group: stryker-on-stryker-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -50,13 +50,11 @@ jobs:
             workingDirectory: src/Stryker.Utilities
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
-          dotnet-version: |
-            8.x
-            10.x
+          dotnet-version: 10.x
 
       - name: Run Stryker
         shell: pwsh
@@ -67,7 +65,7 @@ jobs:
 
       - name: Upload Stryker logs
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: stryker-logs-${{ matrix.name }}
           path: ${{ matrix.workingDirectory }}/StrykerOutput/*/logs/

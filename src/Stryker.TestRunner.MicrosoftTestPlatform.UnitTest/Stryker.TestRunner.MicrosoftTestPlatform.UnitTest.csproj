@@ -1,13 +1,9 @@
-<Project Sdk="MSTest.Sdk/3.8.2">
+<Project Sdk="MSTest.Sdk/4.2.2">
 
     <PropertyGroup>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <IsPackable>false</IsPackable>
-        <!-- explicitly enabled mtp to test stryker on stryker with mtp runner enabled -->
-        <EnableMSTestRunner>true</EnableMSTestRunner>
-        <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-        <OutputType>Exe</OutputType>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
