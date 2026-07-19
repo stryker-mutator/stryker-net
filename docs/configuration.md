@@ -301,18 +301,29 @@ If HTML and/or JSON reporting is being used you can use this option to change th
 
 ### `additional-timeout` &lt;`number`&gt;
 
-Default: `5000`  
+Default: `1000`  
 Command line: `N/A`  
 Config file: `"additional-timeout": 3000`
 
 Some mutations can create endless loops inside your code. To detect and stop these loops Stryker cancels a unit test run after a set time.
-The formula to calculate the timeout is:
 
-`timeout = initialTestTime + additionalTimeout`
+Stryker calculates the timeout **per mutant**, based on the time the tests covering that mutant took during the initial (unmutated) test run, rather than on the full test run. When several mutants are tested together in a single test session, their covering tests are disjoint, so the timeout is based on the combined run time of exactly the tests that session executes. The formula is:
+
+`timeout = (initialTestRunTime + coveringTestsTime) * timeout-ratio + additional-timeout`
+
+Where `coveringTestsTime` is the estimated run time of the tests covering the mutant(s) being tested (based on the initial test run) and `initialTestRunTime` is the test framework initialization time measured during the initial test run.
 
 If you have a lot of timeouts you might need to increase the additional timeout. If you have a lot of endless loops causing a long mutation testrun you might want to decrease the additional timeout. Only decrease the additional timeout if you are certain that the mutations are endless loops.
 
 *\* Timeout is in milliseconds.*
+
+### `timeout-ratio` &lt;`number`&gt;
+
+Default: `1.5`  
+Command line: `N/A`  
+Config file: `"timeout-ratio": 2.0`
+
+The ratio the estimated test time is multiplied by when calculating the [timeout](#additional-timeout-number) for a mutant. A higher ratio gives mutants more time to run before they are cancelled, a lower ratio catches endless loops faster. Must be higher than `0`.
 
 ### `concurrency` &lt;`number`&gt;
 

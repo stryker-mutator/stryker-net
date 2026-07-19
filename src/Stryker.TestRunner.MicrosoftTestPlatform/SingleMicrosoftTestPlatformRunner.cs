@@ -391,24 +391,40 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    internal TimeSpan? CalculateAssemblyTimeout(List<TestNode> discoveredTests, ITimeoutValueCalculator timeoutCalc, string assembly)
+    internal TimeSpan? CalculateAssemblyTimeout(List<TestNode> discoveredTests, ITimeoutValueCalculator timeoutCalc, string assembly, IReadOnlyList<IMutant>? mutants = null)
     {
-        var estimatedTimeMs = (int)discoveredTests
-            .Where(t => _testDescriptions.TryGetValue(t.Uid, out _))
-            .Sum(t =>
+        // Estimates the run time of a set of tests based on their initial (unmutated) run time.
+        int EstimateTime(IEnumerable<TestNode> tests) => (int)tests.Sum(t =>
+        {
+            lock (_discoveryLock)
             {
-                lock (_discoveryLock)
-                {
-                    return _testDescriptions.TryGetValue(t.Uid, out var desc)
-                        ? desc.InitialRunTime.TotalMilliseconds
-                        : 0;
-                }
-            });
-        
+                return _testDescriptions.TryGetValue(t.Uid, out var desc)
+                    ? desc.InitialRunTime.TotalMilliseconds
+                    : 0;
+            }
+        });
+
+        int estimatedTimeMs;
+        // When no mutants are known, or any mutant must be assessed by every test, base the timeout
+        // on the full test run. Otherwise base it only on the tests covering the mutant(s) in this
+        // run. Mutants are grouped so their covering tests are disjoint, so the union of those tests
+        // is exactly what this run needs to execute.
+        if (mutants is null || mutants.Count == 0 || mutants.Any(m => m.AssessingTests.IsEveryTest))
+        {
+            estimatedTimeMs = EstimateTime(discoveredTests);
+        }
+        else
+        {
+            var assessingTests = mutants
+                .SelectMany(m => m.AssessingTests.GetIdentifiers())
+                .ToHashSet();
+            estimatedTimeMs = EstimateTime(discoveredTests.Where(t => assessingTests.Contains(t.Uid)));
+        }
+
         var timeoutMs = timeoutCalc.CalculateTimeoutValue(estimatedTimeMs);
         _logger.LogDebug("{RunnerId}: Using {TimeoutMs} ms as test run timeout for {Assembly}",
             RunnerId, timeoutMs, Path.GetFileName(assembly));
-        
+
         return TimeSpan.FromMilliseconds(timeoutMs);
     }
 
@@ -527,7 +543,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
             foreach (var assembly in assemblies)
             {
-                var (result, timedOut, discoveredTests) = await RunAssemblyTestsAsync(assembly, timeoutCalc).ConfigureAwait(false);
+                var (result, timedOut, discoveredTests) = await RunAssemblyTestsAsync(assembly, timeoutCalc, mutants).ConfigureAwait(false);
 
                 if (discoveredTests is not null)
                 {
@@ -607,7 +623,8 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
     internal virtual async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
         string assembly,
-        ITimeoutValueCalculator? timeoutCalc)
+        ITimeoutValueCalculator? timeoutCalc,
+        IReadOnlyList<IMutant>? mutants = null)
     {
         if (!File.Exists(assembly))
         {
@@ -615,11 +632,11 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
 
         var discoveredTests = GetDiscoveredTests(assembly);
-        
+
         TimeSpan? timeout = null;
         if (timeoutCalc is not null && discoveredTests is not null)
         {
-            timeout = CalculateAssemblyTimeout(discoveredTests, timeoutCalc, assembly);
+            timeout = CalculateAssemblyTimeout(discoveredTests, timeoutCalc, assembly, mutants);
         }
 
         var (testResults, timedOut) = await RunAssemblyTestsInternalAsync(assembly, null, timeout).ConfigureAwait(false);
