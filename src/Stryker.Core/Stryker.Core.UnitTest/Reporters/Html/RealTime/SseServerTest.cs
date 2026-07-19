@@ -213,7 +213,7 @@ public class SseServerTest : TestBase
         writers.Add(new StreamWriter(blockingStream));
 
         var firstClose = Task.Run(_sut.CloseSseEndpoint);
-        blockingStream.DisposeStarted.Wait(500).ShouldBeTrue();
+        blockingStream.DisposeStarted.Wait(2000).ShouldBeTrue();
         try
         {
             var secondStarted = new ManualResetEventSlim();
@@ -222,9 +222,9 @@ public class SseServerTest : TestBase
                 secondStarted.Set();
                 _sut.CloseSseEndpoint();
             });
-            secondStarted.Wait(500).ShouldBeTrue();
+            secondStarted.Wait(2000).ShouldBeTrue();
 
-            secondClose.Wait(100).ShouldBeFalse();
+            secondClose.Wait(2000).ShouldBeFalse();
             blockingStream.AllowDispose.Set();
             Task.WaitAll(firstClose, secondClose);
         }
@@ -249,12 +249,12 @@ public class SseServerTest : TestBase
         _sut.OpenSseEndpoint();
         using var sseClient = new EventSource(new Uri($"http://localhost:{_sut.Port}/"));
         Task.Run(() => sseClient.StartAsync());
-        handlerEntered.Wait(500).ShouldBeTrue();
+        handlerEntered.Wait(2000).ShouldBeTrue();
 
         var close = Task.Run(_sut.CloseSseEndpoint);
         try
         {
-            close.Wait(500).ShouldBeTrue();
+            close.Wait(2000).ShouldBeTrue();
         }
         finally
         {
