@@ -16,6 +16,7 @@ using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Solutions;
 using Stryker.Utilities.Buildalyzer;
+using SolutionInfo = Stryker.Core.ProjectComponents.SourceProjects.SolutionInfo;
 
 namespace Stryker.Core.Initialisation;
 

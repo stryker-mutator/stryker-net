@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Buildalyzer" />
+    <PackageReference Include="NuGet.Frameworks" />
     <PackageReference Include="Mono.Cecil" />
     <PackageReference Include="ResXResourceReader.NetStandard" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />

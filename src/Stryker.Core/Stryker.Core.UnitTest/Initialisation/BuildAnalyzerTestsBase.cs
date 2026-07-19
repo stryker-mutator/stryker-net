@@ -308,7 +308,6 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
             .Returns(analyzerResults);
         buildalyzerAnalyzerManagerMock.Setup(x => x.SetGlobalProperty(It.IsAny<string>(), It.IsAny<string>()));
         buildalyzerAnalyzerManagerMock.Setup(x => x.RemoveGlobalProperty(It.IsAny<string>()));
-        buildalyzerAnalyzerManagerMock.Setup(x => x.SolutionFilePath).Returns((string)null);
 
         foreach (var analyzerResult in analyzerResults)
         {
