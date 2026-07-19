@@ -323,7 +323,7 @@ Default: `1.5`
 Command line: `N/A`  
 Config file: `"timeout-ratio": 2.0`
 
-The ratio the estimated test time is multiplied by when calculating the [timeout](#additional-timeout-number) for a mutant. A higher ratio gives mutants more time to run before they are cancelled, a lower ratio catches endless loops faster. Must be higher than `0`.
+The ratio the estimated test time is multiplied by when calculating the [timeout](#additional-timeout-number) for a mutant. A higher ratio gives mutants more time to run before they are cancelled, a lower ratio catches endless loops faster. Must be higher than `1`.
 
 ### `concurrency` &lt;`number`&gt;
 
