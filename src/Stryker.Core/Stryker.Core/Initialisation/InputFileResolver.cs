@@ -444,13 +444,7 @@ public class InputFileResolver : IInputFileResolver
         var projectLogName = FileSystem.Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
         _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
 
-        var env = new EnvironmentOptions();
-
-        if (!string.IsNullOrEmpty(options.MsBuildPath))
-        {
-            // we need to forward this path to buildalyzer
-            env.EnvironmentVariables[EnvironmentVariables.MSBUILD_EXE_PATH] = options.MsBuildPath;
-        }
+        var env = GetBuildalyzerEnvironmentOptions(options);
         var buildResult = project.Build(env);
         // store the build log
         _buildLogs[projectLogName] = buildLogger.ToString();
@@ -494,6 +488,19 @@ public class InputFileResolver : IInputFileResolver
         return buildResult;
     }
 
+    private EnvironmentOptions GetBuildalyzerEnvironmentOptions(IStrykerBuildOptions options)
+    {
+        var env = new EnvironmentOptions();
+
+        if (!string.IsNullOrEmpty(options.MsBuildPath))
+        {
+            // we need to forward this path to buildalyzer
+            env.EnvironmentVariables[EnvironmentVariables.MSBUILD_EXE_PATH] = options.MsBuildPath;
+        }
+        env.DesignTime = options.Profile == AnalysisProfile.DesignTime;
+        return env;
+    }
+
     private IAnalyzerResults RetryBuild(IProjectAnalyzer project, IStrykerBuildOptions options, string projectLogName,
         IAnalyzerResults buildResult, bool diagMode, out bool buildResultOverallSuccess)
     {
@@ -509,10 +516,8 @@ public class InputFileResolver : IInputFileResolver
 
             _nugetRestoreProcess.RestorePackages(options.SolutionPath, options.MsBuildPath ?? buildResult.First().MsBuildPath());
         }
-        var buildOptions = new EnvironmentOptions
-        {
-            Restore = true
-        };
+        var buildOptions = GetBuildalyzerEnvironmentOptions(options);
+        buildOptions.Restore = true;
         // retry the analysis
         buildResult = project.Build(buildOptions);
 

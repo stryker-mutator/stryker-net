@@ -6,6 +6,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
 using Buildalyzer;
+using Buildalyzer.Environment;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -15,6 +16,7 @@ using NuGet.Frameworks;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options;
 using Stryker.Configuration.Options;
 using Stryker.Core.Initialisation;
 using Stryker.Utilities.Buildalyzer;
@@ -1645,6 +1647,52 @@ Please specify a test project name filter that results in one project.
     }
 
     [TestMethod]
+    public void ShouldPassProfileToBuildalyzer()
+    {
+        // Arrange
+        var solutionPath = Path.Combine(_filesystemRoot, "solution.sln");
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectFilePath, new MockFileData(_defaultSourceProjectFileContents)},
+            { Path.Combine(_sourcePath, "source.cs"), new MockFileData(_sourceFile)},
+            { _testProjectFilePath, new MockFileData(_defaultTestProjectFileContents)},
+            { solutionPath, new MockFileData("") },
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath, fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"]);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        var managerMock = BuildBuildAnalyzerMock(analyzerResults);
+
+        // Build a solution
+        var solution = SolutionFile.BuildFromProjectList([_sourceProjectFilePath, _testProjectFilePath]);
+
+        var target = BuildTestResolverWithSolutionProvider(fileSystem,
+            new CustomSolutionProvider(_ => solution));
+
+        // IsSolutionContext is true when WorkingDirectory matches solution's parent dir
+        var options = new StrykerOptions
+        {
+            ProjectPath = _sourcePath,
+            SolutionPath = solutionPath,
+            WorkingDirectory = _filesystemRoot,
+            Profile = AnalysisProfile.Regular
+        };
+
+        // Act
+        target.ResolveSourceProjectInfos(options);
+
+        // Assert
+        sourceProjectManagerMock.Verify(x=>x.Build(It.Is<EnvironmentOptions>(eo => !eo.DesignTime)), Times.AtLeastOnce);
+        sourceProjectManagerMock.Verify(x=>x.Build(It.Is<EnvironmentOptions>(eo => eo.DesignTime)), Times.Never);
+    }
+
+    [TestMethod]
     [DataRow("ExampleProject/ExampleProject.csproj")]
     [DataRow("ExampleProject\\ExampleProject.csproj")]
     public void ShouldMatchOnBothForwardAndBackwardsSlash(string shouldMatch)
@@ -1669,7 +1717,7 @@ Please specify a test project name filter that results in one project.
         var target = BuildTestResolver(fileSystem);
 
         var options = new StrykerOptions { SourceProjectName = shouldMatch, ProjectPath = _testPath };
-        var result = target.ResolveSourceProjectInfos(_options).First();
+        var result = target.ResolveSourceProjectInfos(options).First();
 
         result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectFilePath);
     }
