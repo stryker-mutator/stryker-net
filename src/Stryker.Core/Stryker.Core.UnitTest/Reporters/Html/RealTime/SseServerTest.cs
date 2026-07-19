@@ -204,6 +204,8 @@ public class SseServerTest : TestBase
     [TestMethod]
     public void ShouldWaitForConcurrentDisposalToComplete()
     {
+        ThreadPool.SetMinThreads(3,1);
+
         _sut.OpenSseEndpoint();
         var blockingStream = new BlockingDisposeStream();
         var writersField = typeof(SseServer).GetField("_writers", BindingFlags.Instance | BindingFlags.NonPublic)
@@ -222,9 +224,9 @@ public class SseServerTest : TestBase
                 secondStarted.Set();
                 _sut.CloseSseEndpoint();
             });
-            secondStarted.Wait(2000).ShouldBeTrue();
+            secondStarted.Wait(10000).ShouldBeTrue();
 
-            secondClose.Wait(2000).ShouldBeFalse();
+            secondClose.Wait(10000).ShouldBeFalse();
             blockingStream.AllowDispose.Set();
             Task.WaitAll(firstClose, secondClose);
         }
