@@ -45,16 +45,16 @@ Increase this value if you experience a lot of timeouts, decrease it to catch en
 
         var exception = Should.Throw<InputException>(() => target.Validate());
 
-        exception.Message.ShouldBe("Timeout ratio must be higher than 0.");
+        exception.Message.ShouldBe("Timeout ratio must be higher than 1.");
     }
 
     [TestMethod]
-    public void ShouldThrowAtNegative()
+    public void ShouldThrowAtOne()
     {
-        var target = new TimeoutRatioInput { SuppliedInput = -1 };
+        var target = new TimeoutRatioInput { SuppliedInput = 1 };
 
         var exception = Should.Throw<InputException>(() => target.Validate());
 
-        exception.Message.ShouldBe("Timeout ratio must be higher than 0.");
+        exception.Message.ShouldBe("Timeout ratio must be higher than 1.");
     }
 }
