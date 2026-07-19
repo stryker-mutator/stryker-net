@@ -25,7 +25,6 @@ public interface IInputFileResolver
     IFileSystem FileSystem { get; }
 }
 
-
 /// <summary>
 ///  - Reads .csproj to find project under test
 ///  - Scans project under test and store files to mutate
@@ -112,7 +111,7 @@ public class InputFileResolver : IInputFileResolver
     private List<SourceProjectInfo> SourceProjectInfos(IStrykerOptions options, SolutionFile solution,
         string normalizedProjectUnderTestNameFilter)
     {
-        SolutionInfo solutionInfo = null;
+        StrykerSolutionInfo solutionInfo = null;
         var configuration = options.Configuration;
         // "Any CPU" is the solution-level name; MSBuild requires "AnyCPU"
         var platform = NormalizePlatform(options.Platform);
@@ -122,7 +121,7 @@ public class InputFileResolver : IInputFileResolver
         {
             var (actualBuildType, actualPlatform) = solution.GetMatching(options.Configuration, options.Platform);
             _logger.LogDebug("Using solution configuration/platform '{Configuration}|{Platform}'.", actualBuildType, actualPlatform);
-            solutionInfo = new SolutionInfo(solution.FileName, actualBuildType, actualPlatform);
+            solutionInfo = new StrykerSolutionInfo(solution.FileName, actualBuildType, actualPlatform);
             configuration = actualBuildType;
             platform = NormalizePlatform(actualPlatform);
         }
@@ -206,10 +205,11 @@ public class InputFileResolver : IInputFileResolver
 
         _logger.LogInformation("Identifying projects to mutate in {Solution}. This can take a while.", options.SolutionPath);
 
-        var solutionInfo = new SolutionInfo(solution.FileName, actualBuildType, actualPlatform);
+        var solutionInfo = new StrykerSolutionInfo(solution.FileName, actualBuildType, actualPlatform);
+        var referencePath = FileSystem.Path.GetDirectoryName(solutionInfo.SolutionFilePath) ?? "";
         // analyze all projects
         var projectsWithDetails = solution.GetProjectsWithDetails(actualBuildType, actualPlatform)
-            .Select(p => (p.file, options.TargetFramework, p.buildType, NormalizePlatform(p.platform))).ToList();
+            .Select(p => (FileSystem.Path.Combine(referencePath, p.file), options.TargetFramework, p.buildType, NormalizePlatform(p.platform))).ToList();
 
         _logger.LogDebug("Analyzing {0} projects.", projectsWithDetails.Count);
         // we match test projects to mutable projects
@@ -238,7 +238,7 @@ public class InputFileResolver : IInputFileResolver
     // analyze projects, do same for their upstream dependencies if activated, and identify which one(s)
     // to proceed with
     private List<SourceProjectInfo> AnalyzeAndIdentifyProjects(IStrykerOptions options,
-        SolutionInfo solutionInfo,
+        StrykerSolutionInfo solutionInfo,
         Dictionary<IAnalyzerResult, List<IAnalyzerResult>> findMutableAnalyzerResults,
         List<IAnalyzerResult> unusedTestProjects)
     {
@@ -358,7 +358,6 @@ public class InputFileResolver : IInputFileResolver
                         {
                             manager.SetGlobalProperty(Platform, entry.platform);
                         }
-
                         var buildResult = AnalyzeThisProject(manager.GetProject(entry.projectFile),
                             entry.framework,
                             normalizedProjectUnderTestNameFilter,
@@ -572,7 +571,7 @@ public class InputFileResolver : IInputFileResolver
                     continue; // already logged
                 }
 
-                log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
+                log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")} ");
             }
             log.AppendLine();
         }
@@ -704,7 +703,7 @@ public class InputFileResolver : IInputFileResolver
     /// <param name="analyzerResults">test project(s) buildalyzer result(s)</param>
     /// <returns></returns>
     private SourceProjectInfo BuildSourceProjectInfo(IStrykerOptions options,
-        SolutionInfo solutionInfo,
+        StrykerSolutionInfo solutionInfo,
         IAnalyzerResult analyzerResult,
         IEnumerable<IAnalyzerResult> analyzerResults)
     {

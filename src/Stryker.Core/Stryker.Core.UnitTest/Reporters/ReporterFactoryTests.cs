@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Configuration.Options;
 using Stryker.Core.Baseline.Providers;
@@ -52,7 +51,8 @@ public class ReporterFactoryTests : TestBase
         broadcastReporter.Reporters.ShouldContain(r => r is DashboardReporter);
         broadcastReporter.Reporters.ShouldContain(r => r is MarkdownSummaryReporter);
         broadcastReporter.Reporters.ShouldContain(r => r is BaselineReporter);
+        broadcastReporter.Reporters.ShouldContain(r => r is GitlabQualityReporter);
 
-        result.Reporters.Count().ShouldBe(10);
+        result.Reporters.Count().ShouldBe(11);
     }
 }

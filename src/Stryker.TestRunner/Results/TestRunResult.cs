@@ -33,6 +33,7 @@ public class TestRunResult : ITestRunResult
         TestDescriptions = executedTests.IsEveryTest 
             ? vsTestDescriptions.ToList() 
             : vsTestDescriptions.Where(p => executedTestIds.Contains(p.Id)).ToList();  
+
         ExecutedTests = executedTests;
         FailingTests = failedTests;
         TimedOutTests = timedOutTest;
