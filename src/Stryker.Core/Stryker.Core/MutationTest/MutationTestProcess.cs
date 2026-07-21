@@ -143,14 +143,32 @@ public class MutationTestProcess : IMutationTestProcess
 
     private void OnMutantTested(IMutant mutant, ISet<IMutant> reportedMutants)
     {
-        if (mutant.ResultStatus == MutantStatus.Pending || reportedMutants.Contains(mutant))
+        if (mutant.ResultStatus == MutantStatus.Pending)
         {
-            // skip duplicates or useless notifications
+            // useless notification for a mutant with no conclusive result yet
             return;
         }
 
+        // `reportedMutants` is a plain, non-thread-safe HashSet written from two threads: the VsTest
+        // progress callback (raised by the runner on its own notification thread — e.g. VsTest's
+        // ResultsUpdated) and OnMutantsTested, which runs on the Parallel.ForEachAsync worker after
+        // `await TestAsync`. On the timeout/abort path the runner can return to OnMutantsTested while
+        // a final progress callback is still in flight, so the two overlap and a concurrent
+        // Contains/Add corrupts the set — the Add throws and aborts the whole run. Guard just the
+        // dedup Contains/Add; the set is per-mutant-group, so this lock is essentially uncontended.
+        // Keep the reporter notification OUTSIDE the lock: reporters can block (e.g. real-time
+        // Dashboard publishing), and holding the lock across that would let reporting stall an
+        // unrelated worker.
+        lock (reportedMutants)
+        {
+            if (!reportedMutants.Add(mutant))
+            {
+                // already reported — skip the duplicate notification
+                return;
+            }
+        }
+
         _reporter?.OnMutantTested(mutant);
-        reportedMutants.Add(mutant);
     }
 
     private static bool MutantsToTest(IEnumerable<IMutant> mutantsToTest)

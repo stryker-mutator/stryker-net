@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -10,6 +12,8 @@ using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Testing;
+using Stryker.TestRunner.Tests;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Reporting;
 using Stryker.Configuration.Options;
@@ -142,6 +146,92 @@ public class MutationTestProcessTests : TestBase
 
         TestScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
         TestScenario.GetMutantStatus(2).ShouldBe(MutantStatus.NoCoverage);
+    }
+
+    [TestMethod]
+    public async Task OnMutantTested_ReportsEachMutantOnce_WhenProgressCallbackOverlapsFinalReporting()
+    {
+        // Regression for #3727. The per-group `reportedMutants` set is written from two threads: the
+        // runner's progress callback (TestUpdateHandler) and OnMutantsTested after `await TestAsync`.
+        // On the timeout/abort path the executor can return while a final callback is still in flight,
+        // so the two overlap. This reproduces that overlap DETERMINISTICALLY: the progress callback
+        // (writer B) is parked inside the reporter while OnMutantsTested (writer C) runs for the same
+        // mutant. The two builds then diverge by ordering — without the lock, B reaches the reporter
+        // before it has Added, so C still passes the Contains check and reports the mutant a second
+        // time; with the lock, B has already Added (under the lock) by the time it reports, so C's Add
+        // short-circuits and the mutant is reported exactly once.
+        var mutant = new Mutant { Id = 1 };
+        Folder.Add(new CsharpFileLeaf { SourceCode = SourceFile, Mutants = new List<IMutant> { mutant } });
+
+        var callbackInReporter = new ManualResetEventSlim(false);
+        var releaseCallback = new ManualResetEventSlim(false);
+        var reportCount = 0;
+
+        var reporterMock = new Mock<IReporter>();
+        reporterMock.Setup(x => x.OnMutantTested(It.IsAny<IMutant>())).Callback(() =>
+        {
+            // Park the first reporter call (writer B, the progress callback) here — the one point both
+            // builds pass through — long enough for OnMutantsTested (writer C) to race it for this mutant.
+            if (Interlocked.Increment(ref reportCount) == 1)
+            {
+                callbackInReporter.Set();
+                releaseCallback.Wait(TimeSpan.FromSeconds(10));
+            }
+        });
+
+        Task callbackTask = null;
+        var executorMock = new Mock<IMutationTestExecutor>();
+        executorMock
+            .Setup(x => x.TestAsync(It.IsAny<IProjectAndTests>(), It.IsAny<IList<IMutant>>(),
+                It.IsAny<ITimeoutValueCalculator>(), It.IsAny<ITestRunner.TestUpdateHandler>()))
+            .Returns((IProjectAndTests _, IList<IMutant> group, ITimeoutValueCalculator _, ITestRunner.TestUpdateHandler update) =>
+            {
+                // Deliver the progress callback on the runner's own thread and wait until it has
+                // reached the reporter (its hold point) before returning WITHOUT joining it — exactly
+                // the timeout/abort ordering. OnMutantsTested then runs while that callback is parked.
+                // Fail loudly if it never reaches the hold point, so the test cannot pass without
+                // actually setting up the overlap.
+                callbackTask = Task.Run(() => update(group.ToList(),
+                    TestIdentifierList.NoTest(), TestIdentifierList.EveryTest(), TestIdentifierList.NoTest()));
+                if (!callbackInReporter.Wait(TimeSpan.FromSeconds(10)))
+                {
+                    throw new InvalidOperationException("progress callback never reached the reporter");
+                }
+                return Task.CompletedTask;
+            });
+
+        var options = new StrykerOptions
+        {
+            OutputPath = Path.Combine(FilesystemRoot, "ExampleProject.Test"),
+            Concurrency = 1,
+            OptimizationMode = OptimizationModes.None
+        };
+        Input.InitialTestRun = new InitialTestRun(TestScenario.GetInitialRunResult(), new TimeoutValueCalculator(500));
+
+        var target = new MutationTestProcess(executorMock.Object, new Mock<ICoverageAnalyser>().Object,
+            Mock.Of<IMutationProcess>(), TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        target.Initialize(Input, options, reporterMock.Object);
+
+        try
+        {
+            // TestAsync returns only after the callback reached its hold point; OnMutantsTested has
+            // then already run for the same mutant while the callback was parked.
+            await target.TestAsync(new List<IMutant> { mutant });
+
+            // The callback must actually have parked at the reporter, otherwise the overlap never
+            // happened. Locked: OnMutantsTested's Add short-circuits, so the mutant is reported once.
+            // Unlocked: it passed Contains while the callback was parked, so it is reported twice.
+            callbackInReporter.IsSet.ShouldBeTrue();
+            reportCount.ShouldBe(1);
+            reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Once);
+        }
+        finally
+        {
+            releaseCallback.Set();
+        }
+
+        // Observe the progress-callback task so a fault in it can never pass silently.
+        await callbackTask;
     }
 
     [TestMethod]
