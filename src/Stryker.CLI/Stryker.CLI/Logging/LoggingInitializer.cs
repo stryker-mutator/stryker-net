@@ -28,13 +28,17 @@ public class LoggingInitializer : ILoggingInitializer
         inputs.OutputPathInput.SuppliedInput = outputPath;
 
         var diagnoseMode = inputs.DiagModeInput.Validate();
-        var logLevel = diagnoseMode ? LogEventLevel.Verbose : inputs.VerbosityInput.Validate();
+        var logLevel = inputs.VerbosityInput.Validate();
+        if (diagnoseMode && logLevel>LogEventLevel.Debug)
+        {
+            logLevel = LogEventLevel.Debug;
+        }
         var logToFile = inputs.LogToFileInput.Validate(outputPath) || diagnoseMode;
 
         ApplicationLogging.ConfigureLogger(logLevel, logToFile, diagnoseMode, outputPath);
     }
 
-    private string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)
+    private static string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)
     {
         // The stable output root. When no output path is supplied the per-run output lives in a
         // timestamped subfolder of this root; an explicitly supplied output path is the root itself.

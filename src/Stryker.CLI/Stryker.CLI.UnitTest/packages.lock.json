@@ -689,7 +689,8 @@
       "stryker.solutions": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.VisualStudio.SolutionPersistence": "[1.0.52, )"
+          "Microsoft.VisualStudio.SolutionPersistence": "[1.0.52, )",
+          "Stryker.Utilities": "[1.0.0, )"
         }
       },
       "stryker.testrunner": {
