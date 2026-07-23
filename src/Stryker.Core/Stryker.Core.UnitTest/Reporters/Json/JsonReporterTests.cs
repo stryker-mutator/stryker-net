@@ -153,14 +153,17 @@ namespace ExtraProject.XUnit
     }
 
     [TestMethod]
-    public void JsonReport_ShouldContainFullPath()
+    public void JsonReport_ShouldContainRelativePath()
     {
+        // Per the mutation-testing-report-schema, the `files` dictionary key must be the relative
+        // path of the file, not an absolute/full path (see #2564/#2567 — the report used to use
+        // FullPath as the key, which broke portability across machines and baseline lookups).
         var folderComponent = ReportTestHelper.CreateProjectWith(root: RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "c://" : "/");
 
         var report = JsonReport.Build(new StrykerOptions(), folderComponent, It.IsAny<TestProjectsInfo>());
         var path = report.Files.Keys.First();
 
-        Path.IsPathFullyQualified(path).ShouldBeTrue($"{path} should not be a relative path");
+        Path.IsPathFullyQualified(path).ShouldBeFalse($"{path} should be a relative path");
     }
 
     [TestMethod]

@@ -12,6 +12,7 @@ using Stryker.Abstractions.Reporting;
 using Stryker.Configuration.Options;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Baseline.Utils;
+using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents.Csharp;
@@ -25,16 +26,17 @@ namespace Stryker.Core.UnitTest.MutantFilters;
 [TestClass]
 public class BaselineMutantFilterTests : TestBase
 {
+    private static readonly DiffResult EmptyContentDiff = new([], string.Empty, string.Empty);
+
     [TestMethod]
     public void ShouldHaveName()
     {
         // Arrange
         var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Loose);
         var baselineProviderMock = new Mock<IBaselineProvider>(MockBehavior.Loose);
-        var baselineMutantHelperMock = new Mock<IBaselineMutantHelper>(MockBehavior.Loose);
 
         // Act
-        var target = new BaselineMutantFilter(new StrykerOptions(), baselineProviderMock.Object, gitInfoProvider.Object, baselineMutantHelperMock.Object) as IMutantFilter;
+        var target = new BaselineMutantFilter(new StrykerOptions(), baselineProviderMock.Object, gitInfoProvider.Object) as IMutantFilter;
 
         // Assert
         target.DisplayName.ShouldBe("baseline filter");
@@ -47,7 +49,6 @@ public class BaselineMutantFilterTests : TestBase
         var branchName = "refs/heads/master";
         var baselineProvider = new Mock<IBaselineProvider>();
         var gitInfoProvider = new Mock<IGitInfoProvider>();
-        var baselineMutantHelperMock = new Mock<IBaselineMutantHelper>();
 
         var options = new StrykerOptions()
         {
@@ -84,7 +85,6 @@ public class BaselineMutantFilterTests : TestBase
         var branchName = "refs/heads/master";
         var baselineProvider = new Mock<IBaselineProvider>();
         var gitInfoProvider = new Mock<IGitInfoProvider>();
-        var baselineMutantHelperMock = new Mock<IBaselineMutantHelper>();
 
         var options = new StrykerOptions()
         {
@@ -183,12 +183,13 @@ public class BaselineMutantFilterTests : TestBase
     }
 
     [TestMethod]
-    public void FilterMutants_WhenMutantSourceCodeIsNull_MutantIsReturned()
+    public void FilterMutants_WhenNoMatchingMutants_MutantIsReturnedUnchanged()
     {
         // Arrange
         var branchProvider = new Mock<IGitInfoProvider>();
         var baselineProvider = new Mock<IBaselineProvider>();
-        var baselineMutantHelper = new Mock<IBaselineMutantHelper>();
+        var diffProvider = new Mock<IDiffProvider>();
+        var contentMatcher = new Mock<IContentMutantMatcher>();
 
         var options = new StrykerOptions()
         {
@@ -197,12 +198,13 @@ public class BaselineMutantFilterTests : TestBase
         };
         var file = new CsharpFileLeaf
         {
-            RelativePath = "foo.cs"
+            RelativePath = "foo.cs",
+            SourceCode = "var foo = \"bar\";"
         };
 
-        var mutants = new List<Mutant>
+        var mutants = new List<IMutant>
         {
-            new Mutant()
+            new Mutant { ResultStatus = MutantStatus.Pending }
         };
 
         var jsonMutants = new HashSet<IJsonMutant>
@@ -211,7 +213,7 @@ public class BaselineMutantFilterTests : TestBase
         };
 
         // Setup Mocks
-        var jsonReportFileComponent = new MockJsonReportFileComponent("", "", jsonMutants);
+        var jsonReportFileComponent = new MockJsonReportFileComponent("", "var foo = \"bar\";", jsonMutants);
 
         var jsonFileComponents = new Dictionary<string, ISourceFile>
         {
@@ -223,24 +225,29 @@ public class BaselineMutantFilterTests : TestBase
         baselineProvider.Setup(mock => mock.Load(It.IsAny<string>()))
             .Returns(Task.FromResult((IJsonReport)baseline));
 
-        baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<JsonMutant>())).Returns(string.Empty);
+        diffProvider.Setup(mock => mock.GetContentDiff(jsonReportFileComponent.Source, file.SourceCode))
+            .Returns(EmptyContentDiff);
+        contentMatcher.Setup(mock => mock.MatchByLocation(mutants, jsonMutants.First(), EmptyContentDiff))
+            .Returns([]);
 
         // Act
-        var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
+        var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, diffProvider.Object, contentMatcher.Object);
 
         var results = target.FilterMutants(mutants, file, options);
 
         // Assert
-        results.ShouldHaveSingleItem();
+        var result = results.ShouldHaveSingleItem();
+        result.ResultStatus.ShouldBe(MutantStatus.Pending);
     }
 
     [TestMethod]
-    public void FilterMutants_WhenMutantMatchesSourceCode_StatusIsSetToJsonMutant()
+    public void FilterMutants_WhenMutantMatchesLocation_StatusIsSetToJsonMutant()
     {
         // Arrange
         var branchProvider = new Mock<IGitInfoProvider>();
         var baselineProvider = new Mock<IBaselineProvider>();
-        var baselineMutantHelper = new Mock<IBaselineMutantHelper>();
+        var diffProvider = new Mock<IDiffProvider>();
+        var contentMatcher = new Mock<IContentMutantMatcher>();
 
         var options = new StrykerOptions()
         {
@@ -249,7 +256,8 @@ public class BaselineMutantFilterTests : TestBase
         };
         var file = new CsharpFileLeaf
         {
-            RelativePath = "foo.cs"
+            RelativePath = "foo.cs",
+            SourceCode = "var foo = \"bar\";"
         };
 
         var mutants = new List<IMutant>
@@ -269,7 +277,7 @@ public class BaselineMutantFilterTests : TestBase
         };
 
         // Setup Mocks
-        var jsonReportFileComponent = new MockJsonReportFileComponent("", "", jsonMutants);
+        var jsonReportFileComponent = new MockJsonReportFileComponent("", "var foo = \"bar\";", jsonMutants);
 
         var jsonFileComponents = new Dictionary<string, ISourceFile>
         {
@@ -281,29 +289,32 @@ public class BaselineMutantFilterTests : TestBase
         baselineProvider.Setup(mock => mock.Load(It.IsAny<string>()))
             .Returns(Task.FromResult(baseline as IJsonReport));
 
-        baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<IJsonMutant>())).Returns("var foo = \"bar\";");
-        baselineMutantHelper.Setup(mock => mock.GetMutantMatchingSourceCode(
-            It.IsAny<IEnumerable<IMutant>>(),
-            It.Is<IJsonMutant>(m => m == jsonMutants.First()),
-            It.Is<string>(source => source == "var foo = \"bar\";"))).Returns(mutants).Verifiable();
+        diffProvider.Setup(mock => mock.GetContentDiff(jsonReportFileComponent.Source, file.SourceCode))
+            .Returns(EmptyContentDiff);
+        contentMatcher.Setup(mock => mock.MatchByLocation(mutants, jsonMutants.First(), EmptyContentDiff))
+            .Returns(mutants).Verifiable();
 
         // Act
-        var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
+        var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, diffProvider.Object, contentMatcher.Object);
 
         var results = target.FilterMutants(mutants, file, options);
 
         // Assert
         results.ShouldHaveSingleItem().ResultStatus.ShouldBe(MutantStatus.Killed);
-        baselineMutantHelper.Verify();
+        contentMatcher.Verify();
     }
 
     [TestMethod]
-    public void FilterMutants_WhenMultipleMatchingMutants_ResultIsSetToNotRun()
+    public void FilterMutants_WhenMultipleMutantsMatchLocation_AllReuseBaselineStatus()
     {
         // Arrange
+        // Since matching is location-based (not fragile source-text equality), multiple mutants
+        // matching the same remapped location are no longer treated as ambiguous (fixes #1296):
+        // they all reuse the baseline status instead of falling back to Pending.
         var branchProvider = new Mock<IGitInfoProvider>();
         var baselineProvider = new Mock<IBaselineProvider>();
-        var baselineMutantHelper = new Mock<IBaselineMutantHelper>();
+        var diffProvider = new Mock<IDiffProvider>();
+        var contentMatcher = new Mock<IContentMutantMatcher>();
 
         var options = new StrykerOptions()
         {
@@ -312,19 +323,14 @@ public class BaselineMutantFilterTests : TestBase
         };
         var file = new CsharpFileLeaf
         {
-            RelativePath = "foo.cs"
+            RelativePath = "foo.cs",
+            SourceCode = "var foo = \"bar\";"
         };
 
         var mutants = new List<IMutant>
         {
-            new Mutant
-            {
-                ResultStatus = MutantStatus.Pending
-            },
-            new Mutant
-            {
-                ResultStatus = MutantStatus.Pending
-            }
+            new Mutant { ResultStatus = MutantStatus.Pending },
+            new Mutant { ResultStatus = MutantStatus.Pending }
         };
 
         var jsonMutants = new HashSet<IJsonMutant>
@@ -336,7 +342,7 @@ public class BaselineMutantFilterTests : TestBase
         };
 
         // Setup Mocks
-        var jsonReportFileComponent = new MockJsonReportFileComponent("", "", jsonMutants);
+        var jsonReportFileComponent = new MockJsonReportFileComponent("", "var foo = \"bar\";", jsonMutants);
 
         var jsonFileComponents = new Dictionary<string, ISourceFile>
         {
@@ -348,26 +354,25 @@ public class BaselineMutantFilterTests : TestBase
         baselineProvider.Setup(mock => mock.Load(It.IsAny<string>()))
             .Returns(Task.FromResult(baseline as IJsonReport));
 
-        baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<IJsonMutant>())).Returns("var foo = \"bar\";");
-        baselineMutantHelper.Setup(mock => mock.GetMutantMatchingSourceCode(
-            It.IsAny<IEnumerable<IMutant>>(),
-            It.Is<IJsonMutant>(m => m == jsonMutants.First()),
-            It.Is<string>(source => source == "var foo = \"bar\";"))).Returns(mutants).Verifiable();
+        diffProvider.Setup(mock => mock.GetContentDiff(jsonReportFileComponent.Source, file.SourceCode))
+            .Returns(EmptyContentDiff);
+        contentMatcher.Setup(mock => mock.MatchByLocation(mutants, jsonMutants.First(), EmptyContentDiff))
+            .Returns(mutants).Verifiable();
 
         // Act
-        var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
+        var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, diffProvider.Object, contentMatcher.Object);
 
         var results = target.FilterMutants(mutants, file, options);
 
         // Assert
         foreach (var result in results)
         {
-            result.ResultStatus.ShouldBe(MutantStatus.Pending);
-            result.ResultStatusReason.ShouldBe("Result based on previous run was inconclusive");
+            result.ResultStatus.ShouldBe(MutantStatus.Killed);
+            result.ResultStatusReason.ShouldBe("Result based on previous run");
         }
         results.Count().ShouldBe(2);
 
-        baselineMutantHelper.Verify();
+        contentMatcher.Verify();
     }
 
     [TestMethod]
@@ -376,7 +381,6 @@ public class BaselineMutantFilterTests : TestBase
         // Arrange
         var branchProvider = new Mock<IGitInfoProvider>();
         var baselineProvider = new Mock<IBaselineProvider>();
-        var baselineMutantHelper = new Mock<IBaselineMutantHelper>();
 
         var options = new StrykerOptions
         {
@@ -394,11 +398,6 @@ public class BaselineMutantFilterTests : TestBase
             new Mutant()
         };
 
-        var jsonMutants = new HashSet<IJsonMutant>
-        {
-            new JsonMutant()
-        };
-
         // Setup Mocks
 
         var jsonFileComponents = new Dictionary<string, ISourceFile>();
@@ -408,7 +407,7 @@ public class BaselineMutantFilterTests : TestBase
         baselineProvider.Setup(mock => mock.Load(It.IsAny<string>())).Returns(Task.FromResult((IJsonReport)baseline));
 
         // Act
-        var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
+        var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object);
 
         var results = target.FilterMutants(mutants, file, options);
 

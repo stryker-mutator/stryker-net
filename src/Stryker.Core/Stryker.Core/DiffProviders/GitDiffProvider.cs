@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -22,6 +23,12 @@ public class GitDiffProvider : IDiffProvider
         _options = options;
         _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
     }
+
+    // TODO: LibGit2Sharp's PatchEntryChanges (available in the diff walk in ScanDiff()) already
+    // contains line-level hunk data, so this could be implemented using git's own diff instead of
+    // falling back to DiffMatchPatchProvider. Not yet implemented.
+    public DiffResult GetContentDiff(string oldSource, string newSource) =>
+        throw new NotSupportedException($"{nameof(GitDiffProvider)} does not yet support content-level diffing.");
 
     public DiffResult ScanDiff()
     {

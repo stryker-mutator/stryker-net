@@ -16,6 +16,19 @@ public abstract class ProjectComponent : IProjectComponent
     /// </summary>
     public string RelativePath { get; set; }
 
+    private string _rootRelativePath;
+
+    /// <summary>
+    /// Path relative to the root of the current analysis run. See <see cref="IReadOnlyProjectComponent.RootRelativePath"/>.
+    /// Falls back to <see cref="RelativePath"/> when not explicitly set (correct in project/test-project
+    /// mode, where the project root and the run root are the same directory).
+    /// </summary>
+    public string RootRelativePath
+    {
+        get => _rootRelativePath ?? RelativePath;
+        set => _rootRelativePath = value;
+    }
+
     public IFolderComposite Parent { get; set; }
 
     public Display DisplayFile { get; set; }
