@@ -6,6 +6,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
 using Buildalyzer;
+using Buildalyzer.Environment;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -231,6 +232,45 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
         var result = target.ResolveSourceProjectInfos(options).First();
 
         result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
+    }
+
+    [TestMethod]
+    public void ShouldAnalyzeWithoutADesignTimeBuildButSkipCompilation()
+    {
+        // Analysis must not be a design-time build (it suppresses version generation), but should still skip csc.
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectFilePath, new MockFileData(_defaultTestProjectFileContents) },
+            { Path.Combine(_sourcePath, "Plain.cs"), new MockFileData(_sourceFile) },
+            { _testProjectFilePath, new MockFileData(_defaultTestProjectFileContents) },
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath,
+            fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"]);
+
+        // capture the environment Stryker hands to Buildalyzer for the source project
+        EnvironmentOptions capturedEnvironment = null;
+        var sourceResults = sourceProjectManagerMock.Object.Build((EnvironmentOptions)null);
+        sourceProjectManagerMock.Setup(x => x.Build(It.IsAny<EnvironmentOptions>()))
+            .Callback<EnvironmentOptions>(environment => capturedEnvironment = environment)
+            .Returns(sourceResults);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+
+        var target = BuildTestResolver(fileSystem);
+
+        target.ResolveSourceProjectInfos(new StrykerOptions { ProjectPath = _testPath });
+
+        capturedEnvironment.ShouldNotBeNull();
+        capturedEnvironment.DesignTime.ShouldBeFalse();
+        capturedEnvironment.GlobalProperties.ShouldNotContainKey("DesignTimeBuild");
+        capturedEnvironment.GlobalProperties["SkipCompilerExecution"].ShouldBe("true");
     }
 
 

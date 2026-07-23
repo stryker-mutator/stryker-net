@@ -439,13 +439,7 @@ public class InputFileResolver : IInputFileResolver
         var projectLogName = FileSystem.Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
         _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
 
-        var env = new EnvironmentOptions();
-
-        if (!string.IsNullOrEmpty(options.MsBuildPath))
-        {
-            // we need to forward this path to buildalyzer
-            env.EnvironmentVariables[EnvironmentVariables.MSBUILD_EXE_PATH] = options.MsBuildPath;
-        }
+        var env = CreateAnalysisEnvironment(options);
 
         var buildResult = project.Build(env);
         // store the build log
@@ -505,10 +499,8 @@ public class InputFileResolver : IInputFileResolver
 
             _nugetRestoreProcess.RestorePackages(options.SolutionPath, options.MsBuildPath ?? buildResult.First().MsBuildPath());
         }
-        var buildOptions = new EnvironmentOptions
-        {
-            Restore = true
-        };
+        var buildOptions = CreateAnalysisEnvironment(options);
+        buildOptions.Restore = true;
         // retry the analysis
         buildResult = project.Build(buildOptions);
 
@@ -520,11 +512,58 @@ public class InputFileResolver : IInputFileResolver
         if (!buildResultOverallSuccess && !string.IsNullOrEmpty(options.TargetFramework))
         {
             // still failed, we can try using target framework option
-            buildResult = project.Build(options.TargetFramework);
+            buildResult = project.Build(options.TargetFramework, CreateAnalysisEnvironment(options));
             buildResultOverallSuccess = buildResult.Any( br => br.IsValidFor(options.TargetFramework));
         }
 
         return buildResult;
+    }
+
+    /// <summary>
+    /// MSBuild global properties used to analyse a project without paying for a full build. They reproduce the
+    /// cheap parts of Buildalyzer's design-time build (skip the C# compiler, skip copying build outputs, do not
+    /// build referenced projects) but deliberately leave out <c>DesignTimeBuild</c> and <c>BuildingProject</c>.
+    /// A design-time build sets <c>DesignTimeBuild=true</c>, which makes versioning tools such as MinVer skip
+    /// version generation; the recompiled mutant assembly would then default to <c>1.0.0.0</c> and break
+    /// strong-name binding inside the test host (see issue #3094). Running a regular build keeps the computed
+    /// version intact while skipping the compiler keeps the analysis fast and free of side effects.
+    /// </summary>
+    private static readonly Dictionary<string, string> AnalysisBuildProperties = new()
+    {
+        ["SkipCompilerExecution"] = "true",
+        ["ProvideCommandLineArgs"] = "true",
+        ["BuildProjectReferences"] = "false",
+        ["SkipCopyBuildProduct"] = "true",
+        ["CopyBuildOutputToOutputDirectory"] = "false",
+        ["CopyOutputSymbolsToOutputDirectory"] = "false",
+        ["CopyDocumentationFileToOutputDirectory"] = "false",
+        ["ComputeNETCoreBuildOutputFiles"] = "false",
+        ["GeneratePackageOnBuild"] = "false",
+        ["AutoGenerateBindingRedirects"] = "false",
+        ["DisableRarCache"] = "true",
+        ["UseCommonOutputDirectory"] = "true",
+    };
+
+    /// <summary>
+    /// Builds the Buildalyzer environment used to analyse a project. Stryker runs a real (non design-time)
+    /// build so MSBuild computes the assembly version exactly as a normal build would, while skipping the
+    /// compiler and output copying (see <see cref="AnalysisBuildProperties"/>) to stay fast.
+    /// </summary>
+    private static EnvironmentOptions CreateAnalysisEnvironment(IStrykerOptions options)
+    {
+        var env = new EnvironmentOptions { DesignTime = false };
+        foreach (var property in AnalysisBuildProperties)
+        {
+            env.GlobalProperties[property.Key] = property.Value;
+        }
+
+        if (!string.IsNullOrEmpty(options.MsBuildPath))
+        {
+            // we need to forward this path to buildalyzer
+            env.EnvironmentVariables[EnvironmentVariables.MSBUILD_EXE_PATH] = options.MsBuildPath;
+        }
+
+        return env;
     }
 
     private void LogAnalyzerResult(IAnalyzerResults analyzerResults, IStrykerOptions options)
