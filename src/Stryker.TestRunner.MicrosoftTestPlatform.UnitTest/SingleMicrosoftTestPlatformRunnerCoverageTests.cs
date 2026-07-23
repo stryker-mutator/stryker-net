@@ -1,3 +1,4 @@
+using System.IO.MemoryMappedFiles;
 using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
@@ -224,6 +225,52 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         var longPathOtherDir = runner.GetCoverageFilePath($"/another/dir/{longName}");
         Path.GetFileName(longPath).Length.ShouldBeLessThan(90);
         longPathOtherDir.ShouldNotBe(longPath, "truncated names must still be distinct via the path hash");
+    }
+
+    [TestMethod]
+    public void MutantFilePath_ShouldBeUniquePerRunnerInstance()
+    {
+        using var runner = CreateRunner(511);
+        using var otherRunner = CreateRunner(512);
+        using var sameIdRunner = CreateRunner(511);
+
+        // Runner ids are pool-local, so independently constructed runners can share an id; the
+        // name embeds the process id and a per-instance nonce to keep their control files separate
+        Path.GetFileName(runner.MutantFilePath).ShouldStartWith($"stryker-mutant-{Environment.ProcessId}-");
+        otherRunner.MutantFilePath.ShouldNotBe(runner.MutantFilePath, "different runners should get different mutant-id files");
+        sameIdRunner.MutantFilePath.ShouldNotBe(runner.MutantFilePath, "runner instances sharing an id must not share the mutant-id file");
+    }
+
+    [TestMethod]
+    public async Task MutantFile_ShouldNotBeResetOrDeletedByAnotherRunnerInstance()
+    {
+        using var runner = CreateRunner(513);
+
+        // Observe the file the way a test host does: MutantControl maps it once when the host starts
+        // and reads the id from the live view on every IsActive call
+        using var hostStream = new FileStream(runner.MutantFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var hostMap = MemoryMappedFile.CreateFromFile(hostStream, null, sizeof(int), MemoryMappedFileAccess.Read, HandleInheritability.None, leaveOpen: true);
+        using var hostView = hostMap.CreateViewAccessor(0, sizeof(int), MemoryMappedFileAccess.Read);
+
+        // Publish an active mutant id through the real runner path (writes the mutant-id file, runs
+        // no assemblies); the mapped host sees it live
+        await runner.RunAllTestsAsync(Array.Empty<string>(), mutantId: 42, mutants: null, update: null);
+        hostView.ReadInt32(0).ShouldBe(42);
+
+        // Runner ids are pool-local indices, so an independently constructed runner can share this
+        // runner's id. Construction writes a -1 reset to the new runner's mutant file and disposal
+        // deletes it
+        using (CreateRunner(513))
+        {
+            hostView.ReadInt32(0).ShouldBe(42, "another runner's construction must not reset this runner's active mutant id");
+        }
+
+        hostView.ReadInt32(0).ShouldBe(42, "another runner's disposal must not reset this runner's active mutant id");
+        File.Exists(runner.MutantFilePath).ShouldBeTrue("another runner's disposal must not delete this runner's mutant-id file");
+
+        // The runner keeps publishing through the same path, so the host's view must still track it
+        await runner.RunAllTestsAsync(Array.Empty<string>(), mutantId: 7, mutants: null, update: null);
+        hostView.ReadInt32(0).ShouldBe(7, "the mapped view test hosts read from must still track this runner's file");
     }
 
     [TestMethod]
