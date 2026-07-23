@@ -19,6 +19,8 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 /// environment variables. Used by MicrosoftTestPlatformRunnerPool.
 /// Maintains persistent test server connections per assembly to reduce process startup overhead.
 /// Uses file-based mutant control to allow changing the active mutant without restarting processes.
+/// Mutants that need process isolation (static initializer mutations) are the exception: they get a
+/// dedicated server process per session, see <see cref="RequiresProcessIsolation"/>.
 /// </summary>
 public class SingleMicrosoftTestPlatformRunner : IDisposable
 {
@@ -96,6 +98,11 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     {
         var assemblies = project.GetTestAssemblies();
 
+        if (RequiresProcessIsolation(mutants))
+        {
+            return TestMutantsInIsolationAsync(assemblies, mutants, update, timeoutCalc);
+        }
+
         // Determine which mutant to activate
         // When testing a single mutant, activate it; otherwise use -1 (no mutation)
         var mutantId = mutants.Count == 1 ? mutants[0].Id : -1;
@@ -106,7 +113,96 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         return RunAllTestsAsync(assemblies, mutantId, mutants, update, timeoutCalc);
     }
 
-    public async Task ResetServerAsync()
+    /// <summary>
+    /// A mutation inside a static initializer (or one flagged by coverage analysis as needing early
+    /// activation) only takes effect while the type initializes, which happens once per test-host
+    /// process. Testing it on a reused host is wrong in both directions: the mutation cannot activate
+    /// on a host whose types are already initialized (false Survived), and if it is active when a
+    /// fresh host initializes them, the mutated state is baked in for the process lifetime, so its
+    /// test failures repeat in every later session and kill unrelated mutants (false Killed).
+    /// </summary>
+    private static bool RequiresProcessIsolation(IReadOnlyList<IMutant> mutants) =>
+        mutants.Any(m => m.IsStaticValue || m.MustBeTestedInIsolation);
+
+    /// <summary>
+    /// Runs each mutant needing isolation in a dedicated test-server process. The session is split
+    /// to one mutant at a time because the file-based control channel can activate only a single id:
+    /// a batched session would run with no mutation active at all. Servers are reset before each run
+    /// (the fresh host reads the mutant id at startup, so the mutation is active during static
+    /// initialization) and after it, with the control file cleared first, so neither the baked-in
+    /// state nor a stale mutant id can leak into whatever starts a server next on this runner.
+    /// </summary>
+    private async Task<ITestRunResult> TestMutantsInIsolationAsync(
+        IReadOnlyList<string> assemblies,
+        IReadOnlyList<IMutant> mutants,
+        TestUpdateHandler? update,
+        ITimeoutValueCalculator? timeoutCalc)
+    {
+        var results = new List<ITestRunResult>(mutants.Count);
+        foreach (var mutant in mutants)
+        {
+            _logger.LogDebug("{RunnerId}: Testing mutant {MutantId} in an isolated test-server process",
+                RunnerId, mutant.Id);
+
+            await ResetServerAsync().ConfigureAwait(false);
+            try
+            {
+                results.Add(await RunAllTestsAsync(assemblies, mutant.Id, [mutant], update, timeoutCalc).ConfigureAwait(false));
+            }
+            finally
+            {
+                WriteMutantIdToFile(-1);
+                await ResetServerAsync().ConfigureAwait(false);
+            }
+        }
+
+        return results.Count == 1 ? results[0] : MergeResults(results);
+    }
+
+    /// <summary>
+    /// Combines the per-mutant results of a split isolated batch into one session result. When a
+    /// split session crashed or timed out, the flag is returned with empty test lists rather than
+    /// the union: the executor re-analyzes every mutant of a flagged multi-mutant batch against the
+    /// returned lists with the session flags dropped, so a union would let one mutant's failures
+    /// (or a fully executed sibling run) overwrite the others' verdicts. Empty lists leave the
+    /// affected mutants Pending, which routes them into the executor's single-mutant retry path
+    /// where the flags are honored per mutant.
+    /// </summary>
+    private ITestRunResult MergeResults(IReadOnlyList<ITestRunResult> results)
+    {
+        var message = string.Join(Environment.NewLine,
+            results.Select(r => r.ResultMessage).Where(m => !string.IsNullOrWhiteSpace(m)));
+        var messages = results.SelectMany(r => r.Messages ?? []).ToList();
+        var duration = TimeSpan.FromTicks(results.Sum(r => r.Duration.Ticks));
+
+        IEnumerable<MtpTestDescription> testDescriptionValues;
+        lock (_discoveryLock)
+        {
+            testDescriptionValues = _testDescriptions.Values.ToList();
+        }
+
+        if (results.Any(r => r.SessionHadRuntimeIssue))
+        {
+            return TestRunResult.RuntimeError(testDescriptionValues, TestIdentifierList.NoTest(),
+                TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), message, messages, duration);
+        }
+
+        if (results.Any(r => r.SessionTimedOut))
+        {
+            return TestRunResult.TimedOut(testDescriptionValues, TestIdentifierList.NoTest(),
+                TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), message, messages, duration);
+        }
+
+        var executedTests = results.Any(r => r.ExecutedTests.IsEveryTest)
+            ? TestIdentifierList.EveryTest()
+            : new TestIdentifierList(results.SelectMany(r => r.ExecutedTests.GetIdentifiers()).Distinct());
+        var failedTests = new TestIdentifierList(results.SelectMany(r => r.FailingTests.GetIdentifiers()).Distinct());
+        var timedOutTests = new TestIdentifierList(results.SelectMany(r => r.TimedOutTests.GetIdentifiers()).Distinct());
+
+        return new TestRunResult(testDescriptionValues, executedTests, failedTests, timedOutTests, message, messages, duration);
+    }
+
+    public virtual async Task ResetServerAsync()
     {
         _logger.LogDebug("{RunnerId}: Resetting test servers to reload assemblies", RunnerId);
         
