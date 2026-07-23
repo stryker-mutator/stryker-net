@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
@@ -709,7 +710,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
             => _discovered = discovered;
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<TestNode, bool>? testUidFilter = null)
             => Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>(
                 (new TestRunResult(false, "simulated test host crash"), false, _discovered));
     }
@@ -1445,7 +1446,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<TestNode, bool>? testUidFilter = null)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
             var result = new TestRunResult(
@@ -1460,6 +1461,316 @@ public class SingleMicrosoftTestPlatformRunnerTests
         }
     }
 
+    #region Coverage-based test filtering
+
+    private FilterCapturingRunner CreateFilterCapturingRunner(OptimizationModes optimizationMode)
+    {
+        var options = new Mock<IStrykerOptions>();
+        options.Setup(o => o.OptimizationMode).Returns(optimizationMode);
+        return new FilterCapturingRunner(
+            0, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance, options.Object);
+    }
+
+    private static Mock<IProjectAndTests> CreateProject(params string[] assemblies)
+    {
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(assemblies.ToList());
+        return project;
+    }
+
+    private static IMutant CreateMutant(int id, ITestIdentifiers assessingTests)
+    {
+        var mutant = new Mock<IMutant>();
+        mutant.Setup(x => x.Id).Returns(id);
+        mutant.Setup(x => x.AssessingTests).Returns(assessingTests);
+        return mutant.Object;
+    }
+
+    [TestMethod, Timeout(1000)]
+    public async Task TestMultipleMutantsAsync_WithCoverageBasedTest_FiltersToAssessingTests()
+    {
+        var project = CreateProject("test.dll");
+        var mutants = new List<IMutant> { CreateMutant(1, new TestIdentifierList("uid-1")) };
+
+        using var runner = CreateFilterCapturingRunner(OptimizationModes.CoverageBasedTest);
+
+        await runner.TestMultipleMutantsAsync(project.Object, null, mutants, null);
+
+        runner.RunCalled.ShouldBeTrue();
+        runner.CapturedFilter.ShouldNotBeNull();
+        runner.CapturedFilter!(new TestNode("uid-1", "Test1", "action", "passed")).ShouldBeTrue();
+        runner.CapturedFilter!(new TestNode("uid-2", "Test2", "action", "passed")).ShouldBeFalse();
+    }
+
+    [TestMethod, Timeout(1000)]
+    public async Task TestMultipleMutantsAsync_WithCoverageBasedTest_UnionsAssessingTestsAcrossMutants()
+    {
+        var project = CreateProject("test.dll");
+        var mutants = new List<IMutant>
+        {
+            CreateMutant(1, new TestIdentifierList("uid-1")),
+            CreateMutant(2, new TestIdentifierList("uid-2")),
+        };
+
+        using var runner = CreateFilterCapturingRunner(OptimizationModes.CoverageBasedTest);
+
+        await runner.TestMultipleMutantsAsync(project.Object, null, mutants, null);
+
+        runner.CapturedFilter.ShouldNotBeNull();
+        runner.CapturedFilter!(new TestNode("uid-1", "Test1", "action", "passed")).ShouldBeTrue();
+        runner.CapturedFilter!(new TestNode("uid-2", "Test2", "action", "passed")).ShouldBeTrue();
+        runner.CapturedFilter!(new TestNode("uid-3", "Test3", "action", "passed")).ShouldBeFalse();
+    }
+
+    [TestMethod, Timeout(1000)]
+    public async Task TestMultipleMutantsAsync_WithStaticMutant_RunsAllTests()
+    {
+        var project = CreateProject("test.dll");
+        // A static mutant reports IsEveryTest: every test must run, even when another
+        // mutant in the group has a narrow test set
+        var mutants = new List<IMutant>
+        {
+            CreateMutant(1, TestIdentifierList.EveryTest()),
+            CreateMutant(2, new TestIdentifierList("uid-1")),
+        };
+
+        using var runner = CreateFilterCapturingRunner(OptimizationModes.CoverageBasedTest);
+
+        await runner.TestMultipleMutantsAsync(project.Object, null, mutants, null);
+
+        runner.RunCalled.ShouldBeTrue();
+        runner.CapturedFilter.ShouldBeNull();
+    }
+
+    [TestMethod, Timeout(1000)]
+    public async Task TestMultipleMutantsAsync_WithoutCoverageBasedTest_RunsAllTests()
+    {
+        var project = CreateProject("test.dll");
+        var mutants = new List<IMutant> { CreateMutant(1, new TestIdentifierList("uid-1")) };
+
+        using var runner = CreateFilterCapturingRunner(OptimizationModes.None);
+
+        await runner.TestMultipleMutantsAsync(project.Object, null, mutants, null);
+
+        runner.RunCalled.ShouldBeTrue();
+        runner.CapturedFilter.ShouldBeNull();
+    }
+
+    [TestMethod, Timeout(1000)]
+    public async Task TestMultipleMutantsAsync_WithNoCoveringTests_SkipsRunEntirely()
+    {
+        var project = CreateProject("test.dll");
+        var mutants = new List<IMutant> { CreateMutant(1, TestIdentifierList.NoTest()) };
+
+        using var runner = CreateFilterCapturingRunner(OptimizationModes.CoverageBasedTest);
+
+        var result = await runner.TestMultipleMutantsAsync(project.Object, null, mutants, null);
+
+        runner.RunCalled.ShouldBeFalse();
+        result.ResultMessage.ShouldBe("Mutants are not covered by any test!");
+        result.ExecutedTests.Count.ShouldBe(0);
+        result.FailingTests.Count.ShouldBe(0);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public async Task RunAssemblyTestsInternalAsync_SkipsServer_WhenFilterMatchesNoTestInAssembly()
+    {
+        // Assembly has discovered tests, but none of them match the filter (the mutant is
+        // covered by tests in another assembly): the run must be skipped without contacting
+        // the server. Server creation for "/nonexistent.dll" would fail and produce a
+        // TestRunResult whose ExecutedTests and FailingTests are both EveryTest, so a clean
+        // empty result proves the server was skipped.
+        const string assembly = "/nonexistent.dll";
+        _testsByAssembly[assembly] = new List<TestNode>
+        {
+            new("uid-1", "Test1", "action", "passed"),
+        };
+
+        using var runner = CreateRunner();
+
+        var (result, timedOut) = await runner.RunAssemblyTestsInternalAsync(
+            assembly, node => node.Uid == "uid-other");
+
+        timedOut.ShouldBeFalse();
+        var testRunResult = result.ShouldBeOfType<TestRunResult>();
+        testRunResult.FailingTests.IsEveryTest.ShouldBeFalse();
+        testRunResult.FailingTests.Count.ShouldBe(0);
+        testRunResult.ExecutedTests.IsEveryTest.ShouldBeFalse();
+        testRunResult.ExecutedTests.Count.ShouldBe(0);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public async Task RunAllTestsAsync_PreservesExecutedUids_WhenOneAssemblyCompressesToEveryTest()
+    {
+        // Assembly A: one test (uid-1) that runs fully, so its per-assembly result compresses
+        // to EveryTest. Assembly B: five tests, all filtered out (empty executed result).
+        // The aggregate cannot compress (1 executed < 6 discovered) and must still contain
+        // uid-1; if it is dropped, Mutant.AnalyzeTestRun never sees the assessing test as
+        // executed and a surviving mutant is reported as untested.
+        _testsByAssembly["a.dll"] = new List<TestNode> { new("uid-1", "Test1", "action", "passed") };
+        _testsByAssembly["b.dll"] = Enumerable.Range(2, 5)
+            .Select(i => new TestNode($"uid-{i}", $"Test{i}", "action", "passed"))
+            .ToList();
+
+        var cannedResults = new Dictionary<string, TestRunResult>
+        {
+            ["a.dll"] = new(
+                Array.Empty<IFrameworkTestDescription>(),
+                TestIdentifierList.EveryTest(),
+                TestIdentifierList.NoTest(),
+                TestIdentifierList.NoTest(),
+                string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero),
+            ["b.dll"] = new(
+                Array.Empty<IFrameworkTestDescription>(),
+                new TestIdentifierList(Array.Empty<string>()),
+                TestIdentifierList.NoTest(),
+                TestIdentifierList.NoTest(),
+                string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero),
+        };
+
+        using var runner = new PerAssemblyCannedRunner(
+            0, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance, cannedResults);
+
+        var mutants = new List<IMutant> { CreateMutant(1, new TestIdentifierList("uid-1")) };
+        ITestIdentifiers? capturedRanTests = null;
+        bool Update(IReadOnlyList<IMutant> testedMutants, ITestIdentifiers failed, ITestIdentifiers ran, ITestIdentifiers timedOut)
+        {
+            capturedRanTests = ran;
+            return true;
+        }
+
+        var result = await runner.RunAllTestsAsync(new[] { "a.dll", "b.dll" }, -1, mutants, Update);
+
+        capturedRanTests.ShouldNotBeNull();
+        capturedRanTests!.IsEveryTest.ShouldBeFalse();
+        capturedRanTests.GetIdentifiers().ShouldContain("uid-1");
+        result.ExecutedTests.GetIdentifiers().ShouldContain("uid-1");
+    }
+
+    [TestMethod, Timeout(1000)]
+    public async Task RunAssemblyTestsAsync_PassesFilterToInternal_AndComputesTimeoutFromFilteredTests()
+    {
+        // Uses a real (empty) temp file so the File.Exists guard passes without a test server.
+        var assembly = Path.GetTempFileName();
+        try
+        {
+            var node1 = new TestNode("uid-1", "Test1", "action", "passed");
+            var node2 = new TestNode("uid-2", "Test2", "action", "passed");
+            _testsByAssembly[assembly] = new List<TestNode> { node1, node2 };
+
+            var desc1 = new MtpTestDescription(node1);
+            desc1.RegisterInitialTestResult(new MtpTestResult(TimeSpan.FromMilliseconds(100)));
+            var desc2 = new MtpTestDescription(node2);
+            desc2.RegisterInitialTestResult(new MtpTestResult(TimeSpan.FromMilliseconds(200)));
+            _testDescriptions["uid-1"] = desc1;
+            _testDescriptions["uid-2"] = desc2;
+
+            int? capturedEstimate = null;
+            var timeoutCalc = new Mock<ITimeoutValueCalculator>();
+            timeoutCalc.Setup(c => c.CalculateTimeoutValue(It.IsAny<int>()))
+                .Callback<int>(ms => capturedEstimate = ms)
+                .Returns(5000);
+
+            using var runner = new InternalCapturingRunner(
+                0, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+            Func<TestNode, bool> filter = n => n.Uid == "uid-1";
+
+            await runner.RunAssemblyTestsAsync(assembly, timeoutCalc.Object, filter);
+
+            // The filter must reach RunAssemblyTestsInternalAsync unchanged, and the timeout
+            // estimate must cover only the filtered test (100 ms), not the full suite (300 ms).
+            runner.CapturedFilter.ShouldBeSameAs(filter);
+            capturedEstimate.ShouldBe(100);
+            runner.CapturedTimeout.ShouldBe(TimeSpan.FromMilliseconds(5000));
+        }
+        finally
+        {
+            File.Delete(assembly);
+        }
+    }
+
+    private class PerAssemblyCannedRunner : SingleMicrosoftTestPlatformRunner
+    {
+        private readonly Dictionary<string, TestRunResult> _results;
+
+        public PerAssemblyCannedRunner(
+            int id,
+            Dictionary<string, List<TestNode>> testsByAssembly,
+            Dictionary<string, MtpTestDescription> testDescriptions,
+            TestSet testSet,
+            object discoveryLock,
+            ILogger logger,
+            Dictionary<string, TestRunResult> results)
+            : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger)
+        {
+            _results = results;
+        }
+
+        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
+            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<TestNode, bool>? testUidFilter = null)
+            => Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>(
+                (_results[assembly], false, GetDiscoveredTests(assembly)));
+    }
+
+    private class InternalCapturingRunner : SingleMicrosoftTestPlatformRunner
+    {
+        public Func<TestNode, bool>? CapturedFilter;
+        public TimeSpan? CapturedTimeout;
+
+        public InternalCapturingRunner(
+            int id,
+            Dictionary<string, List<TestNode>> testsByAssembly,
+            Dictionary<string, MtpTestDescription> testDescriptions,
+            TestSet testSet,
+            object discoveryLock,
+            ILogger logger)
+            : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
+
+        internal override Task<(ITestRunResult Result, bool TimedOut)> RunAssemblyTestsInternalAsync(
+            string assembly, Func<TestNode, bool>? testUidFilter, TimeSpan? timeout = null)
+        {
+            CapturedFilter = testUidFilter;
+            CapturedTimeout = timeout;
+            ITestRunResult result = new TestRunResult(true);
+            return Task.FromResult((result, false));
+        }
+    }
+
+    private class FilterCapturingRunner : SingleMicrosoftTestPlatformRunner
+    {
+        public Func<TestNode, bool>? CapturedFilter;
+        public bool RunCalled;
+
+        public FilterCapturingRunner(
+            int id,
+            Dictionary<string, List<TestNode>> testsByAssembly,
+            Dictionary<string, MtpTestDescription> testDescriptions,
+            TestSet testSet,
+            object discoveryLock,
+            ILogger logger,
+            IStrykerOptions options)
+            : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger, options) { }
+
+        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
+            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<TestNode, bool>? testUidFilter = null)
+        {
+            RunCalled = true;
+            CapturedFilter = testUidFilter;
+            var result = new TestRunResult(
+                Array.Empty<IFrameworkTestDescription>(),
+                TestIdentifierList.EveryTest(),
+                TestIdentifierList.NoTest(),
+                TestIdentifierList.NoTest(),
+                string.Empty,
+                Enumerable.Empty<string>(),
+                TimeSpan.Zero);
+            return Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>((result, false, GetDiscoveredTests(assembly)));
+        }
+    }
+
+    #endregion
+
     private class NoTimeoutSimulatingRunner : SingleMicrosoftTestPlatformRunner
     {
         public NoTimeoutSimulatingRunner(
@@ -1472,7 +1783,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<TestNode, bool>? testUidFilter = null)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
             var result = new TestRunResult(

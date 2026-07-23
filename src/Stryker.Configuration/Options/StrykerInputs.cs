@@ -129,6 +129,7 @@ public class StrykerInputs : IStrykerInputs
         var sinceEnabled = SinceInput.Validate(WithBaselineInput.SuppliedInput);
         var sinceTarget = SinceTargetInput.Validate(sinceEnabled);
         var projectVersion = ProjectVersionInput.Validate(reporters, withBaseline);
+        var testRunner = TestRunnerInput.Validate();
 
         _strykerOptionsCache ??= new StrykerOptions()
         {
@@ -161,7 +162,7 @@ public class StrykerInputs : IStrykerInputs
             IgnoredMethods = IgnoredMethodsInput.Validate(),
             Mutate = MutateInput.Validate(),
             LanguageVersion = LanguageVersionInput.Validate(),
-            OptimizationMode = CoverageAnalysisInput.Validate() | DisableBailInput.Validate() | DisableMixMutantsInput.Validate(),
+            OptimizationMode = CoverageAnalysisInput.Validate(testRunner) | DisableBailInput.Validate() | DisableMixMutantsInput.Validate(),
             TestProjects = TestProjectsInput.Validate(),
             TestCaseFilter = TestCaseFilterInput.Validate(),
             DashboardUrl = DashboardUrlInput.Validate(),
@@ -183,7 +184,7 @@ public class StrykerInputs : IStrykerInputs
             SinceTarget = sinceTarget,
             ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate()),
             BreakOnInitialTestFailure = BreakOnInitialTestFailureInput.Validate(),
-            TestRunner = TestRunnerInput.Validate(),
+            TestRunner = testRunner,
             MutantIdProvider = new BasicIdProvider()
         };
         return _strykerOptionsCache;

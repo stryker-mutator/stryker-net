@@ -17,9 +17,11 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 /// </summary>
 public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 {
-    private readonly AutoResetEvent _runnerAvailableHandler = new(false);
+    private readonly SemaphoreSlim _runnerAvailable;
     private readonly ConcurrentBag<SingleMicrosoftTestPlatformRunner> _availableRunners = new();
-    private static readonly List<SingleMicrosoftTestPlatformRunner> _allRunners = new();
+    // Instance-scoped: there is one pool per run, and a static list would leak disposed runners
+    // across pool instances (notably between unit tests, and across solution-project pools).
+    private readonly List<SingleMicrosoftTestPlatformRunner> _allRunners = new();
     private bool _disposed;
     private readonly ILogger _logger;
     private readonly int _countOfRunners;
@@ -38,6 +40,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         _options = options;
         _countOfRunners = Math.Max(1, options.Concurrency);
         _runnerFactory = runnerFactory ?? new DefaultRunnerFactory();
+        _runnerAvailable = new SemaphoreSlim(0, _countOfRunners);
         _logger.LogWarning("The Microsoft Test Platform testrunner is currently in preview. Results should be verified since this feature is still being tested.");
 
         Initialize();
@@ -66,7 +69,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
                 _options);
             _availableRunners.Add(runner);
             _allRunners.Add(runner);
-            _runnerAvailableHandler.Set();
+            _runnerAvailable.Release();
         });
     }
 
@@ -85,7 +88,8 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     public async Task<ITestRunResult> InitialTestAsync(IProjectAndTests project)
     {
         var assemblies = project.GetTestAssemblies();
-        if (!assemblies.Any())
+        ArgumentNullException.ThrowIfNull(assemblies);
+        if (assemblies.Count == 0)
         {
             return new TestRunResult(false, "No test assemblies found");
         }
@@ -100,7 +104,23 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project)
     {
-        _logger.LogInformation("Starting coverage capture for MTP runner");
+        if (_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+        {
+            // Coverage captured in isolation (perTestInIsolation) is Exact; plain perTest is Normal.
+            // The mode is resolved upfront in option validation (MTP promotes perTest -> isolation),
+            // so this reflects what is actually running. Mirrors VsTestRunnerPool.
+            var confidence = _options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest)
+                ? CoverageConfidence.Exact
+                : CoverageConfidence.Normal;
+            return CaptureCoverageTestByTest(confidence);
+        }
+
+        return CaptureCoverageInOneGo(project);
+    }
+
+    private IEnumerable<ICoverageRunResult> CaptureCoverageInOneGo(IProjectAndTests project)
+    {
+        _logger.LogInformation("Starting aggregate coverage capture for MTP runner");
 
         // Enable coverage mode on all runners
         foreach (var runner in _allRunners)
@@ -110,7 +130,6 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
         try
         {
-            // Run all tests with coverage tracking enabled
             var testResult = RunThisAsync(runner => runner.InitialTestAsync(project)).GetAwaiter().GetResult();
 
             if (testResult.FailingTests.IsEveryTest)
@@ -118,10 +137,8 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
                 _logger.LogWarning("Coverage test run failed: {Message}", testResult.ResultMessage);
             }
 
-            // Reset test processes to trigger coverage file flush (process exit writes coverage)
             ResetTestProcesses();
 
-            // Aggregate coverage data from all runners
             var allCoveredMutants = new HashSet<int>();
             var allStaticMutants = new HashSet<int>();
 
@@ -138,12 +155,9 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
                 }
             }
 
-            _logger.LogInformation("Coverage capture complete: {CoveredCount} mutations covered, {StaticCount} static mutations",
+            _logger.LogInformation("Aggregate coverage capture complete: {CoveredCount} mutations covered, {StaticCount} static mutations",
                 allCoveredMutants.Count, allStaticMutants.Count);
 
-            // For cumulative coverage, we return a single coverage result that applies to all tests
-            // Each test is assumed to cover all the mutations that were covered during the full test run
-            // Static mutants are marked as such for proper handling during mutation testing
             return _testDescriptions.Values.Select(testDescription =>
                 CoverageRunResult.Create(
                     testDescription.Id,
@@ -154,7 +168,63 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         }
         finally
         {
-            // Disable coverage mode on all runners for subsequent mutation testing
+            foreach (var runner in _availableRunners)
+            {
+                runner.SetCoverageMode(false);
+            }
+        }
+    }
+
+    private IEnumerable<ICoverageRunResult> CaptureCoverageTestByTest(
+        CoverageConfidence confidence)
+    {
+        _logger.LogInformation("Starting per-test coverage capture for MTP runner");
+
+        foreach (var runner in _availableRunners)
+        {
+            runner.SetCoverageMode(true);
+        }
+
+        try
+        {
+            var allTests = new List<(string Assembly, TestNode Test, string TestId)>();
+            foreach (var (assembly, tests) in _testsByAssembly)
+            {
+                foreach (var test in tests)
+                {
+                    if (_testDescriptions.TryGetValue(test.Uid, out var desc))
+                    {
+                        allTests.Add((assembly, test, desc.Id));
+                    }
+                }
+            }
+
+            _logger.LogInformation("Capturing per-test coverage for {TestCount} tests across {AssemblyCount} assemblies",
+                allTests.Count, _testsByAssembly.Count);
+
+            var results = new ConcurrentBag<ICoverageRunResult>();
+
+            Parallel.ForEach(allTests,
+                new ParallelOptions { MaxDegreeOfParallelism = _countOfRunners },
+                testInfo =>
+                {
+                    var result = RunThisAsync(async runner =>
+                        await runner.RunSingleTestForCoverageAsync(
+                            testInfo.Assembly, testInfo.Test, testInfo.TestId, confidence)
+                            .ConfigureAwait(false))
+                        .GetAwaiter().GetResult();
+
+                    results.Add(result);
+                });
+
+            _logger.LogInformation(
+                "Per-test coverage capture complete: {TestCount} tests captured",
+                results.Count);
+
+            return results;
+        }
+        finally
+        {
             foreach (var runner in _availableRunners)
             {
                 runner.SetCoverageMode(false);
@@ -169,7 +239,8 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         TestUpdateHandler? update)
     {
         var assemblies = project.GetTestAssemblies();
-        if (!assemblies.Any())
+        ArgumentNullException.ThrowIfNull(assemblies);
+        if (assemblies.Count == 0)
         {
             return new TestRunResult(false, "No test assemblies found");
         }
@@ -179,40 +250,36 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     private async Task<T> RunThisAsync<T>(Func<SingleMicrosoftTestPlatformRunner, Task<T>> task)
     {
-        SingleMicrosoftTestPlatformRunner? runner;
+        const int maxWaitTimeSeconds = 300;
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(maxWaitTimeSeconds));
 
-        // Try to get a runner with a timeout to prevent indefinite blocking
-        var attempts = 0;
-        const int maxWaitTimeSeconds = 300; // 5 minutes max wait
-        const int waitIntervalMs = 1000; // Check every second
-        var maxAttempts = maxWaitTimeSeconds * 1000 / waitIntervalMs;
-
-        while (!_availableRunners.TryTake(out runner))
+        // Single CTS shared across retries so the timeout is a hard upper bound
+        while (true)
         {
-            if (!_runnerAvailableHandler.WaitOne(waitIntervalMs))
+            try
             {
-                attempts++;
-                if (attempts >= maxAttempts)
-                {
-                    throw new TimeoutException($"Timed out waiting for an available test runner after {maxWaitTimeSeconds} seconds. Available runners: {_availableRunners.Count}, Total runners: {_countOfRunners}");
-                }
-
-                if (attempts % 30 == 0) // Log every 30 seconds
-                {
-                    _logger.LogWarning("Waiting for available test runner... ({Attempts}s elapsed, {Available}/{Total} runners available)",
-                        attempts, _availableRunners.Count, _countOfRunners);
-                }
+                await _runnerAvailable.WaitAsync(cts.Token).ConfigureAwait(false);
             }
-        }
+            catch (OperationCanceledException)
+            {
+                throw new TimeoutException($"Timed out waiting for an available test runner after {maxWaitTimeSeconds} seconds. Available runners: {_availableRunners.Count}, Total runners: {_countOfRunners}");
+            }
 
-        try
-        {
-            return await task(runner).ConfigureAwait(false);
-        }
-        finally
-        {
-            _availableRunners.Add(runner);
-            _runnerAvailableHandler.Set();
+            if (!_availableRunners.TryTake(out var runner))
+            {
+                _runnerAvailable.Release();
+                continue;
+            }
+
+            try
+            {
+                return await task(runner).ConfigureAwait(false);
+            }
+            finally
+            {
+                _availableRunners.Add(runner);
+                _runnerAvailable.Release();
+            }
         }
     }
 
@@ -229,7 +296,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         {
             runner.Dispose();
         }
-        _runnerAvailableHandler.Dispose();
+        _runnerAvailable.Dispose();
     }
 }
 
