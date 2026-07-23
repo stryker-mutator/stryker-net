@@ -28,9 +28,12 @@ public class TestRunResult : ITestRunResult
         IEnumerable<string> messages,
         TimeSpan timeSpan)
     {
-        TestDescriptions = executedTests.IsEveryTest
-            ? vsTestDescriptions.ToList()
-            : vsTestDescriptions.Where(p => executedTests.GetIdentifiers().ToHashSet().Contains(p.Id)).ToList();
+        var executedTestIds = executedTests.GetIdentifiers().ToHashSet();  
+
+        TestDescriptions = executedTests.IsEveryTest 
+            ? vsTestDescriptions.ToList() 
+            : vsTestDescriptions.Where(p => executedTestIds.Contains(p.Id)).ToList();  
+
         ExecutedTests = executedTests;
         FailingTests = failedTests;
         TimedOutTests = timedOutTest;
