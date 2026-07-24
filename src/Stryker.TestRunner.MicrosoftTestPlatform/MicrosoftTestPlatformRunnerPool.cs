@@ -98,7 +98,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         return results;
     }
 
-    public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project)
+    public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project, Action<int, int> onProgress = null)
     {
         _logger.LogInformation("Starting coverage capture for MTP runner");
 

@@ -61,4 +61,28 @@ public class BroadcastReporter : IReporter
             reporter.OnAllMutantsTested(reportComponent, testProjectsInfo);
         }
     }
+
+    public void OnCoverageAnalysisStarted(int totalTests)
+    {
+        foreach (var reporter in Reporters)
+        {
+            reporter.OnCoverageAnalysisStarted(totalTests);
+        }
+    }
+
+    public void OnCoverageAnalysisProgress(int testsCompleted, int totalTests)
+    {
+        foreach (var reporter in Reporters)
+        {
+            reporter.OnCoverageAnalysisProgress(testsCompleted, totalTests);
+        }
+    }
+
+    public void OnCoverageAnalysisCompleted()
+    {
+        foreach (var reporter in Reporters)
+        {
+            reporter.OnCoverageAnalysisCompleted();
+        }
+    }
 }

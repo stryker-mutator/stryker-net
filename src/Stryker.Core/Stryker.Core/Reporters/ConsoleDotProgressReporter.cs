@@ -45,4 +45,13 @@ public class ConsoleDotProgressReporter : IReporter
     }
 
     public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo) => _console.WriteLine();
+
+    public void OnCoverageAnalysisStarted(int totalTests) => _console.WriteLine("Analyzing coverage...");
+
+    public void OnCoverageAnalysisProgress(int testsCompleted, int totalTests)
+    {
+        // don't report per-test during coverage analysis
+    }
+
+    public void OnCoverageAnalysisCompleted() => _console.WriteLine();
 }

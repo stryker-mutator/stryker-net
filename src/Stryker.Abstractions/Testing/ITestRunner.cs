@@ -17,7 +17,7 @@ public interface ITestRunner : IDisposable
 
     Task<ITestRunResult> InitialTestAsync(IProjectAndTests project);
 
-    IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project);
+    IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project, Action<int, int> onProgress = null);
 
     Task<ITestRunResult> TestMultipleMutantsAsync(IProjectAndTests project, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler? update);
 }

@@ -37,4 +37,28 @@ public class ProgressReporterTests : TestBase
 
         _progressBarReporter.Verify(x => x.ReportRunTest(mutant), Times.Once);
     }
+
+    [TestMethod]
+    public void ProgressReporter_ShouldTrackCoverageAnalysisStarted()
+    {
+        _progressReporter.OnCoverageAnalysisStarted(2);
+
+        _progressBarReporter.Verify(x => x.ReportCoverageAnalysisStarted(2), Times.Once);
+    }
+
+    [TestMethod]
+    public void ProgressReporter_ShouldTrackCoverageAnalysisProgress()
+    {
+        _progressReporter.OnCoverageAnalysisProgress(5, 10);
+
+        _progressBarReporter.Verify(x => x.ReportCoverageAnalysisProgress(5), Times.Once);
+    }
+
+    [TestMethod]
+    public void ProgressReporter_ShouldTrackCoverageAnalysisCompleted()
+    {
+        _progressReporter.OnCoverageAnalysisCompleted();
+
+        _progressBarReporter.Verify(x => x.ReportCoverageAnalysisCompleted(), Times.Once);
+    }
 }

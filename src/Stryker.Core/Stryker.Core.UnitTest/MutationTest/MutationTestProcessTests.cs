@@ -11,7 +11,9 @@ using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
+using Stryker.Abstractions.Testing;
 using Stryker.Configuration.Options;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Initialisation;
@@ -85,6 +87,9 @@ public class MutationTestProcessTests : TestBase
 
         var executorMock = new Mock<IMutationTestExecutor>();
         var coverageAnalyzerMock = new Mock<ICoverageAnalyser>();
+        coverageAnalyzerMock.Setup(x => x.DetermineTestCoverage(It.IsAny<IStrykerOptions>(), It.IsAny<IProjectAndTests>(),
+            It.IsAny<ITestRunner>(), It.IsAny<IEnumerable<IMutant>>(), It.IsAny<ITestIdentifiers>(),
+            It.IsAny<IReporter>()));
 
         // Create a strict mock for the IMutationProcess and verify the calls on that instance.
         var mutationProcessMock = new Mock<IMutationProcess>(MockBehavior.Strict);
@@ -178,6 +183,9 @@ public class MutationTestProcessTests : TestBase
         Input.InitialTestRun = new InitialTestRun(TestScenario.GetInitialRunResult(), new TimeoutValueCalculator(500));
 
         var coverageAnalyzerMock2 = new Mock<ICoverageAnalyser>();
+        coverageAnalyzerMock2.Setup(x => x.DetermineTestCoverage(It.IsAny<IStrykerOptions>(), It.IsAny<IProjectAndTests>(),
+            It.IsAny<ITestRunner>(), It.IsAny<IEnumerable<IMutant>>(), It.IsAny<ITestIdentifiers>(),
+            It.IsAny<IReporter>()));
         var mutationProcessMock = Mock.Of<IMutationProcess>();
         var target = new MutationTestProcess(mutationExecutor, coverageAnalyzerMock2.Object, mutationProcessMock, TestLoggerFactory.CreateLogger<MutationTestProcess>());
 
@@ -367,6 +375,9 @@ public class MutationTestProcessTests : TestBase
         Input.InitialTestRun = new InitialTestRun(TestScenario.GetInitialRunResult(), new TimeoutValueCalculator(500));
 
         var coverageAnalyzerMock6 = new Mock<ICoverageAnalyser>();
+        coverageAnalyzerMock6.Setup(x => x.DetermineTestCoverage(It.IsAny<IStrykerOptions>(), It.IsAny<IProjectAndTests>(),
+            It.IsAny<ITestRunner>(), It.IsAny<IEnumerable<IMutant>>(), It.IsAny<ITestIdentifiers>(),
+            It.IsAny<IReporter>()));
         var mutationProcessMock = Mock.Of<IMutationProcess>();
 
         var target = new MutationTestProcess(executor, coverageAnalyzerMock6.Object, mutationProcessMock, TestLoggerFactory.CreateLogger<MutationTestProcess>());
@@ -388,9 +399,12 @@ public class MutationTestProcessTests : TestBase
         var mutants = new List<Mutant> { new Mutant { Id = 1, ResultStatus = status } };
 
         var mutationTestExecutor = Mock.Of<IMutationTestExecutor>();
-        var coverageAnalyzer = Mock.Of<ICoverageAnalyser>();
+        var coverageAnalyzerMock = new Mock<ICoverageAnalyser>();
+        coverageAnalyzerMock.Setup(x => x.DetermineTestCoverage(It.IsAny<IStrykerOptions>(), It.IsAny<IProjectAndTests>(),
+            It.IsAny<ITestRunner>(), It.IsAny<IEnumerable<IMutant>>(), It.IsAny<ITestIdentifiers>(),
+            It.IsAny<IReporter>()));
         var mutationProcessMock = Mock.Of<IMutationProcess>();
-        var target = new MutationTestProcess(mutationTestExecutor, coverageAnalyzer, mutationProcessMock, TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        var target = new MutationTestProcess(mutationTestExecutor, coverageAnalyzerMock.Object, mutationProcessMock, TestLoggerFactory.CreateLogger<MutationTestProcess>());
         target.Initialize(Input, new StrykerOptions(), null);
         Should.Throw<GeneralStrykerException>(() => target.TestAsync(mutants));
     }
@@ -400,9 +414,12 @@ public class MutationTestProcessTests : TestBase
     {
         var reporter = Mock.Of<IReporter>();
         var mutationTestExecutor = Mock.Of<IMutationTestExecutor>();
-        var coverageAnalyzer = Mock.Of<ICoverageAnalyser>();
+        var coverageAnalyzerMock = new Mock<ICoverageAnalyser>();
+        coverageAnalyzerMock.Setup(x => x.DetermineTestCoverage(It.IsAny<IStrykerOptions>(), It.IsAny<IProjectAndTests>(),
+            It.IsAny<ITestRunner>(), It.IsAny<IEnumerable<IMutant>>(), It.IsAny<ITestIdentifiers>(),
+            It.IsAny<IReporter>()));
         var mutationProcessMock = Mock.Of<IMutationProcess>();
-        var target = new MutationTestProcess(mutationTestExecutor, coverageAnalyzer, mutationProcessMock, TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        var target = new MutationTestProcess(mutationTestExecutor, coverageAnalyzerMock.Object, mutationProcessMock, TestLoggerFactory.CreateLogger<MutationTestProcess>());
         target.Initialize(Input, new StrykerOptions(), reporter);
         var result = target.TestAsync(Enumerable.Empty<Mutant>());
 

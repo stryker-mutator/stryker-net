@@ -68,4 +68,19 @@ public partial class JsonReporter : IReporter
     {
         // This reporter does not currently report when the mutation testrun starts
     }
+
+    public void OnCoverageAnalysisStarted(int totalTests)
+    {
+        // This reporter does not report coverage analysis progress
+    }
+
+    public void OnCoverageAnalysisProgress(int testsCompleted, int totalTests)
+    {
+        // This reporter does not report coverage analysis progress
+    }
+
+    public void OnCoverageAnalysisCompleted()
+    {
+        // This reporter does not report coverage analysis progress
+    }
 }

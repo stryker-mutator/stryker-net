@@ -238,5 +238,6 @@ public class MutationTestProcess : IMutationTestProcess
     }
 
     public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(_options, Input.SourceProjectInfo,
-        _mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests);
+        _mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests,
+        _reporter);
 }

@@ -155,6 +155,63 @@ public class ProgressBarReporterTests
         progress.Dispose();
         progress.Ticks().ShouldBe(-1);
     }
+
+    [TestMethod]
+    public void CoverageTestsProcessed_ShouldBeZero_Initially()
+    {
+        var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
+        progressBarMock.Setup(x => x.Start(It.IsAny<int>(), It.IsAny<string>()));
+
+        var progressBarReporter = new ProgressBarReporter(progressBarMock.Object, new FixedClock());
+
+        progressBarReporter.CoverageTestsProcessed.ShouldBe(0);
+    }
+
+    [TestMethod]
+    public void ReportCoverageAnalysisProgress_ShouldUpdateCounter()
+    {
+        var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
+        progressBarMock.Setup(x => x.Start(It.IsAny<int>(), It.IsAny<string>()));
+
+        var progressBarReporter = new ProgressBarReporter(progressBarMock.Object, new FixedClock());
+
+        progressBarReporter.ReportCoverageAnalysisStarted(100);
+        progressBarReporter.CoverageTestsProcessed.ShouldBe(0);
+
+        progressBarReporter.ReportCoverageAnalysisProgress(50);
+        progressBarReporter.CoverageTestsProcessed.ShouldBe(50);
+
+        progressBarReporter.ReportCoverageAnalysisCompleted();
+    }
+
+    [TestMethod]
+    public void ReportCoverageAnalysisProgress_ShouldDoNothing_WhenNotStarted()
+    {
+        var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
+        progressBarMock.Setup(x => x.Start(It.IsAny<int>(), It.IsAny<string>()));
+
+        var progressBarReporter = new ProgressBarReporter(progressBarMock.Object, new FixedClock());
+
+        progressBarReporter.ReportCoverageAnalysisProgress(50);
+        progressBarReporter.CoverageTestsProcessed.ShouldBe(0);
+
+        progressBarReporter.ReportCoverageAnalysisCompleted();
+    }
+
+    [TestMethod]
+    public void ReportCoverageAnalysisCompleted_ShouldShowFinalProgress()
+    {
+        var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
+        progressBarMock.Setup(x => x.Start(It.IsAny<int>(), It.IsAny<string>()));
+
+        var progressBarReporter = new ProgressBarReporter(progressBarMock.Object, new FixedClock());
+
+        progressBarReporter.ReportCoverageAnalysisStarted(200);
+        progressBarReporter.ReportCoverageAnalysisProgress(150);
+
+        progressBarReporter.CoverageTestsProcessed.ShouldBe(150);
+        progressBarReporter.ReportCoverageAnalysisCompleted();
+    }
 }
 
 public class FixedClock : TestBase, IStopWatchProvider

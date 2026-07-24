@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Reporting;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.Tests;
 
@@ -19,7 +20,7 @@ public class CoverageAnalyser : ICoverageAnalyser
     }
 
     public void DetermineTestCoverage(IStrykerOptions options, IProjectAndTests project, ITestRunner runner, IEnumerable<IMutant> mutants,
-        ITestIdentifiers resultFailingTests)
+        ITestIdentifiers resultFailingTests, IReporter reporter)
     {
         if (!options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
             !options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
@@ -29,7 +30,15 @@ public class CoverageAnalyser : ICoverageAnalyser
             return;
         }
 
-        ParseCoverage(runner.CaptureCoverage(project), mutants, new TestIdentifierList(resultFailingTests.GetIdentifiers()));
+        var totalTests = runner.GetTests(project).Count;
+        reporter?.OnCoverageAnalysisStarted(totalTests);
+
+        var coverage = runner.CaptureCoverage(project,
+            (testsCompleted, testsTotal) => reporter?.OnCoverageAnalysisProgress(testsCompleted, testsTotal));
+
+        ParseCoverage(coverage, mutants, new TestIdentifierList(resultFailingTests.GetIdentifiers()));
+
+        reporter?.OnCoverageAnalysisCompleted();
     }
 
     private static void AssumeAllTestsAreNeeded(IEnumerable<IMutant> mutants)
@@ -50,6 +59,8 @@ public class CoverageAnalyser : ICoverageAnalyser
             AssumeAllTestsAreNeeded(mutantsToScan);
             return;
         }
+
+        var mutantsList = mutantsToScan.ToList();
 
         var dubiousTests = new HashSet<string>();
         var trustedTests = new HashSet<string>();
@@ -98,14 +109,23 @@ public class CoverageAnalyser : ICoverageAnalyser
             allTestsExceptTrusted = TestIdentifierList.NoTest();
         }
 
-        foreach (var mutant in mutantsToScan)
+        var onlyCoveredByFailingTestsCount = 0;
+        foreach (var mutant in mutantsList)
         {
-            CoverageForThisMutant(mutant, mutationToResultMap, allTest, allTestsExceptTrusted,
-                new TestIdentifierList(dubiousTests), failedTests);
+            if (CoverageForThisMutant(mutant, mutationToResultMap, allTest, allTestsExceptTrusted,
+                new TestIdentifierList(dubiousTests), failedTests))
+            {
+                onlyCoveredByFailingTestsCount++;
+            }
+        }
+
+        if (onlyCoveredByFailingTestsCount > 0)
+        {
+            _logger.LogInformation("{Count} mutants were only covered by failing tests.", onlyCoveredByFailingTestsCount);
         }
     }
 
-    private void CoverageForThisMutant(IMutant mutant,
+    private bool CoverageForThisMutant(IMutant mutant,
         IReadOnlyDictionary<int, List<ICoverageRunResult>> mutationToResultMap,
         ITestIdentifiers everytest,
         ITestIdentifiers allTestsGuidsExceptTrusted,
@@ -143,20 +163,20 @@ public class CoverageAnalyser : ICoverageAnalyser
             mutant.ResultStatus = MutantStatus.NoCoverage;
             mutant.ResultStatusReason = "Not covered by any test.";
             _logger.LogDebug("Mutant {MutantId} is not covered by any test.", mutant.Id);
+            return false;
         }
-        else if (mutant.AssessingTests.IsEmpty && mutant.ResultStatus == MutantStatus.Pending)
+
+        if (mutant.AssessingTests.IsEmpty && mutant.ResultStatus == MutantStatus.Pending)
         {
             mutant.ResultStatus = MutantStatus.Survived;
             mutant.ResultStatusReason = "Only covered by already failing tests.";
-            _logger.LogInformation(
-                "Mutant {MutantId} is only covered by failing tests.", mutant.Id);
+            return true;
         }
-        else
-        {
-            _logger.LogDebug(
-                "Mutant {MutantId} will be tested against ({TestCases}) tests.", mutant.Id,
-                mutant.AssessingTests.IsEveryTest ? "all" : mutant.AssessingTests.Count);
-        }
+
+        _logger.LogDebug(
+            "Mutant {MutantId} will be tested against ({TestCases}) tests.", mutant.Id,
+            mutant.AssessingTests.IsEveryTest ? "all" : mutant.AssessingTests.Count);
+        return false;
     }
 
     private static (MutationTestingRequirements, ITestIdentifiers) ParseResultForThisMutant(

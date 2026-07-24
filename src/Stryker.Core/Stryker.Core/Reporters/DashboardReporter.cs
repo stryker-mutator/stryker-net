@@ -113,6 +113,21 @@ public class DashboardReporter : IReporter
         // Method to implement the interface
     }
 
+    public void OnCoverageAnalysisStarted(int totalTests)
+    {
+        // This reporter does not report coverage analysis progress
+    }
+
+    public void OnCoverageAnalysisProgress(int testsCompleted, int totalTests)
+    {
+        // This reporter does not report coverage analysis progress
+    }
+
+    public void OnCoverageAnalysisCompleted()
+    {
+        // This reporter does not report coverage analysis progress
+    }
+
     private bool ShouldPublishInRealTime() =>
         _options.ReportTypeToOpen == ReportType.Dashboard ||
         _options.Reporters.Contains(Reporter.RealTimeDashboard);

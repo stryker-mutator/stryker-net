@@ -64,6 +64,21 @@ public class MarkdownSummaryReporter : IReporter
         }
     }
 
+    public void OnCoverageAnalysisStarted(int totalTests)
+    {
+        // This reporter does not report coverage analysis progress
+    }
+
+    public void OnCoverageAnalysisProgress(int testsCompleted, int totalTests)
+    {
+        // This reporter does not report coverage analysis progress
+    }
+
+    public void OnCoverageAnalysisCompleted()
+    {
+        // This reporter does not report coverage analysis progress
+    }
+
     private void GenerateMarkdownReport(string reportPath, IEnumerable<IFileLeaf> files, double mutationScore)
     {
         if (!files.Any())

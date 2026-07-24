@@ -1,4 +1,5 @@
 using System;
+using System.Timers;
 using Spectre.Console;
 using Stryker.Abstractions;
 
@@ -6,9 +7,15 @@ namespace Stryker.Core.Reporters.Progress;
 
 public interface IProgressBarReporter
 {
+    int CoverageTestsProcessed { get; }
+
     void ReportInitialState(int mutantsToBeTested);
     void ReportRunTest(IReadOnlyMutant mutantTestResult);
     void ReportFinalState();
+
+    void ReportCoverageAnalysisStarted(int totalTests);
+    void ReportCoverageAnalysisProgress(int testsProcessed);
+    void ReportCoverageAnalysisCompleted();
 }
 
 public class ProgressBarReporter : IProgressBarReporter, IDisposable
@@ -27,6 +34,13 @@ public class ProgressBarReporter : IProgressBarReporter, IDisposable
     private int _mutantsSurvivedCount;
     private int _mutantsTimeoutCount;
     private int _mutantsRuntimeErrorCount;
+
+    private readonly string[] _spinnerFrames = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" };
+    private int _spinnerIndex;
+    private bool _coverageAnalysisActive;
+    private int _coverageTotalTests;
+    public int CoverageTestsProcessed { get; private set; }
+    private Timer _spinnerTimer;
 
     public ProgressBarReporter(IProgressBar progressBar, IStopWatchProvider stopWatch, IAnsiConsole console = null)
     {
@@ -80,6 +94,52 @@ public class ProgressBarReporter : IProgressBarReporter, IDisposable
         _console.MarkupLine($"Errors:  [Magenta]{_mutantsRuntimeErrorCount.ToString().PadLeft(length)}[/]");
     }
 
+    public void ReportCoverageAnalysisStarted(int totalTests)
+    {
+        _coverageTotalTests = totalTests;
+        _coverageAnalysisActive = true;
+        CoverageTestsProcessed = 0;
+
+        _spinnerTimer = new Timer(100)
+        {
+            AutoReset = true
+        };
+        _spinnerTimer.Elapsed += (sender, e) => WriteCoverageStatus(CoverageTestsProcessed);
+        _spinnerTimer.Start();
+
+        WriteCoverageStatus(0);
+    }
+
+    public void ReportCoverageAnalysisProgress(int testsProcessed)
+    {
+        if (!_coverageAnalysisActive)
+        {
+            return;
+        }
+
+        CoverageTestsProcessed = testsProcessed;
+    }
+
+    public void ReportCoverageAnalysisCompleted()
+    {
+        _coverageAnalysisActive = false;
+        _spinnerTimer?.Stop();
+
+        if (_coverageTotalTests > 0)
+        {
+            WriteCoverageStatus(_coverageTotalTests);
+            System.Console.WriteLine();
+        }
+    }
+
+    private void WriteCoverageStatus(int testsProcessed)
+    {
+        var percentage = _coverageTotalTests == 0 ? 0 : (int)((double)testsProcessed / _coverageTotalTests * 100);
+        var spinner = _spinnerFrames[_spinnerIndex++ % _spinnerFrames.Length];
+
+        System.Console.Write($"\r{spinner} Analyzing coverage [{testsProcessed}/{_coverageTotalTests}] {percentage}%");
+    }
+
     private string RemainingTime()
     {
         if (_mutantsToBeTested == 0 || _numberOfMutantsRan == 0)
@@ -117,6 +177,7 @@ public class ProgressBarReporter : IProgressBarReporter, IDisposable
             {
                 _stopWatch?.Stop();
                 _progressBar?.Stop();
+                _spinnerTimer?.Dispose();
             }
 
             _disposedValue = true;

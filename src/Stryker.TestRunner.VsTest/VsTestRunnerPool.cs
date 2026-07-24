@@ -63,7 +63,10 @@ public sealed class VsTestRunnerPool : ITestRunner
     public Task<ITestRunResult> InitialTestAsync(IProjectAndTests project)
         => Task.FromResult(RunThis(runner => runner.InitialTest(project)));
 
-    public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project) => Context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest) ? CaptureCoverageTestByTest(project) : CaptureCoverageInOneGo(project);
+    public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project, Action<int, int> onProgress = null) =>
+        Context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest)
+            ? CaptureCoverageTestByTest(project, onProgress)
+            : CaptureCoverageInOneGo(project, onProgress);
 
     private void Initialize(Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder = null)
     {
@@ -76,18 +79,25 @@ public sealed class VsTestRunnerPool : ITestRunner
             }));
     }
 
-    private IEnumerable<ICoverageRunResult> CaptureCoverageInOneGo(IProjectAndTests project) => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestIdentifierList.EveryTest(), project).TestResults), false);
+    private IEnumerable<ICoverageRunResult> CaptureCoverageInOneGo(IProjectAndTests project, Action<int, int> onProgress) =>
+        ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestIdentifierList.EveryTest(), project, onProgress).TestResults), false);
 
-    private IEnumerable<ICoverageRunResult> CaptureCoverageTestByTest(IProjectAndTests project) => ConvertCoverageResult(CaptureCoveragePerIsolatedTests(project, Context.VsTests.Keys).TestResults, true);
+    private IEnumerable<ICoverageRunResult> CaptureCoverageTestByTest(IProjectAndTests project, Action<int, int> onProgress) =>
+        ConvertCoverageResult(CaptureCoveragePerIsolatedTests(project, Context.VsTests.Keys, onProgress).TestResults, true);
 
-    private IRunResults CaptureCoveragePerIsolatedTests(IProjectAndTests project, IEnumerable<Guid> tests)
+    private IRunResults CaptureCoveragePerIsolatedTests(IProjectAndTests project, IEnumerable<Guid> tests, Action<int, int> onProgress)
     {
         var options = new ParallelOptions { MaxDegreeOfParallelism = _countOfRunners };
         var result = new SimpleRunResults();
         var results = new ConcurrentBag<IRunResults>();
-        Parallel.ForEach(tests, options,
+        var testList = tests.ToList();
+        var testsCompleted = 0;
+        Parallel.ForEach(testList, options,
             testCase =>
-                results.Add(RunThis(runner => runner.RunCoverageSession(new TestIdentifierList(testCase.ToString()), project))));
+            {
+                results.Add(RunThis(runner => runner.RunCoverageSession(new TestIdentifierList(testCase.ToString()), project)));
+                onProgress?.Invoke(Interlocked.Increment(ref testsCompleted), testList.Count);
+            });
 
         return results.Aggregate(result, (runResults, singleResult) => runResults.Merge(singleResult));
     }

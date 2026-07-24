@@ -174,7 +174,7 @@ internal class FullRunScenario
         runnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
         runnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(TestSet);
         runnerMock.Setup(x => x.InitialTestAsync(It.IsAny<IProjectAndTests>())).Returns(Task.FromResult(GetRunResult(InitialRunId) as ITestRunResult));
-        runnerMock.Setup(x => x.CaptureCoverage(It.IsAny<IProjectAndTests>()))
+        runnerMock.Setup(x => x.CaptureCoverage(It.IsAny<IProjectAndTests>(), It.IsAny<Action<int, int>>()))
             .Returns(() =>
             {
                 var result = new List<CoverageRunResult>(_tests.Count);

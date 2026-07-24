@@ -27,4 +27,11 @@ public class ProgressReporter : IReporter
             _progressBarReporter.ReportFinalState();
         }
     }
+
+    public void OnCoverageAnalysisStarted(int totalTests) => _progressBarReporter.ReportCoverageAnalysisStarted(totalTests);
+
+    public void OnCoverageAnalysisProgress(int testsCompleted, int totalTests) =>
+        _progressBarReporter.ReportCoverageAnalysisProgress(testsCompleted);
+
+    public void OnCoverageAnalysisCompleted() => _progressBarReporter.ReportCoverageAnalysisCompleted();
 }

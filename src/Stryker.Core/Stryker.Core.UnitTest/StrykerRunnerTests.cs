@@ -68,6 +68,9 @@ public class StrykerRunnerTests : TestBase
 
         reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()));
         reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()));
+        reporterMock.Setup(x => x.OnCoverageAnalysisStarted(It.IsAny<int>()));
+        reporterMock.Setup(x => x.OnCoverageAnalysisProgress(It.IsAny<int>(), It.IsAny<int>()));
+        reporterMock.Setup(x => x.OnCoverageAnalysisCompleted());
 
         mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
         mutationTestProcessMock.Setup(x => x.GetCoverage());
@@ -137,6 +140,9 @@ public class StrykerRunnerTests : TestBase
         reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()));
         reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()));
         reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()));
+        reporterMock.Setup(x => x.OnCoverageAnalysisStarted(It.IsAny<int>()));
+        reporterMock.Setup(x => x.OnCoverageAnalysisProgress(It.IsAny<int>(), It.IsAny<int>()));
+        reporterMock.Setup(x => x.OnCoverageAnalysisCompleted());
 
         // Setup Dispose for ProjectOrchestrator
         projectOrchestratorMock.Setup(x => x.Dispose());

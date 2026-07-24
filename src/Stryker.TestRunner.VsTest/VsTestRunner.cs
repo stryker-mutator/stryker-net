@@ -220,8 +220,17 @@ public sealed class VsTestRunner : IDisposable
     public IRunResults RunTestSession(ITestIdentifiers testsToRun, IProjectAndTests project, int? timeout = null, Dictionary<int, ITestIdentifiers> mutantTestsMap = null, Action<IRunResults> updateHandler = null) =>
         RunTestSession(testsToRun, project, false, timeout, updateHandler, mutantTestsMap).normal;
 
-    public IRunResults RunCoverageSession(ITestIdentifiers testsToRun, IProjectAndTests project) =>
-        RunTestSession(testsToRun, project, true).raw;
+    public IRunResults RunCoverageSession(ITestIdentifiers testsToRun, IProjectAndTests project, Action<int, int> onProgress = null)
+    {
+        Action<IRunResults> updateHandler = null;
+        if (onProgress != null)
+        {
+            var totalCountOfTests = _context.GetTestsForSources(project.GetTestAssemblies()).Count;
+            updateHandler = handler => onProgress(handler.TestResults.Select(t => t.TestCase.Id).Distinct().Count(), totalCountOfTests);
+        }
+
+        return RunTestSession(testsToRun, project, true, updateHandler: updateHandler).raw;
+    }
 
     private (IRunResults normal, IRunResults raw) RunTestSession(ITestIdentifiers tests, IProjectAndTests projectAndTests,
         bool forCoverage, int? timeOut = null, Action<IRunResults> updateHandler = null,

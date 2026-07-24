@@ -70,6 +70,21 @@ public class ClearTextReporter : IReporter
         }
     }
 
+    public void OnCoverageAnalysisStarted(int totalTests)
+    {
+        // This reporter does not report coverage analysis progress
+    }
+
+    public void OnCoverageAnalysisProgress(int testsCompleted, int totalTests)
+    {
+        // This reporter does not report coverage analysis progress
+    }
+
+    public void OnCoverageAnalysisCompleted()
+    {
+        // This reporter does not report coverage analysis progress
+    }
+
     private void DisplayComponent(IReadOnlyProjectComponent inputComponent, Table table)
     {
         var columns = new List<IRenderable>
