@@ -8,6 +8,7 @@ namespace Stryker.Configuration.Options;
 public interface IStrykerInputs
 {
     AdditionalTimeoutInput AdditionalTimeoutInput { get; init; }
+    TimeoutRatioInput TimeoutRatioInput { get; init; }
     AzureFileStorageSasInput AzureFileStorageSasInput { get; init; }
     S3BucketNameInput S3BucketNameInput { get; init; }
     S3EndpointInput S3EndpointInput { get; init; }
@@ -83,6 +84,7 @@ public class StrykerInputs : IStrykerInputs
     public ThresholdHighInput ThresholdHighInput { get; init; } = new();
     public ThresholdLowInput ThresholdLowInput { get; init; } = new();
     public AdditionalTimeoutInput AdditionalTimeoutInput { get; init; } = new();
+    public TimeoutRatioInput TimeoutRatioInput { get; init; } = new();
     public LanguageVersionInput LanguageVersionInput { get; init; } = new();
     public ConcurrencyInput ConcurrencyInput { get; init; } = new();
     public SourceProjectNameInput SourceProjectNameInput { get; init; } = new();
@@ -156,6 +158,7 @@ public class StrykerInputs : IStrykerInputs
             },
             SourceProjectName = SourceProjectNameInput.Validate(),
             AdditionalTimeout = AdditionalTimeoutInput.Validate(),
+            TimeoutRatio = TimeoutRatioInput.Validate(),
             ExcludedMutations = IgnoreMutationsInput.Validate<Mutator>(),
             ExcludedLinqExpressions = IgnoreMutationsInput.ValidateLinqExpressions(),
             IgnoredMethods = IgnoredMethodsInput.Validate(),

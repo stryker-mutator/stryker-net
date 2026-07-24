@@ -13,9 +13,10 @@ public class AdditionalTimeoutMsInputTests : TestBase
     public void ShouldHaveHelpText()
     {
         var target = new AdditionalTimeoutInput();
-        target.HelpText.ShouldBe(@"A timeout is calculated based on the initial unit test run before mutating.
+        target.HelpText.ShouldBe(@"A number of milliseconds that is added to the calculated timeout value for each mutant.
+A timeout is calculated per mutant based on the initial unit test run before mutating.
 To prevent infinite loops Stryker cancels a testrun if it runs longer than the timeout value.
-If you experience a lot of timeouts you might need to increase the timeout value. | default: '5000'");
+If you experience a lot of timeouts you might need to increase the timeout value. | default: '1000'");
     }
 
     [TestMethod]
@@ -35,7 +36,7 @@ If you experience a lot of timeouts you might need to increase the timeout value
 
         var result = target.Validate();
 
-        result.ShouldBe(5000);
+        result.ShouldBe(1000);
     }
 
     [TestMethod]
