@@ -4,9 +4,9 @@
     "net10.0": {
       "CliWrap": {
         "type": "Direct",
-        "requested": "[3.10.2, )",
-        "resolved": "3.10.2",
-        "contentHash": "oW63Lh5Tr2dVRnGSn5UyV2ITAYTdyaGB8r4pGMcz7CwfzketV7ANyn2LvNJtOjXjL/tJbG0qDH8Xwgt3jgGMNg=="
+        "requested": "[3.10.3, )",
+        "resolved": "3.10.3",
+        "contentHash": "fS5s7DbOmtqtCU3cIYBDKLPPfqtht5gyOzsvp3GcTWnzBc8j4QDFlDpYvGNuSncq9on/oMuGAyNclATdKp3Oxw=="
       },
       "DotNet.ReproducibleBuilds": {
         "type": "Direct",
