@@ -10,8 +10,8 @@ namespace Stryker.Configuration;
 
 public readonly struct ExclusionPattern : IExclusionPattern
 {
-    private static readonly Regex _mutantSpanGroupRegex = new("(\\{(\\d+)\\.\\.(\\d+)\\})+$");
-    private static readonly Regex _mutantSpanRegex = new Regex("\\{(\\d+)\\.\\.(\\d+)\\}");
+    private static readonly Regex _mutantSpanGroupRegex = new(@"(:\d+:\d+:\d+:\d+)+$");
+    private static readonly Regex _mutantSpanRegex = new Regex(@":(\d+):(\d+):(\d+):(\d+)");
 
     public ExclusionPattern(string s)
     {
@@ -20,7 +20,7 @@ public readonly struct ExclusionPattern : IExclusionPattern
             throw new ArgumentNullException(nameof(s));
         }
 
-        IsExcluded = s.StartsWith('!');
+        IsExcluded = s[0] == '!';
 
         var pattern = IsExcluded ? s[1..] : s;
         var mutantSpansRegex = _mutantSpanGroupRegex.Match(pattern);
@@ -32,7 +32,7 @@ public readonly struct ExclusionPattern : IExclusionPattern
 
             MutantSpans = _mutantSpanRegex
                 .Matches(mutantSpansRegex.Value)
-                .Select(x => (int.Parse(x.Groups[1].Value), int.Parse(x.Groups[2].Value)));
+                .Select(x => (int.Parse(x.Groups[1].Value), int.Parse(x.Groups[3].Value)));
         }
         else
         {
