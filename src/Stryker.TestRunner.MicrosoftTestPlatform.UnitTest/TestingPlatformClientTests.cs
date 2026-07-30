@@ -579,7 +579,7 @@ public class TestingPlatformClientTests
         public bool ExitCalled { get; private set; }
         public Guid LastDiscoveryRunId { get; private set; }
         public Guid LastRunTestsRunId { get; private set; }
-        public TestNode[]? LastRunTestCases { get; private set; }
+        public RunRequestTestNode[]? LastRunTestCases { get; private set; }
 
         [JsonRpcMethod("initialize", UseSingleObjectParameterDeserialization = true)]
         public InitializeResponse Initialize(InitializeRequest request)
@@ -608,7 +608,7 @@ public class TestingPlatformClientTests
         public void RunTests(RunTestsRequest request)
         {
             LastRunTestsRunId = request.RunId;
-            LastRunTestCases = request.TestCases;
+            LastRunTestCases = request.Tests;
         }
     }
 
