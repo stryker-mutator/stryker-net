@@ -326,6 +326,7 @@ public class InputFileResolver(
                         if (mode == ScanMode.NoScan
                             || (mode == ScanMode.ScanTestProjectReferences && !projectAnalysisContext.IsTestProject()))
                         {
+
                             return;
                         }
 
@@ -340,7 +341,8 @@ public class InputFileResolver(
         }
         catch (AggregateException ex)
         {
-            throw ex.GetBaseException();
+            _logger.LogError(ex.GetBaseException(), "An error occurred while analyzing projects."); //NOSONAR, we need to focus on the root exception
+            throw;
         }
 
         return mutableProjectsAnalyzerResults;
