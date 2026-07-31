@@ -29,7 +29,7 @@ public class LoggingInitializer : ILoggingInitializer
 
         var diagnoseMode = inputs.DiagModeInput.Validate();
         var logLevel = inputs.VerbosityInput.Validate();
-        if (diagnoseMode && logLevel > LogEventLevel.Debug)
+        if (diagnoseMode && logLevel < LogEventLevel.Debug)
         {
             logLevel = LogEventLevel.Debug;
         }
