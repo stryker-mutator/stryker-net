@@ -236,7 +236,7 @@ namespace ExtraProject.XUnit
             TestProjects = new List<TestProject>
             {
                 new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
-                    sourceFiles: new[] { _testFilePath }).Object)
+                    sourceFiles: [_testFilePath]).Object)
             }
         };
         var node = CSharpSyntaxTree.ParseText(_testFileContents).GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
@@ -259,7 +259,7 @@ namespace ExtraProject.XUnit
         report.Thresholds.ShouldContainKeyAndValue("low", 60);
 
         var testFile = report.TestFiles.ShouldHaveSingleItem();
-        testFile.Key.ShouldBe("c:/mytestfile.cs");
+        testFile.Key.ShouldBe("mytestfile.cs");
         testFile.Value.Language.ShouldBe("cs");
         testFile.Value.Source.ShouldBe(_testFileContents);
 
