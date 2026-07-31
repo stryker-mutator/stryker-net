@@ -19,7 +19,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 {
     private readonly AutoResetEvent _runnerAvailableHandler = new(false);
     private readonly ConcurrentBag<SingleMicrosoftTestPlatformRunner> _availableRunners = new();
-    private static readonly List<SingleMicrosoftTestPlatformRunner> _allRunners = new();
+    private readonly ConcurrentBag<SingleMicrosoftTestPlatformRunner> _allRunners = new();
     private bool _disposed;
     private readonly ILogger _logger;
     private readonly int _countOfRunners;

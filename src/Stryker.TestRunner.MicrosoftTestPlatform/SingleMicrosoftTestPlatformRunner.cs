@@ -476,7 +476,16 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             try
             {
                 var server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
-                await server.RunTestsAsync(new[] { test }).ConfigureAwait(false);
+                var (_, timedOut) = await server.RunTestsAsync(new[] { test }, CalculateSingleTestTimeout(test)).ConfigureAwait(false);
+                if (timedOut)
+                {
+                    _logger.LogWarning(
+                        "{RunnerId}: Test run timed out while capturing per-test coverage for {TestId}; marking as Dubious",
+                        RunnerId, testId);
+                    await DiscardServerAsync(assembly).ConfigureAwait(false);
+                    return CoverageRunResult.Create(testId, CoverageConfidence.Dubious,
+                        Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
+                }
 
                 int epoch;
                 lock (_serverLock)
@@ -545,7 +554,16 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             await DiscardServerAsync(assembly).ConfigureAwait(false);
 
             var server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
-            await server.RunTestsAsync(new[] { test }).ConfigureAwait(false);
+            var (_, timedOut) = await server.RunTestsAsync(new[] { test }, CalculateSingleTestTimeout(test)).ConfigureAwait(false);
+            if (timedOut)
+            {
+                _logger.LogWarning(
+                    "{RunnerId}: Test run timed out while capturing isolated coverage for {TestId}; marking as Dubious",
+                    RunnerId, testId);
+                await DiscardServerAsync(assembly).ConfigureAwait(false);
+                return CoverageRunResult.Create(testId, CoverageConfidence.Dubious,
+                    Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
+            }
 
             // Stop gracefully (not force) so the injected MutantControl's ProcessExit handler flushes
             // this test's (and only this test's) coverage to file before the process goes away.
@@ -684,6 +702,25 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
             RunnerId, timeoutMs, Path.GetFileName(assembly));
         
         return TimeSpan.FromMilliseconds(timeoutMs);
+    }
+
+    // Coverage capture has no ITimeoutValueCalculator of its own (CaptureCoverage isn't handed one),
+    // so a single test's own initial run time is used instead, with the same 1.5x margin the assembly
+    // timeout above uses. The floor guards fast tests, whose RPC/JIT overhead dwarfs their measured
+    // duration - without it, a well-behaved test could be flagged as timed out before it even had a
+    // chance to run.
+    private static readonly TimeSpan _minimumSingleTestCoverageTimeout = TimeSpan.FromSeconds(30);
+    private const double SingleTestCoverageTimeoutRatio = 1.5;
+
+    internal TimeSpan CalculateSingleTestTimeout(TestNode test)
+    {
+        var additionalTimeout = TimeSpan.FromMilliseconds(_options?.AdditionalTimeout ?? 0);
+        var estimatedRunTime = _testDescriptions.TryGetValue(test.Uid, out var description)
+            ? description.InitialRunTime
+            : TimeSpan.Zero;
+
+        var calculated = (estimatedRunTime * SingleTestCoverageTimeoutRatio) + additionalTimeout;
+        return calculated > _minimumSingleTestCoverageTimeout ? calculated : _minimumSingleTestCoverageTimeout;
     }
 
     internal async Task HandleAssemblyTimeoutAsync(string assembly, List<TestNode> discoveredTests, List<string> allTimedOutTests)
