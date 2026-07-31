@@ -205,7 +205,7 @@ public class BaselineMutantFilter : IMutantFilter
     private static void SetMutantStatusToBaselineMutantStatus(IJsonMutant baselineMutant,
         IEnumerable<IMutant> matchingMutants)
     {
-        var matches = matchingMutants as ICollection<IMutant> ?? matchingMutants.ToList();
+        var matches = matchingMutants as ICollection<IMutant> ?? [.. matchingMutants];
         if (matches.Count == 0)
         {
             return;
@@ -214,7 +214,7 @@ public class BaselineMutantFilter : IMutantFilter
         // Matching is now based on the mutant's remapped location rather than fragile source-text
         // equality, so multiple matches at the same location are no longer ambiguous: they all
         // correspond to the same baseline mutant and can safely reuse its result.
-        var status = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
+        var status = Enum.Parse<MutantStatus>(baselineMutant.Status);
         foreach (var matchingMutant in matches)
         {
             matchingMutant.ResultStatus = status;
