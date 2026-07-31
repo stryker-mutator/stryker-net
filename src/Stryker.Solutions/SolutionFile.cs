@@ -194,7 +194,7 @@ public class SolutionFile
     /// <param name="solutionPlatforms">list of solution level platforms</param>
     /// <returns>a solution instance</returns>
     /// <remarks>This method is used for testing purposes. It is mandatory as the underlying solution parser does not support any form of mocking</remarks>
-    public static SolutionFile BuildFromProjectList(string filePath, List<string> projects, string[]? platforms = null
+    internal static SolutionFile BuildFromProjectList(string filePath, List<string> projects, string[]? platforms = null
         , string[]? solutionPlatforms = null)
     {
         var result = new SolutionFile {FileName = filePath};
@@ -255,7 +255,7 @@ public class SolutionFile
         {
             foreach (var solutionPlatform in solution.Platforms)
             {
-                var projects = ExtractProjectForGivenConfiguration(solution, referencePath, buildType, solutionPlatform);
+                var projects = ExtractProjecstForGivenConfiguration(solution, referencePath, buildType, solutionPlatform);
                 if (projects.Count == 0)
                 {
                     continue;
@@ -267,7 +267,7 @@ public class SolutionFile
         return result;
     }
 
-    private static Dictionary<string, (string buildType, string platform)> ExtractProjectForGivenConfiguration(SolutionModel solution,
+    private static Dictionary<string, (string buildType, string platform)> ExtractProjecstForGivenConfiguration(SolutionModel solution,
         string path,
         string buildType,
         string solutionPlatform)
