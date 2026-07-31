@@ -4,6 +4,11 @@ namespace Stryker.Utilities;
 
 public static class FilePathUtils
 {
+    public static string NormalizeReportPath(string filePath)
+    {
+        return filePath?.Replace('\\', '/');
+    }
+
     public static string NormalizePathSeparators(string filePath)
     {
         if (filePath == null)

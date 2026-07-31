@@ -31,6 +31,7 @@ public class BaselineMutantFilter : IMutantFilter
 
     // Baseline test id -> (declaring file's relative path, baseline test details).
     private readonly Dictionary<string, (string RelativePath, IJsonTest Test)> _baselineTestsById = new();
+    private readonly Dictionary<string, IJsonTestFile> _baselineTestFilesByRelativePath = new();
     // Current test id -> current test case (with its up-to-date location).
     private readonly Dictionary<string, ITestCase> _currentTestsById = new();
     // Current test files by relative path, so we can diff a baseline test file against its current version.
@@ -68,6 +69,7 @@ public class BaselineMutantFilter : IMutantFilter
         {
             foreach (var (relativePath, testFile) in _baseline.TestFiles)
             {
+                _baselineTestFilesByRelativePath[relativePath] = testFile;
                 foreach (var test in testFile.Tests)
                 {
                     _baselineTestsById[test.Id] = (relativePath, test);
@@ -79,7 +81,7 @@ public class BaselineMutantFilter : IMutantFilter
         {
             foreach (var testFile in _testProjectsInfo.TestFiles)
             {
-                _currentTestFilesByRelativePath[FilePathUtils.NormalizePathSeparators(testFile.RelativePath)] = testFile;
+                _currentTestFilesByRelativePath[testFile.RelativePath] = testFile;
                 foreach (var test in testFile.Tests)
                 {
                     _currentTestsById[test.Id] = test;
@@ -111,12 +113,13 @@ public class BaselineMutantFilter : IMutantFilter
 
     private void UpdateMutantsWithBaselineStatus(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file)
     {
-        if (!_baseline.Files.ContainsKey(FilePathUtils.NormalizePathSeparators(file.RootRelativePath)))
+        var baselineFileEntry = _baseline.Files.FirstOrDefault(pair => pair.Key == file.RootRelativePath);
+        if (baselineFileEntry.Key is null)
         {
             return;
         }
 
-        var baselineFile = _baseline.Files[FilePathUtils.NormalizePathSeparators(file.RootRelativePath)];
+        var baselineFile = baselineFileEntry.Value;
 
         if (baselineFile is { })
         {
@@ -170,7 +173,7 @@ public class BaselineMutantFilter : IMutantFilter
             return false;
         }
 
-        if (!_currentTestFilesByRelativePath.TryGetValue(FilePathUtils.NormalizePathSeparators(baselineEntry.RelativePath), out var currentTestFile))
+        if (!_currentTestFilesByRelativePath.TryGetValue(baselineEntry.RelativePath, out var currentTestFile))
         {
             // The declaring test file no longer exists at that path.
             return false;
@@ -187,7 +190,7 @@ public class BaselineMutantFilter : IMutantFilter
             return diff;
         }
 
-        var baselineSource = _baseline.TestFiles[relativePath].Source;
+        var baselineSource = _baselineTestFilesByRelativePath[relativePath].Source;
         diff = _diffProvider.GetContentDiff(baselineSource, currentTestFile.Source);
         _testFileDiffCache[relativePath] = diff;
         return diff;

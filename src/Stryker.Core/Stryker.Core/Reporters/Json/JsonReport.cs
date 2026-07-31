@@ -6,7 +6,6 @@ using Stryker.Abstractions.Reporting;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json.SourceFiles;
 using Stryker.Core.Reporters.Json.TestFiles;
-using Stryker.Utilities;
 
 namespace Stryker.Core.Reporters.Json;
 
@@ -76,7 +75,7 @@ public class JsonReport : IJsonReport
             TestFiles = new Dictionary<string, IJsonTestFile>();
             foreach (var testFile in testProjectsInfo.TestFiles)
             {
-                var key = FilePathUtils.NormalizePathSeparators(testFile.RelativePath);
+                var key = testFile.RelativePath;
                 if (TestFiles.TryGetValue(key, out var jsonFile))
                 {
                     jsonFile.AddTestFile(testFile);

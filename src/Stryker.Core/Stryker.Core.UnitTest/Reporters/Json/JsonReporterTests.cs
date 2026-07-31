@@ -5,6 +5,7 @@ using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -19,6 +20,7 @@ using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.UnitTest.Reporters.Json;
 
@@ -167,6 +169,57 @@ namespace ExtraProject.XUnit
     }
 
     [TestMethod]
+    public void JsonReport_ShouldUseForwardSlashesForFileKeys()
+    {
+        var project = new FolderComposite();
+        project.Add(new CsharpFileLeaf
+        {
+            RootRelativePath = @"src\SomeFile.cs",
+            RelativePath = @"src\SomeFile.cs",
+            FullPath = @"C:\project\src\SomeFile.cs",
+            SourceCode = string.Empty,
+            Mutants = new List<Mutant>()
+        });
+
+        var report = JsonReport.Build(new StrykerOptions(), project, It.IsAny<TestProjectsInfo>());
+
+        report.Files.Keys.ShouldContain("src\\SomeFile.cs");
+
+        using var document = JsonDocument.Parse(report.ToJson());
+        document.RootElement.GetProperty("files").EnumerateObject().Select(property => property.Name)
+            .ShouldContain("src/SomeFile.cs");
+    }
+
+    [TestMethod]
+    public void JsonReport_ShouldRestoreNativeSeparatorsWhenDeserialized()
+    {
+        var project = new FolderComposite();
+        project.Add(new CsharpFileLeaf
+        {
+            RootRelativePath = "src/SomeFile.cs",
+            RelativePath = "src/SomeFile.cs",
+            FullPath = "/project/src/SomeFile.cs",
+            SourceCode = string.Empty,
+            Mutants = new List<Mutant>()
+        });
+
+        var report = JsonReport.Build(new StrykerOptions(), project, It.IsAny<TestProjectsInfo>());
+        var deserialized = JsonSerializer.Deserialize<JsonReport>(report.ToJson(), JsonReportSerialization.Options);
+
+        deserialized.Files.Keys.ShouldContain(Path.Combine("src", "SomeFile.cs"));
+    }
+
+    [TestMethod]
+    public void JsonReport_ShouldNormalizeForeignSeparatorsWhenDeserialized()
+    {
+        const string json = "{\"files\":{\"src\\\\SomeFile.cs\":null}}";
+
+        var report = JsonSerializer.Deserialize<JsonReport>(json, JsonReportSerialization.Options);
+
+        report.Files.Keys.ShouldContain(Path.Combine("src", "SomeFile.cs"));
+    }
+
+    [TestMethod]
     public void JsonReporter_OnAllMutantsTestedShouldWriteJsonToFile()
     {
         // arrange
@@ -206,7 +259,7 @@ namespace ExtraProject.XUnit
         report.Thresholds.ShouldContainKeyAndValue("low", 60);
 
         var testFile = report.TestFiles.ShouldHaveSingleItem();
-        testFile.Key.ShouldBe(_testFilePath);
+        testFile.Key.ShouldBe("c:/mytestfile.cs");
         testFile.Value.Language.ShouldBe("cs");
         testFile.Value.Source.ShouldBe(_testFileContents);
 
