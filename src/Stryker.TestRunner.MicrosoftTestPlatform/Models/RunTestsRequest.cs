@@ -11,14 +11,14 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform.Models;
 /// </summary>
 [ExcludeFromCodeCoverage]
 public sealed record RunTestsRequest(
-    [property:JsonPropertyName("runId")]
+    [property: JsonPropertyName("runId")]
     Guid RunId,
-    [property:JsonPropertyName("tests")]
+    [property: JsonPropertyName("tests")]
     RunRequestTestNode[]? Tests = null);
 
 [ExcludeFromCodeCoverage]
 public sealed record RunRequestTestNode(
-    [property:JsonPropertyName("uid")]
+    [property: JsonPropertyName("uid")]
     string Uid,
-    [property:JsonPropertyName("display-name")]
+    [property: JsonPropertyName("display-name")]
     string DisplayName);

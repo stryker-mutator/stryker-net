@@ -16,13 +16,17 @@ public class RunTestsRequestTests
         // serialized under any other property name is silently ignored and the
         // server runs the complete assembly, so mutation runs execute tests
         // that have no mutant assignment.
+
+        // Arrange
         var runId = Guid.Parse("11111111-2222-3333-4444-555555555555");
         var request = new RunTestsRequest(
             runId,
             [new RunRequestTestNode("case-uid", "Example.SampleTests.Case")]);
 
+        // Act
         var serialized = JsonSerializer.Serialize(request, RpcJsonSerializerOptions.Default);
 
+        // Assert
         using var document = JsonDocument.Parse(serialized);
         var root = document.RootElement;
         root.GetProperty("runId").GetString().ShouldBe(runId.ToString());
