@@ -23,4 +23,12 @@ public interface IInstrumentCode
     SyntaxNode RemoveInstrumentation(SyntaxNode node);
 
     SyntaxNode RemoveInstrumentationFrom(SyntaxNode tree, SyntaxNode instrumentation);
+
+    /// <summary>
+    /// Checks if the instrumentation erases information, such as an assignment.
+    /// </summary>
+    /// <param name="node">node to analyze</param>
+    /// <param name="predicate">predicate</param>
+    /// <returns>true if the predicate is true on the default branch and false on at least another branch</returns>
+    bool Erases(SyntaxNode node, Func<SyntaxNode, bool> predicate);
 }

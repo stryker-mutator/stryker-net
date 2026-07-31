@@ -42,5 +42,8 @@ stryker-config:
     enabled: false
     fallback-version: master
     azure-fileshare-url: ''
+    s3-bucket-name: my-bucket
+    s3-endpoint: https://minio.example.com:9000
+    s3-region: us-east-1
     provider: ''
   test-case-filter: "(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1"

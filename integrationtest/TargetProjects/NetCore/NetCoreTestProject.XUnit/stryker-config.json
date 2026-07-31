@@ -11,7 +11,8 @@
       "string"
     ],
     "mutate": [
-      "!Person.cs"
+      "!Person.cs",
+      "!**/StackOverflow.cs"
     ],
     "mutation-level": "Complete"
   }

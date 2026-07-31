@@ -8,5 +8,6 @@ public enum MutantStatus
     Timeout,
     CompileError,
     Ignored,
-    NoCoverage
+    NoCoverage,
+    RuntimeError
 }

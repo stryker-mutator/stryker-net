@@ -8,11 +8,10 @@
     <ToolCommandName>dotnet-stryker</ToolCommandName>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
-    <VersionPrefix>4.11.0</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
     <PackageId>dotnet-stryker</PackageId>
     <Authors>Richard Werkman, Rouke Broersma</Authors>
     <Product>Mutation Testing</Product>

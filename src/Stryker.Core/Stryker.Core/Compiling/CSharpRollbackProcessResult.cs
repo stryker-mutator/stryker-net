@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Compiling;
 
 public record CSharpRollbackProcessResult(
-    CSharpCompilation Compilation,
+    Compilation Compilation,
     IEnumerable<int> RollbackedIds);

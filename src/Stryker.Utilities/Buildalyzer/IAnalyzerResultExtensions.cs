@@ -5,9 +5,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
 using Stryker.Abstractions;
@@ -52,7 +55,7 @@ public static class IAnalyzerResultExtensions
             .ToLowerInvariant());
 
     public static string GetSymbolFileName(this IAnalyzerResult analyzerResult) =>
-        Path.ChangeExtension(analyzerResult.GetAssemblyName(), ".pdb");
+        analyzerResult.GetAssemblyName() + ".pdb";
 
     public static string TargetPlatform(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("TargetPlatform", "AnyCPU");
 
@@ -82,6 +85,23 @@ public static class IAnalyzerResultExtensions
         }
 
         return generators;
+    }
+
+    public static IEnumerable<AdditionalText> GetAdditionalTexts(this IAnalyzerResult result) =>
+        result.AdditionalFiles?.Select(additionalFile => new AdditionalTextFromFile(additionalFile)) ?? [];
+
+    // Roslyn does not appear to expose usable implementations of these types (required for additional files support)
+    private sealed class AdditionalTextFromFile(string path) : AdditionalText
+    {
+        private readonly Lazy<string> _source = new(() => File.ReadAllText(path));
+
+        public override SourceText? GetText(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return SourceText.From(_source.Value, Encoding.UTF8);
+        }
+
+        public override string Path => path;
     }
 
     [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]
@@ -140,7 +160,7 @@ public static class IAnalyzerResultExtensions
         throw new InputException(message);
     }
 
-    public static bool TargetsFullFramework(this IAnalyzerResult analyzerResult) => analyzerResult.GetNuGetFramework()?.IsDesktop() == true;
+    public static bool TargetsDesktop(this IAnalyzerResult analyzerResult) => analyzerResult.GetNuGetFramework()?.IsDesktop() == true;
 
     public static Language GetLanguage(this IAnalyzerResult analyzerResult) =>
         analyzerResult.GetPropertyOrDefault("Language") switch
@@ -157,7 +177,8 @@ public static class IAnalyzerResultExtensions
     /// </summary>
     /// <param name="br">analyzer result used for determination</param>
     /// <returns>true if result is complete enough</returns>
-    public static bool IsValid(this IAnalyzerResult br) => br.Succeeded || (br.SourceFiles.Length > 0 && br.References.Length > 0);
+    public static bool IsValid(this IAnalyzerResult br) => br.Succeeded || (br.SourceFiles.Length > 0 && br.References.Length > 0)
+    || (br.IsTestProject() && br.Properties.ContainsKey("TargetDir") && br.ProjectReferences.Any());
 
     /// <summary>
     /// checks if an analyzer result is valid for a specific framework
@@ -171,16 +192,25 @@ public static class IAnalyzerResultExtensions
 
     private static bool IsTestProject(this IAnalyzerResult analyzerResult)
     {
-        if (!bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestProject"), out var isTestProject))
+        if (bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestingPlatformApplication"), out var isTestingPlatformApplication) && isTestingPlatformApplication)
         {
-            isTestProject = Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n));
+            return true;
         }
 
-        var hasTestProjectTypeGuid = analyzerResult
-            .GetPropertyOrDefault("ProjectTypeGuids", "")
-            .Contains("{3AC096D0-A1C2-E12C-1390-A8335801FDAB}");
+        if (bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestProject"), out var isTestProject) && isTestProject)
+        {
+            return true;
+        }
 
-        return isTestProject || hasTestProjectTypeGuid;
+        if (Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n)))
+        {
+            return true;
+        }
+
+        const string TestProjectTypeGuid = "{3AC096D0-A1C2-E12C-1390-A8335801FDAB}";
+        return analyzerResult
+            .GetPropertyOrDefault("ProjectTypeGuids", "")
+            .Contains(TestProjectTypeGuid);
     }
 
     public static OutputKind GetOutputKind(this IAnalyzerResult analyzerResult) =>
@@ -286,7 +316,7 @@ public static class IAnalyzerResultExtensions
         {
             if (!_cache.ContainsKey(fullPath))
             {
-                _cache[fullPath] = Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
+                _cache[fullPath] = SafeLoadFrom(fullPath);
             }
         }
 
@@ -294,9 +324,34 @@ public static class IAnalyzerResultExtensions
         {
             if (!_cache.TryGetValue(fullPath, out var assembly))
             {
-                _cache[fullPath] = assembly = Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
+                _cache[fullPath] = assembly = SafeLoadFrom(fullPath);
             }
             return assembly;
+        }
+
+        [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]
+        private static Assembly SafeLoadFrom(string fullPath)
+        {
+            try
+            {
+                return Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
+            }
+            catch (FileLoadException)
+            {
+                // This can happen if the assembly has already been loaded: CLR refuses to load the same
+                // assembly from two different paths. In that case, we try to find the already loaded assembly.
+                // if we fail, we simply rethrow the original exception
+                var assemblyName = AssemblyName.GetAssemblyName(fullPath);
+                // find already loaded assembly
+                var loadedAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                    .FirstOrDefault(a => AssemblyName.ReferenceMatchesDefinition(a.GetName(), assemblyName));
+                if (loadedAssembly != null)
+                {
+                    return loadedAssembly;
+                }
+
+                throw;
+            }
         }
     }
 }

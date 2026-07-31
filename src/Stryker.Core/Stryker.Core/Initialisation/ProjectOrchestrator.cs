@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,12 +15,13 @@ using Stryker.Abstractions.Testing;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.TestRunner.VsTest;
+using Stryker.TestRunner.MicrosoftTestPlatform;
 
 namespace Stryker.Core.Initialisation;
 
 public interface IProjectOrchestrator : IDisposable
 {
-    IEnumerable<IMutationTestProcess> MutateProjects(IStrykerOptions options, IReporter reporters, ITestRunner runner = null);
+    Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(IStrykerOptions options, IReporter reporters, ITestRunner runner = null);
 }
 
 public sealed class ProjectOrchestrator : IProjectOrchestrator
@@ -50,13 +50,13 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public IEnumerable<IMutationTestProcess> MutateProjects(IStrykerOptions options, IReporter reporters,
+    public async Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(IStrykerOptions options, IReporter reporters,
         ITestRunner runner = null)
     {
         _initializationProcess ??= _serviceProvider.GetRequiredService<IInitialisationProcess>();
         var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
 
-        if (!projectInfos.Any())
+        if (projectInfos.Count == 0)
         {
             _logger.LogWarning("No project to mutate. Stryker will exit prematurely.");
             return [];
@@ -64,11 +64,11 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
 
         _initializationProcess.BuildProjects(options, projectInfos);
 
-        // create a test runner
-        _runner = runner ?? new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem);
+        // create a test runner based on the selected option
+        _runner = runner ?? CreateTestRunner(options);
         _mutationTestExecutor.TestRunner = _runner;
         InitializeDashboardProjectInformation(options, projectInfos.First());
-        var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
+        var inputs = await _initializationProcess.GetMutationTestInputsAsync(options, projectInfos, _runner);
 
         var mutationTestProcesses = new ConcurrentBag<IMutationTestProcess>();
         Parallel.ForEach(inputs, mutationTestInput =>
@@ -76,6 +76,16 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
             mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
         });
         return mutationTestProcesses;
+    }
+
+    private ITestRunner CreateTestRunner(IStrykerOptions options)
+    {
+        return options.TestRunner switch
+        {
+            Stryker.Abstractions.Options.TestRunner.VsTest => new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem),
+            Stryker.Abstractions.Options.TestRunner.MicrosoftTestPlatform => new MicrosoftTestPlatformRunnerPool(options),
+            _ => throw new InputException($"Unknown test runner: {options.TestRunner}")
+        };
     }
 
     private void InitializeDashboardProjectInformation(IStrykerOptions options, SourceProjectInfo projectInfo)

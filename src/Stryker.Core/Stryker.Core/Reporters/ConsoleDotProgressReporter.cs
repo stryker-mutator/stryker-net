@@ -38,6 +38,9 @@ public class ConsoleDotProgressReporter : IReporter
             case MutantStatus.Timeout:
                 _console.Write("T");
                 break;
+            case MutantStatus.RuntimeError:
+                _console.Markup("[Yellow]E[/]");
+                break;
         }
     }
 

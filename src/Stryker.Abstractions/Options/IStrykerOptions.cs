@@ -11,7 +11,11 @@ public interface IStrykerOptions
     int AdditionalTimeout { get; init; }
     string AzureFileStorageSas { get; init; }
     string AzureFileStorageUrl { get; init; }
+    string S3BucketName { get; init; }
+    string S3Endpoint { get; init; }
+    string S3Region { get; init; }
     BaselineProvider BaselineProvider { get; init; }
+    string BaselineOutputPath { get; init; }
     bool BreakOnInitialTestFailure { get; set; }
     int Concurrency { get; init; }
     string Configuration { get; init; }
@@ -47,6 +51,7 @@ public interface IStrykerOptions
     string TargetFramework { get; init; }
     string TestCaseFilter { get; init; }
     IEnumerable<string> TestProjects { get; init; }
+    TestRunner TestRunner { get; init; }
     IThresholds Thresholds { get; init; }
     bool WithBaseline { get; init; }
     string WorkingDirectory { get; init; }

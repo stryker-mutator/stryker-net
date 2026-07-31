@@ -13,11 +13,14 @@ namespace NetCoreTestProject.NUnit
         // explicit
         [Test]
         [TestCase(29, "No")]
-        [TestCase(32, "Yes")]
+        [TestCase(31, "Yes")]
         public void TestAgeExplicit(int age, string expired)
         {
             var sut = new KilledMutants { Age = age };
-            ClassicAssert.AreEqual(expired, sut.IsExpired());
+
+            var result = sut.IsExpired();
+
+            ClassicAssert.AreEqual(expired, result);
         }
 
         // indirect

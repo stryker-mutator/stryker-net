@@ -6,7 +6,8 @@ using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
-using Stryker.Abstractions.Options.Inputs;
+using Stryker.Configuration.Options;
+using Stryker.Configuration.Options.Inputs;
 
 namespace Stryker.CLI.CommandLineConfig;
 
@@ -203,10 +204,14 @@ public class CommandLineConfigReader
         AddCliInput(inputs.ProjectVersionInput, "version", "v", category: InputCategory.Reporting);
         AddCliInput(inputs.DashboardApiKeyInput, "dashboard-api-key", null, category: InputCategory.Reporting);
         AddCliInput(inputs.AzureFileStorageSasInput, "azure-fileshare-sas", null, category: InputCategory.Reporting);
+        AddCliInput(inputs.S3BucketNameInput, "s3-bucket-name", null, category: InputCategory.Reporting);
+        AddCliInput(inputs.S3EndpointInput, "s3-endpoint", null, category: InputCategory.Reporting);
+        AddCliInput(inputs.S3RegionInput, "s3-region", null, category: InputCategory.Reporting);
         AddCliInput(inputs.OutputPathInput, "output", "O", optionType: CommandOptionType.SingleValue, category: InputCategory.Reporting);
         // Category: Misc
         AddCliInput(inputs.BreakOnInitialTestFailureInput, "break-on-initial-test-failure", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
         AddCliInput(inputs.DiagModeInput, "diag", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
+        AddCliInput(inputs.TestRunnerInput, "test-runner", "t", argumentHint: "vstest,mtp", category: InputCategory.Misc);
     }
 
     private void RegisterCliInput(CommandLineApplication app, CliInput option)

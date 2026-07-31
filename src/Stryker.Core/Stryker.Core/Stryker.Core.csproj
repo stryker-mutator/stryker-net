@@ -7,10 +7,8 @@
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
-  
+
   <PropertyGroup>
-    <VersionPrefix>4.11.0</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
     <PackageId>stryker</PackageId>
     <Product>Mutation Testing</Product>
     <Authors>Richard Werkman, Rouke Broersma</Authors>
@@ -36,6 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" />
     <PackageReference Include="Azure.Storage.Files.Shares" />
     <PackageReference Include="Grynwald.MarkdownGenerator" />
     <PackageReference Include="LibGit2Sharp" />
@@ -95,11 +94,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Stryker.Abstractions\Stryker.Abstractions.csproj" />
-    <ProjectReference Include="..\..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
-    <ProjectReference Include="..\..\Stryker.Options\Stryker.Configuration.csproj" />
+    <ProjectReference Include="..\..\Stryker.Configuration\Stryker.Configuration.csproj" />
     <ProjectReference Include="..\..\Stryker.RegexMutators\Stryker.RegexMutators\Stryker.RegexMutators.csproj" />
     <ProjectReference Include="..\..\Stryker.Solutions\Stryker.Solutions.csproj" />
     <ProjectReference Include="..\..\Stryker.TestRunner.VsTest\Stryker.TestRunner.VsTest.csproj" />
+    <ProjectReference Include="..\..\Stryker.TestRunner.MicrosoftTestPlatform\Stryker.TestRunner.MicrosoftTestPlatform.csproj" />
     <ProjectReference Include="..\..\Stryker.Utilities\Stryker.Utilities.csproj" />
   </ItemGroup>
 </Project>

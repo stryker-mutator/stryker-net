@@ -53,15 +53,15 @@ public sealed class VsTestRunnerPool : ITestRunner
         Initialize();
     }
 
-    public bool DiscoverTests(string assembly) => Context.AddTestSource(assembly);
+    public Task<bool> DiscoverTestsAsync(string assembly) => Task.FromResult(Context.AddTestSource(assembly));
 
     public ITestSet GetTests(IProjectAndTests project) => Context.GetTestsForSources(project.GetTestAssemblies());
 
-    public ITestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler update)
-        => RunThis(runner => runner.TestMultipleMutants(project, timeoutCalc, mutants, update));
+    public Task<ITestRunResult> TestMultipleMutantsAsync(IProjectAndTests project, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler? update)
+        => Task.FromResult(RunThis(runner => runner.TestMultipleMutants(project, timeoutCalc, mutants, update)));
 
-    public ITestRunResult InitialTest(IProjectAndTests project)
-        => RunThis(runner => runner.InitialTest(project));
+    public Task<ITestRunResult> InitialTestAsync(IProjectAndTests project)
+        => Task.FromResult(RunThis(runner => runner.InitialTest(project)));
 
     public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project) => Context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest) ? CaptureCoverageTestByTest(project) : CaptureCoverageInOneGo(project);
 

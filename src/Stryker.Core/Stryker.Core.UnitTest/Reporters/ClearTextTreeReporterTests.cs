@@ -7,7 +7,9 @@ using Moq;
 using Shouldly;
 using Spectre.Console.Testing;
 using Stryker.Abstractions;
+using Stryker.Configuration.Options;
 using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
@@ -33,7 +35,7 @@ public class ClearTextTreeReporterTests : TestBase
         var console = new TestConsole().EmitAnsiSequences();
         var target = new ClearTextTreeReporter(new StrykerOptions(), console);
 
-        var folder = new CsharpFolderComposite()
+        var folder = new FolderComposite()
         {
             FullPath = "C://ProjectFolder",
         };
@@ -46,7 +48,7 @@ public class ClearTextTreeReporterTests : TestBase
                 new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation }
             }
         });
-        var folder2 = new CsharpFolderComposite()
+        var folder2 = new FolderComposite()
         {
             RelativePath = "Subdir",
             FullPath = "C://ProjectFolder/SubDir",
@@ -111,7 +113,7 @@ All files [4/5 ({4.0 / 5.0:P2})]
         var console = new TestConsole().EmitAnsiSequences();
         var target = new ClearTextTreeReporter(new StrykerOptions(), console);
 
-        var folder = new CsharpFolderComposite()
+        var folder = new FolderComposite()
         {
             RelativePath = "RootFolder",
             FullPath = "C://RootFolder",
@@ -151,7 +153,7 @@ All files [0/0 (N/A)]
         var console = new TestConsole().EmitAnsiSequences();
         var target = new ClearTextTreeReporter(new StrykerOptions(), console);
 
-        var folder = new CsharpFolderComposite()
+        var folder = new FolderComposite()
         {
             RelativePath = "RootFolder",
             FullPath = "C://RootFolder",
@@ -197,7 +199,7 @@ All files [1/1 ({1:P2})]
         var console = new TestConsole().EmitAnsiSequences();
         var target = new ClearTextTreeReporter(new StrykerOptions(), console);
 
-        var folder = new CsharpFolderComposite()
+        var folder = new FolderComposite()
         {
             RelativePath = "RootFolder",
             FullPath = "C://RootFolder",
@@ -244,7 +246,7 @@ All files [0/1 ({0:P2})]
         var console = new TestConsole().EmitAnsiSequences();
         var target = new ClearTextTreeReporter(options, console);
 
-        var folder = new CsharpFolderComposite()
+        var folder = new FolderComposite()
         {
             RelativePath = "RootFolder",
             FullPath = "C://RootFolder",
@@ -286,7 +288,7 @@ All files [0/1 ({0:P2})]
         var console = new TestConsole().EmitAnsiSequences();
         var target = new ClearTextTreeReporter(options, console);
 
-        var folder = new CsharpFolderComposite()
+        var folder = new FolderComposite()
         {
             RelativePath = "RootFolder",
             FullPath = "C://RootFolder",
@@ -327,7 +329,7 @@ All files [0/1 ({0:P2})]
         var console = new TestConsole().EmitAnsiSequences();
         var target = new ClearTextTreeReporter(new StrykerOptions(), console);
 
-        var folder = new CsharpFolderComposite()
+        var folder = new FolderComposite()
         {
             RelativePath = "RootFolder",
             FullPath = "C://RootFolder",

@@ -1,7 +1,7 @@
 using McMaster.Extensions.CommandLineUtils;
-using Stryker.Abstractions.Options;
+using Stryker.Configuration.Options;
 
-namespace Stryker.CLI;
+namespace Stryker.CLI.CommandLineConfig;
 
 public record CliInput
 {

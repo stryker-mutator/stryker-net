@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions;
+using Stryker.Configuration;
 using Stryker.Utilities;
 
 namespace Stryker.Core.UnitTest;

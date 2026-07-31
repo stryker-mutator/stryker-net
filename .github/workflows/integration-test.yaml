@@ -1,15 +1,26 @@
 name: integration test
-run-name: e2e ${{ github.head_ref }}
+run-name: e2e ${{ github.event_name == 'schedule' && 'nightly' || github.head_ref || github.ref_name }}
 
-on: [pull_request]
+on:
+  pull_request:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 jobs:
   integration-test:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     strategy:
       fail-fast: false
       matrix:
         agent: [ubuntu-latest, windows-latest, macos-latest]
-        category: [InitCommand, SingleTestProject, MultipleTestProjects, Solution]
+        category: [InitCommand, SingleTestProject, MultipleTestProjects, Solution, MSTestMTP, XUnitMTP, NUnitMTP, TUnit, MTPSolution, WebApiWithOpenApi]
         runtime: [netcore, netframework]
         exclude:
           - runtime: netframework
@@ -20,17 +31,27 @@ jobs:
             category: InitCommand
           - runtime: netframework
             category: MultipleTestProjects
+          - runtime: netframework
+            category: MSTestMTP
+          - runtime: netframework
+            category: XUnitMTP
+          - runtime: netframework
+            category: NUnitMTP
+          - runtime: netframework
+            category: TUnit
+          - runtime: netframework
+            category: MTPSolution
+          - runtime: netframework
+            category: WebApiWithOpenApi
     runs-on: ${{ matrix.agent }}
     env:
       CATEGORY: ${{ matrix.category }}
       RUNTIME: ${{ matrix.runtime }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
-          dotnet-version: |
-            8.x
-            10.x
+          dotnet-version: 10.x
       - name: Run integration tests
         shell: pwsh
         run: ./integration-tests.ps1

@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
+using Stryker.Configuration.Options;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents;
@@ -17,7 +19,7 @@ namespace Stryker.Core;
 
 public interface IStrykerRunner
 {
-    StrykerRunResult RunMutationTest(IStrykerInputs inputs);
+    Task<StrykerRunResult> RunMutationTestAsync(IStrykerInputs inputs);
 }
 
 public class StrykerRunner : IStrykerRunner
@@ -43,7 +45,7 @@ public class StrykerRunner : IStrykerRunner
     /// </summary>
     /// <param name="inputs">user options</param>
     /// <exception cref="InputException">For managed exceptions</exception>
-    public StrykerRunResult RunMutationTest(IStrykerInputs inputs)
+    public async Task<StrykerRunResult> RunMutationTestAsync(IStrykerInputs inputs)
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
@@ -56,10 +58,12 @@ public class StrykerRunner : IStrykerRunner
         try
         {
             // Mutate
-            _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, reporters).ToList();
+            _mutationTestProcesses = (await _projectOrchestrator.MutateProjectsAsync(options, reporters)).ToList();
 
-            var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
-            var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo).Aggregate((a, b) => (TestProjectsInfo)a + (TestProjectsInfo)b);
+            var rootComponent = AddRootFolderIfMultiProject(
+                _mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
+            var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo)
+                .Aggregate((a, b) => (TestProjectsInfo)a + (TestProjectsInfo)b);
 
             _logger.LogInformation("{MutantsCount} mutants created", rootComponent.Mutants.Count());
 
@@ -81,16 +85,22 @@ public class StrykerRunner : IStrykerRunner
             {
                 if (allMutants.Any(x => x.ResultStatus == MutantStatus.Ignored))
                 {
-                    _logger.LogWarning("It looks like all mutants with tests were ignored. Try a re-run with less ignoring!");
+                    _logger.LogWarning(
+                        "It looks like all mutants with tests were ignored. Try a re-run with less ignoring!");
                 }
+
                 if (allMutants.Any(x => x.ResultStatus == MutantStatus.NoCoverage))
                 {
-                    _logger.LogWarning("It looks like all non-ignored mutants are not covered by a test. Go add some tests!");
+                    _logger.LogWarning(
+                        "It looks like all non-ignored mutants are not covered by a test. Go add some tests!");
                 }
+
                 if (allMutants.Any(x => x.ResultStatus == MutantStatus.CompileError))
                 {
-                    _logger.LogWarning("It looks like all mutants resulted in compile errors. Mutants sure are strange!");
+                    _logger.LogWarning(
+                        "It looks like all mutants resulted in compile errors. Mutants sure are strange!");
                 }
+
                 if (!allMutants.Any())
                 {
                     _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
@@ -107,11 +117,14 @@ public class StrykerRunner : IStrykerRunner
             // Test
             foreach (var project in _mutationTestProcesses)
             {
-                project.Test(project.Input.SourceProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.Pending).ToList());
+                await project
+                    .TestAsync(project.Input.SourceProjectInfo.ProjectContents.Mutants
+                        .Where(x => x.ResultStatus == MutantStatus.Pending).ToList()).ConfigureAwait(false);
             }
+
             // dispose and stop runners
             _projectOrchestrator.Dispose();
-            
+
             // Restore assemblies
             foreach (var project in _mutationTestProcesses)
             {
@@ -123,7 +136,16 @@ public class StrykerRunner : IStrykerRunner
             return new StrykerRunResult(options, rootComponent.GetMutationScore());
         }
 #if !DEBUG
-        catch (Exception ex) when (!(ex is InputException))
+        catch (AggregateException ex) when  (ex.InnerException is CompilationException)
+        {
+            _logger.LogCritical("Compilation failed: {Message}.", ex.Message);
+            if (!options.DiagMode)
+            {
+                _logger.LogCritical("Run with --diag to get more diagnotic information.");
+            }
+            return new StrykerRunResult(options, 0);
+        }
+        catch (Exception ex) when (ex is not InputException && ex is not CompilationException)
         // let the exception be caught by the debugger when in debug
         {
             _logger.LogError(ex, "An error occurred during the mutation test run ");
@@ -133,7 +155,9 @@ public class StrykerRunner : IStrykerRunner
 #endif
         finally
         {
-            // log duration
+            // Dispose runners to kill all spawned test processes, even on cancellation or error
+            _projectOrchestrator.Dispose();
+
             stopwatch.Stop();
             _logger.LogInformation("Time Elapsed {duration}", stopwatch.Elapsed);
         }
@@ -141,14 +165,17 @@ public class StrykerRunner : IStrykerRunner
 
     private void AnalyzeCoverage(IStrykerOptions options)
     {
-        if (options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) || options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+        if (!options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
+            !options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
         {
-            _logger.LogInformation("Capture mutant coverage using '{OptimizationMode}' mode.", options.OptimizationMode);
+            return;
+        }
 
-            foreach (var project in _mutationTestProcesses)
-            {
-                project.GetCoverage();
-            }
+        _logger.LogInformation("Capture mutant coverage using '{OptimizationMode}' mode.", options.OptimizationMode);
+
+        foreach (var project in _mutationTestProcesses)
+        {
+            project.GetCoverage();
         }
     }
 
@@ -175,6 +202,6 @@ public class StrykerRunner : IStrykerRunner
             return rootComponent;
         }
 
-        return projectComponents.FirstOrDefault();
+        return projectComponents.First();
     }
 }

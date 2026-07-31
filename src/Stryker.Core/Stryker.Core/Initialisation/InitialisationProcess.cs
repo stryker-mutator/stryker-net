@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
@@ -23,7 +25,7 @@ public interface IInitialisationProcess
 
     void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects);
 
-    IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(IStrykerOptions options,
+    Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
         IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner);
 }
 
@@ -64,16 +66,22 @@ public class InitialisationProcess : IInitialisationProcess
     /// <inheritdoc/>
     public void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects)
     {
-        if (options.IsSolutionContext)
+        var solutionInfo = projects.First().SolutionInfo;
+        // pick configuration and platform from solution if available
+        var configuration = solutionInfo?.Configuration ?? options.Configuration;
+        var platform = solutionInfo?.Platform ?? options.Platform;
+        var solutionFilePath = solutionInfo?.SolutionFilePath ?? options.SolutionPath;
+        // we build the whole solution if we have a solution file path, even in project mode
+        if (!string.IsNullOrEmpty(solutionFilePath))
         {
-            var framework = projects.Any(p => p.IsFullFramework);
+            var framework = projects.Any(p => p.AnalyzerResult.TargetsDesktop());
             // Build the complete solution
-            _logger.LogInformation("Building solution {0}",
-                    Path.GetRelativePath(options.WorkingDirectory, options.SolutionPath));
+            _logger.LogInformation("Building solution {SolutionPathName}.", FileSystem.Path.GetRelativePath(options.WorkingDirectory, solutionFilePath));
+
             _initialBuildProcess.InitialBuild(
                 framework,
-                _inputFileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
-                options.SolutionPath, options.Configuration, options.Platform,
+                _inputFileResolver.FileSystem.Path.GetDirectoryName(solutionFilePath),
+                solutionFilePath, configuration, platform,
                 options.TargetFramework, options.MsBuildPath);
         }
         else
@@ -88,7 +96,7 @@ public class InitialisationProcess : IInitialisationProcess
                     testProjects.Count);
 
                 _initialBuildProcess.InitialBuild(
-                    testProjects[i].TargetsFullFramework(),
+                    testProjects[i].TargetsDesktop(),
                     testProjects[i].ProjectFilePath,
                     options.SolutionPath,
                     testProjects[i].GetProperty("Configuration"),
@@ -104,11 +112,22 @@ public class InitialisationProcess : IInitialisationProcess
         }
     }
 
-    public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(IStrykerOptions options,
-        IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner) =>
-        projects.Select(info => new MutationTestInput { SourceProjectInfo = info, TestProjectsInfo = info.TestProjectsInfo, TestRunner = runner, InitialTestRun = InitialTest(options, info, runner, projects.Count == 1) }).ToList();
+    private IFileSystem FileSystem => _inputFileResolver.FileSystem;
 
-    private InitialTestRun InitialTest(IStrykerOptions options, SourceProjectInfo projectInfo,
+    public async Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
+        IReadOnlyCollection<SourceProjectInfo> projects,
+        ITestRunner runner)
+    {
+        var getInputs = projects.Select(async info => new MutationTestInput {
+            SourceProjectInfo = info,
+            TestProjectsInfo = info.TestProjectsInfo,
+            TestRunner = runner,
+            InitialTestRun = await InitialTestAsync(options, info, runner, projects.Count == 1)
+        });
+        return await Task.WhenAll(getInputs);
+    }
+
+    private async Task<InitialTestRun> InitialTestAsync(IStrykerOptions options, SourceProjectInfo projectInfo,
         ITestRunner testRunner, bool throwIfFails)
     {
         DiscoverTests(projectInfo, testRunner);
@@ -119,7 +138,7 @@ public class InitialisationProcess : IInitialisationProcess
         testRunner.GetTests(projectInfo).Count,
         projectInfo.AnalyzerResult.ProjectFilePath);
 
-        var result = _initialTestProcess.InitialTest(options, projectInfo, testRunner);
+        var result = await _initialTestProcess.InitialTestAsync(options, projectInfo, testRunner);
 
         if (!result.Result.FailingTests.IsEmpty)
         {
@@ -136,7 +155,7 @@ public class InitialisationProcess : IInitialisationProcess
             }
 
             _logger.LogWarning(
-                "{failingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.",
+                "{FailingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.",
                 failingTestsCount);
         }
 
@@ -161,7 +180,7 @@ public class InitialisationProcess : IInitialisationProcess
     {
         foreach (var testProject in projectInfo.TestProjectsInfo.AnalyzerResults)
         {
-            if (testRunner.DiscoverTests(testProject.GetAssemblyPath()))
+            if (testRunner.DiscoverTestsAsync(testProject.GetAssemblyPath()).GetAwaiter().GetResult())
             {
                 continue;
             }
@@ -207,6 +226,7 @@ public class InitialisationProcess : IInitialisationProcess
             {
                 continue;
             }
+
             var messageForNoReason = $"No test detected for project '{testProject.ProjectFilePath}'. No cause identified.";
             projectInfo.LogError(messageForNoReason);
             _logger.LogWarning(messageForNoReason);

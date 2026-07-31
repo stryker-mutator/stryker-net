@@ -8,20 +8,27 @@ using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.ProjectComponents.SourceProjects;
 
+public class StrykerSolutionInfo(string file, string configuration, string platform)
+{
+    public string SolutionFilePath { get; init; } = file;
+    public string Configuration { get; init; } = configuration;
+    public string Platform { get; init; } = platform;
+}
+
 public class SourceProjectInfo : IProjectAndTests
 {
     private readonly List<string> _warnings = [];
 
     public Action OnProjectBuilt { get; set; }
 
-    public IAnalyzerResult AnalyzerResult { get; set; }
+    public StrykerSolutionInfo SolutionInfo { get; set; }
+
+    public IAnalyzerResult AnalyzerResult { get; init; }
 
     /// <summary>
     /// The Folder/File structure found in the project under test.
     /// </summary>
     public IReadOnlyProjectComponent ProjectContents { get; set; }
-
-    public bool IsFullFramework => AnalyzerResult.TargetsFullFramework();
 
     public string HelperNamespace => CodeInjector.HelperNamespace;
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Pipes;
@@ -9,10 +10,12 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Emit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
+using Stryker.Configuration.Options;
 using Stryker.Core.Compiling;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
@@ -20,6 +23,17 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.SourceProjects;
 
 namespace Stryker.Core.UnitTest.Compiling;
+
+internal class CompilerWrapper(CSharpCompilation compilation) : ICompilationContent
+{
+    private CSharpCompilation _compilation = compilation;
+
+    public IEnumerable<SyntaxTree> SyntaxTrees => _compilation.SyntaxTrees;
+
+    public void ReplaceSyntaxTree(SyntaxTree original, SyntaxTree updated) => _compilation = _compilation.ReplaceSyntaxTree(original, updated);
+
+    public EmitResult Emit(Stream stream) => _compilation.Emit(stream);
+}
 
 [TestClass]
 public class CSharpRollbackProcessTests : TestBase
@@ -31,28 +45,34 @@ public class CSharpRollbackProcessTests : TestBase
 
     private SyntaxAnnotation GetMutationTypeMarker(Mutator type) => new("MutationType", type.ToString());
 
+    private static Diagnostic CreateErrorDiagnostic(string id, SyntaxNode node) =>
+        Diagnostic.Create(new DiagnosticDescriptor(id, id, id, "Compiler", DiagnosticSeverity.Error, true), node.GetLocation());
+
     [TestMethod]
     public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompile()
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            using System;
 
-namespace ExampleProject
-{
-    public class Calculator
-    {
-        public int ActiveMutation = 1;
+            namespace ExampleProject
+            {
+                public class Calculator
+                {
+                    public int ActiveMutation = 1;
 
-        public string Subtract(string first, string second)
-        {
-if(ActiveMutation == 1) {
-            return first - second; // this will not compile
+                    public string Subtract(string first, string second)
+                    {
+                        if(ActiveMutation == 1) {
+                            return first - second; // this will not compile
 
-} else {
-            return first + second;
-}
-        }
-    }
-}");
+                        } else {
+                            return first + second;
+                        }
+                    }
+                }
+            }
+            """);
         var ifStatement = syntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -73,37 +93,38 @@ if(ActiveMutation == 1) {
 
         var target = new CSharpRollbackProcess();
 
-        using (var ms = new MemoryStream())
-        {
-            var compileResult = compiler.Emit(ms);
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
+        target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
-            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var rolledBackResult = compilerWrapper.Emit(ms);
 
-            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-
-            rollbackedResult.Success.ShouldBeTrue();
-        }
+        rolledBackResult.Success.ShouldBeTrue();
     }
 
     [TestMethod]
     public void ShouldRollbackIssueInExpression()
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(@"
-using System;
-using System.Collections.Generic;
-using System.Linq;
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
 
-namespace ExampleProject
-{
-    public class Test
-    {
-        public void SomeLinq()
-        {
-            var list = new List<List<double>>();
-            int[] listProjected = list.Select(l => l.Count()).ToArray();
-        }
-    }
-}");
+            using System;
+            using System.Collections.Generic;
+            using System.Linq;
+
+            namespace ExampleProject
+            {
+                public class Test
+                {
+                    public void SomeLinq()
+                    {
+                        var list = new List<List<double>>();
+                        int[] listProjected = list.Select(l => l.Count()).ToArray();
+                    }
+                }
+            }
+            """);
         var options = new StrykerOptions
         {
             MutationLevel = MutationLevel.Complete,
@@ -126,6 +147,11 @@ namespace ExampleProject
             typeof(List<string>).Assembly.Location,
             typeof(Enumerable).Assembly.Location,
             typeof(PipeStream).Assembly.Location,
+            // MutantControl maps the mutant-id file via MemoryMappedFile (MTP runner). ReadInt32 comes from
+            // UnmanagedMemoryAccessor, whose reference identity is System.Runtime.InteropServices (loaded by
+            // name because the runtime type is forwarded to CoreLib).
+            typeof(System.IO.MemoryMappedFiles.MemoryMappedFile).Assembly.Location,
+            Assembly.Load("System.Runtime.InteropServices").Location,
         };
         Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
 
@@ -151,43 +177,44 @@ namespace ExampleProject
 
         var rollbackProcess = new CSharpRollbackProcess();
 
-        var target = new CsharpCompilingProcess(input, rollbackProcess, options);
+        var target = new CsharpCompilingProcess(input, rollbackProcess, options, syntaxTrees: helpers);
 
         using var ms = new MemoryStream();
-        var result = target.Compile(helpers, ms, null);
-        result.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
+        var result = target.Compile(ms, null);
+        result.RolledbackIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
     }
-
 
     [TestMethod]
     public void ShouldRollbackAllMutationsInsideAExpressionBodyMethod()
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(@"
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Linq;
+            using System.Threading.Tasks;
 
-namespace ExampleProject
-{
-    class Fake
-    {
-        public string DisplayValue { get; set; }
-        public event Action ValueChanged;
-    }
+            namespace ExampleProject
+            {
+                class Fake
+                {
+                    public string DisplayValue { get; set; }
+                    public event Action ValueChanged;
+                }
 
-    public class Test
-    {
-        private Fake AccountNumber = new Fake();
-        // this line triggers a compilation error on purpose
-        protected override void Random() =>
-            AccountNumber.ValueChanged += RefreshAccountNumber;
+                public class Test
+                {
+                    private Fake AccountNumber = new Fake();
+                    // this line triggers a compilation error on purpose
+                    protected override void Random() =>
+                        AccountNumber.ValueChanged += RefreshAccountNumber;
 
-        private void RefreshAccountNumber()
-        {
-        }
-    }
-}");
+                    private void RefreshAccountNumber()
+                    {
+                    }
+                }
+            }
+            """);
         var options = new StrykerOptions
         {
             MutationLevel = MutationLevel.Complete,
@@ -211,6 +238,11 @@ namespace ExampleProject
             typeof(List<string>).Assembly.Location,
             typeof(Enumerable).Assembly.Location,
             typeof(PipeStream).Assembly.Location,
+            // MutantControl maps the mutant-id file via MemoryMappedFile (MTP runner). ReadInt32 comes from
+            // UnmanagedMemoryAccessor, whose reference identity is System.Runtime.InteropServices (loaded by
+            // name because the runtime type is forwarded to CoreLib).
+            typeof(System.IO.MemoryMappedFiles.MemoryMappedFile).Assembly.Location,
+            Assembly.Load("System.Runtime.InteropServices").Location,
         };
         Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
 
@@ -236,51 +268,53 @@ namespace ExampleProject
 
         var rollbackProcess = new CSharpRollbackProcess();
 
-        var target = new CsharpCompilingProcess(input, rollbackProcess, options);
+        var target = new CsharpCompilingProcess(input, rollbackProcess, options, helpers);
 
         using var ms = new MemoryStream();
 
-        Action test = () => target.Compile(helpers, ms, null);
+        Action test = () => target.Compile(ms, null);
         test.ShouldThrow<CompilationException>();
     }
 
     [TestMethod]
     public void RollbackProcess_ShouldRollbackAllCompileErrors()
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            using System;
+            namespace ExampleProject
+            {
+                public class Calculator
+                {
+                    public int ActiveMutation = 1;
 
-namespace ExampleProject
-{
-    public class Calculator
-    {
-        public int ActiveMutation = 1;
-
-        public string Subtract(string first, string second)
-        {
-            if (ActiveMutation == 6) {
-                while (first.Length > 2)
-                {
-                    return first - second;
+                    public string Subtract(string first, string second)
+                    {
+                        if (ActiveMutation == 6) {
+                            while (first.Length > 2)
+                            {
+                                return first - second;
+                            }
+                            while (first.Length < 2)
+                            {
+                                return second + first;
+                            }
+                            return null;
+                        } else {
+                            while (first.Length > 2)
+                            {
+                                return first + second;
+                            }
+                            while (first.Length < 2)
+                            {
+                                return (ActiveMutation == 7 ? second - first : second + first);
+                            }
+                            return null;
+                        }
+                    }
                 }
-                while (first.Length < 2)
-                {
-                    return second + first;
-                }
-                return null;
-            } else {
-                while (first.Length > 2)
-                {
-                    return first + second;
-                }
-                while (first.Length < 2)
-                {
-                    return (ActiveMutation == 7 ? second - first : second + first);
-                }
-                return null;
             }
-        }
-    }
-}");
+            """);
         var root = syntaxTree.GetRoot();
 
         var mutantIf = root.DescendantNodes().OfType<IfStatementSyntax>().First();
@@ -310,71 +344,76 @@ namespace ExampleProject
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var compilerWrapper = new CompilerWrapper(compiler);
 
-        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+
+        var rollbackedResult = compilerWrapper.Emit(ms);
 
         rollbackedResult.Success.ShouldBeTrue();
-        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 6, 7 });
+        ids.ShouldBe(new Collection<int> { 6, 7 });
     }
 
     [TestMethod]
     public void RollbackProcess_ShouldRollbackErrorsAndKeepTheRest()
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            using System;
 
-namespace ExampleProject
-{
-    public class StringMagic
-    {
-        public int ActiveMutation = 1;
+            namespace ExampleProject
+            {
+                public class StringMagic
+                {
+                    public int ActiveMutation = 1;
 
-        public string AddTwoStrings(string first, string second)
-        {
-            if(ActiveMutation == 8){
-                while (first.Length > 2)
-                {
-                    return first - second;
+                    public string AddTwoStrings(string first, string second)
+                    {
+                        if(ActiveMutation == 8){
+                            while (first.Length > 2)
+                            {
+                                return first - second;
+                            }
+                            while (first.Length < 2)
+                            {
+                                return second + first;
+                            }
+                            return null;
+                        }else{if(ActiveMutation == 7){
+                            while (first.Length > 2)
+                            {
+                                return first + second;
+                            }
+                            while (first.Length < 2)
+                            {
+                                return second - first;
+                            }
+                            return null;
+                        }else{if(ActiveMutation == 6){
+                            while (first.Length == 2)
+                            {
+                                return first + second;
+                            }
+                            while (first.Length < 2)
+                            {
+                                return second + first;
+                            }
+                            return null;
+                        }else{
+                            while (first.Length == 2)
+                            {
+                                return first + second;
+                            }
+                            while (first.Length < 2)
+                            {
+                                return second + first;
+                            }
+                            return null;
+                        }}}
+                    }
                 }
-                while (first.Length < 2)
-                {
-                    return second + first;
-                }
-                return null;
-            }else{if(ActiveMutation == 7){
-                while (first.Length > 2)
-                {
-                    return first + second;
-                }
-                while (first.Length < 2)
-                {
-                    return second - first;
-                }
-                return null;
-            }else{if(ActiveMutation == 6){
-                while (first.Length == 2)
-                {
-                    return first + second;
-                }
-                while (first.Length < 2)
-                {
-                    return second + first;
-                }
-                return null;
-            }else{
-                while (first.Length == 2)
-                {
-                    return first + second;
-                }
-                while (first.Length < 2)
-                {
-                    return second + first;
-                }
-                return null;
-            }}}
-        }
-    }
-}");
+            }
+            """);
         var root = syntaxTree.GetRoot();
 
         var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
@@ -402,41 +441,45 @@ namespace ExampleProject
 
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
-        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        var rollbackedResult = compilerWrapper.Emit(ms);
 
         rollbackedResult.Success.ShouldBeTrue();
         // validate that only mutation 8 and 7 were rollbacked
-        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 });
+        ids.ShouldBe(new Collection<int> { 8, 7 });
     }
 
     [TestMethod]
     public void RollbackProcess_ShouldRollbackBlockMutationWhenLocalRollbackFails()
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(@"
-namespace ExampleProject
-{
-    public class StringMagic
-    {
-        public int ActiveMutation = 1;
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
 
-        public string this[string key]
-        {
-            get
+            namespace ExampleProject
             {
-                if (ActiveMutation == 1) { ; } else {
-                    if (ActiveMutation == 2) {
-                        return key; // some mutation
-                    } else {
-                        return key + key;
+                public class StringMagic
+                {
+                    public int ActiveMutation = 1;
+
+                    public string this[string key]
+                    {
+                        get
+                        {
+                            if (ActiveMutation == 1) { ; } else {
+                                if (ActiveMutation == 2) {
+                                    return key; // some mutation
+                                } else {
+                                    return key + key;
+                                }
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
-}");
+            """);
         var root = syntaxTree.GetRoot();
 
         var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
@@ -466,71 +509,262 @@ namespace ExampleProject
 
         compileResult.Success.ShouldBeFalse();
         compileResult.Diagnostics.ShouldHaveSingleItem();
+        var compilerWrapper = new CompilerWrapper(compiler);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
-        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        var rollbackedResult = compilerWrapper.Emit(ms);
 
         rollbackedResult.Success.ShouldBeTrue();
-        // validate that only the block mutation was rollbacked
-        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
+        // validate that only the block mutation was rolled back
+        ids.ShouldBe(new Collection<int> { 1 });
     }
 
     [TestMethod]
+    public void RollbackProcess_ShouldPreferBlockMutationsWhenSafeModeFindsMixedMutationTypes()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject
+            {
+                public class StringMagic
+                {
+                    public int ActiveMutation = 1;
+
+                    public string Value()
+                    {
+                        if (ActiveMutation == 1) { } else { }
+                        if (ActiveMutation == 2) { } else { }
+                        var broken = "a" - "b";
+                        return broken;
+                    }
+                }
+            }
+            """);
+        var root = syntaxTree.GetRoot();
+        var blockMutation = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(
+            blockMutation,
+            blockMutation.WithAdditionalAnnotations(GetMutationIdMarker(1), GetMutationTypeMarker(Mutator.Block), _ifEngineMarker));
+        var stringMutation = root.DescendantNodes().OfType<IfStatementSyntax>().Last();
+        root = root.ReplaceNode(
+            stringMutation,
+            stringMutation.WithAdditionalAnnotations(GetMutationIdMarker(2), GetMutationTypeMarker(Mutator.String), _ifEngineMarker));
+
+        var annotatedSyntaxTree = root.SyntaxTree;
+        var brokenStatement = annotatedSyntaxTree.GetRoot().DescendantNodes().OfType<LocalDeclarationStatementSyntax>().Single();
+        var compiler = CSharpCompilation.Create("TestCompilation", syntaxTrees: [annotatedSyntaxTree]);
+        var compilerWrapper = new CompilerWrapper(compiler);
+
+        var ids = new CSharpRollbackProcess().RollbackMutationsInError(
+            compilerWrapper,
+            ImmutableArray.Create(CreateErrorDiagnostic("TEST0001", brokenStatement)),
+            ICSharpRollbackProcess.Mode.Normal,
+            false);
+
+        ids.ShouldBe([1]);
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void RollbackProcess_ShouldOnlyScanChildMutationsForExpressionDiagnostics(bool diagnosticOnExpression)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject
+            {
+                public class StringMagic
+                {
+                    public int ActiveMutation = 1;
+
+                    public string Value()
+                    {
+                        var first = (ActiveMutation == 1 ? "first" : "fallback") + "";
+                        var second = (ActiveMutation == 2 ? "second" : "fallback") + "";
+                        return first + second;
+                    }
+                }
+            }
+            """);
+        var root = syntaxTree.GetRoot();
+        var firstMutation = root.DescendantNodes().OfType<ParenthesizedExpressionSyntax>().First();
+        root = root.ReplaceNode(
+            firstMutation,
+            firstMutation.WithAdditionalAnnotations(GetMutationIdMarker(1), _conditionalEngineMarker));
+        var secondMutation = root.DescendantNodes().OfType<ParenthesizedExpressionSyntax>().Last();
+        root = root.ReplaceNode(
+            secondMutation,
+            secondMutation.WithAdditionalAnnotations(GetMutationIdMarker(2), _conditionalEngineMarker));
+
+        var annotatedSyntaxTree = root.SyntaxTree;
+        var secondDeclaration = annotatedSyntaxTree.GetRoot().DescendantNodes().OfType<LocalDeclarationStatementSyntax>().Last();
+        SyntaxNode diagnosticNode = diagnosticOnExpression
+            ? secondDeclaration.Declaration.Variables.Single().Initializer!.Value
+            : secondDeclaration;
+        var compiler = CSharpCompilation.Create("TestCompilation", syntaxTrees: [annotatedSyntaxTree]);
+        var compilerWrapper = new CompilerWrapper(compiler);
+
+        var ids = new CSharpRollbackProcess().RollbackMutationsInError(
+            compilerWrapper,
+            ImmutableArray.Create(CreateErrorDiagnostic("TEST0002", diagnosticNode)),
+            ICSharpRollbackProcess.Mode.Normal,
+            false);
+
+        var expectedIds = diagnosticOnExpression ? new[] { 2 } : new[] { 1, 2 };
+        ids.OrderBy(id => id).ShouldBe(expectedIds);
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbackNearestMutationErasingAssignment()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject
+            {
+                public class StringMagic
+                {
+                    public int ActiveMutation = 1;
+
+                    public string Value()
+                    {
+                        string result;
+                        if (ActiveMutation == 1) { } else { result = "first"; }
+                        if (ActiveMutation == 2) { } else { result = "second"; }
+                        return result;
+                    }
+                }
+            }
+            """);
+        var root = syntaxTree.GetRoot();
+        var firstMutation = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(firstMutation, firstMutation.WithAdditionalAnnotations(GetMutationIdMarker(1), _ifEngineMarker));
+        var secondMutation = root.DescendantNodes().OfType<IfStatementSyntax>().Last();
+        root = root.ReplaceNode(secondMutation, secondMutation.WithAdditionalAnnotations(GetMutationIdMarker(2), _ifEngineMarker));
+
+        var annotatedSyntaxTree = root.SyntaxTree;
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: [annotatedSyntaxTree],
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)]);
+        var compilerWrapper = new CompilerWrapper(compiler);
+        using var initialStream = new MemoryStream();
+        var diagnostic = compiler.Emit(initialStream).Diagnostics.Single(item => item.Id == "CS0165");
+
+        var ids = new CSharpRollbackProcess().RollbackMutationsInError(
+            compilerWrapper,
+            ImmutableArray.Create(diagnostic),
+            ICSharpRollbackProcess.Mode.Normal,
+            false);
+
+        ids.ShouldBe([2]);
+        using var stream = new MemoryStream();
+        compilerWrapper.Emit(stream).Success.ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbackNearestMutationErasingReturn()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace ExampleProject
+            {
+                public class StringMagic
+                {
+                    public int ActiveMutation = 1;
+
+                    public string Value()
+                    {
+                        if (ActiveMutation == 1) { } else { return "first"; }
+                        if (ActiveMutation == 2) { } else { return "second"; }
+                        var marker = 0;
+                    }
+                }
+            }
+            """);
+        var root = syntaxTree.GetRoot();
+        var firstMutation = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(firstMutation, firstMutation.WithAdditionalAnnotations(GetMutationIdMarker(1), _ifEngineMarker));
+        var secondMutation = root.DescendantNodes().OfType<IfStatementSyntax>().Last();
+        root = root.ReplaceNode(secondMutation, secondMutation.WithAdditionalAnnotations(GetMutationIdMarker(2), _ifEngineMarker));
+
+        var annotatedSyntaxTree = root.SyntaxTree;
+        var method = annotatedSyntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: [annotatedSyntaxTree],
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)]);
+        var compilerWrapper = new CompilerWrapper(compiler);
+
+        var ids = new CSharpRollbackProcess().RollbackMutationsInError(
+            compilerWrapper,
+            ImmutableArray.Create(CreateErrorDiagnostic("CS0161", method)),
+            ICSharpRollbackProcess.Mode.Normal,
+            false);
+
+        ids.ShouldBe([2]);
+        using var stream = new MemoryStream();
+        compilerWrapper.Emit(stream).Success.ShouldBeTrue();
+    }
+
+    [TestMethod]
+    [Ignore("Not relevant, need to identify a new pattern that triggers safe mode.")]
     public void RollbackProcess_ShouldRollbackMethodWhenLocalRollbackFailsAndNoBlockMutationsFound()
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
-
-namespace ExampleProject
-{
-    public class StringMagic
-    {
-        public int ActiveMutation = 1;
-        public string AddTwoStrings(string first, string second, out string third)
-        {
-            var dummy = """";
-            if(ActiveMutation == 8){
-                while (first.Length > 2)
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            using System;
+            namespace ExampleProject
+            {
+                public class StringMagic
                 {
-                    dummy = first + second;
+                    public int ActiveMutation = 1;
+                    public string AddTwoStrings(string first, string second, out string third)
+                    {
+                        var dummy = "";
+                        if(ActiveMutation == 8){
+                            while (first.Length > 2)
+                            {
+                                dummy = first + second;
+                            }
+                            while (first.Length < 2)
+                            {
+                                dummy =  second - first;
+                            }
+                        }else{if(ActiveMutation == 7){
+                            while (first.Length > 2)
+                            {
+                                dummy =  first + second;
+                            }
+                            while (first.Length < 2)
+                            {
+                                dummy =  second - first;
+                            }
+                        }else{if(ActiveMutation == 6){
+                            while (first.Length == 2)
+                            {
+                                dummy =  first + second;
+                            }
+                            while (first.Length < 2)
+                            {
+                                dummy =  second + first;
+                            }
+                        }else{
+                            third = "good";
+                            while (first.Length == 2)
+                            {
+                                dummy =  first + second;
+                            }
+                            while (first.Length < 2)
+                            {
+                                    dummy =  second + first;
+                            }
+                            return null;
+                        }}}
+                    }
                 }
-                while (first.Length < 2)
-                {
-                    dummy =  second - first;
-                }
-            }else{if(ActiveMutation == 7){
-                while (first.Length > 2)
-                {
-                    dummy =  first + second;
-                }
-                while (first.Length < 2)
-                {
-                    dummy =  second - first;
-                }
-            }else{if(ActiveMutation == 6){
-                while (first.Length == 2)
-                {
-                    dummy =  first + second;
-                }
-                while (first.Length < 2)
-                {
-                    dummy =  second + first;
-                }
-            }else{
-                third = ""good"";
-                while (first.Length == 2)
-                {
-                    dummy =  first + second;
-                }
-                while (first.Length < 2)
-                {
-                    dummy =  second + first;
-                }
-            }}}
-                return null;
-        }
-    }
-}");
+            }
+            """);
         var root = syntaxTree.GetRoot();
 
         var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
@@ -562,77 +796,192 @@ namespace ExampleProject
 
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
-        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        var result = compilerWrapper.Emit(ms);
 
-        rollbackedResult.Success.ShouldBeFalse();
-        rollbackedResult.Diagnostics.ShouldHaveSingleItem();
+        result.Success.ShouldBeFalse();
+        result.Diagnostics.ShouldHaveSingleItem();
+        ids = target.RollbackMutationsInError(compilerWrapper, result.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
-        fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
-        rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-        rollbackedResult.Success.ShouldBeTrue();
+        result = compilerWrapper.Emit(ms);
+        result.Success.ShouldBeTrue();
         // validate that all mutations are rolled back
-        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
+        ids.ShouldBe(new Collection<int> { 8, 7, 6 });
     }
 
     [TestMethod]
-    public void RollbackProcess_ShouldRollbacConstructorWhenLocalRollbackFailsAndNoBlockMutationsFound()
+    [DataRow("third = \"good\";")]
+    [DataRow("(third, _) = (\"good\", 2);")]
+    public void RollbackProcess_ShouldRollbackMutationsErasingAssignment(string assignment)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            $$"""
+                using System;
+                namespace ExampleProject
+                {
+                    public class StringMagic
+                    {
+                        public int ActiveMutation = 1;
 
-namespace ExampleProject
-{
-    public class StringMagic
-    {
-        public int ActiveMutation = 1;
-        public StringMagic(string first, string second, out string third)
-        {
-            var dummy = """";
-            if(ActiveMutation == 8){
-                while (first.Length > 2)
-                {
-                    dummy = first + second;
+                        public string AddTwoStrings
+                        {
+                            get
+                            {
+                                string first = string.Empty;
+                                string second = string.Empty;
+                                string third;
+                                var dummy = "";
+                                if(ActiveMutation == 8){
+                                    while (first.Length > 2)
+                                    {
+                                        dummy = first + second;
+                                    }
+                                }else{if(ActiveMutation == 7){
+                                while (first.Length > 2)
+                                    {
+                                        dummy =  first + second;
+                                    }
+                                }else{if(ActiveMutation == 6){
+                                   {{assignment}}
+                                while (first.Length == 2)
+                                    {
+                                        dummy =  first + second;
+                                    }
+                                    while (first.Length < 2)
+                                    {
+                                        dummy =  second + first;
+                                    }
+                                }else{
+                                   {{assignment}}
+                                    while (first.Length == 2)
+                                    {
+                                        dummy =  first + second;
+                                    }
+                                    while (first.Length < 2)
+                                    {
+                                        dummy =  second + first;
+                                    }
+                                }
+                                }
+                                }
+                                return third;
+                            }
+                        }
+                    }
                 }
-                while (first.Length < 2)
-                {
-                    dummy =  second - first;
-                }
-            }else{if(ActiveMutation == 7){
-                while (first.Length > 2)
-                {
-                    dummy =  first + second;
-                }
-                while (first.Length < 2)
-                {
-                    dummy =  second - first;
-                }
-            }else{if(ActiveMutation == 6){
-                while (first.Length == 2)
-                {
-                    dummy =  first + second;
-                }
-                while (first.Length < 2)
-                {
-                    dummy =  second + first;
-                }
-            }else{
-                third = ""good"";
-                while (first.Length == 2)
-                {
-                    dummy =  first + second;
-                }
-                while (first.Length < 2)
-                {
-                    dummy =  second + first;
-                }
-            }}}
-        }
-    }
-}");
+                """);
         var root = syntaxTree.GetRoot();
-        // we manually inject mutation markers
+
+        var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(
+            mutantIf1,
+            mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(8), _ifEngineMarker)
+        );
+        var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
+        root = root.ReplaceNode(
+            mutantIf2,
+            mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(7), _ifEngineMarker)
+        );
+        var mutantIf3 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[2];
+        root = root.ReplaceNode(
+            mutantIf3,
+            mutantIf3.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
+        );
+        var annotatedSyntaxTree = root.SyntaxTree;
+
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree> { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference> {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            });
+
+        var target = new CSharpRollbackProcess();
+
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
+
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        var rollbackResult = compilerWrapper.Emit(ms);
+        rollbackResult.Success.ShouldBeFalse();
+        // rollback a single assignment erasing mutation
+        ids.ShouldBe(new Collection<int> {8});
+
+        ids = target.RollbackMutationsInError(compilerWrapper, rollbackResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        rollbackResult = compilerWrapper.Emit(ms);
+        rollbackResult.Success.ShouldBeTrue();
+        // validate that mutations 8 and 7 were rolled back
+        ids.ShouldBe(new Collection<int> { 8, 7 });
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbackMutationsErasingAssignmentForOutVariables()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+        """
+        using System;
+        namespace ExampleProject
+        {
+            public class StringMagic
+            {
+                public int ActiveMutation = 1;
+
+                public string AddTwoStrings(out string third)
+                {
+                    string first = string.Empty;
+                    string second = string.Empty;
+                    var dummy = "";
+                    if(ActiveMutation == 8){
+                        while (first.Length > 2)
+                        {
+                            dummy = first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second - first;
+                        }
+                    }else{if(ActiveMutation == 7){
+                    while (first.Length > 2)
+                        {
+                            dummy =  first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second + first;
+                        }
+                    }else{if(ActiveMutation == 6){
+                        third = "good";
+                        while (first.Length == 2)
+                        {
+                            dummy =  first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second + first;
+                        }
+                    }else{
+                        third = "good";
+                        while (first.Length == 2)
+                        {
+                            dummy =  first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second + first;
+                        }
+                    }}}
+                    return dummy;
+                }
+            }
+        }
+        """);
+        var root = syntaxTree.GetRoot();
+
         var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
         root = root.ReplaceNode(
             mutantIf1,
@@ -662,83 +1011,77 @@ namespace ExampleProject
 
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        var rollbackResult = compilerWrapper.Emit(ms);
 
-        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-
-        rollbackedResult.Success.ShouldBeFalse();
-        rollbackedResult.Diagnostics.ShouldHaveSingleItem();
-
-        fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
-        rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-        rollbackedResult.Success.ShouldBeTrue();
-        // validate that all mutations are rolled back
-        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
+        rollbackResult.Success.ShouldBeTrue();
+        // validate that mutations 8 and 7 were rolled back
+        ids.ShouldBe(new Collection<int> { 8, 7 });
     }
 
     [TestMethod]
-    public void RollbackProcess_ShouldRollbackAccessorWhenLocalRollbackFails()
+    public void RollbackProcess_ShouldRollbackMutationsErasingReturn()
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
-
-namespace ExampleProject
-{
-    public class StringMagic
-    {
-        public int ActiveMutation = 1;
-
-        public string AddTwoStrings
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+        """
+        using System;
+        namespace ExampleProject
         {
-            get
+            public class StringMagic
             {
-                string first = string.Empty;
-                string second = string.Empty;
-                string third;
-                var dummy = """";
-                if(ActiveMutation == 8){
+                public int ActiveMutation = 1;
+
+                public string AddTwoStrings()
+                {
+                    string first = string.Empty;
+                    string second = string.Empty;
+                    var dummy = "";
+                    if(ActiveMutation == 8){
+                        while (first.Length > 2)
+                        {
+                            dummy = first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second - first;
+                        }
+                        return dummy;
+                    }else{if(ActiveMutation == 7){
                     while (first.Length > 2)
-                    {
-                        dummy = first + second;
-                    }
-                    while (first.Length < 2)
-                    {
-                        dummy =  second - first;
-                    }
-                }else{if(ActiveMutation == 7){
-                    while (first.Length > 2)
-                    {
-                        dummy =  first + second;
-                    }
-                    while (first.Length < 2)
-                    {
-                        dummy =  second - first;
-                    }
-                }else{if(ActiveMutation == 6){
-                    while (first.Length == 2)
-                    {
-                        dummy =  first + second;
-                    }
-                    while (first.Length < 2)
-                    {
-                        dummy =  second + first;
-                    }
-                }else{
-                    third = ""good"";
-                    while (first.Length == 2)
-                    {
-                        dummy =  first + second;
-                    }
-                    while (first.Length < 2)
-                    {
-                        dummy =  second + first;
-                    }
-                }}}
-                return third;
+                        {
+                            dummy =  first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second + first;
+                        }
+                    }else{if(ActiveMutation == 6){
+                        while (first.Length == 2)
+                        {
+                            dummy =  first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second + first;
+                        }
+                        return dummy;
+                    }else{
+                        while (first.Length == 2)
+                        {
+                            dummy =  first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second + first;
+                        }
+                        return dummy;
+                    }}}
+                }
             }
         }
-    }
-}");
+        """);
         var root = syntaxTree.GetRoot();
 
         var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
@@ -770,49 +1113,45 @@ namespace ExampleProject
 
         using var ms = new MemoryStream();
         var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
 
-        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        var rollbackResult = compilerWrapper.Emit(ms);
 
-        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-
-        rollbackedResult.Success.ShouldBeFalse();
-        rollbackedResult.Diagnostics.ShouldHaveSingleItem();
-
-        fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
-        rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-
-        rollbackedResult.Success.ShouldBeTrue();
-        // validate that only mutation 8 and 7 were rolled back
-        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
+        rollbackResult.Success.ShouldBeTrue();
+        // validate that mutations 8 and 7 were rolled back
+        ids.ShouldBe(new Collection<int> { 8, 7 });
     }
 
     [TestMethod]
-    public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompileWhenUriIsEmpty()
+    public void RollbackProcess_ShouldRollbackError_RolledBackCompilationShouldCompileWhenUriIsEmpty()
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(@"
-using System;
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            using System;
 
-namespace ExampleProject
-{
-    public class Query
-    {
-        public int ActiveMutation = 1;
+            namespace ExampleProject
+            {
+                public class Query
+                {
+                    public int ActiveMutation = 1;
 
-        public void Break()
-        {
-            if(ActiveMutation == 1)
-            {
-                string someQuery = ""test"";
-                new Uri(new Uri(string.Empty), ""/API?"" - someQuery);
+                    public void Break()
+                    {
+                        if(ActiveMutation == 1)
+                        {
+                            string someQuery = "test";
+                            new Uri(new Uri(string.Empty), "/API?" - someQuery);
+                        }
+                        else
+                        {
+                            string someQuery = "test";
+                            new System.Uri(new System.Uri(string.Empty), "/API?" + someQuery);
+                        }
+                    }
+                }
             }
-            else
-            {
-                string someQuery = ""test"";
-                new System.Uri(new System.Uri(string.Empty), ""/API?"" + someQuery);
-            }
-        }
-    }
-}");
+            """);
         var ifStatement = syntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -833,44 +1172,46 @@ namespace ExampleProject
             });
 
         var target = new CSharpRollbackProcess();
+        var compilerWrapper = new CompilerWrapper(compiler);
 
         using var ms = new MemoryStream();
-        var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false, false);
-        fixedCompilation.Compilation.Emit(ms).Success.ShouldBeTrue();
+        var ids = target.RollbackMutationsInError(compilerWrapper, compiler.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        compilerWrapper.Emit(ms).Success.ShouldBeTrue();
 
         // validate that only one of the compile errors marked the mutation as rolled back.
-        fixedCompilation.RollbackedIds.ShouldBe([1]);
+        ids.ShouldBe([1]);
     }
 
     [TestMethod]
     public void RollbackProcess_ShouldOnlyRaiseExceptionOnFinalAttempt()
     {
 
-        var syntaxTree = CSharpSyntaxTree.ParseText(@"
-using System;
-
-namespace ExampleProject
-{
-    public class Query
-    {
-        public int ActiveMutation = 1;
-
-        public void Break()
-        {
-            if(ActiveMutation == 1)
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            using System;
+            namespace ExampleProject
             {
-                string someQuery = ""test"";
-                new Uri(new Uri(string.Empty), ""/API?"" - someQuery);
+                public class Query
+                {
+                    public int ActiveMutation = 1;
+
+                    public void Break()
+                    {
+                        if(ActiveMutation == 1)
+                        {
+                            string someQuery = "test";
+                            new Uri(new Uri(string.Empty), "/API?" - someQuery);
+                        }
+                        else
+                        {
+                            string someQuery = "test";
+                            new System.Uri(new System.Uri(string.Empty), "/API?" + someQuery);
+                        }
+                        var error = "a"-"b":
+                    }
+                }
             }
-            else
-            {
-                string someQuery = ""test"";
-                new System.Uri(new System.Uri(string.Empty), ""/API?"" + someQuery);
-            }
-            var error = ""a""-""b"":
-        }
-    }
-}");
+            """);
         var ifStatement = syntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -893,10 +1234,12 @@ namespace ExampleProject
         var target = new CSharpRollbackProcess();
 
         using var ms = new MemoryStream();
+        var compilerWrapper = new CompilerWrapper(compiler);
+
         // first compilation will roll back the mutation
-        var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false, false);
+        target.RollbackMutationsInError(compilerWrapper, compiler.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.Normal, false).ShouldNotBeEmpty();
 
         // next attempt cannot roll back anything, so it assumes this is not fixable
-        Should.Throw<CompilationException>(() => target.Start(fixedCompilation.Compilation, fixedCompilation.Compilation.Emit(ms).Diagnostics, true, false));
+        target.RollbackMutationsInError(compilerWrapper, compilerWrapper.Emit(ms).Diagnostics, ICSharpRollbackProcess.Mode.LastChance, false).ShouldBeNull();
     }
 }

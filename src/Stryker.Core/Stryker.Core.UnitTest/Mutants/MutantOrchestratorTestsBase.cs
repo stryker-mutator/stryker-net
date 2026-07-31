@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
+using Stryker.Configuration.Options;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 

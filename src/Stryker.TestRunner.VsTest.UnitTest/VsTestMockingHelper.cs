@@ -23,6 +23,7 @@ using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -104,7 +105,7 @@ public class VsTestMockingHelper : TestBase
 
     internal SourceProjectInfo BuildSourceProjectInfo(IEnumerable<Mutant> mutants = null)
     {
-        var content = new CsharpFolderComposite();
+        var content = new FolderComposite();
         content.Add(new CsharpFileLeaf { Mutants = mutants ?? new[] { Mutant, OtherMutant } });
         return new SourceProjectInfo
         {

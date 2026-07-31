@@ -48,7 +48,7 @@ function Run-Stryker {
 
   $argumentText = ($effectiveArguments | ForEach-Object { $_ }) -join ' '
   Write-Info "Running dotnet-stryker in '$WorkingDirectory' with args: $argumentText"
-  pushd $WorkingDirectory
+  Push-Location $WorkingDirectory
   try {
     if ($effectiveArguments.Count -gt 0) {
       & $stryker @effectiveArguments
@@ -56,7 +56,7 @@ function Run-Stryker {
       & $stryker
     }
   } finally {
-    popd
+    Pop-Location
   }
 
   if ($LASTEXITCODE -ne 0) {
@@ -118,6 +118,43 @@ function Run-Category {
       if ($Runtime -ne 'netcore') { throw "MultipleTestProjects only supports runtime 'netcore'." }
       $multiWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore\TargetProject'
       if (Test-Path $multiWd) { Run-Stryker -WorkingDirectory $multiWd } else { Write-Warn "Multi test project not found at $multiWd" }
+      break
+    }
+    'MSTestMTP' {
+      if ($Runtime -ne 'netcore') { throw "MSTestMTP only supports runtime 'netcore'." }
+      $mtpWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\MicrosoftTestPlatform\UnitTests.MSTest'
+      if (Test-Path $mtpWd) { Run-Stryker -WorkingDirectory $mtpWd } else { Write-Warn "MTP test project not found at $mtpWd" }
+      break
+    }
+    'XUnitMTP' {
+      if ($Runtime -ne 'netcore') { throw "XUnitMTP only supports runtime 'netcore'." }
+      $xunitMtpWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\MicrosoftTestPlatform\UnitTests.XUnit'
+      if (Test-Path $xunitMtpWd) { Run-Stryker -WorkingDirectory $xunitMtpWd } else { Write-Warn "XUnit MTP test project not found at $xunitMtpWd" }
+      break
+    }
+    'NUnitMTP' {
+      if ($Runtime -ne 'netcore') { throw "NUnitMTP only supports runtime 'netcore'." }
+      $nunitMtpWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\MicrosoftTestPlatform\UnitTests.NUnit'
+      if (Test-Path $nunitMtpWd) { Run-Stryker -WorkingDirectory $nunitMtpWd } else { Write-Warn "NUnit MTP test project not found at $nunitMtpWd" }
+      break
+    }
+    'TUnit' {
+      if ($Runtime -ne 'netcore') { throw "TUnit only supports runtime 'netcore'." }
+      $tunitWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\MicrosoftTestPlatform\UnitTests.TUnit'
+      if (Test-Path $tunitWd) { Run-Stryker -WorkingDirectory $tunitWd } else { Write-Warn "TUnit test project not found at $tunitWd" }
+      break
+    }
+    'MTPSolution' {
+      if ($Runtime -ne 'netcore') { throw "MTPSolution only supports runtime 'netcore'." }
+      $mtpSolutionWd = Join-Path $RepoRoot 'integrationtest\TargetProjects'
+      $mtpSolutionPath = Join-Path $mtpSolutionWd 'MicrosoftTestPlatform.slnx'
+      if (Test-Path $mtpSolutionPath) { Run-Stryker -WorkingDirectory $mtpSolutionWd -Arguments @('--solution', $mtpSolutionPath, '--test-runner', 'mtp') } else { Write-Warn "MTP Solution not found at $mtpSolutionPath" }
+      break
+    }
+    'WebApiWithOpenApi' {
+      if ($Runtime -ne 'netcore') { throw "WebApiWithOpenApi only supports runtime 'netcore'." }
+      $webApiWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore\WebApiWithOpenApi'
+      if (Test-Path $webApiWd) { Run-Stryker -WorkingDirectory $webApiWd } else { Write-Warn "WebApiWithOpenApi folder not found at $webApiWd" }
       break
     }
     'Solution' {

@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -20,7 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Stryker.Abstractions\Stryker.Abstractions.csproj" />
-    <ProjectReference Include="..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
+    <ProjectReference Include="..\Stryker.DataCollector\Stryker.DataCollector.csproj" />
     <ProjectReference Include="..\Stryker.TestRunner\Stryker.TestRunner.csproj" />
     <ProjectReference Include="..\Stryker.Utilities\Stryker.Utilities.csproj" />
   </ItemGroup>

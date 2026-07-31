@@ -1,0 +1,20 @@
+{
+  "stryker-config": {
+    "test-runner": "MTP",
+    "reporters": [
+      "Dots",
+      "ClearText",
+      "Html",
+      "Json"
+    ],
+    "project": "TargetProject.csproj",
+    "ignore-mutations": [
+      "string"
+    ],
+    "mutate": [
+      "!Person.cs",
+      "!**/StackOverflow.cs"
+    ],
+    "mutation-level": "Complete"
+  }
+}

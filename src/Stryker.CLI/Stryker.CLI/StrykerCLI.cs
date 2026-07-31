@@ -4,6 +4,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
@@ -13,6 +14,7 @@ using Stryker.CLI.Clients;
 using Stryker.CLI.CommandLineConfig;
 using Stryker.CLI.Logging;
 using Stryker.Configuration;
+using Stryker.Configuration.Options;
 using Stryker.Core;
 
 namespace Stryker.CLI;
@@ -95,7 +97,7 @@ public class StrykerCli
     /// Analyzes the arguments and displays an interface to the user. Kicks off the program.
     /// </summary>
     /// <param name="args">User input</param>
-    public int Run(string[] args)
+    public async Task<int> RunAsync(string[] args)
     {
         var app = new CommandLineApplication(new ConsoleWrapper(_console))
         {
@@ -113,22 +115,24 @@ public class StrykerCli
         cmdConfigReader.RegisterCommandLineOptions(app, inputs);
         cmdConfigReader.RegisterInitCommand(app, _fileSystem, inputs, args);
 
-        app.OnExecute(() =>
+        app.OnExecuteAsync(async (cancellationToken) =>
         {
             // app started
-            PrintStrykerASCIIName();
-
             _configReader.Build(inputs, args, app, cmdConfigReader);
+
+            PrintStrykerASCIIName(inputs);
+
             _loggingInitializer.SetupLogOptions(inputs);
 
-            PrintStrykerVersionInformationAsync(cmdConfigReader.GetSkipVersionCheckOption(args, app).HasValue());
-            RunStryker(inputs);
+            // Print version info. Don't await, let it run in the background for performance reasons
+            _ = PrintStrykerVersionInformationAsync(cmdConfigReader.GetSkipVersionCheckOption(args, app).HasValue());
+            await RunStrykerAsync(inputs);
             return ExitCode;
         });
 
         try
         {
-            return app.Execute(args);
+            return await app.ExecuteAsync(args);
         }
         catch (CommandParsingException ex)
         {
@@ -148,9 +152,9 @@ public class StrykerCli
         }
     }
 
-    private void RunStryker(IStrykerInputs inputs)
+    private async Task RunStrykerAsync(IStrykerInputs inputs)
     {
-        var result = _stryker.RunMutationTest(inputs);
+        var result = await _stryker.RunMutationTestAsync(inputs).ConfigureAwait(false);
 
         HandleStrykerRunResult(result);
     }
@@ -181,8 +185,15 @@ public class StrykerCli
         }
     }
 
-    private void PrintStrykerASCIIName()
+    private void PrintStrykerASCIIName(IStrykerInputs inputs)
     {
+        var logLevel = inputs.VerbosityInput.Validate();
+
+        if (logLevel > Serilog.Events.LogEventLevel.Information)
+        {
+            return;
+        }
+
         _console.MarkupLine(@"[Yellow]
    _____ _              _               _   _ ______ _______  
   / ____| |            | |             | \ | |  ____|__   __| 
@@ -198,7 +209,7 @@ public class StrykerCli
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0079:Remove unnecessary suppression", Justification = "Suppression is for sonarcloud which Roslyn does not know about.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "This method is fire and forget. Task.Run also doesn't work in unit tests")]
-    private async void PrintStrykerVersionInformationAsync(bool skipVersionCheck)
+    private async Task PrintStrykerVersionInformationAsync(bool skipVersionCheck)
     {
         var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
         var assembly = Assembly.GetExecutingAssembly();

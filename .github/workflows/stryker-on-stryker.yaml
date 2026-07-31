@@ -4,15 +4,24 @@ on:
   schedule:
     - cron: '0 1 * * *'
   workflow_dispatch:
+    inputs:
+      useLocalTool:
+        description: 'Pack and use local Stryker CLI (instead of nuget tool)'
+        type: boolean
+        required: false
+        default: false
+  # When modifying the workflow, you can enable pull request trigger so it's easier to test changes, but we don't want to run this on every PR
+  # pull_request:
 
 concurrency:
-  group: stryker-on-stryker-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   run-stryker:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
@@ -23,25 +32,41 @@ jobs:
             workingDirectory: src/Stryker.CLI/Stryker.CLI
           - name: Stryker.Core
             workingDirectory: src/Stryker.Core/Stryker.Core
-          - name: Stryker.DataCollector
-            workingDirectory: src/Stryker.DataCollector/Stryker.DataCollector
-          - name: Stryker.Options
-            workingDirectory: src/Stryker.Options
+          - name: Stryker.Configuration
+            workingDirectory: src/Stryker.Configuration
           - name: Stryker.RegexMutators
             workingDirectory: src/Stryker.RegexMutators/Stryker.RegexMutators
-          - name: Stryker.TestRunner.VsTest
-            workingDirectory: src/Stryker.TestRunner.VsTest
           - name: Stryker.TestRunner
             workingDirectory: src/Stryker.TestRunner
+          - name: Stryker.TestRunner.MicrosoftTestPlatform
+            workingDirectory: src/Stryker.TestRunner.MicrosoftTestPlatform
+          - name: Stryker.TestRunner.VsTest
+            workingDirectory: src/Stryker.TestRunner.VsTest
+          - name: Stryker.DataCollector
+            workingDirectory: src/Stryker.DataCollector
           - name: Stryker.Solutions
             workingDirectory: src/Stryker.Solutions
           - name: Stryker.Utilities
             workingDirectory: src/Stryker.Utilities
 
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
-          dotnet-version: |
-            8.x
-            10.x
+          dotnet-version: 10.x
+
+      - name: Run Stryker
+        shell: pwsh
+        env:
+          STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY || '' }}
+          USE_LOCAL_TOOL: ${{ inputs.useLocalTool }}
+        run: ./stryker-on-stryker.ps1 -WorkingDirectory "${{ matrix.workingDirectory }}"
+
+      - name: Upload Stryker logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: stryker-logs-${{ matrix.name }}
+          path: ${{ matrix.workingDirectory }}/StrykerOutput/*/logs/
+          if-no-files-found: ignore

@@ -1,12 +1,11 @@
-using McMaster.Extensions.CommandLineUtils;
-using McMaster.Extensions.CommandLineUtils.HelpText;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using Stryker.CLI.CommandLineConfig;
+using McMaster.Extensions.CommandLineUtils;
+using McMaster.Extensions.CommandLineUtils.HelpText;
 
-namespace Stryker.CLI;
+namespace Stryker.CLI.CommandLineConfig;
 
 [ExcludeFromCodeCoverage] // Not worth the effort to test
 internal class GroupedHelpTextGenerator : DefaultHelpTextGenerator

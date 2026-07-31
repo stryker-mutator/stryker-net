@@ -39,4 +39,7 @@ internal class StaticInitializerMarkerEngine : BaseEngine<ExpressionSyntax>
         }
         throw new InvalidOperationException($"Can't extract original expression from {node}");
     }
+
+    // does not erase anything
+    protected override bool Erases(ExpressionSyntax node, Func<SyntaxNode, bool> predicate) => false;
 }

@@ -4,5 +4,6 @@ public enum BaselineProvider
 {
     Dashboard,
     Disk,
-    AzureFileStorage
+    AzureFileStorage,
+    S3
 }

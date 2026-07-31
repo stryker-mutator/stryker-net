@@ -3,6 +3,7 @@ using Moq;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.ProjectComponents;
+using Stryker.Configuration.Options;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;

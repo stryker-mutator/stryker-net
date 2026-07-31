@@ -1,0 +1,14 @@
+{
+    "stryker-config": {
+      "reporters": [
+        "Dots",
+        "ClearText",
+        "Html",
+        "Json"
+      ],
+      "project": "WebApiWithOpenApi/WebApiWithOpenApi.csproj",
+      "test-projects": [ "WebApiWithOpenApi.XUnit/WebApiWithOpenApi.XUnit.csproj" ],
+      "mutation-level": "Complete"
+    }
+  }
+  

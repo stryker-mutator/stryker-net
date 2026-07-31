@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Testing;
+using Stryker.Configuration.Options;
 using Stryker.Core.Initialisation;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
@@ -32,7 +34,7 @@ public class InitialTestProcessTests : TestBase
     }
 
     [TestMethod]
-    public void InitialTestProcess_ShouldNotThrowIfAFewTestsFail()
+    public async Task InitialTestProcess_ShouldNotThrowIfAFewTestsFail()
     {
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
         var test1 = "test1";
@@ -46,23 +48,25 @@ public class InitialTestProcessTests : TestBase
         }
         var ranTests = new TestIdentifierList(testList);
         var failedTests = new TestIdentifierList(test1);
-        testRunnerMock.Setup(x => x.InitialTest(It.IsAny<IProjectAndTests>())).Returns(new TestRunResult(Enumerable.Empty<VsTestDescription>(), ranTests, failedTests, TestIdentifierList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero));
-        testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
+        var testRunResult = Task.FromResult(new TestRunResult(Enumerable.Empty<VsTestDescription>(), ranTests, failedTests,
+            TestIdentifierList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero) as ITestRunResult);
+        testRunnerMock.Setup(x => x.InitialTestAsync(It.IsAny<IProjectAndTests>())).Returns(testRunResult);
+        testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
         testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
 
-        _target.InitialTest(_options, null, testRunnerMock.Object);
+        await _target.InitialTestAsync(_options, null, testRunnerMock.Object);
 
-        testRunnerMock.Verify(p => p.InitialTest(It.IsAny<IProjectAndTests>()), Times.Once);
+        testRunnerMock.Verify(p => p.InitialTestAsync(It.IsAny<IProjectAndTests>()), Times.Once);
     }
 
     [TestMethod]
-    public void InitialTestProcess_ShouldCalculateTestTimeout()
+    public async Task InitialTestProcess_ShouldCalculateTestTimeout()
     {
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-        testRunnerMock.Setup(x => x.InitialTest(It.IsAny<IProjectAndTests>())).Callback(() => Thread.Sleep(10)).Returns(new TestRunResult(true));
-        testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
+        testRunnerMock.Setup(x => x.InitialTestAsync(It.IsAny<IProjectAndTests>())).Callback(() => Thread.Sleep(10)).Returns(Task.FromResult(new TestRunResult(true) as ITestRunResult));
+        testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
         testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
-        var result = _target.InitialTest(_options, null, testRunnerMock.Object);
+        var result = await _target.InitialTestAsync(_options, null, testRunnerMock.Object);
 
         result.TimeoutValueCalculator.DefaultTimeout.ShouldBeInRange(1, 200, "This test contains a Thread.Sleep to simulate time passing as this test is testing that a stopwatch is used correctly to measure time.\n If this test is failing for unclear reasons, perhaps the computer running the test is too slow causing the time estimation to be off");
     }

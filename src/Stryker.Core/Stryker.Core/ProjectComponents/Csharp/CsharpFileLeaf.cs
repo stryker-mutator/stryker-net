@@ -5,33 +5,30 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.ProjectComponents.Csharp;
 
-public class CsharpFileLeaf : ProjectComponent<SyntaxTree>, IFileLeaf<SyntaxTree>
+public class CsharpFileLeaf : ProjectComponent, IFileLeaf
 {
-    public string SourceCode { get; set; }
+    public string? SourceCode { get; set; }
 
     /// <summary>
     /// The original unmutated syntax tree
     /// </summary>
-    public SyntaxTree SyntaxTree { get; set; }
+    public SyntaxTree? SyntaxTree { get; set; }
 
     /// <summary>
     /// The mutated syntax tree
     /// </summary>
-    public SyntaxTree MutatedSyntaxTree { get; set; }
+    public SyntaxTree? MutatedSyntaxTree { get; set; }
 
     public override IEnumerable<IMutant> Mutants { get; set; }
 
     public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => MutatedSyntaxTrees;
 
-    public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => new List<SyntaxTree> { MutatedSyntaxTree };
+    public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => [MutatedSyntaxTree ?? SyntaxTree];
+    public override IEnumerable<SyntaxTree> UnmutatedSyntaxTrees => [SyntaxTree];
 
-    public override IEnumerable<IFileLeaf<SyntaxTree>> GetAllFiles()
-    {
-        yield return this;
-    }
+    public override string ToString() => SourceCode ?? "<empty>";
 
-    public override void Display()
-    {
-        DisplayFile(this);
-    }
+    public override IEnumerable<IFileLeaf> GetAllFiles() => [this];
+
+    public override void Display() => DisplayFile(this);
 }

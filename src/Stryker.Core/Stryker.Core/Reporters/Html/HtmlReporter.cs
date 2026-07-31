@@ -55,7 +55,8 @@ public class HtmlReporter : IReporter
         if (_console.Profile.Capabilities.Links)
         {
             // We must print the report path as the link text because on some terminals links might be supported but not actually clickable: https://github.com/spectreconsole/spectre.console/issues/764
-            _console.WriteLine(reportPath, green.Combine(new Style(link: reportUri)));
+            _console.Write(new Paragraph(reportPath, green, new Link(reportUri)));
+            _console.WriteLine();
         }
         else
         {

@@ -85,6 +85,7 @@ public class MarkdownSummaryReporter : IReporter
                 "No Coverage",
                 "Ignored",
                 "Compile Errors",
+                "Runtime Errors",
                 "Total Detected",
                 "Total Undetected",
                 "Total Mutants"
@@ -136,6 +137,9 @@ public class MarkdownSummaryReporter : IReporter
 
         // Compile Errors
         values.Add(mutants.Count(m => m.ResultStatus == MutantStatus.CompileError).ToString());
+
+        // Runtime Errors
+        values.Add(mutants.Count(m => m.ResultStatus == MutantStatus.RuntimeError).ToString());
 
         // Total Detected
         values.Add(mutants

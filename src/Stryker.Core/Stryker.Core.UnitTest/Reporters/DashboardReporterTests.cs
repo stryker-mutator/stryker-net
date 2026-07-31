@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
+using Stryker.Configuration.Options;
 using Stryker.Core.Clients;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;

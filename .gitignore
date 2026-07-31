@@ -279,6 +279,7 @@ StrykerLogs/
 
 #Visual studio code config
 .vscode/
+!.vscode/*.example
 
 **/*.ncrunchsolution
 **/*.ncrunchproject

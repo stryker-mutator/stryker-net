@@ -17,14 +17,14 @@ namespace Stryker.Core.Mutants;
 /// <inheritdoc/>
 public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, SemanticModel>
 {
-    private static readonly TypeBasedStrategy<SyntaxNode, INodeOrchestrator> specificOrchestrator =
+    private static readonly TypeBasedStrategy<SyntaxNode, INodeOrchestrator> SpecificOrchestrator =
         new();
 
     private ILogger Logger { get; }
 
     static CsharpMutantOrchestrator() =>
     // declare node specific orchestrators. Note that order is relevant, they should be declared from more specific to more generic one
-        specificOrchestrator.RegisterHandlers(BuildOrchestratorList());
+        SpecificOrchestrator.RegisterHandlers(BuildOrchestratorList());
 
     /// <summary>
     /// <param name="mutators">The mutators that should be active during the mutation process</param>
@@ -49,7 +49,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new DoNotMutateOrchestrator<FieldDeclarationSyntax>(
             t => t.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword))),
         new DoNotMutateOrchestrator<LocalDeclarationStatementSyntax>(t => t.IsConst),
-        // ensure pre/post increment/decrement mutations are mutated at statement level
+        // ensure pre-/post-increment/decrement mutations are mutated at statement level
         new MutateAtStatementLevelOrchestrator<PostfixUnaryExpressionSyntax>(t =>
             t.Parent is ExpressionStatementSyntax or ForStatementSyntax),
         new MutateAtStatementLevelOrchestrator<PrefixUnaryExpressionSyntax>(t =>
@@ -134,7 +134,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         // search for node specific handler
         input.WithRootAndOptions(GetHandler(input.GetRoot()).Mutate(input.GetRoot(), semanticModel, new MutationContext(this)), input.Options);
 
-    internal INodeOrchestrator GetHandler(SyntaxNode currentNode) => specificOrchestrator.FindHandler(currentNode);
+    internal INodeOrchestrator GetHandler(SyntaxNode currentNode) => SpecificOrchestrator.FindHandler(currentNode);
 
     internal IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, SemanticModel semanticModel, MutationContext context)
     {

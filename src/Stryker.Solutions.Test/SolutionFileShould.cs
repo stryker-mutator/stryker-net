@@ -10,7 +10,7 @@ public sealed class SolutionFileShould
     {
         // Arrange
         // Act
-        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","Stryker.sln"));
+        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","Stryker.slnx"));
         // Assert
         Assert.IsNotNull(solution);
     }
@@ -20,7 +20,7 @@ public sealed class SolutionFileShould
     {
         // Arrange
         // Act
-        var solution =SolutionFile.GetSolution(Path.Combine("..","..","..","..","Stryker.sln"));
+        var solution =SolutionFile.GetSolution(Path.Combine("..","..","..","..","Stryker.slnx"));
         // Assert
         solution.GetBuildTypes().ShouldBe(["Debug", "Release"]);
     }
@@ -30,7 +30,7 @@ public sealed class SolutionFileShould
     {
         // Arrange
         // Act
-        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","Stryker.sln"));
+        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","Stryker.slnx"));
 
         // Assert
         solution.ConfigurationExists("Debug", "Any CPU").ShouldBeTrue();
@@ -80,7 +80,7 @@ public sealed class SolutionFileShould
     {
         // Arrange
         // Act
-        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","Stryker.sln"));
+        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","Stryker.slnx"));
         // Assert
         solution.ConfigurationExists("Debug", "Any CPU").ShouldBeTrue();
 
@@ -91,37 +91,91 @@ public sealed class SolutionFileShould
             Path.Combine("Stryker.CLI", "Stryker.CLI.UnitTest", "Stryker.CLI.UnitTest.csproj"),
             Path.Combine("Stryker.Core", "Stryker.Core", "Stryker.Core.csproj"),
             Path.Combine("Stryker.Core", "Stryker.Core.UnitTest", "Stryker.Core.UnitTest.csproj"),
-            Path.Combine("Stryker.DataCollector", "Stryker.DataCollector", "Stryker.DataCollector.csproj"),
+            Path.Combine("Stryker.DataCollector", "Stryker.DataCollector.csproj"),
             Path.Combine("Stryker.RegexMutators", "Stryker.RegexMutators", "Stryker.RegexMutators.csproj"),
             Path.Combine("Stryker.RegexMutators", "Stryker.RegexMutators.UnitTest", "Stryker.RegexMutators.UnitTest.csproj"),
             Path.Combine("Stryker.Abstractions", "Stryker.Abstractions.csproj"),
-            Path.Combine("Stryker.Options", "Stryker.Configuration.csproj"),
+            Path.Combine("Stryker.Configuration", "Stryker.Configuration.csproj"),
             Path.Combine("Stryker.Utilities", "Stryker.Utilities.csproj"),
             Path.Combine("Stryker.TestRunner", "Stryker.TestRunner.csproj"),
             Path.Combine("Stryker.TestRunner.VsTest", "Stryker.TestRunner.VsTest.csproj"),
             Path.Combine("Stryker.TestRunner.VsTest.UnitTest", "Stryker.TestRunner.VsTest.UnitTest.csproj"),
             Path.Combine("Stryker.Solutions", "Stryker.Solutions.csproj"),
-            Path.Combine("Stryker.Solutions.Test", "Stryker.Solutions.Test.csproj")
+            Path.Combine("Stryker.Solutions.Test", "Stryker.Solutions.Test.csproj"),
+            Path.Combine("Stryker.TestRunner.MicrosoftTestPlatform", "Stryker.TestRunner.MicrosoftTestPlatform.csproj"),
+            Path.Combine("Stryker.TestRunner.MicrosoftTestPlatform.UnitTest", "Stryker.TestRunner.MicrosoftTestPlatform.UnitTest.csproj"),
         };
-        solution.GetProjects("Debug").ShouldBe(expectedProjects);
+        solution.GetProjects("Debug").ShouldBe(expectedProjects, ignoreOrder: true);
     }
 
     [TestMethod]
-    [DataRow("ExampleLibrary.sln", "Any CPU")]
-    [DataRow("ExampleLibrary.slnx", "AnyCPU")]
-    public void ProvideProjectListForGivenConfigurationOnSolutionWithMultiplePlatforms(string solutionFile, string expectedPlatform)
+    [DataRow("MicrosoftTestPlatform.sln")]
+    [DataRow("MicrosoftTestPlatform.slnx")]
+    public void ProvideProjectListForGivenConfigurationOnSolutionWithMultiplePlatforms(string solutionFile)
     {
         // Arrange
         // Act
-        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","..","fixtures","ExampleLibrary",solutionFile));
+        var solution = SolutionFile.GetSolution(Path.Combine("..","..","..","..","..","integrationtest","TargetProjects",solutionFile));
 
         // Assert
-        var expectedProjectDetails = new List<(string file, string buildType, string platform)>
+        var expectedProjects = new List<string>
         {
-            (Path.Combine("src", "ExampleLibrary.csproj"), "Debug", expectedPlatform),
-            (Path.Combine("tests", "ExampleLibrary.Tests.csproj"), "Debug", expectedPlatform),
+            Path.Combine("NetCore", "TargetProject", "TargetProject.csproj"),
+            Path.Combine("NetCore", "Library", "Library.csproj"),
+            Path.Combine("MicrosoftTestPlatform", "UnitTests.MSTest", "UnitTests.MSTest.csproj"),
+            Path.Combine("MicrosoftTestPlatform", "UnitTests.XUnit", "UnitTests.XUnit.csproj"),
+            Path.Combine("MicrosoftTestPlatform", "UnitTests.NUnit", "UnitTests.NUnit.csproj"),
+            Path.Combine("MicrosoftTestPlatform", "UnitTests.TUnit", "UnitTests.TUnit.csproj"),
         };
-        solution.GetProjects("Debug").ShouldBe(expectedProjectDetails.Select(x => x.file));
-        solution.GetProjectsWithDetails("Debug").ShouldBe(expectedProjectDetails);
+        solution.GetProjects("Debug").ShouldBe(expectedProjects, ignoreOrder: true);
+        
+        var projectsWithDetails = solution.GetProjectsWithDetails("Debug").ToList();
+        projectsWithDetails.Select(x => x.file).ShouldBe(expectedProjects, ignoreOrder: true);
+        projectsWithDetails.All(x => x.buildType == "Debug").ShouldBeTrue();
+        projectsWithDetails.All(x => x.platform == "Any CPU" || x.platform == "AnyCPU").ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void PickExactMatch()
+    {
+        // Arrange
+        var solution = SolutionFile.BuildFromProjectList(["Project.csproj", "Test.csproj"], ["x86", "x64"]);
+
+        var match = solution.GetMatching("Debug", "x64");
+        // Assert
+        match.ShouldBe(("Debug", "x64"));
+    }
+
+    [TestMethod]
+    public void FallBackOnDebug()
+    {
+        // Arrange
+        var solution = SolutionFile.BuildFromProjectList(["Project.csproj", "Test.csproj"], ["x86", "x64"]);
+
+        var match = solution.GetMatching("Stryker", "x64");
+        // Assert
+        match.ShouldBe(("Debug", "x64"));
+    }
+
+    [TestMethod]
+    public void FallBackOnAnyCPU()
+    {
+        // Arrange
+        var solution = SolutionFile.BuildFromProjectList(["Project.csproj", "Test.csproj"], ["AnyCPU"]);
+
+        var match = solution.GetMatching("Debug", "x64");
+        // Assert
+        match.ShouldBe(("Debug", "AnyCPU"));
+    }
+
+    [TestMethod]
+    public void PickFirstIfNoMatch()
+    {
+        // Arrange
+        var solution = SolutionFile.BuildFromProjectList(["Project.csproj", "Test.csproj"], ["AnyCPU"]);
+
+        var match = solution.GetMatching("Stryker", "x64");
+        // Assert
+        match.ShouldBe(("Debug", "AnyCPU"));
     }
 }

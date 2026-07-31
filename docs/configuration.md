@@ -208,6 +208,22 @@ See [Stryker dashboard](./reporters.md#dashboard-reporter)
 
 ## Control flow
 
+### `test-runner` &lt;`string`&gt;
+
+Default: `vstest`  
+Command line: `[-t|--test-runner] "mtp"`  
+Config file: `"test-runner": "mtp"`
+
+> **Note:** The Microsoft Test Platform (MTP) test runner is currently in preview. Results should be verified as this feature is still being tested.
+
+Specifies the test runner to use for executing tests during mutation testing.
+
+Available options:
+* `vstest` - The traditional Visual Studio Test Platform runner (default)
+* `mtp` - The Microsoft Test Platform runner (preview)
+
+The MTP test runner is a modern alternative that provides better performance in certain scenarios and supports newer testing frameworks like TUnit. However, it's still in preview and may have limitations compared to the VsTest runner.
+
 ### `mutation-level` &lt;`level`&gt;
 
 Default: `Standard`  
@@ -577,6 +593,7 @@ Supported storage providers are:
 | Disk              | Disk   | Saves the baseline on disk to the `StrykerOutput` folder |
 | Stryker Dashboard | Dashboard | Saves the baseline to Stryker Dashboard |
 | Azure File Storage | AzureFileStorage | Saves the baseline to Azure File Storage |
+| S3-compatible storage | S3 | Saves the baseline to any S3-compatible object storage (AWS S3, MinIO, Backblaze B2, etc.) |
 
 For configuring the dashboard provider see [Dashboard Reporter Settings](./reporters.md#dashboard-reporter)
 
@@ -610,6 +627,36 @@ Allowed resource types: `Container`, `Object`
 Allowed permissions: `Read`, `Write`, `Create`
 
 For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
+
+### `baseline.s3-bucket-name` &lt;`string`&gt;
+
+Default: `null`  
+Command line: `--s3-bucket-name "my-stryker-baselines"`  
+Config file: `"baseline": { "s3-bucket-name": 'my-stryker-baselines' }`
+
+When using the S3 [provider](#baselineprovider-string) you must set the bucket name where baselines will be stored.
+
+The baseline reports are stored under the key `StrykerOutput/<version>/stryker-report.json` within the bucket by default.
+If a [project name](#project-infoname-string) is set, the key becomes `StrykerOutput/<projectName>/<version>/stryker-report.json`.
+
+### `baseline.s3-region` &lt;`string`&gt;
+
+Default: `null`  
+Command line: `--s3-region "us-east-1"`  
+Config file: `"baseline": { "s3-region": 'us-east-1' }`
+
+When using the S3 [provider](#baselineprovider-string), setting the region is optional.
+If not set, the AWS SDK resolves the region using its default configuration chain (for example environment variables or shared profiles).
+
+### `baseline.s3-endpoint` &lt;`string`&gt;
+
+Default: `null`  
+Command line: `--s3-endpoint "https://minio.example.com:9000"`  
+Config file: `"baseline": { "s3-endpoint": 'https://minio.example.com:9000' }`
+
+When using a non-AWS S3-compatible service (e.g. MinIO, Backblaze B2) you can set a custom endpoint URL. This is optional; when not set the default AWS S3 endpoint is used.
+
+Authentication uses the default AWS credential resolution chain (environment variables, shared credentials file, IAM role, etc.). For non-AWS services, set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
 
 ## Troubleshooting
 

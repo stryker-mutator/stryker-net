@@ -2,8 +2,8 @@ using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using Shouldly;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Configuration.Options.Inputs;
 using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.Options.Inputs;
@@ -83,6 +83,8 @@ public class SolutionInputTests : TestBase
 $@"Expected exactly one solution file (.sln or .slnx), found more than one:
 {solution1}
 {solution2}
+
+Please specify the solution file to use with the -s/--solution option.
 ";
 
         var ex = Should.Throw<InputException>(() =>

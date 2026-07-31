@@ -1,0 +1,12 @@
+{
+  "stryker-config": {
+    "project-info": {
+      "name": "github.com/stryker-mutator/stryker-net",
+      "module": "datacollector"
+    },
+    "project": "Stryker.DataCollector",
+    "test-projects": [
+      "../Stryker.TestRunner.VsTest.UnitTest/Stryker.TestRunner.VsTest.UnitTest.csproj"
+    ]
+  }
+}

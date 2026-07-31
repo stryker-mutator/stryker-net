@@ -95,4 +95,8 @@ internal class RedirectMethodEngine : BaseEngine<MethodDeclarationSyntax>
         parentClass = parentClass.ReplaceNode(oldNode, renamedMethod.WithIdentifier(SyntaxFactory.Identifier(names[0])));
         return parentClass;
     }
+
+
+    // does not erase any declaration/Assignment
+    protected override bool Erases(MethodDeclarationSyntax node, Func<SyntaxNode, bool> predicate) => false;
 }

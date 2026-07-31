@@ -53,7 +53,7 @@ public class FilteredMutantsLogger
 
     private string FormatStatusReasonLogString(int mutantCount, MutantStatus resultStatus)
     {
-        // Pad for status CompileError length
+        // Pad for status CompileError/RuntimeError length
         var padForResultStatusLength = 13 - resultStatus.ToString().Length;
 
         var formattedString = LeftPadAndFormatForMutantCount(mutantCount, "mutants got status {1}.");
