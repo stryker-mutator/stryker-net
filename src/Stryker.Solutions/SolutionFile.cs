@@ -223,6 +223,7 @@ public class SolutionFile
         return result;
     }
 
+    // establish the various platforms to use for the pseudo solution file used for testing
     private static string[] DefineSolutionPlatforms(string[]? platforms, string[]? solutionPlatforms)
     {
         if (solutionPlatforms != null)
@@ -232,6 +233,7 @@ public class SolutionFile
 
         if (platforms == null)
         {
+            // default provides two different platforms to ensure ambiguity exists
             solutionPlatforms = [ "Any CPU", "x86" ];
         }
         else

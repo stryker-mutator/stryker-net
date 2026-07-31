@@ -179,7 +179,9 @@ public class InitialisationProcessTests : TestBase
         var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf());
 
-        var loggerMock = new Mock<ILogger<InitialisationProcess>>(); var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object, initialTestProcessMock.Object, loggerMock.Object);
+        var loggerMock = new Mock<ILogger<InitialisationProcess>>();
+        var target = new InitialisationProcess(inputFileResolverMock.Object, initialBuildProcessMock.Object,
+            initialTestProcessMock.Object, loggerMock.Object);
 
         var mockFileSystem = new MockFileSystem();
 

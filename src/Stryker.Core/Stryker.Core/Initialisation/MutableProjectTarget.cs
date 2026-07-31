@@ -24,7 +24,7 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
 
     public HashSet<IAnalyzerResult> TestProjects { get; } = [];
 
-    public bool IsValidTarget => ProjectTarget.IsValid() && TestProjects.Count>0 && TestProjects.Any(tp => tp.IsValid());
+    public bool IsValidTarget => ProjectTarget.IsValid() && TestProjects.Count > 0 && TestProjects.Any(tp => tp.IsValid());
 
     private static readonly string[] FoldersToExclude = ["obj", "bin", "node_modules", "StrykerOutput"];
 

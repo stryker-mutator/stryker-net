@@ -13,7 +13,7 @@ namespace Stryker.Core.Initialisation;
 /// It allows us to keep track of the targets that are valid for mutation and to keep track of the project analyzer context.
 /// </summary>
 /// <param name="project"></param>
-internal class MutableProjectTree(ProjectSimulatedBuildHandler project, ILogger logger)
+internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger logger)
 {
     public List<MutableProjectTarget> Targets { get; } = [];
 

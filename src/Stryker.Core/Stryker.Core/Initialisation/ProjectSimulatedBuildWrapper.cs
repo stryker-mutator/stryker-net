@@ -14,7 +14,7 @@ namespace Stryker.Core.Initialisation;
 /// Encapsulates the context of a project analysis, including the project analyzer, the last analysis results
 ///  for said project. It also provides reference discovery methods
 /// </summary>
-public class ProjectSimulatedBuildHandler
+public class ProjectSimulatedBuildWrapper
 {
     private readonly IProjectAnalyzer _analyzer;
     private readonly ProjectsTracker _projectsTracker;
@@ -26,7 +26,7 @@ public class ProjectSimulatedBuildHandler
     private readonly StringWriter _buildLogger;
     private string[] _targetFrameworks=[];
 
-    public ProjectSimulatedBuildHandler(IBuildalyzerProvider buildalyzerProvider,
+    public ProjectSimulatedBuildWrapper(IBuildalyzerProvider buildalyzerProvider,
         string projectFile,
         string msBuildPath,
         (string configuration,

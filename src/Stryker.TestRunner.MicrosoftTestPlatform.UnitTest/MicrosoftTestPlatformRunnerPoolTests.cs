@@ -195,7 +195,7 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         var start = timeout.ElapsedMilliseconds;
         lock (createdRunners)
         {
-            while (createdRunners.Count<3 && timeout.ElapsedMilliseconds-start<2000)
+            while (createdRunners.Count < 3 && timeout.ElapsedMilliseconds-start < 2000)
             {
                 Monitor.Wait(createdRunners, 200);
             }

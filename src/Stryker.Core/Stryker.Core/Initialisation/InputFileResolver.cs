@@ -96,20 +96,20 @@ public class InputFileResolver(
         string normalizedProjectUnderTestNameFilter)
     {
         _logger.LogInformation("Identifying projects to mutate in {Solution}. This can take a while.",
-            FileSystem.Path.GetFileNameWithoutExtension(solutionInfo.SolutionFilePath));
+            FileSystem.Path.GetFileName(solutionInfo.SolutionFilePath));
 
-        // analyze all projects
+        // analyze every project in the solution
         solutionInfo.SelectAllProjects();
         _logger.LogDebug("Analyzing {ProjectsCount} projects.", solutionInfo.ProjectCount);
-        // we analyze every project in the solution
+
         var mutableProjectsAnalyzerResults = AnalyzeAllNeededProjects(solutionInfo,
             normalizedProjectUnderTestNameFilter,
             options,
             ScanMode.NoScan);
-        // we identify target projects and their associated test projects
+        // identify target projects and their associated test projects
         var (findMutableAnalyzerResults, orphanedProjects) =
             ExtractMutableProjectTrees(mutableProjectsAnalyzerResults);
-        // we keep only suitable candidates
+        // keep only suitable candidates
         return AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphanedProjects);
     }
 
@@ -223,7 +223,7 @@ public class InputFileResolver(
     // to proceed with
     private List<SourceProjectInfo> AnalyzeAndIdentifyProjects(IStrykerOptions options,
         List<MutableProjectTree> findMutableAnalyzerResults,
-        List<ProjectSimulatedBuildHandler> unusedTestProjects)
+        List<ProjectSimulatedBuildWrapper> unusedTestProjects)
     {
         // build all projects
         _logger.LogDebug("Scanning {Count} possible targets.", findMutableAnalyzerResults.Count);
@@ -239,7 +239,7 @@ public class InputFileResolver(
             throw new InputException("Failed to analyze project builds. Stryker cannot continue.");
         }
 
-        // we keep only on target framework per project
+        // we keep only one target framework per project
         foreach (var candidate in suitableCandidates)
         {
             candidate.KeepOnlyOneTarget(options.TargetFramework);
@@ -261,7 +261,7 @@ public class InputFileResolver(
 
     // Log the analysis results
     private void LogAnalysis(List<MutableProjectTree> findMutableAnalyzerResults,
-        List<ProjectSimulatedBuildHandler> unusedTestProjects, bool optionsDiagMode)
+        List<ProjectSimulatedBuildWrapper> unusedTestProjects, bool optionsDiagMode)
     {
         if (findMutableAnalyzerResults.Count == 0)
         {
@@ -290,12 +290,12 @@ public class InputFileResolver(
         }
     }
 
-    private ConcurrentBag<ProjectSimulatedBuildHandler> AnalyzeAllNeededProjects(
+    private ConcurrentBag<ProjectSimulatedBuildWrapper> AnalyzeAllNeededProjects(
         ProjectsTracker solutionInfo,
         string normalizedProjectUnderTestNameFilter,
         IStrykerOptions options, ScanMode mode)
     {
-        var mutableProjectsAnalyzerResults = new ConcurrentBag<ProjectSimulatedBuildHandler>();
+        var mutableProjectsAnalyzerResults = new ConcurrentBag<ProjectSimulatedBuildWrapper>();
 
         var list = new DynamicEnumerableQueue<string>(solutionInfo.SelectedProjects);
         try
@@ -348,7 +348,7 @@ public class InputFileResolver(
         return mutableProjectsAnalyzerResults;
     }
 
-    private IAnalyzerResults AnalyzeSingleProject(ProjectSimulatedBuildHandler project, IStrykerOptions options)
+    private IAnalyzerResults AnalyzeSingleProject(ProjectSimulatedBuildWrapper project, IStrykerOptions options)
     {
         var projectLogName = FileSystem.Path.GetRelativePath(options.WorkingDirectory, project.ProjectFileName);
         var shouldConfirmSuccess = false;
@@ -379,6 +379,8 @@ public class InputFileResolver(
             if (!buildResultOverallSuccess && !string.IsNullOrEmpty(options.TargetFramework))
             {
                 // still failed, we can try using target framework option
+                // note that the project will be 'built' against the requested framework disregarding the
+                // framework(s) declared in the project.
                 _logger.LogWarning("Project {ProjectFilePath} simulated build failed again. Last attempt, forcing the target framework.", projectLogName);
                 buildResult = project.Analyze(forceFramework: true);
                 buildResultOverallSuccess = project.HasValidResults();
@@ -415,12 +417,12 @@ public class InputFileResolver(
         return buildResult;
     }
 
-    private (List<MutableProjectTree>, List<ProjectSimulatedBuildHandler>) ExtractMutableProjectTrees(
-        IEnumerable<ProjectSimulatedBuildHandler> mutableProjectsAnalyzerResults)
+    private (List<MutableProjectTree>, List<ProjectSimulatedBuildWrapper>) ExtractMutableProjectTrees(
+        IEnumerable<ProjectSimulatedBuildWrapper> mutableProjectsAnalyzerResults)
     {
         // separate test projects from mutable projects, and keep only analyzer results building an assembly (exclude solution folders and such)
-        var testProjects = new List<ProjectSimulatedBuildHandler>();
-        var mutableProjects = new List<ProjectSimulatedBuildHandler>();
+        var testProjects = new List<ProjectSimulatedBuildWrapper>();
+        var mutableProjects = new List<ProjectSimulatedBuildWrapper>();
         foreach (var project in mutableProjectsAnalyzerResults)
         {
             if (project.IsTestProject())
@@ -433,7 +435,7 @@ public class InputFileResolver(
             }
         }
         var mutableToTestMap = mutableProjects.ToDictionary(p =>p, p => new MutableProjectTree(p, _logger));
-        var unusedTestProjects = new List<ProjectSimulatedBuildHandler>();
+        var unusedTestProjects = new List<ProjectSimulatedBuildWrapper>();
 
         // for each test project
         foreach (var testProject in testProjects)
@@ -454,12 +456,12 @@ public class InputFileResolver(
         return (mutableToTestMap.Values.ToList(), unusedTestProjects);
     }
 
-    private static bool ScanAssemblyReferences(Dictionary<ProjectSimulatedBuildHandler, MutableProjectTree> mutableToTestMap,
-        List<ProjectSimulatedBuildHandler> mutableProjects, ProjectSimulatedBuildHandler testProject)
+    private static bool ScanAssemblyReferences(Dictionary<ProjectSimulatedBuildWrapper, MutableProjectTree> mutableToTestMap,
+        List<ProjectSimulatedBuildWrapper> mutableProjects, ProjectSimulatedBuildWrapper testProject)
     {
         if (testProject.AnalyzerLastResults.Count == 0)
         {
-            throw new InvalidOperationException($"You must analyze the test project {testProject.ProjectFileName} before trying to find its references.");
+            throw new InvalidOperationException("Failed to analyze the test project {testProject.ProjectFileName} while trying to find its references.");
         }
         var foundOneProject = false;
         // we do the work for each available target
@@ -484,12 +486,12 @@ public class InputFileResolver(
         return foundOneProject;
     }
 
-    private static bool ScanProjectReferences(Dictionary<ProjectSimulatedBuildHandler, MutableProjectTree> mutableToTestMap,
-        List<ProjectSimulatedBuildHandler> mutableProjects, ProjectSimulatedBuildHandler testProject)
+    private static bool ScanProjectReferences(Dictionary<ProjectSimulatedBuildWrapper, MutableProjectTree> mutableToTestMap,
+        List<ProjectSimulatedBuildWrapper> mutableProjects, ProjectSimulatedBuildWrapper testProject)
     {
         if (testProject.AnalyzerLastResults.Count == 0)
         {
-            throw new InvalidOperationException($"You must analyze the test project {testProject.ProjectFileName} before trying to find its references.");
+            throw new InvalidOperationException($"Failed to analyze the test project {testProject.ProjectFileName} while trying to find its references.");
         }
         var foundOneProject = false;
         foreach (var variant in testProject.AnalyzerLastResults)

@@ -77,8 +77,12 @@ public class ProjectsTracker
         {
             Configuration = configuration;
             // "Any CPU" is default platform at solution level, but in project files it is "AnyCPU", so we need to convert it to match the project files
+            // note that this fixes user misconfiguration. Platform should always be valid when a solution file is used.
             Platform = platform == "Any CPU" ? "AnyCPU" : platform;
-            _logger.LogInformation("Using project configuration/platform '{Configuration}|{Platform}'.", Configuration??"`default`", Platform ?? "`default`");
+            if (!string.IsNullOrEmpty(configuration) || !string.IsNullOrEmpty(platform))
+            {
+                _logger.LogInformation("Using project configuration/platform '{Configuration}|{Platform}'.", Configuration??"`default`", Platform ?? "`default`");
+            }
         }
     }
 
@@ -141,8 +145,8 @@ public class ProjectsTracker
     /// Gets a project analysis context for the given project file, using the configuration and platform from the solution if available, otherwise using the configuration and platform from the options.
     /// </summary>
     /// <param name="projectFile">target project file</param>
-    /// <returns>a <see cref="ProjectSimulatedBuildHandler"/> instance for <paramref name="projectFile">.</paramref></returns>
-    public ProjectSimulatedBuildHandler GetProjectAnalysisContext(string projectFile)
+    /// <returns>a <see cref="ProjectSimulatedBuildWrapper"/> instance for <paramref name="projectFile">.</paramref></returns>
+    public ProjectSimulatedBuildWrapper GetProjectAnalysisContext(string projectFile)
     {
         string configuration;
         string platform;
@@ -156,7 +160,7 @@ public class ProjectsTracker
         {
             (configuration, platform) = (Configuration, Platform);
         }
-        return new ProjectSimulatedBuildHandler(_buildalyzerProvider, projectFile, _options.MsBuildPath, (configuration,
+        return new ProjectSimulatedBuildWrapper(_buildalyzerProvider, projectFile, _options.MsBuildPath, (configuration,
             platform, _options.TargetFramework), _logger, this);
     }
 }
