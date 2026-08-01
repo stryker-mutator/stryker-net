@@ -65,7 +65,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         _initializationProcess.BuildProjects(options, projectInfos);
 
         // create a test runner based on the selected option
-        _runner = runner ?? CreateTestRunner(options);
+        _runner = runner ?? CreateTestRunner(options, projectInfos);
         _mutationTestExecutor.TestRunner = _runner;
         InitializeDashboardProjectInformation(options, projectInfos.First());
         var inputs = await _initializationProcess.GetMutationTestInputsAsync(options, projectInfos, _runner);
@@ -78,14 +78,38 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         return mutationTestProcesses;
     }
 
-    private ITestRunner CreateTestRunner(IStrykerOptions options)
+    private ITestRunner CreateTestRunner(IStrykerOptions options, IReadOnlyCollection<SourceProjectInfo> projectInfos)
     {
-        return options.TestRunner switch
+        var testRunner = options.TestRunner;
+        
+        // Auto-detect MTP projects when test runner was not explicitly configured
+        if (!options.IsTestRunnerExplicitlyConfigured && HasMtpTestProject(projectInfos))
+        {
+            testRunner = Stryker.Abstractions.Options.TestRunner.MicrosoftTestPlatform;
+            _logger.LogInformation("MTP test project detected. Using Microsoft Test Platform test runner.");
+        }
+        
+        return testRunner switch
         {
             Stryker.Abstractions.Options.TestRunner.VsTest => new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem),
             Stryker.Abstractions.Options.TestRunner.MicrosoftTestPlatform => new MicrosoftTestPlatformRunnerPool(options),
-            _ => throw new InputException($"Unknown test runner: {options.TestRunner}")
+            _ => throw new InputException($"Unknown test runner: {testRunner}")
         };
+    }
+
+    private static bool HasMtpTestProject(IReadOnlyCollection<SourceProjectInfo> projectInfos)
+    {
+        foreach (var projectInfo in projectInfos)
+        {
+            foreach (var testProject in projectInfo.TestProjectsInfo.TestProjects)
+            {
+                if (testProject.AnalyzerResult.References.Any(r => r.Contains("Microsoft.Testing.Platform")))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void InitializeDashboardProjectInformation(IStrykerOptions options, SourceProjectInfo projectInfo)

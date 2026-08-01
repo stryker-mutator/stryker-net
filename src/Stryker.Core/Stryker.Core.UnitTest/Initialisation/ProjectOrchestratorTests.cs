@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Threading.Tasks;
 using Buildalyzer;
-using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -301,7 +298,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
 
         // act
-        var result = async() => (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+        var result = async () => (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
         // assert
         result.ShouldThrow<InputException>();
@@ -409,6 +406,136 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
         // assert
         result.Count.ShouldBe(1);
+    }
+
+    [TestMethod]
+    public async Task ShouldAutoDetectMtpTestProjectAndUseMtpRunner()
+    {
+        // arrange
+        var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
+        var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.csproj");
+        var solutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln");
+        FileSystem.AddFile(solutionPath, new MockFileData("empty"));
+        var options = new StrykerOptions
+        {
+            ProjectPath = FileSystem.Path.GetFullPath(testCsprojPathName),
+            SolutionPath = solutionPath,
+            TestRunner = Stryker.Abstractions.Options.TestRunner.VsTest // Default, not explicitly configured
+        };
+
+        var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
+        var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, [csPathName]).Object;
+
+        // Create a test project that references Microsoft.Testing.Platform (MTP)
+        var testProjectAnalyzerMock = BuildProjectAnalyzerMock(
+            testCsprojPathName,
+            Array.Empty<string>(),
+            new Dictionary<string, string> { { "IsTestProject", "True" }, { "Language", "C#" } },
+            projectReferences: new[] { csprojPathName },
+            frameworks: new[] { DefaultFramework },
+            rawReferences: new[] { "Microsoft.Testing.Platform" }).Object;
+
+        var target = BuildProjectOrchestratorForSimpleProjectWithCustomTestProject(
+            sourceProjectAnalyzerMock, testProjectAnalyzerMock, out var mockRunner);
+
+        FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
+
+        // act
+        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+
+        // assert - the MTP runner should have been created
+        mockRunner.Verify(r => r.DiscoverTestsAsync(It.IsAny<string>()), Times.Once);
+        result.ShouldHaveSingleItem();
+    }
+
+    [TestMethod]
+    public async Task ShouldRespectExplicitlyConfiguredTestRunnerEvenWithMtpProject()
+    {
+        // arrange
+        var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
+        var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.csproj");
+        var solutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln");
+        FileSystem.AddFile(solutionPath, new MockFileData("empty"));
+
+        // Create options with explicitly configured test runner
+        var options = new StrykerOptions
+        {
+            ProjectPath = FileSystem.Path.GetFullPath(testCsprojPathName),
+            SolutionPath = solutionPath,
+            TestRunner = Stryker.Abstractions.Options.TestRunner.VsTest,
+            IsTestRunnerExplicitlyConfigured = true // User explicitly set the test runner
+        };
+
+        // Verify that IsTestRunnerExplicitlyConfigured is true when explicitly set
+        options.IsTestRunnerExplicitlyConfigured.ShouldBeTrue();
+
+        var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
+        var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, [csPathName]).Object;
+
+        // Create a test project that references Microsoft.Testing.Platform (MTP)
+        var testProjectAnalyzerMock = BuildProjectAnalyzerMock(
+            testCsprojPathName,
+            Array.Empty<string>(),
+            new Dictionary<string, string> { { "IsTestProject", "True" }, { "Language", "C#" } },
+            projectReferences: new[] { csprojPathName },
+            frameworks: new[] { DefaultFramework },
+            rawReferences: new[] { "Microsoft.Testing.Platform" }).Object;
+
+        var target = BuildProjectOrchestratorForSimpleProjectWithCustomTestProject(
+            sourceProjectAnalyzerMock, testProjectAnalyzerMock, out var mockRunner);
+
+        FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
+
+        // act
+        await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object);
+
+        // assert - the vstest runner should have been used (not MTP) since it was explicitly configured
+        mockRunner.Verify(r => r.DiscoverTestsAsync(It.IsAny<string>()), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task ShouldUseMtpRunnerWhenNotExplicitlyConfiguredAndNoMtpProject()
+    {
+        // arrange
+        var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
+        var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.csproj");
+        var solutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln");
+        FileSystem.AddFile(solutionPath, new MockFileData("empty"));
+        var options = new StrykerOptions
+        {
+            ProjectPath = FileSystem.Path.GetFullPath(testCsprojPathName),
+            SolutionPath = solutionPath
+        };
+
+        var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
+        var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, [csPathName]).Object;
+        var target = BuildProjectOrchestratorForSimpleProject(sourceProjectAnalyzerMock,
+            TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object, out var mockRunner);
+
+        FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
+
+        // act
+        var result = (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+
+        // assert
+        result.ShouldHaveSingleItem();
+    }
+
+    /// <summary>
+    /// Build a project orchestrator with a custom test project analyzer that allows specifying raw references
+    /// </summary>
+    private ProjectOrchestrator BuildProjectOrchestratorForSimpleProjectWithCustomTestProject(
+        IProjectAnalyzer sourceProjectAnalyzerMock,
+        IProjectAnalyzer testProjectAnalyzerMock,
+        out Mock<ITestRunner> mockRunner)
+    {
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectAnalyzerMock },
+            { "MyProject.UnitTests", testProjectAnalyzerMock }
+        };
+
+        return BuildProjectOrchestrator(analyzerResults, out mockRunner);
     }
 
     [TestMethod]
