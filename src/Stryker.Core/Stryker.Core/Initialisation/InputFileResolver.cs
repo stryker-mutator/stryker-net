@@ -274,7 +274,7 @@ public class InputFileResolver(
         }
         foreach (var projectTree in findMutableAnalyzerResults)
         {
-            projectTree.DumpForAnalysis();
+            projectTree.LogAllAnalysisSummaries();
         }
         // dump test projects that do not reference any mutable project
         foreach (var unusedTestProject in unusedTestProjects)

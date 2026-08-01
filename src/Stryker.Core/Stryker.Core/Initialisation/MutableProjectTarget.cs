@@ -57,7 +57,7 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
         return targetProjectInfo;
     }
 
-    public void DumpForAnalysis()
+    public void LogAnalysisSummary()
     {
         logger.LogInformation(" target {TargetFramework} analysis {Result}, simulated build {BuildResult}.",
             ProjectTarget.TargetFramework,
