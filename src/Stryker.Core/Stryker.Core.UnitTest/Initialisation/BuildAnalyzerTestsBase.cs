@@ -89,21 +89,6 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
         return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, projectReferences, frameworks, () => success, [], dontGenerateProjectReference);
     }
 
-    /// <summary>
-    /// Build a simple test project
-    /// </summary>
-    /// <param name="testCsprojPathName">test project pathname</param>
-    /// <param name="csProj">production code project pathname</param>
-    /// <param name="frameworks"></param>
-    /// <returns>a mock project analyzer</returns>
-    /// <remarks>project analysis will fully fail</remarks>
-    protected Mock<IProjectAnalyzer> TestProjectFailedAnalyzerMock(string testCsprojPathName, string csProj, IEnumerable<string> frameworks = null)
-    {
-        frameworks??=[DefaultFramework];
-        var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
-        return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, [], frameworks, () => false, []);
-    }
-
     private IAnalyzerResult GetProjectResult(string projectFile, string expectedFramework, bool returnDefaultIfNotFound = true)
     {
         if (!_projectCache.TryGetValue(projectFile, out var project))
