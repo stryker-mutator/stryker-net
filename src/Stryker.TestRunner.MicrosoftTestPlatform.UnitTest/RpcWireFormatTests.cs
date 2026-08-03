@@ -21,8 +21,13 @@ public class RpcWireFormatTests
     private static readonly TestNode TestNodeWithoutLocation =
         new("some-uid", "SomeTest", "action", "discovered");
 
-    private static JsonElement Serialize<T>(T value) =>
-        JsonDocument.Parse(JsonSerializer.Serialize(value, RpcJsonSerializerOptions.Default)).RootElement;
+    // The JsonDocument owns the pooled memory backing its elements, so it is disposed here and the
+    // element is cloned: a cloned JsonElement is detached from the document and stays valid after it.
+    private static JsonElement Serialize<T>(T value)
+    {
+        using var document = JsonDocument.Parse(JsonSerializer.Serialize(value, RpcJsonSerializerOptions.Default));
+        return document.RootElement.Clone();
+    }
 
     [TestMethod]
     public void RunTestsRequest_SerializesSelectionAsTests()
