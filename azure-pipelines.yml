@@ -78,7 +78,9 @@ stages:
     # Run from the project directory: its global.json opts dotnet test into Microsoft.Testing.Platform,
     # and dotnet test resolves global.json from the working directory, not the project directory.
     # This project cannot run via Stryker.vstest.slnf because VSTest is unsupported for MTP on .NET 10 SDK+.
-    - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage collect "dotnet test" -f xml -o "$(Agent.BuildDirectory)\TestResults\coverage.mtp.xml"'
+    # The project is pinned with --project so the step cannot pick up another project added here later;
+    # MTP's dotnet test rejects a positional project path, so the flag form is required.
+    - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage collect "dotnet test --project Stryker.TestRunner.MicrosoftTestPlatform.UnitTest.csproj" -f xml -o "$(Agent.BuildDirectory)\TestResults\coverage.mtp.xml"'
       displayName: 'Run Microsoft Testing Platform unit tests'
       workingDirectory: 'src/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest'
     - task: SonarCloudAnalyze@4
