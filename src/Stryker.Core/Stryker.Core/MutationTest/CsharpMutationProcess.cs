@@ -2,10 +2,12 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
+using Stryker.Configuration;
 using Stryker.Core.Compiling;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
@@ -31,34 +33,52 @@ public class CsharpMutationProcess : IMutationProcess
         _logger = logger;
     }
 
+    /// <inheritdoc/>
     public void Mutate(MutationTestInput input, IStrykerOptions options)
     {
         _options = options;
         var projectInfo = (ProjectComponent) input.SourceProjectInfo.ProjectContents;
-        var orchestrator = new CsharpMutantOrchestrator(new MutantPlacer(input.SourceProjectInfo.CodeInjector), options: _options);
         var compilingProcess = new CsharpCompilingProcess(input, options: _options);
-
         var semanticModels = projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().ToDictionary(x => x, x => compilingProcess.GetSemanticModel(x.SyntaxTree));
-        // Mutate source files
-        foreach (var file in semanticModels.Keys)
+
+        var semanticModelLookup = semanticModels.ToDictionary(sm => sm.Key.SyntaxTree, sm => sm.Value);
+
+        _options.MutantIdProvider ??= new BasicIdProvider();
+
+        var parallelOptions = new ParallelOptions
         {
-            _logger.LogDebug("Mutating {FilePath}", file.SyntaxTree.FilePath);
+            // Use configured concurrency when provided; otherwise, derive a safe default
+            MaxDegreeOfParallelism = options.Concurrency > 0
+                ? options.Concurrency
+                : Math.Max(1, Environment.ProcessorCount - 1)
+        };
+
+        Parallel.ForEach(semanticModels.Keys, parallelOptions, file =>
+        {
+            _logger.LogDebug("Mutating {FilePath}", file.FullPath);
             // Mutate the syntax tree
-            var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree, semanticModels[file]);
+            var placer = new MutantPlacer(input.SourceProjectInfo.CodeInjector);
+            var orchestrator = new CsharpMutantOrchestrator(placer, options: _options);
+            var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree, semanticModelLookup[file.SyntaxTree]);
             // Add the mutated syntax tree for compilation
             file.MutatedSyntaxTree = mutatedSyntaxTree;
+
             if (_options.DiagMode)
             {
                 _logger.LogTrace("Mutated {FullPath}:{NewLine}{MutatedSyntaxTree}",
                     file.FullPath, Environment.NewLine, mutatedSyntaxTree.GetText());
             }
-            // Filter the mutants
+
             file.Mutants = orchestrator.GetLatestMutantBatch();
-            compilingProcess.ReplaceSyntaxTree(file.SyntaxTree, file.MutatedSyntaxTree);
-        }
+        });
 
         _logger.LogDebug("{MutantsCount} mutants created", projectInfo.Mutants.Count());
+    }
 
+    /// <inheritdoc/>
+    public void Compile(MutationTestInput input)
+    {
+        var compilingProcess = new CsharpCompilingProcess(input, options: _options);
         CompileMutations(input, compilingProcess);
     }
 
