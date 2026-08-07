@@ -143,7 +143,10 @@ public sealed class TestingPlatformClient : ITestingPlatformClient
             using CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromMinutes(3));
             var runListener = new TestNodeUpdatesResponseListener(requestId, action);
             _targetHandler.RegisterResponseListener(runListener);
-            await JsonRpcClient.InvokeWithParameterObjectAsync("testing/runTests", new RunTestsRequest(RunId: requestId, TestCases: testNodes), cancellationToken: cancellationTokenSource.Token);
+            var requestNodes = testNodes
+                ?.Select(node => new RunRequestTestNode(node.Uid, node.DisplayName))
+                .ToArray();
+            await JsonRpcClient.InvokeWithParameterObjectAsync("testing/runTests", new RunTestsRequest(RunId: requestId, Tests: requestNodes), cancellationToken: cancellationTokenSource.Token);
             return runListener;
         });
 
