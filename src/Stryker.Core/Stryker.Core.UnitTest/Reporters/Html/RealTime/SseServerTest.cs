@@ -35,6 +35,8 @@ public class SseServerTest : TestBase
         }
     }
 
+    // Callers wait up to 2000ms: establishing the loopback SSE connection is genuinely slower than
+    // 500ms on the slower hosted CI agents (notably macOS), where 500ms caused intermittent failures.
     private bool WaitForConnection(int timeout)
     {
         var watch = new Stopwatch();
@@ -82,7 +84,7 @@ public class SseServerTest : TestBase
         };
 
         Task.Run(() => sseClient.StartAsync());
-        WaitForConnection(500).ShouldBeTrue();
+        WaitForConnection(2000).ShouldBeTrue();
 
         _sut.SendEvent(new SseEvent<string> { Event = SseEventType.Finished, Data = "" });
         eventReceived.WaitOne();
@@ -111,7 +113,7 @@ public class SseServerTest : TestBase
         };
 
         Task.Run(() => sseClient.StartAsync());
-        WaitForConnection(500).ShouldBeTrue();
+        WaitForConnection(2000).ShouldBeTrue();
 
         _sut.SendEvent(new SseEvent<object>
         {
@@ -134,7 +136,7 @@ public class SseServerTest : TestBase
         var sseClient = new EventSource(new Uri($"http://localhost:{_sut.Port}/"));
         
         Task.Run(() => sseClient.StartAsync());
-        WaitForConnection(500).ShouldBeTrue();
+        WaitForConnection(2000).ShouldBeTrue();
         Task.Run( ()=> {sseClient.Close(); sseClient.Dispose();}).Wait();
 
         _sut.SendEvent(new SseEvent<object>
@@ -159,7 +161,7 @@ public class SseServerTest : TestBase
         using var sseClient = new EventSource(new Uri($"http://localhost:{_sut.Port}/"));
 
         Task.Run(() => sseClient.StartAsync());
-        WaitForConnection(500).ShouldBeTrue();
+        WaitForConnection(2000).ShouldBeTrue();
 
         _sut.HasConnectedClients.ShouldBeTrue();
         _sut.CloseSseEndpoint();

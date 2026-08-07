@@ -1,14 +1,64 @@
+using Microsoft.Extensions.Logging;
+using Moq;
 using Shouldly;
 using Stryker.Abstractions.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Abstractions.Options;
 using Stryker.Configuration.Options.Inputs;
+using RunnerKind = Stryker.Abstractions.Options.TestRunner;
 
 namespace Stryker.Core.UnitTest.Options.Inputs;
 
 [TestClass]
 public class OptimizationModeInputTests : TestBase
 {
+    private readonly Mock<ILogger<CoverageAnalysisInput>> _loggerMock = new();
+
+    private const string PromotionWarning =
+        "The Microsoft Test Platform runner captures per-test coverage in isolation; 'perTest' "
+        + "(process reuse) is not yet available and has been upgraded to 'perTestInIsolation'. "
+        + "Process reuse for MTP is planned as a follow-up.";
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("perTest")]
+    public void ShouldPromotePerTestToIsolationForMtp(string value)
+    {
+        var result = new CoverageAnalysisInput { SuppliedInput = value }
+            .Validate(RunnerKind.MicrosoftTestPlatform, _loggerMock.Object);
+
+        result.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
+        result.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void ShouldWarnWhenMtpPromotesExplicitPerTest()
+    {
+        new CoverageAnalysisInput { SuppliedInput = "perTest" }
+            .Validate(RunnerKind.MicrosoftTestPlatform, _loggerMock.Object);
+
+        _loggerMock.Verify(LogLevel.Warning, PromotionWarning, Times.Once);
+    }
+
+    [TestMethod]
+    public void ShouldNotWarnWhenMtpUsesDefault()
+    {
+        new CoverageAnalysisInput { SuppliedInput = null }
+            .Validate(RunnerKind.MicrosoftTestPlatform, _loggerMock.Object);
+
+        _loggerMock.Verify(LogLevel.Warning, PromotionWarning, Times.Never);
+    }
+
+    [TestMethod]
+    public void ShouldNotPromoteForVsTest()
+    {
+        var result = new CoverageAnalysisInput { SuppliedInput = "perTest" }
+            .Validate(RunnerKind.VsTest, _loggerMock.Object);
+
+        result.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeFalse();
+        _loggerMock.Verify(LogLevel.Warning, PromotionWarning, Times.Never);
+    }
+
     [TestMethod]
     public void ShouldHaveHelpText()
     {
