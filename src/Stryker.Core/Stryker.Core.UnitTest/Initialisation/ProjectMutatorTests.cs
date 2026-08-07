@@ -80,22 +80,21 @@ namespace ExtraProject.XUnit
             SyntaxTree = CSharpSyntaxTree.ParseText("class TestClass { }")
         });
 
+        var testProjectsInfo = new TestProjectsInfo(_fileSystemMock)
+        {
+            TestProjects = new List<TestProject>
+            {
+                new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
+                    projectFilePath: "c:\\testproject.csproj",
+                    targetFramework: "netcoreapp3.1",
+                    sourceFiles: [_testFilePath]).Object)
+            }
+        };
         _mutationTestInput = new MutationTestInput()
         {
-            SourceProjectInfo = new Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo()
+            SourceProjectInfo = new Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo(analyzerResult, testProjectsInfo)
             {
-                AnalyzerResult = analyzerResult,
-                ProjectContents = folder
-            },
-            TestProjectsInfo = new TestProjectsInfo(_fileSystemMock)
-            {
-                TestProjects = new List<TestProject>
-                {
-                    new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
-                        projectFilePath: "c:\\testproject.csproj",
-                        targetFramework: "netcoreapp3.1",
-                        sourceFiles: new [] { _testFilePath }).Object)
-                }
+                ProjectContents = folder,
             }
         };
     }
@@ -125,7 +124,7 @@ namespace MyProject.NUnit
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
 
         // assert
-        var testFile = input.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
+        var testFile = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
         testFile.Tests.ShouldHaveSingleItem();
         testFile.Tests[0].Id.ShouldBe(fqn);
     }
@@ -155,7 +154,7 @@ namespace MyProject.NUnit
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
 
         // assert
-        var testFile = input.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
+        var testFile = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
         testFile.Tests.ShouldHaveSingleItem();
         testFile.Tests[0].Id.ShouldBe(fqnWithParams);
     }
@@ -185,7 +184,7 @@ namespace MyProject.MSTest
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
 
         // assert
-        var testFile = input.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
+        var testFile = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
         testFile.Tests.ShouldHaveSingleItem();
         testFile.Tests[0].Id.ShouldBe(guid);
     }
@@ -215,7 +214,7 @@ namespace MyProject.MSTest
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
 
         // assert
-        var testFile = input.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
+        var testFile = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
         testFile.Tests.ShouldHaveSingleItem();
         testFile.Tests[0].Id.ShouldBe(guid);
     }
@@ -254,7 +253,7 @@ namespace MyProject.XUnit
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
 
         // assert
-        var testFiles = input.TestProjectsInfo.TestFiles.ToList();
+        var testFiles = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ToList();
         testFiles.ShouldContain(tf => tf.FilePath == fileA);
         testFiles.ShouldContain(tf => tf.FilePath == fileB);
         testFiles.Single(tf => tf.FilePath == fileA).Tests.ShouldHaveSingleItem();
@@ -286,7 +285,7 @@ namespace MyProject.Tests
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
 
         // assert
-        var testFile = input.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
+        var testFile = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
         testFile.Tests.ShouldBeEmpty();
     }
 
@@ -317,7 +316,7 @@ namespace MyProject.Tests
             executedTests: new TestIdentifierList(failedTest, successfulTest),
             failedTests: new TestIdentifierList(failedTest),
             timedOutTest: TestIdentifierList.NoTest(),
-            message: "testrun succesful",
+            message: "testrun successful",
             Enumerable.Empty<string>(),
             timeSpan: TimeSpan.FromSeconds(2));
 
@@ -329,7 +328,7 @@ namespace MyProject.Tests
 
         // assert
         result.ShouldNotBeNull();
-        var testFile = _mutationTestInput.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
+        var testFile = _mutationTestInput.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
         testFile.Tests.Count.ShouldBe(2);
     }
 
@@ -381,14 +380,10 @@ namespace MyProject.Tests
 
         return new MutationTestInput
         {
-            SourceProjectInfo = new SourceProjectInfo
+            SourceProjectInfo = new SourceProjectInfo(sourceAnalyzerResult.Object, new TestProjectsInfo(fileSystem)
+            { TestProjects = [new TestProject(fileSystem, testAnalyzerResult.Object)]})
             {
-                AnalyzerResult = sourceAnalyzerResult.Object,
                 ProjectContents = sourceFolder
-            },
-            TestProjectsInfo = new TestProjectsInfo(fileSystem)
-            {
-                TestProjects = [new TestProject(fileSystem, testAnalyzerResult.Object)]
             },
             InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500))
         };
