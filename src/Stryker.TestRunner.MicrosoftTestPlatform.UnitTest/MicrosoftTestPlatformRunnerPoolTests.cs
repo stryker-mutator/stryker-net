@@ -5,7 +5,9 @@ using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
+using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
@@ -279,12 +281,101 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         coverage.ShouldBeEmpty();
     }
 
-    // Note: Testing CaptureCoverage with multiple tests that cover different mutants is complex 
-    // because SingleMicrosoftTestPlatformRunner methods are not virtual/overridable for mocking.
-    // The coverage model is cumulative: all tests receive the aggregated coverage from all runners.
-    // Example: If Test1 covers mutant 1 and Test2 covers mutant 2, both tests will be reported
-    // as covering mutants 1 and 2 (cumulative). This behavior is tested in integration tests
-    // where real test runners execute against actual test assemblies.
+    [TestMethod]
+    public void CaptureCoverage_ShouldCapturePerTest_WhenCoverageBasedTestEnabled()
+    {
+        // Arrange - "perTest" (CoverageBasedTest, no isolation) must capture a DISTINCT coverage set per
+        // test rather than the cumulative "all tests share everything" set the aggregate path produces.
+        var options = new Mock<IStrykerOptions>();
+        options.Setup(x => x.Concurrency).Returns(1);
+        options.Setup(x => x.OptimizationMode).Returns(OptimizationModes.CoverageBasedTest);
+
+        var testsByAssembly = new Dictionary<string, List<TestNode>>();
+        var testDescriptions = new Dictionary<string, MtpTestDescription>();
+        var testSet = new TestSet();
+
+        var testNode1 = new TestNode("test-1", "Test1", "test", "discovered");
+        var testNode2 = new TestNode("test-2", "Test2", "test", "discovered");
+        testsByAssembly["assembly.dll"] = new List<TestNode> { testNode1, testNode2 };
+
+        var desc1 = new MtpTestDescription(testNode1);
+        var desc2 = new MtpTestDescription(testNode2);
+        testDescriptions["test-1"] = desc1;
+        testDescriptions["test-2"] = desc2;
+        testSet.RegisterTest(desc1.Description);
+        testSet.RegisterTest(desc2.Description);
+
+        var capturedTests = new System.Collections.Concurrent.ConcurrentBag<string>();
+
+        var runnerFactory = new Mock<ISingleRunnerFactory>();
+        runnerFactory.Setup(x => x.CreateRunner(
+                It.IsAny<int>(),
+                It.IsAny<Dictionary<string, List<TestNode>>>(),
+                It.IsAny<Dictionary<string, MtpTestDescription>>(),
+                It.IsAny<TestSet>(),
+                It.IsAny<object>(),
+                It.IsAny<ILogger>(),
+                It.IsAny<IStrykerOptions>()))
+            .Returns<int, Dictionary<string, List<TestNode>>, Dictionary<string, MtpTestDescription>, TestSet, object, ILogger, IStrykerOptions>(
+                (id, tba, td, ts, dl, logger, opts) =>
+                {
+                    // Populate the pool's shared dictionaries so it discovers the same tests set up above.
+                    if (tba.Count == 0)
+                    {
+                        foreach (var kvp in testsByAssembly) tba[kvp.Key] = kvp.Value;
+                        foreach (var kvp in testDescriptions) td[kvp.Key] = kvp.Value;
+                    }
+                    return new TestableRunner(id, tba, td, ts, dl,
+                        () => { },
+                        coverageHandler: (assembly, test, testId) =>
+                        {
+                            capturedTests.Add(testId);
+                            var covered = testId == desc1.Id ? new[] { 1, 2 } : new[] { 3 };
+                            return Task.FromResult<ICoverageRunResult>(
+                                CoverageRunResult.Create(testId, CoverageConfidence.Normal, covered, Array.Empty<int>(), Array.Empty<int>()));
+                        });
+                });
+
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(new[] { "assembly.dll" });
+
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance, runnerFactory.Object);
+
+        // Act
+        var coverage = pool.CaptureCoverage(project.Object).ToList();
+
+        // Assert
+        capturedTests.Count.ShouldBe(2, "both tests should have been captured individually");
+        coverage.Count.ShouldBe(2, "one coverage result per test, not one cumulative result");
+
+        var cov1 = coverage.First(c => c.TestId == desc1.Id);
+        cov1.MutationsCovered.ShouldContain(1);
+        cov1.MutationsCovered.ShouldContain(2);
+        cov1.MutationsCovered.ShouldNotContain(3);
+
+        var cov2 = coverage.First(c => c.TestId == desc2.Id);
+        cov2.MutationsCovered.ShouldContain(3);
+        cov2.MutationsCovered.ShouldNotContain(1);
+    }
+
+    [TestMethod]
+    public void CaptureCoverage_ShouldStayAggregate_WhenOnlySkipUncoveredEnabled()
+    {
+        // Arrange - "all" mode (SkipUncoveredMutants only, no CoverageBasedTest) doesn't need per-test
+        // granularity, so it must keep using the cheaper aggregate (one-pass) capture.
+        var options = new Mock<IStrykerOptions>();
+        options.Setup(x => x.Concurrency).Returns(1);
+        options.Setup(x => x.OptimizationMode).Returns(OptimizationModes.SkipUncoveredMutants);
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(Array.Empty<string>());
+
+        // Act
+        var coverage = pool.CaptureCoverage(project.Object).ToList();
+
+        // Assert - aggregate path with no discovered tests returns empty, same as before this change
+        coverage.ShouldBeEmpty();
+    }
 
     [TestMethod]
     public void Constructor_ShouldUseProvidedLogger()

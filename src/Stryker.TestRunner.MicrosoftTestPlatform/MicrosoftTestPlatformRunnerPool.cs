@@ -19,7 +19,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 {
     private readonly AutoResetEvent _runnerAvailableHandler = new(false);
     private readonly ConcurrentBag<SingleMicrosoftTestPlatformRunner> _availableRunners = new();
-    private static readonly List<SingleMicrosoftTestPlatformRunner> _allRunners = new();
+    private readonly ConcurrentBag<SingleMicrosoftTestPlatformRunner> _allRunners = new();
     private bool _disposed;
     private readonly ILogger _logger;
     private readonly int _countOfRunners;
@@ -100,7 +100,25 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project)
     {
-        _logger.LogInformation("Starting coverage capture for MTP runner");
+        // "perTestInIsolation" (CaptureCoveragePerTest) restarts the test process around every single
+        // test so each result can be trusted with CoverageConfidence.Exact; "perTest" (CoverageBasedTest
+        // only) reuses a warm process across tests, which is faster but can only ever earn
+        // CoverageConfidence.Normal; "all" (SkipUncoveredMutants only) only needs to know which mutants
+        // are covered by *some* test, so the cheaper aggregate capture is enough. Mirrors
+        // VsTestRunnerPool's routing.
+        if (_options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
+        {
+            return CaptureCoveragePerIsolatedTests(project);
+        }
+
+        return _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest)
+            ? CaptureCoverageTestByTest(project)
+            : CaptureCoverageInOneGo(project);
+    }
+
+    private IEnumerable<ICoverageRunResult> CaptureCoverageInOneGo(IProjectAndTests project)
+    {
+        _logger.LogInformation("Starting aggregate coverage capture for MTP runner");
 
         // Enable coverage mode on all runners
         foreach (var runner in _allRunners)
@@ -138,7 +156,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
                 }
             }
 
-            _logger.LogInformation("Coverage capture complete: {CoveredCount} mutations covered, {StaticCount} static mutations",
+            _logger.LogInformation("Aggregate coverage capture complete: {CoveredCount} mutations covered, {StaticCount} static mutations",
                 allCoveredMutants.Count, allStaticMutants.Count);
 
             // For cumulative coverage, we return a single coverage result that applies to all tests
@@ -155,6 +173,124 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         finally
         {
             // Disable coverage mode on all runners for subsequent mutation testing
+            foreach (var runner in _availableRunners)
+            {
+                runner.SetCoverageMode(false);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Captures coverage one test at a time (each test's coverage is flushed and reset separately via
+    /// the epoch relay in <see cref="SingleMicrosoftTestPlatformRunner.RunSingleTestForCoverageInReusedProcessAsync"/>),
+    /// so each mutant's covering tests can be narrowed down instead of assuming every test covers it.
+    /// Tests are distributed across the whole pool for parallelism; a runner keeps its per-assembly
+    /// server warm across the tests it is handed rather than restarting it for every test.
+    /// </summary>
+    private IEnumerable<ICoverageRunResult> CaptureCoverageTestByTest(IProjectAndTests project)
+    {
+        _logger.LogInformation("Starting per-test coverage capture for MTP runner");
+
+        foreach (var runner in _allRunners)
+        {
+            runner.SetPerTestCoverageMode(true);
+        }
+
+        try
+        {
+            var allTests = new List<(string Assembly, TestNode Test, string TestId)>();
+            lock (_discoveryLock)
+            {
+                foreach (var (assembly, tests) in _testsByAssembly)
+                {
+                    foreach (var test in tests)
+                    {
+                        if (_testDescriptions.TryGetValue(test.Uid, out var description))
+                        {
+                            allTests.Add((assembly, test, description.Id));
+                        }
+                    }
+                }
+            }
+
+            _logger.LogInformation("Capturing per-test coverage for {TestCount} tests across {AssemblyCount} assemblies",
+                allTests.Count, _testsByAssembly.Count);
+
+            var results = new ConcurrentBag<ICoverageRunResult>();
+
+            Parallel.ForEach(allTests, new ParallelOptions { MaxDegreeOfParallelism = _countOfRunners }, testInfo =>
+            {
+                var result = RunThisAsync(runner =>
+                        runner.RunSingleTestForCoverageInReusedProcessAsync(testInfo.Assembly, testInfo.Test, testInfo.TestId))
+                    .GetAwaiter().GetResult();
+                results.Add(result);
+            });
+
+            _logger.LogInformation("Per-test coverage capture complete: {TestCount} tests captured", results.Count);
+
+            return results;
+        }
+        finally
+        {
+            foreach (var runner in _availableRunners)
+            {
+                runner.SetPerTestCoverageMode(false);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Captures coverage one test at a time, restarting the test host process around each test (see
+    /// <see cref="SingleMicrosoftTestPlatformRunner.RunSingleTestForCoverageInIsolatedProcessAsync"/>) so
+    /// no state (static or otherwise) can leak between tests. This lets each result be trusted with
+    /// <see cref="CoverageConfidence.Exact"/>, at the cost of a much slower init phase than the
+    /// reused-process "perTest" capture in <see cref="CaptureCoverageTestByTest"/>.
+    /// </summary>
+    private IEnumerable<ICoverageRunResult> CaptureCoveragePerIsolatedTests(IProjectAndTests project)
+    {
+        _logger.LogInformation("Starting per-test-in-isolation coverage capture for MTP runner");
+
+        foreach (var runner in _allRunners)
+        {
+            runner.SetCoverageMode(true);
+        }
+
+        try
+        {
+            var allTests = new List<(string Assembly, TestNode Test, string TestId)>();
+            lock (_discoveryLock)
+            {
+                foreach (var (assembly, tests) in _testsByAssembly)
+                {
+                    foreach (var test in tests)
+                    {
+                        if (_testDescriptions.TryGetValue(test.Uid, out var description))
+                        {
+                            allTests.Add((assembly, test, description.Id));
+                        }
+                    }
+                }
+            }
+
+            _logger.LogInformation("Capturing per-test-in-isolation coverage for {TestCount} tests across {AssemblyCount} assemblies",
+                allTests.Count, _testsByAssembly.Count);
+
+            var results = new ConcurrentBag<ICoverageRunResult>();
+
+            Parallel.ForEach(allTests, new ParallelOptions { MaxDegreeOfParallelism = _countOfRunners }, testInfo =>
+            {
+                var result = RunThisAsync(runner =>
+                        runner.RunSingleTestForCoverageInIsolatedProcessAsync(testInfo.Assembly, testInfo.Test, testInfo.TestId))
+                    .GetAwaiter().GetResult();
+                results.Add(result);
+            });
+
+            _logger.LogInformation("Per-test-in-isolation coverage capture complete: {TestCount} tests captured", results.Count);
+
+            return results;
+        }
+        finally
+        {
             foreach (var runner in _availableRunners)
             {
                 runner.SetCoverageMode(false);
