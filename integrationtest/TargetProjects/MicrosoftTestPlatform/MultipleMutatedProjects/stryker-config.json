@@ -1,0 +1,15 @@
+{
+  "stryker-config": {
+    "test-runner": "MTP",
+    "reporters": [
+      "Dots",
+      "ClearText",
+      "Html",
+      "Json"
+    ],
+    "ignore-mutations": [
+      "string"
+    ],
+    "mutation-level": "Complete"
+  }
+}

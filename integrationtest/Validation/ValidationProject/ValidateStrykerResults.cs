@@ -210,6 +210,34 @@ public class ValidateStrykerResults
     }
 
     [Fact]
+    [Trait("Category", "MTPMultipleMutatedProjects")]
+    [Trait("Runtime", "netcore")]
+    public async Task CSharp_NetCore_MTPMultipleMutatedProjects()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/MicrosoftTestPlatform/MultipleMutatedProjects/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        // The test project references Calculator, which references Formatter, so a single test host
+        // loads two mutated assemblies and therefore two copies of the injected MutantControl, both
+        // resolving the same STRYKER_COVERAGE_FILE. Unless every copy writes its own file, the last
+        // flush overwrites the others and the assembly higher up the stack loses all of its coverage.
+        // Measured on the shared-file version: 8 of these 18 mutants fall back to NoCoverage.
+        // Checked before the global counts so that a regression reports the assembly at fault rather
+        // than a bare count mismatch.
+        CheckEveryMutatedProjectIsCovered(report, "Arithmetic.cs", "LabelFormatter.cs");
+        CheckReportMutants(report, total: 18, ignored: 0, survived: 3, killed: 15, timeout: 0, nocoverage: 0);
+        CheckReportTestCounts(report, total: 6);
+    }
+
+    [Fact]
     [Trait("Category", value: "WebApiWithOpenApi")]
     [Trait("Runtime", "netcore")]
     public async Task CSharp_NetCore_WebApiWithOpenApi()
@@ -290,6 +318,25 @@ public class ValidateStrykerResults
                         $"Mutation {mutation.MutatorName} on line {mutation.Location.Start.Line} in file {file.Key} does not have one of the known parent syntax kinds as it's parent.{Environment.NewLine}" +
                         $"Instead it has: {Environment.NewLine} {string.Join($",{Environment.NewLine}", node.AncestorsAndSelf().Select(n => n.Kind()))}");
             }
+        }
+    }
+
+    /// <summary>
+    /// Asserts that every mutated project contributed its own coverage to the report.
+    /// A global count can stay correct while one assembly loses its coverage and another gains some,
+    /// so each source file is checked on its own and the failure message names the assembly at fault.
+    /// </summary>
+    private void CheckEveryMutatedProjectIsCovered(IJsonReport report, params string[] sourceFiles)
+    {
+        foreach (var sourceFile in sourceFiles)
+        {
+            var file = report.Files.SingleOrDefault(f => f.Key.EndsWith(sourceFile, StringComparison.Ordinal));
+            file.Key.ShouldNotBeNull($"{sourceFile} is missing from the report entirely");
+
+            file.Value.Mutants.Count(m => m.Status == MutantStatus.Killed.ToString())
+                .ShouldBeGreaterThan(0, $"no mutant of {sourceFile} was killed: the coverage of its assembly was lost");
+            file.Value.Mutants.Count(m => m.Status == MutantStatus.NoCoverage.ToString())
+                .ShouldBe(0, $"{sourceFile} has uncovered mutants: the coverage of its assembly was overwritten");
         }
     }
 
