@@ -47,7 +47,7 @@ namespace Stryker
             if (!string.IsNullOrEmpty(coverageFileName))
             {
                 // Construct full path using temp directory
-                _cachedCoverageFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), coverageFileName);
+                _cachedCoverageFilePath = BuildCoverageFilePath(coverageFileName);
                 _coverageFilePathCached = true;
                 CaptureCoverage = true;
                 
@@ -212,6 +212,62 @@ namespace Stryker
         }
 
         /// <summary>
+        /// Resolves the coverage file this copy of the class writes to, from the file name the runner
+        /// handed out through STRYKER_COVERAGE_FILE.
+        /// A test host loads one copy of this class per mutated assembly and every copy reads the same
+        /// environment variable, so the name is suffixed with the assembly this copy belongs to: without
+        /// it, the copies overwrite each other's coverage and only the last flush survives. The runner
+        /// reads every file whose name starts with the name it handed out (minus the extension).
+        /// </summary>
+        private static string BuildCoverageFilePath(string coverageFileName)
+        {
+            string directory = System.IO.Path.GetTempPath();
+            string assemblyName = GetOwningAssemblyName();
+            if (assemblyName.Length == 0)
+            {
+                return System.IO.Path.Combine(directory, coverageFileName);
+            }
+
+            string nameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(coverageFileName);
+            string extension = System.IO.Path.GetExtension(coverageFileName);
+            return System.IO.Path.Combine(directory, nameWithoutExtension + "-" + assemblyName + extension);
+        }
+
+        /// <summary>
+        /// Name of the assembly this copy of the class was compiled into, reduced to characters that are
+        /// safe in a file name and truncated so the resulting path stays well clear of length limits.
+        /// Returns an empty string when the name cannot be determined.
+        /// </summary>
+        private static string GetOwningAssemblyName()
+        {
+            string name;
+            try
+            {
+                name = typeof(MutantControl).Assembly.GetName().Name ?? string.Empty;
+            }
+            catch (System.Exception)
+            {
+                // Never fail the tests over coverage bookkeeping
+                return string.Empty;
+            }
+
+            if (string.IsNullOrEmpty(name))
+            {
+                return string.Empty;
+            }
+
+            int length = name.Length < 64 ? name.Length : 64;
+            char[] safeName = new char[length];
+            for (int i = 0; i < length; i++)
+            {
+                char current = name[i];
+                safeName[i] = char.IsLetterOrDigit(current) ? current : '-';
+            }
+
+            return new string(safeName);
+        }
+
+        /// <summary>
         /// Writes accumulated coverage data to a file for MTP runner IPC.
         /// Called automatically on process exit to capture all coverage from tests run in this process.
         /// Format: "coveredMutants;staticMutants" (comma-separated IDs)
@@ -225,7 +281,7 @@ namespace Stryker
                 if (!string.IsNullOrEmpty(coverageFileName))
                 {
                     // Construct full path using temp directory
-                    _cachedCoverageFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), coverageFileName);
+                    _cachedCoverageFilePath = BuildCoverageFilePath(coverageFileName);
                 }
                 _coverageFilePathCached = true;
             }

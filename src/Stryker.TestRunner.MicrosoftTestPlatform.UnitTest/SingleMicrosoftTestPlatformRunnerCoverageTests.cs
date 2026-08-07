@@ -465,6 +465,79 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
     }
 
     [TestMethod]
+    public void ReadCoverageData_ShouldUnionCoverageAcrossMutatedAssembliesOfOneTestHost()
+    {
+        // Regression test for the case where a test host references several mutated assemblies: the
+        // host loads one copy of the injected MutantControl per mutated assembly, and every copy
+        // resolves the single STRYKER_COVERAGE_FILE the runner handed out. Each copy therefore writes
+        // its own file, whose name starts with the name the runner handed out (minus the extension).
+        using var runner = CreateRunner(511);
+        var handedOutPath = runner.GetCoverageFilePath("Tests.dll");
+        var withoutExtension = Path.Combine(
+            Path.GetDirectoryName(handedOutPath)!,
+            Path.GetFileNameWithoutExtension(handedOutPath));
+        var firstMutatedAssemblyPath = $"{withoutExtension}-FirstMutatedAssembly.txt";
+        var secondMutatedAssemblyPath = $"{withoutExtension}-SecondMutatedAssembly.txt";
+
+        try
+        {
+            File.WriteAllText(firstMutatedAssemblyPath, "1,2;10");
+            File.WriteAllText(secondMutatedAssemblyPath, "2,3;20");
+
+            var result = runner.ReadCoverageData();
+
+            result.CoveredMutants.Count.ShouldBe(3,
+                "coverage of every mutated assembly in the host must be unioned");
+            result.CoveredMutants.ShouldContain(1);
+            result.CoveredMutants.ShouldContain(2);
+            result.CoveredMutants.ShouldContain(3);
+
+            result.StaticMutants.Count.ShouldBe(2);
+            result.StaticMutants.ShouldContain(10);
+            result.StaticMutants.ShouldContain(20);
+        }
+        finally
+        {
+            foreach (var path in new[] { firstMutatedAssemblyPath, secondMutatedAssemblyPath })
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+        }
+    }
+
+    [TestMethod]
+    public void DeleteCoverageFiles_ShouldDeleteFilesWrittenByEveryMutatedAssembly()
+    {
+        // Stale files from a previous run must not be read as this run's coverage
+        using var runner = CreateRunner(512);
+        var handedOutPath = runner.GetCoverageFilePath("Tests.dll");
+        var withoutExtension = Path.Combine(
+            Path.GetDirectoryName(handedOutPath)!,
+            Path.GetFileNameWithoutExtension(handedOutPath));
+        var mutatedAssemblyPath = $"{withoutExtension}-SomeMutatedAssembly.txt";
+
+        try
+        {
+            File.WriteAllText(mutatedAssemblyPath, "1,2;10");
+
+            runner.SetCoverageMode(true);
+
+            File.Exists(mutatedAssemblyPath).ShouldBeFalse(
+                "per-mutated-assembly coverage files must be deleted when entering coverage mode");
+        }
+        finally
+        {
+            if (File.Exists(mutatedAssemblyPath))
+            {
+                File.Delete(mutatedAssemblyPath);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task ResetServerAsync_ShouldDisposeAndClearAllServers()
     {
         using var runner = CreateRunner(0);

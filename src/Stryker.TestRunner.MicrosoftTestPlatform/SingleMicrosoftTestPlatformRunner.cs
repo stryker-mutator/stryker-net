@@ -217,8 +217,9 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     }
 
     /// <summary>
-    /// Reads coverage data from the per-assembly coverage files written by the test processes,
-    /// unioned across all assemblies this runner started a server for.
+    /// Reads coverage data from the coverage files written by the test processes, unioned across all
+    /// test assemblies this runner started a server for and, within each of them, across every mutated
+    /// assembly the host loaded (see <see cref="EnumerateCoverageFiles"/>).
     /// Returns the covered mutants and static mutants as separate lists.
     /// </summary>
     public (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants) ReadCoverageData()
@@ -226,37 +227,68 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         var coveredMutants = new HashSet<int>();
         var staticMutants = new HashSet<int>();
 
-        foreach (var (assembly, coverageFilePath) in _coverageFilePaths)
+        foreach (var (assembly, handedOutPath) in _coverageFilePaths)
         {
-            if (!File.Exists(coverageFilePath))
+            var coverageFilePaths = EnumerateCoverageFiles(handedOutPath);
+            if (coverageFilePaths.Count == 0)
             {
-                _logger.LogDebug("{RunnerId}: Coverage file for {Assembly} not found at {Path}",
-                    RunnerId, Path.GetFileName(assembly), coverageFilePath);
+                _logger.LogDebug("{RunnerId}: No coverage file for {Assembly} found at {Path}",
+                    RunnerId, Path.GetFileName(assembly), handedOutPath);
                 continue;
             }
 
-            try
+            foreach (var coverageFilePath in coverageFilePaths)
             {
-                var content = File.ReadAllText(coverageFilePath).Trim();
-                _logger.LogDebug("{RunnerId}: Read coverage data for {Assembly}: {Content}",
-                    RunnerId, Path.GetFileName(assembly), content);
-
-                if (string.IsNullOrEmpty(content))
+                try
                 {
-                    continue;
-                }
+                    var content = File.ReadAllText(coverageFilePath).Trim();
+                    _logger.LogDebug("{RunnerId}: Read coverage data for {Assembly} from {File}: {Content}",
+                        RunnerId, Path.GetFileName(assembly), Path.GetFileName(coverageFilePath), content);
 
-                var parts = content.Split(';');
-                coveredMutants.UnionWith(ParseMutantIds(parts.Length > 0 ? parts[0] : string.Empty));
-                staticMutants.UnionWith(ParseMutantIds(parts.Length > 1 ? parts[1] : string.Empty));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "{RunnerId}: Failed to read coverage file at {Path}", RunnerId, coverageFilePath);
+                    if (string.IsNullOrEmpty(content))
+                    {
+                        continue;
+                    }
+
+                    var parts = content.Split(';');
+                    coveredMutants.UnionWith(ParseMutantIds(parts.Length > 0 ? parts[0] : string.Empty));
+                    staticMutants.UnionWith(ParseMutantIds(parts.Length > 1 ? parts[1] : string.Empty));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "{RunnerId}: Failed to read coverage file at {Path}", RunnerId, coverageFilePath);
+                }
             }
         }
 
         return (coveredMutants.ToList(), staticMutants.ToList());
+    }
+
+    /// <summary>
+    /// Returns the coverage files written for a path handed out by <see cref="GetCoverageFilePath"/>.
+    /// A test host loads one copy of the injected MutantControl per mutated assembly, and each copy
+    /// suffixes the name it was given with its own assembly name so the copies do not overwrite each
+    /// other, so a single handed-out path can yield several files.
+    /// </summary>
+    private IReadOnlyList<string> EnumerateCoverageFiles(string handedOutPath)
+    {
+        var directory = Path.GetDirectoryName(handedOutPath);
+        if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
+        {
+            return Array.Empty<string>();
+        }
+
+        var searchPattern = Path.GetFileNameWithoutExtension(handedOutPath) + "*" + Path.GetExtension(handedOutPath);
+        try
+        {
+            return Directory.GetFiles(directory, searchPattern);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "{RunnerId}: Failed to list coverage files matching {Pattern} in {Directory}",
+                RunnerId, searchPattern, directory);
+            return Array.Empty<string>();
+        }
     }
 
     private static IReadOnlyList<int> ParseMutantIds(string idString)
@@ -276,7 +308,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
     private void DeleteCoverageFiles()
     {
-        foreach (var coverageFilePath in _coverageFilePaths.Values)
+        foreach (var coverageFilePath in _coverageFilePaths.Values.SelectMany(EnumerateCoverageFiles))
         {
             try
             {
