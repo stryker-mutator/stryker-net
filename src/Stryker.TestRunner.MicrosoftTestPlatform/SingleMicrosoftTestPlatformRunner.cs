@@ -45,6 +45,11 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
     private string RunnerId => $"MtpRunner-{_id}";
 
+    /// <summary>
+    /// Path of the mutant-id control file this runner shares with its test hosts. Exposed for unit testing.
+    /// </summary>
+    internal string MutantFilePath => _mutantFilePath;
+
     public SingleMicrosoftTestPlatformRunner(
         int id,
         Dictionary<string, List<TestNode>> testsByAssembly,
@@ -63,15 +68,16 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         _options = options;
 
         // Create unique file paths for this runner to communicate with the test process.
-        // The coverage base name embeds the process id plus a per-instance nonce: coverage files
-        // are only deleted once their path has been assigned, so a predictable name could let a
-        // run read a stale file left behind by a crashed earlier run (same runner id, same
-        // assembly), and concurrent Stryker processes could clobber each other's files. The nonce
-        // covers what the process id alone does not (pid reuse, several runner instances with the
-        // same id in one process).
-        _mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-{_id}.txt");
-        _coverageFilePathBase = Path.Combine(Path.GetTempPath(),
-            $"stryker-coverage-{Environment.ProcessId}-{_id}-{Guid.NewGuid().ToString("N")[..8]}");
+        // Both names embed the process id plus a per-instance nonce. Runner ids are pool-local
+        // indices (each pool assigns 0..N-1), so id-only names are shared between independently
+        // constructed runners with the same id: they would steer each other's test hosts through
+        // the mutant-id file and clobber each other's coverage files, and a run could read a stale
+        // coverage file left behind by a crashed earlier run (coverage files are only deleted once
+        // their path has been assigned). The nonce covers what the process id alone does not (pid
+        // reuse, several runner instances with the same id in one process).
+        var instanceQualifier = $"{Environment.ProcessId}-{_id}-{Guid.NewGuid().ToString("N")[..8]}";
+        _mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-{instanceQualifier}.txt");
+        _coverageFilePathBase = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{instanceQualifier}");
 
         // Initialize with no active mutation
         WriteMutantIdToFile(-1);
