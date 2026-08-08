@@ -130,20 +130,18 @@ public sealed class TestingPlatformClient : ITestingPlatformClient
         => await CheckedInvokeAsync(
             async () =>
             {
-                using CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromMinutes(3));
                 var discoveryListener = new TestNodeUpdatesResponseListener(requestId, action);
                 _targetHandler.RegisterResponseListener(discoveryListener);
-                await JsonRpcClient.InvokeWithParameterObjectAsync("testing/discoverTests", new DiscoveryRequest(RunId: requestId), cancellationToken: cancellationTokenSource.Token);
+                await JsonRpcClient.InvokeWithParameterObjectAsync("testing/discoverTests", new DiscoveryRequest(RunId: requestId), cancellationToken: default);
                 return discoveryListener;
             }, @checked);
 
     public async Task<ResponseListener> RunTestsAsync(Guid requestId, Func<TestNodeUpdate[], Task> action, TestNode[]? testNodes = null)
         => await CheckedInvokeAsync(async () =>
         {
-            using CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromMinutes(3));
             var runListener = new TestNodeUpdatesResponseListener(requestId, action);
             _targetHandler.RegisterResponseListener(runListener);
-            await JsonRpcClient.InvokeWithParameterObjectAsync("testing/runTests", new RunTestsRequest(RunId: requestId, TestCases: testNodes), cancellationToken: cancellationTokenSource.Token);
+            await JsonRpcClient.InvokeWithParameterObjectAsync("testing/runTests", new RunTestsRequest(RunId: requestId, TestCases: testNodes), cancellationToken: default);
             return runListener;
         });
 
