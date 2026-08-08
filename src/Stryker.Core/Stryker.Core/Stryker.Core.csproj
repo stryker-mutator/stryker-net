@@ -36,6 +36,7 @@
   <ItemGroup>
     <PackageReference Include="AWSSDK.S3" />
     <PackageReference Include="Azure.Storage.Files.Shares" />
+    <PackageReference Include="DiffMatchPatch" />
     <PackageReference Include="Grynwald.MarkdownGenerator" />
     <PackageReference Include="LibGit2Sharp" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" />

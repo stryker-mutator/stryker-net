@@ -5,6 +5,7 @@ using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -19,6 +20,7 @@ using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.UnitTest.Reporters.Json;
 
@@ -153,14 +155,68 @@ namespace ExtraProject.XUnit
     }
 
     [TestMethod]
-    public void JsonReport_ShouldContainFullPath()
+    public void JsonReport_ShouldContainRelativePath()
     {
+        // Per the mutation-testing-report-schema, the `files` dictionary key must be the relative
+        // path of the file, not an absolute/full path (see #2564/#2567 — the report used to use
+        // FullPath as the key, which broke portability across machines and baseline lookups).
         var folderComponent = ReportTestHelper.CreateProjectWith(root: RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "c://" : "/");
 
         var report = JsonReport.Build(new StrykerOptions(), folderComponent, It.IsAny<TestProjectsInfo>());
         var path = report.Files.Keys.First();
 
-        Path.IsPathFullyQualified(path).ShouldBeTrue($"{path} should not be a relative path");
+        Path.IsPathFullyQualified(path).ShouldBeFalse($"{path} should be a relative path");
+    }
+
+    [TestMethod]
+    public void JsonReport_ShouldUseForwardSlashesForFileKeys()
+    {
+        var project = new FolderComposite();
+        project.Add(new CsharpFileLeaf
+        {
+            RootRelativePath = @"src\SomeFile.cs",
+            RelativePath = @"src\SomeFile.cs",
+            FullPath = @"C:\project\src\SomeFile.cs",
+            SourceCode = string.Empty,
+            Mutants = new List<Mutant>()
+        });
+
+        var report = JsonReport.Build(new StrykerOptions(), project, It.IsAny<TestProjectsInfo>());
+
+        report.Files.Keys.ShouldContain("src\\SomeFile.cs");
+
+        using var document = JsonDocument.Parse(report.ToJson());
+        document.RootElement.GetProperty("files").EnumerateObject().Select(property => property.Name)
+            .ShouldContain("src/SomeFile.cs");
+    }
+
+    [TestMethod]
+    public void JsonReport_ShouldRestoreNativeSeparatorsWhenDeserialized()
+    {
+        var project = new FolderComposite();
+        project.Add(new CsharpFileLeaf
+        {
+            RootRelativePath = "src/SomeFile.cs",
+            RelativePath = "src/SomeFile.cs",
+            FullPath = "/project/src/SomeFile.cs",
+            SourceCode = string.Empty,
+            Mutants = new List<Mutant>()
+        });
+
+        var report = JsonReport.Build(new StrykerOptions(), project, It.IsAny<TestProjectsInfo>());
+        var deserialized = JsonSerializer.Deserialize<JsonReport>(report.ToJson(), JsonReportSerialization.Options);
+
+        deserialized.Files.Keys.ShouldContain(Path.Combine("src", "SomeFile.cs"));
+    }
+
+    [TestMethod]
+    public void JsonReport_ShouldNormalizeForeignSeparatorsWhenDeserialized()
+    {
+        const string json = "{\"files\":{\"src\\\\SomeFile.cs\":null}}";
+
+        var report = JsonSerializer.Deserialize<JsonReport>(json, JsonReportSerialization.Options);
+
+        report.Files.Keys.ShouldContain(Path.Combine("src", "SomeFile.cs"));
     }
 
     [TestMethod]
@@ -180,7 +236,7 @@ namespace ExtraProject.XUnit
             TestProjects = new List<TestProject>
             {
                 new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
-                    sourceFiles: new[] { _testFilePath }).Object)
+                    sourceFiles: [_testFilePath]).Object)
             }
         };
         var node = CSharpSyntaxTree.ParseText(_testFileContents).GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
@@ -203,7 +259,7 @@ namespace ExtraProject.XUnit
         report.Thresholds.ShouldContainKeyAndValue("low", 60);
 
         var testFile = report.TestFiles.ShouldHaveSingleItem();
-        testFile.Key.ShouldBe(_testFilePath);
+        testFile.Key.ShouldBe("mytestfile.cs");
         testFile.Value.Language.ShouldBe("cs");
         testFile.Value.Source.ShouldBe(_testFileContents);
 

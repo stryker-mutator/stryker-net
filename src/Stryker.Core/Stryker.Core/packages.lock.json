@@ -39,6 +39,12 @@
           "NuGet.Frameworks": "6.9.1"
         }
       },
+      "DiffMatchPatch": {
+        "type": "Direct",
+        "requested": "[5.0.0, )",
+        "resolved": "5.0.0",
+        "contentHash": "2hcler8ntCHsckBIzyrrJeCAMxdtv8eiugaKjCCQOz4xQwfA0dODaWJ5o+O36hVYO+oitBwoQj05ExQWwA2jdw=="
+      },
       "DotNet.Glob": {
         "type": "Direct",
         "requested": "[3.1.3, )",

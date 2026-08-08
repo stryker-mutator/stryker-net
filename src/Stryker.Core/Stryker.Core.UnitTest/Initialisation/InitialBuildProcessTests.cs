@@ -35,7 +35,7 @@ public class InitialBuildProcessTests : TestBase
     }
 
     [TestMethodWithIgnoreIfSupport]
-    [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
+    [IgnoreIf(nameof(Is.NotWindows))]
     public void InitialBuildProcess_WithPathAsBuildCommand_ShouldThrowStrykerInputExceptionOnFailWithQuotes()
     {
         var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
@@ -51,7 +51,7 @@ public class InitialBuildProcessTests : TestBase
     }
 
     [TestMethodWithIgnoreIfSupport]
-    [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
+    [IgnoreIf(nameof(Is.NotWindows))]
     public void InitialBuildProcess_WithPathAsBuildCommand_TriesWithMsBuildIfDotnetFails()
     {
         var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
@@ -85,7 +85,7 @@ public class InitialBuildProcessTests : TestBase
 
     // Stryker should be able to find and run MsBuild on DotnetFramework
     [TestMethodWithIgnoreIfSupport]
-    [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
+    [IgnoreIf(nameof(Is.NotWindows))]
     [DataRow( @"C:\Windows\Microsoft.Net\Framework64\v2.0.50727\MSBuild.exe")]
     [DataRow( @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe")]
     [DataRow(  @"C:\Windows\Microsoft.Net\Framework\v2.0.50727\MSBuild.exe")]

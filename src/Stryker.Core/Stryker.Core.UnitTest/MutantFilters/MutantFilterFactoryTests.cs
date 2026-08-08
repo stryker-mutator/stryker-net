@@ -113,8 +113,11 @@ public class MutantFilterFactoryTests : TestBase
     }
 
     [TestMethod]
-    public void MutantFilterFactory_Creates_DashboardMutantFilter_And_DiffMutantFilter_WithBaseline_Enabled()
+    public void MutantFilterFactory_Creates_DashboardMutantFilter_WithBaseline_Enabled_WithoutImplicitlyEnablingSince()
     {
+        // Baseline no longer implicitly enables the Since filter as its diff engine (fixes #1803:
+        // Since used to mark mutants Ignored before Baseline could evaluate them, which prevented a
+        // fresh baseline from ever being generated).
         var options = new StrykerOptions()
         {
             WithBaseline = true,
@@ -129,9 +132,9 @@ public class MutantFilterFactoryTests : TestBase
 
         var resultAsBroadcastFilter = result as BroadcastMutantFilter;
 
-        resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(7);
+        resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(6);
         resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(BaselineMutantFilter)).Count().ShouldBe(1);
-        resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(SinceMutantFilter)).Count().ShouldBe(1);
+        resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(SinceMutantFilter)).Count().ShouldBe(0);
     }
 
     [TestMethod]

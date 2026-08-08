@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.Reporters.Json.SourceFiles;
 using Stryker.Core.Reporters.Json.TestFiles;
+using Stryker.Utilities;
 
 namespace Stryker.Core.Reporters.Json;
 
@@ -14,6 +15,7 @@ public static class JsonReportSerialization
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         Converters = {
+            new JsonReportDictionaryKeyConverterFactory(),
             new SourceFileConverter(),
             new JsonMutantConverter(),
             new LocationConverter(),
