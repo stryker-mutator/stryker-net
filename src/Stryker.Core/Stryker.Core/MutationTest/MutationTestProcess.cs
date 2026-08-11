@@ -143,14 +143,21 @@ public class MutationTestProcess : IMutationTestProcess
 
     private void OnMutantTested(IMutant mutant, ISet<IMutant> reportedMutants)
     {
-        if (mutant.ResultStatus == MutantStatus.Pending || reportedMutants.Contains(mutant))
+        if (mutant.ResultStatus == MutantStatus.Pending)
         {
-            // skip duplicates or useless notifications
             return;
         }
 
+        lock (reportedMutants)
+        {
+            if (!reportedMutants.Add(mutant))
+            {
+                // skip duplicates or useless notifications
+                return;
+            }
+        }
+
         _reporter?.OnMutantTested(mutant);
-        reportedMutants.Add(mutant);
     }
 
     private static bool MutantsToTest(IEnumerable<IMutant> mutantsToTest)

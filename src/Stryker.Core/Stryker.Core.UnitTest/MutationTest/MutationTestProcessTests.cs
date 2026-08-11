@@ -410,4 +410,24 @@ public class MutationTestProcessTests : TestBase
         Mock.Get(mutationTestExecutor).VerifyNoOtherCalls();
         result.Result.MutationScore.ShouldBe(double.NaN);
     }
+
+    [TestMethod]
+    public void OnMutantTested_ShouldBeThreadSafe()
+    {
+        var reporterMock = new Mock<IReporter>();
+        var target = new MutationTestProcess(Mock.Of<IMutationTestExecutor>(), Mock.Of<ICoverageAnalyser>(), Mock.Of<IMutationProcess>(), TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        target.Initialize(Input, new StrykerOptions(), reporterMock.Object);
+        
+        var reportedMutants = new System.Collections.Generic.HashSet<IMutant>();
+        var mutant = new Mutant { Id = 1, ResultStatus = MutantStatus.Killed };
+        var method = target.GetType().GetMethod("OnMutantTested", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        
+        System.Threading.Tasks.Parallel.For(0, 1000, new System.Threading.Tasks.ParallelOptions { MaxDegreeOfParallelism = 10 }, i =>
+        {
+            method.Invoke(target, new object[] { mutant, reportedMutants });
+        });
+        
+        reportedMutants.Count.ShouldBe(1);
+        reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Once);
+    }
 }
