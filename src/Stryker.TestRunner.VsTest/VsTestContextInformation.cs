@@ -255,7 +255,7 @@ public sealed class VsTestContextInformation : IDisposable
 
         if (tests.Any(testCase => testCase.Framework == TestFrameworks.MsTest))
         {
-            _testFramework &= ~TestFrameworks.MsTest;
+            _testFramework |= TestFrameworks.MsTest;
         }
     }
 
