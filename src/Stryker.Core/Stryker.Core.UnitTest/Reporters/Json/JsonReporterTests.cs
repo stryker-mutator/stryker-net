@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Stryker.Utilities;
 using System.IO;
 using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
@@ -202,8 +203,9 @@ namespace ExtraProject.XUnit
         report.Thresholds.ShouldContainKeyAndValue("high", 80);
         report.Thresholds.ShouldContainKeyAndValue("low", 60);
 
+        var expectedRelativePath = FilePathUtils.NormalizePathSeparators(Path.GetRelativePath(report.ProjectRoot, _testFilePath));
         var testFile = report.TestFiles.ShouldHaveSingleItem();
-        testFile.Key.ShouldBe(_testFilePath);
+        testFile.Key.ShouldBe(expectedRelativePath);
         testFile.Value.Language.ShouldBe("cs");
         testFile.Value.Source.ShouldBe(_testFileContents);
 
