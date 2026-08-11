@@ -153,14 +153,14 @@ namespace ExtraProject.XUnit
     }
 
     [TestMethod]
-    public void JsonReport_ShouldContainFullPath()
+    public void JsonReport_ShouldContainRelativePath()
     {
         var folderComponent = ReportTestHelper.CreateProjectWith(root: RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "c://" : "/");
 
         var report = JsonReport.Build(new StrykerOptions(), folderComponent, It.IsAny<TestProjectsInfo>());
         var path = report.Files.Keys.First();
 
-        Path.IsPathFullyQualified(path).ShouldBeTrue($"{path} should not be a relative path");
+        Path.IsPathFullyQualified(path).ShouldBeFalse($"{path} should be a relative path");
     }
 
     [TestMethod]

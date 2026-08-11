@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Stryker.Utilities;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
@@ -59,13 +61,15 @@ public class JsonReport : IJsonReport
         return files;
     }
 
-    private static Dictionary<string, ISourceFile> GenerateFileReportComponents(IStrykerOptions options, IReadOnlyFileLeaf fileComponent)
+    private Dictionary<string, ISourceFile> GenerateFileReportComponents(IStrykerOptions options, IReadOnlyFileLeaf fileComponent)
     {
+        var relativePath = FilePathUtils.NormalizePathSeparators(Path.GetRelativePath(ProjectRoot, fileComponent.FullPath));
+
         if (fileComponent.IsComponentExcluded(options.Mutate))
         {
-            return new Dictionary<string, ISourceFile> { { fileComponent.FullPath, SourceFile.Ignored } };
+            return new Dictionary<string, ISourceFile> { { relativePath, SourceFile.Ignored } };
         }
-        return new Dictionary<string, ISourceFile> { { fileComponent.FullPath, new SourceFile(fileComponent) } };
+        return new Dictionary<string, ISourceFile> { { relativePath, new SourceFile(fileComponent) } };
      }
 
     private void AddTestFiles(ITestProjectsInfo testProjectsInfo)
@@ -75,13 +79,15 @@ public class JsonReport : IJsonReport
             TestFiles = new Dictionary<string, IJsonTestFile>();
             foreach (var testFile in testProjectsInfo.TestFiles)
             {
-                if (TestFiles.TryGetValue(testFile.FilePath, out var jsonFile))
+                var relativePath = FilePathUtils.NormalizePathSeparators(Path.GetRelativePath(ProjectRoot, testFile.FilePath));
+
+                if (TestFiles.TryGetValue(relativePath, out var jsonFile))
                 {
                     jsonFile.AddTestFile(testFile);
                 }
                 else
                 {
-                    TestFiles.Add(testFile.FilePath, new JsonTestFile(testFile));
+                    TestFiles.Add(relativePath, new JsonTestFile(testFile));
                 }
             }
         }
