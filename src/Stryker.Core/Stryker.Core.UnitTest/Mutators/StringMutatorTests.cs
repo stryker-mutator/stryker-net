@@ -57,6 +57,21 @@ public class StringMutatorTests : TestBase
     }
 
     [TestMethod]
+    public void ShouldNotMutateUtf8InAddExpression()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText("var test = \"foo\"u8 + \"bar\"u8;");
+        var literalExpressions = syntaxTree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>().ToList();
+        var mutator = new StringMutator();
+
+        foreach(var node in literalExpressions)
+        {
+            var result = mutator.ApplyMutations(node, null).ToList();
+            result.ShouldBeEmpty();
+        }
+    }
+
+
+    [TestMethod]
     public void ShouldNotMutateOnRegexExpression()
     {
         var expressionSyntax = SyntaxFactory.ParseExpression("new Regex(\"myregex\")");
