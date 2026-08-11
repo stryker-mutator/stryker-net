@@ -40,8 +40,8 @@ public class StringMutatorTests : TestBase
     [DataRow("foo", "")]
     public void ShouldMutateUtf8(string original, string expected)
     {
-        var token = SyntaxFactory.Token(default, SyntaxKind.Utf8StringLiteralToken, $"\"{original}\"u8", original, default);
-        var node = SyntaxFactory.LiteralExpression(SyntaxKind.Utf8StringLiteralExpression, token);
+        var tree = CSharpSyntaxTree.ParseText($"var s = \\\"{original}\\\"u8;");
+        var node = tree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>().First();
         var mutator = new StringMutator();
 
         var result = mutator.ApplyMutations(node, null).ToList();
