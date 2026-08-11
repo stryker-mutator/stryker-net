@@ -36,6 +36,28 @@ public class StringMutatorTests : TestBase
     }
 
     [TestMethod]
+    [DataRow("", "Stryker was here!")]
+    [DataRow("foo", "")]
+    public void ShouldMutateUtf8(string original, string expected)
+    {
+        var token = SyntaxFactory.Token(default, SyntaxKind.Utf8StringLiteralToken, $"\"{original}\"u8", original, default);
+        var node = SyntaxFactory.LiteralExpression(SyntaxKind.Utf8StringLiteralExpression, token);
+        var mutator = new StringMutator();
+
+        var result = mutator.ApplyMutations(node, null).ToList();
+
+        var mutation = result.ShouldHaveSingleItem();
+
+        mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>()
+            .Kind().ShouldBe(SyntaxKind.Utf8StringLiteralExpression);
+        mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>()
+            .Token.Value.ShouldBe(expected);
+        mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>()
+            .Token.Text.ShouldBe($"\"{expected}\"u8");
+        mutation.DisplayName.ShouldBe("String mutation");
+    }
+
+    [TestMethod]
     public void ShouldNotMutateOnRegexExpression()
     {
         var expressionSyntax = SyntaxFactory.ParseExpression("new Regex(\"myregex\")");
