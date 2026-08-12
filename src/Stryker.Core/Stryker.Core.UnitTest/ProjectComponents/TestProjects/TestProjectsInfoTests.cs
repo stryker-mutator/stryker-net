@@ -288,7 +288,7 @@ public class TestProjectsInfoTests : TestBase
 
         Mock.Get(file).Setup(f => f.Exists(injectionPath)).Returns(true);
         Mock.Get(file).Setup(f => f.Exists(backupPath)).Returns(false);
-        Mock.Get(file).Setup(f => f.Move(injectionPath, backupPath, false));
+        Mock.Get(file).Setup(f => f.Copy(injectionPath, backupPath, false));
 
         // Act
         testProjectsInfo.BackupOriginalAssembly(sourceProjectAnalyzerResult);

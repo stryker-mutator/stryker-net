@@ -92,6 +92,7 @@ public class CSharpMutationTestProcessTests : TestBase
         var target = new CsharpMutationProcess(fileSystem, TestLoggerFactory.CreateLogger<CsharpMutationProcess>());
 
         target.Mutate(input, options);
+        target.Compile(input);
 
         // Verify the created assembly is written to disk on the right location
         var expectedPath = Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0", "ProjectUnderTest.dll");
