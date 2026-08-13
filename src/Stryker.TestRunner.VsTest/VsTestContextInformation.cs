@@ -50,7 +50,7 @@ public sealed class VsTestContextInformation : IDisposable
     public IStrykerOptions Options { get; }
 
     /// <summary>
-    ///   Log folder path
+    /// Log folder path
     /// </summary>
     public string LogPath =>
         Options.OutputPath == null ? "logs" : _fileSystem.Path.Combine(Options.OutputPath, "logs");
