@@ -51,7 +51,8 @@ public interface IStrykerOptions
     string TargetFramework { get; init; }
     string TestCaseFilter { get; init; }
     IEnumerable<string> TestProjects { get; init; }
-    TestRunner TestRunner { get; init; }
+    TestRunner TestRunner { get; set; }
+    bool IsTestRunnerExplicitlyConfigured { get; }
     IThresholds Thresholds { get; init; }
     bool WithBaseline { get; init; }
     string WorkingDirectory { get; init; }
