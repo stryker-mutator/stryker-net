@@ -35,13 +35,13 @@ public class DashboardReporter : IReporter
 
     public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
     {
-        var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
-        _dashboardClient.PublishReport(mutationReport, _options.ProjectVersion).Wait();
-
         if (ShouldPublishInRealTime())
         {
             _dashboardClient.PublishFinished().Wait();
         }
+
+        var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
+        _dashboardClient.PublishReport(mutationReport, _options.ProjectVersion).Wait();
     }
 
     private void OpenDashboardReport(string reportUri)

@@ -66,6 +66,16 @@ The syntax for the comments is: `Stryker [disable|restore][once][all| mutator li
 
 For the complete list of the types of mutators you may ignore, check out the [mutations](./mutations.md) page. For each mutator, use the name in parentheses. For example: to ignore `Boolean Literals (boolean)`, comment `// Stryker disable once Boolean`.
 
+### Why ignore specific mutations?
+
+Reasons for ignoring some mutations:
+
+- The mutation always causes a timeout, ignoring it will speed up Stryker in future runs
+- The mutation is invalid in this specific case
+- The mutation can't be killed by any reasonable unit test
+
+Be carefull to not ignore too many mutations, the goal isn't to reach 100% score, but to improve your actual coverage.
+
 ### Technical considerations
 **Format and placement**:
 Stryker supports both single (//) and multi-line (/\* \*/) comments. We recommend using single-line comments on dedicated lines for clarity and scope control.
@@ -81,7 +91,7 @@ SomeMethod(x*5)
 * SomeOtherMethod(x/2);
 ```
 will only mark mutations impacting `SomeMethod(x*5)` as ignored, keeping every other mutations in the expression.
-- while multi line comments cann be used anywhere within the code, Stryker may not be able to identiy which part of the code they refer to.
+- while multi line comments can be used anywhere within the code, Stryker may not be able to identify which part of the code they refer to.
 Meaning you may get what you expect. This is due to how Stryker and the Roslyn compiler interact. That is why we recommend using single line comments.
 
 ### Examples

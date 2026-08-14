@@ -27,7 +27,8 @@ public class InputBuilderTests
         var gitIgnoreFile =
             fileSystemMock.AllFiles.Single(x => x.EndsWith(Path.Combine(".gitignore")));
         gitIgnoreFile.ShouldNotBeNull();
-        DateTime.TryParse(Directory.GetParent(gitIgnoreFile)!.Name.Split(".")[0], out _).ShouldBeTrue();
+        // the gitignore lives at the stable output root, not the per-run timestamped folder
+        Directory.GetParent(gitIgnoreFile)!.Name.ShouldBe("StrykerOutput");
         var fileContents = fileSystemMock.GetFile(gitIgnoreFile).Contents;
         Encoding.Default.GetString(fileContents).ShouldBe("*");
     }
@@ -66,5 +67,37 @@ public class InputBuilderTests
         gitIgnoreFile.ShouldNotBeNull();
         var fileContents = fileSystemMock.GetFile(gitIgnoreFile).Contents;
         Encoding.Default.GetString(fileContents).ShouldBe("*");
+    }
+
+    [TestMethod]
+    public void ShouldSetBaselineOutputToStableRoot()
+    {
+        var fileSystemMock = new MockFileSystem();
+        var basePath = Directory.GetCurrentDirectory();
+        var target = new LoggingInitializer();
+
+        var inputs = new StrykerInputs();
+        inputs.BasePathInput.SuppliedInput = basePath;
+        target.SetupLogOptions(inputs, fileSystemMock);
+
+        // the baseline follows the stable output root, not the per-run timestamped output path
+        inputs.BaselineOutputInput.SuppliedInput.ShouldBe(Path.Combine(basePath, "StrykerOutput"));
+        inputs.OutputPathInput.SuppliedInput.ShouldStartWith(Path.Combine(basePath, "StrykerOutput") + Path.DirectorySeparatorChar);
+    }
+
+    [TestMethod]
+    public void ShouldSetBaselineOutputToSuppliedOutputPath()
+    {
+        var fileSystemMock = new MockFileSystem();
+        var basePath = Directory.GetCurrentDirectory();
+        var target = new LoggingInitializer();
+
+        var inputs = new StrykerInputs();
+        inputs.BasePathInput.SuppliedInput = basePath;
+        inputs.OutputPathInput.SuppliedInput = "output";
+        target.SetupLogOptions(inputs, fileSystemMock);
+
+        // an explicit output path has no timestamp subfolder, so it is the root itself
+        inputs.BaselineOutputInput.SuppliedInput.ShouldBe(Path.Combine(basePath, "output"));
     }
 }

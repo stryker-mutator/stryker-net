@@ -159,6 +159,13 @@ public class StrykerOptions : IStrykerOptions
     public BaselineProvider BaselineProvider { get; init; }
 
     /// <summary>
+    /// The directory the disk baseline provider stores and loads the baseline report from.
+    /// A relative path is resolved against <see cref="ProjectPath"/>. Defaults to the stable
+    /// StrykerOutput folder so baselines persist across runs.
+    /// </summary>
+    public string BaselineOutputPath { get; init; }
+
+    /// <summary>
     /// The url to connect to the Azure File Storage API
     /// </summary>
     public string AzureFileStorageUrl { get; init; }

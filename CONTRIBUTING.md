@@ -22,7 +22,7 @@ Please read the [dedicated document](adding_a_mutator.md).
 While developing on Stryker.NET we advise to work in [the latest Visual Studio](https://www.visualstudio.com/downloads/) or [VSCode](https://code.visualstudio.com/Download) and to set Stryker up to run on a project on your local disk.
 
 ## Prerequisites
-- Ensure you have .NET 8 SDK or later installed
+- Ensure you have .NET 10 SDK or later installed
 
 ### Visual Studio Setup
 

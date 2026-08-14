@@ -10,18 +10,18 @@
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Direct",
-        "requested": "[18.7.0, )",
-        "resolved": "18.7.0",
-        "contentHash": "6rmgU4q3/WOpOPcncI0YW0Q/QpcQtwR2TTEXDR5+4TfSimPBAk6Z/BgKLeGgp1SOun0ROVUCCafXhRLwsHaPpA==",
+        "requested": "[18.9.0, )",
+        "resolved": "18.9.0",
+        "contentHash": "Fz/qXC52VXXopzHj7v2reCKcCqSxkTDCkEDfkNAH0vni/7qK/KLMiEYtRmnUanxO2F2g2zZZ60qCpxF0AF7URA==",
         "dependencies": {
           "System.Reflection.Metadata": "8.0.0"
         }
       },
       "Microsoft.TestPlatform.Portable": {
         "type": "Direct",
-        "requested": "[18.7.0, )",
-        "resolved": "18.7.0",
-        "contentHash": "0oNRLh/TmQt1bQGWttwvSRfxEQOhf/CKcuxpebz/Mg9TxIMDm9MM2O1FoOL46WQxPG+ZDYs8MwwNHKCW7eTFbQ=="
+        "requested": "[18.9.0, )",
+        "resolved": "18.9.0",
+        "contentHash": "qLflc5NkktSyxlBycH7/A8fKFL1AYd/b4tM+WCq46va2cqz7nSCCLsRd3/roP/h9I9Gx++GoClx7jV76YEtxzA=="
       },
       "NETStandard.Library": {
         "type": "Direct",

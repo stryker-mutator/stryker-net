@@ -15,6 +15,7 @@ public interface IStrykerOptions
     string S3Endpoint { get; init; }
     string S3Region { get; init; }
     BaselineProvider BaselineProvider { get; init; }
+    string BaselineOutputPath { get; init; }
     bool BreakOnInitialTestFailure { get; set; }
     int Concurrency { get; init; }
     string Configuration { get; init; }

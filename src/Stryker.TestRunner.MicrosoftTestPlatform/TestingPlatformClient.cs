@@ -117,7 +117,9 @@ public sealed class TestingPlatformClient : ITestingPlatformClient
     {
         if (gracefully)
         {
-            using CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromMinutes(3));
+            // NotifyWithParameterObjectAsync has no CancellationToken overload, so this can't be bounded
+            // here; callers that need a timeout (a stuck/backpressured send should not hang forever) must
+            // wrap this call themselves, e.g. via WaitAsync(timeout).
             await CheckedInvokeAsync(async () => await JsonRpcClient.NotifyWithParameterObjectAsync("exit", new object()));
         }
         else

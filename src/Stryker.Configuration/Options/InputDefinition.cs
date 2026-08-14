@@ -72,26 +72,26 @@ public abstract class Input<TInput> : IInput<TInput>
             if (Default is not string && enumerable is not null)
             {
 
-                optionsString.Append("[");
+                optionsString.Append('[');
                 var count = 0;
                 foreach (var item in enumerable)
                 {
-                    optionsString.Append("'");
+                    optionsString.Append('\'');
                     optionsString.Append(item);
-                    optionsString.Append("'");
+                    optionsString.Append('\'');
                     if (++count < enumerable.Count())
                     {
                         optionsString.Append(", ");
                     }
                 }
 
-                optionsString.Append("]");
+                optionsString.Append(']');
 
                 return optionsString.ToString();
             }
-            optionsString.Append("'");
+            optionsString.Append('\'');
             optionsString.Append(Default.ToString());
-            optionsString.Append("'");
+            optionsString.Append('\'');
             return optionsString.ToString();
         }
         return "";
