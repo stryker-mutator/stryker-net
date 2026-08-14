@@ -72,24 +72,24 @@ public class GitInfoProvider : IGitInfoProvider
 
     private Commit GetCommit(string target)
     {
-        _logger.LogDebug("Looking for branch matching {target}", target);
+        _logger.LogDebug("Looking for branch matching {Target}", target);
         foreach (var branch in Repository.Branches)
         {
             try
             {
                 if (branch.UpstreamBranchCanonicalName?.Contains(target) ?? false)
                 {
-                    _logger.LogDebug("Matched with upstream canonical name {upstreamCanonicalName}", branch.UpstreamBranchCanonicalName);
+                    _logger.LogDebug("Matched with upstream canonical name {UpstreamCanonicalName}", branch.UpstreamBranchCanonicalName);
                     return branch.Tip;
                 }
                 if (branch.CanonicalName?.Contains(target) ?? false)
                 {
-                    _logger.LogDebug("Matched with canonical name {canonicalName}", branch.CanonicalName);
+                    _logger.LogDebug("Matched with canonical name {CanonicalName}", branch.CanonicalName);
                     return branch.Tip;
                 }
                 if (branch.FriendlyName?.Contains(target) ?? false)
                 {
-                    _logger.LogDebug("Matched with friendly name {friendlyName}", branch.FriendlyName);
+                    _logger.LogDebug("Matched with friendly name {FriendlyName}", branch.FriendlyName);
                     return branch.Tip;
                 }
             }

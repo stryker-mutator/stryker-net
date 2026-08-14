@@ -131,7 +131,6 @@ public class StrykerInputs : IStrykerInputs
         var baselineCompareVersion = BaselineCompareVersionInput.Validate(withBaseline);
         var sinceEnabled = SinceInput.Validate(WithBaselineInput.SuppliedInput);
         var sinceTarget = SinceTargetInput.Validate(sinceEnabled);
-        var projectVersion = ProjectVersionInput.Validate(reporters, withBaseline);
         var testRunner = TestRunnerInput.Validate();
 
         _strykerOptionsCache ??= new StrykerOptions()
