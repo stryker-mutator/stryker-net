@@ -395,6 +395,247 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
     }
 
     [TestMethod]
+    public void CaptureCoverage_ShouldCaptureEachTestInIsolation_WhenPerTestInIsolationEnabled()
+    {
+        // Arrange - "perTestInIsolation" (CoverageBasedTest | CaptureCoveragePerTest) must route to the
+        // isolated-process capture and keep each test's coverage set distinct, at Exact confidence.
+        var harness = new IsolatedCoverageHarness(
+            OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest,
+            assemblies: new Dictionary<string, string[]> { ["assembly.dll"] = ["test-1", "test-2"] },
+            isolatedCoverage: testId => testId == "test-1" ? [1, 2] : [3]);
+
+        // Act
+        var coverage = harness.Pool.CaptureCoverage(harness.Project).ToList();
+
+        // Assert
+        harness.IsolatedCaptures.Count.ShouldBe(2, "every discovered test should be captured in its own process");
+        harness.ReusedCaptures.ShouldBeEmpty("the reused-process capture must not be used in isolation mode");
+        coverage.Count.ShouldBe(2, "one coverage result per test, not one cumulative result");
+
+        var cov1 = coverage.First(c => c.TestId == harness.IdOf("test-1"));
+        cov1.MutationsCovered.ShouldBe(new[] { 1, 2 }, ignoreOrder: true);
+        cov1.Confidence.ShouldBe(CoverageConfidence.Exact, "process isolation makes each result trustworthy");
+
+        var cov2 = coverage.First(c => c.TestId == harness.IdOf("test-2"));
+        cov2.MutationsCovered.ShouldBe(new[] { 3 }, ignoreOrder: true);
+        cov2.Confidence.ShouldBe(CoverageConfidence.Exact);
+    }
+
+    [TestMethod]
+    public void CaptureCoverage_ShouldCaptureInIsolation_WhenOnlyCaptureCoveragePerTestEnabled()
+    {
+        // Arrange - CaptureCoveragePerTest on its own is enough to pick the isolated path; it must not
+        // fall through to the reused-process or aggregate capture just because CoverageBasedTest is absent.
+        var harness = new IsolatedCoverageHarness(
+            OptimizationModes.CaptureCoveragePerTest,
+            assemblies: new Dictionary<string, string[]> { ["assembly.dll"] = ["test-1"] },
+            isolatedCoverage: _ => [7]);
+
+        // Act
+        var coverage = harness.Pool.CaptureCoverage(harness.Project).ToList();
+
+        // Assert
+        harness.IsolatedCaptures.Count.ShouldBe(1);
+        harness.ReusedCaptures.ShouldBeEmpty();
+        coverage.ShouldHaveSingleItem().MutationsCovered.ShouldBe(new[] { 7 });
+    }
+
+    [TestMethod]
+    public void CaptureCoverage_ShouldCaptureTestsFromEveryAssembly_InIsolation()
+    {
+        // Arrange - tests are collected per assembly, so a second assembly must not be dropped.
+        var harness = new IsolatedCoverageHarness(
+            OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest,
+            assemblies: new Dictionary<string, string[]>
+            {
+                ["first.dll"] = ["test-1"],
+                ["second.dll"] = ["test-2", "test-3"]
+            },
+            isolatedCoverage: _ => [1]);
+
+        // Act
+        var coverage = harness.Pool.CaptureCoverage(harness.Project).ToList();
+
+        // Assert
+        coverage.Count.ShouldBe(3);
+        harness.IsolatedCaptures.Select(c => c.Assembly).ShouldBe(
+            new[] { "first.dll", "second.dll", "second.dll" }, ignoreOrder: true);
+    }
+
+    [TestMethod]
+    public void CaptureCoverage_ShouldSkipTestsWithoutDescription_InIsolation()
+    {
+        // Arrange - a discovered TestNode without a matching MtpTestDescription has no test id to report
+        // coverage against, so it must be skipped instead of capturing coverage under a bogus id.
+        var harness = new IsolatedCoverageHarness(
+            OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest,
+            assemblies: new Dictionary<string, string[]> { ["assembly.dll"] = ["test-1", "test-2"] },
+            isolatedCoverage: _ => [1],
+            undescribedTests: ["test-2"]);
+
+        // Act
+        var coverage = harness.Pool.CaptureCoverage(harness.Project).ToList();
+
+        // Assert
+        harness.IsolatedCaptures.ShouldHaveSingleItem().TestId.ShouldBe(harness.IdOf("test-1"));
+        coverage.ShouldHaveSingleItem().TestId.ShouldBe(harness.IdOf("test-1"));
+    }
+
+    [TestMethod]
+    public void CaptureCoverage_ShouldKeepCapturingOtherTests_WhenOneIsolatedCaptureFails()
+    {
+        // Arrange - one test blowing up (crashed host, unreadable coverage file) degrades to Dubious for
+        // that test only; the rest of the run must still produce their own results.
+        var harness = new IsolatedCoverageHarness(
+            OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest,
+            assemblies: new Dictionary<string, string[]> { ["assembly.dll"] = ["test-1", "test-2"] },
+            isolatedCoverage: testId => testId == "test-1"
+                ? throw new InvalidOperationException("test host crashed")
+                : [3]);
+
+        // Act
+        var coverage = harness.Pool.CaptureCoverage(harness.Project).ToList();
+
+        // Assert
+        coverage.Count.ShouldBe(2, "a single failing test must not drop the other results");
+
+        var failed = coverage.First(c => c.TestId == harness.IdOf("test-1"));
+        failed.Confidence.ShouldBe(CoverageConfidence.Dubious);
+        failed.MutationsCovered.ShouldBeEmpty();
+
+        coverage.First(c => c.TestId == harness.IdOf("test-2")).MutationsCovered.ShouldBe(new[] { 3 });
+    }
+
+    [TestMethod]
+    public void CaptureCoverage_ShouldReturnEmpty_WhenNoTestsDiscovered_InIsolation()
+    {
+        // Arrange
+        var harness = new IsolatedCoverageHarness(
+            OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest,
+            assemblies: new Dictionary<string, string[]>(),
+            isolatedCoverage: _ => [1]);
+
+        // Act
+        var coverage = harness.Pool.CaptureCoverage(harness.Project).ToList();
+
+        // Assert
+        coverage.ShouldBeEmpty();
+        harness.IsolatedCaptures.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void CaptureCoverage_ShouldCaptureEveryTest_WhenPoolHasMultipleRunners()
+    {
+        // Arrange - isolated capture fans the tests out over the whole pool, so with more tests than
+        // runners every test must still be captured exactly once.
+        var harness = new IsolatedCoverageHarness(
+            OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest,
+            assemblies: new Dictionary<string, string[]> { ["assembly.dll"] = ["t-1", "t-2", "t-3", "t-4", "t-5"] },
+            isolatedCoverage: _ => [1],
+            concurrency: 3);
+
+        // Act
+        var coverage = harness.Pool.CaptureCoverage(harness.Project).ToList();
+
+        // Assert
+        coverage.Count.ShouldBe(5);
+        coverage.Select(c => c.TestId).Distinct().Count().ShouldBe(5, "no test should be captured twice or skipped");
+        harness.IsolatedCaptures.Count.ShouldBe(5);
+        harness.ReusedCaptures.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Builds a pool backed by <see cref="TestableRunner"/>s with a pre-populated discovery result, and
+    /// records which capture path each test went through.
+    /// </summary>
+    private sealed class IsolatedCoverageHarness
+    {
+        private readonly Dictionary<string, MtpTestDescription> _descriptions = new();
+
+        public MicrosoftTestPlatformRunnerPool Pool { get; }
+        public IProjectAndTests Project { get; }
+        public System.Collections.Concurrent.ConcurrentBag<(string Assembly, string TestId)> IsolatedCaptures { get; } = new();
+        public System.Collections.Concurrent.ConcurrentBag<string> ReusedCaptures { get; } = new();
+
+        public IsolatedCoverageHarness(
+            OptimizationModes optimizationMode,
+            Dictionary<string, string[]> assemblies,
+            Func<string, int[]> isolatedCoverage,
+            string[]? undescribedTests = null,
+            int concurrency = 1)
+        {
+            var testsByAssembly = new Dictionary<string, List<TestNode>>();
+            foreach (var (assembly, testUids) in assemblies)
+            {
+                var nodes = new List<TestNode>();
+                foreach (var uid in testUids)
+                {
+                    var node = new TestNode(uid, uid, "test", "discovered");
+                    nodes.Add(node);
+
+                    if (undescribedTests?.Contains(uid) == true)
+                    {
+                        continue;
+                    }
+
+                    _descriptions[uid] = new MtpTestDescription(node);
+                }
+                testsByAssembly[assembly] = nodes;
+            }
+
+            var options = new Mock<IStrykerOptions>();
+            options.Setup(x => x.Concurrency).Returns(concurrency);
+            options.Setup(x => x.OptimizationMode).Returns(optimizationMode);
+
+            var runnerFactory = new Mock<ISingleRunnerFactory>();
+            runnerFactory.Setup(x => x.CreateRunner(
+                    It.IsAny<int>(),
+                    It.IsAny<Dictionary<string, List<TestNode>>>(),
+                    It.IsAny<Dictionary<string, MtpTestDescription>>(),
+                    It.IsAny<TestSet>(),
+                    It.IsAny<object>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<IStrykerOptions>()))
+                .Returns<int, Dictionary<string, List<TestNode>>, Dictionary<string, MtpTestDescription>, TestSet, object, ILogger, IStrykerOptions>(
+                    (id, tba, td, ts, dl, logger, opts) =>
+                    {
+                        // Populate the pool's shared dictionaries so it sees the tests set up above.
+                        lock (dl)
+                        {
+                            if (tba.Count == 0)
+                            {
+                                foreach (var kvp in testsByAssembly) tba[kvp.Key] = kvp.Value;
+                                foreach (var kvp in _descriptions) td[kvp.Key] = kvp.Value;
+                            }
+                        }
+
+                        return new TestableRunner(id, tba, td, ts, dl,
+                            () => { },
+                            coverageHandler: (_, _, testId) =>
+                            {
+                                ReusedCaptures.Add(testId);
+                                return Task.FromResult<ICoverageRunResult>(CoverageRunResult.Create(
+                                    testId, CoverageConfidence.Normal, [], [], []));
+                            },
+                            isolatedCoverageHandler: (assembly, _, testId) =>
+                            {
+                                IsolatedCaptures.Add((assembly, testId));
+                                return Task.FromResult<ICoverageRunResult>(CoverageRunResult.Create(
+                                    testId, CoverageConfidence.Exact, isolatedCoverage(testId), [], []));
+                            });
+                    });
+
+            var project = new Mock<IProjectAndTests>();
+            project.Setup(x => x.GetTestAssemblies()).Returns(assemblies.Keys.ToList());
+            Project = project.Object;
+
+            Pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance, runnerFactory.Object);
+        }
+
+        public string IdOf(string testUid) => _descriptions[testUid].Id;
+    }
+
+    [TestMethod]
     public void Constructor_ShouldUseProvidedLogger()
     {
         // Arrange

@@ -604,6 +604,103 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         result.MutationsCovered.ShouldBeEmpty();
     }
 
+    // --- Isolated ("perTestInIsolation") per-test coverage capture ---
+    //
+    // The happyflow can't be tested here because it requires a real test host to run the test and flush coverage
+    // to the coverage file. The happyflow is tested in the integration test project, which runs real tests in a real test host.
+
+    private static Dictionary<string, AssemblyTestServer> GetAssemblyServers(SingleMicrosoftTestPlatformRunner runner) =>
+        (Dictionary<string, AssemblyTestServer>)typeof(SingleMicrosoftTestPlatformRunner)
+            .GetField("_assemblyServers", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .GetValue(runner)!;
+
+    [TestMethod, Timeout(5000)]
+    public async Task RunSingleTestForCoverageInIsolatedProcessAsync_ReturnsDubious_WhenServerCannotStart()
+    {
+        using var runner = new SingleMicrosoftTestPlatformRunner(
+            710, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+        runner.SetCoverageMode(true);
+        var testNode = new TestNode("test-1", "Test1", "test", "discovered");
+
+        var result = await runner.RunSingleTestForCoverageInIsolatedProcessAsync(
+            "/nonexistent/assembly.dll", testNode, "test-1");
+
+        // A capture that never ran must not be reported as Exact - that confidence is what lets the
+        // pool drop mutants no test covered, so a silent empty-but-Exact result would kill real mutants.
+        result.Confidence.ShouldBe(CoverageConfidence.Dubious);
+        result.MutationsCovered.ShouldBeEmpty();
+        result.TestId.ShouldBe("test-1", "the result must stay attributable to the test that was asked for");
+    }
+
+    [TestMethod, Timeout(10000)]
+    public async Task RunSingleTestForCoverageInIsolatedProcessAsync_ShouldKeepFailingCleanly_WhenCalledRepeatedly()
+    {
+        // Each isolated capture starts from scratch, so a failure for one test must not poison the
+        // next: no dead server may be reused, and every test gets its own attributable result.
+        const string assembly = "/nonexistent/assembly.dll";
+
+        using var runner = new SingleMicrosoftTestPlatformRunner(
+            712, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+        runner.SetCoverageMode(true);
+
+        var first = await runner.RunSingleTestForCoverageInIsolatedProcessAsync(
+            assembly, new TestNode("test-1", "Test1", "test", "discovered"), "test-1");
+        var second = await runner.RunSingleTestForCoverageInIsolatedProcessAsync(
+            assembly, new TestNode("test-2", "Test2", "test", "discovered"), "test-2");
+
+        first.Confidence.ShouldBe(CoverageConfidence.Dubious);
+        second.Confidence.ShouldBe(CoverageConfidence.Dubious);
+        first.TestId.ShouldBe("test-1");
+        second.TestId.ShouldBe("test-2");
+        GetAssemblyServers(runner).ShouldNotContainKey(assembly);
+    }
+
+    [TestMethod, Timeout(10000)]
+    public async Task RunSingleTestForCoverageInIsolatedProcessAsync_ShouldClaimAggregateCoverageFile_NotThePerTestOne()
+    {
+        // The isolated path reads the aggregate per-assembly coverage file (the one MutantControl
+        // flushes on process exit), NOT the "perTest" epoch-relay file. Reading the wrong file would
+        // silently report empty coverage for every test, so assert the aggregate path was registered.
+        // Deliberately checked before calling GetCoverageFilePath, which would register it itself.
+        const string assembly = "/nonexistent/coverage-path.dll";
+
+        using var runner = new SingleMicrosoftTestPlatformRunner(
+            713, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+        await runner.RunSingleTestForCoverageInIsolatedProcessAsync(
+            assembly, new TestNode("test-1", "Test1", "test", "discovered"), "test-1");
+
+        var registeredPaths = (System.Collections.Concurrent.ConcurrentDictionary<string, string>)
+            typeof(SingleMicrosoftTestPlatformRunner)
+                .GetField("_coverageFilePaths", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+                .GetValue(runner)!;
+
+        registeredPaths.ShouldContainKey(assembly,
+            "the isolated capture must resolve this assembly's aggregate coverage file");
+
+        var coverageFilePath = registeredPaths[assembly];
+        // The per-test relay file (stryker-coverage-pt-) belongs to the reused-process mode.
+        Path.GetFileName(coverageFilePath).ShouldStartWith("stryker-coverage-");
+        Path.GetFileName(coverageFilePath).ShouldNotStartWith("stryker-coverage-pt-");
+
+        try
+        {
+            // The path the capture resolved must be the one ReadCoverageData later drains.
+            await File.WriteAllTextAsync(coverageFilePath, "1,2;9");
+
+            var (covered, statics) = runner.ReadCoverageData();
+
+            covered.ShouldBe(new[] { 1, 2 }, ignoreOrder: true);
+            statics.ShouldBe(new[] { 9 }, ignoreOrder: true);
+        }
+        finally
+        {
+            if (File.Exists(coverageFilePath)) File.Delete(coverageFilePath);
+        }
+    }
+
     [TestMethod]
     public void SetPerTestCoverageMode_ShouldResetPerAssemblyState_WhenToggled()
     {

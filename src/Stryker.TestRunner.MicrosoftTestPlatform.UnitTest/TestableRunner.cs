@@ -10,6 +10,7 @@ internal class TestableRunner : SingleMicrosoftTestPlatformRunner
 {
     private readonly Action _onDispose;
     private readonly Func<string, TestNode, string, Task<ICoverageRunResult>>? _coverageHandler;
+    private readonly Func<string, TestNode, string, Task<ICoverageRunResult>>? _isolatedCoverageHandler;
 
     public TestableRunner(int id, Action onDispose)
         : base(id, new Dictionary<string, List<TestNode>>(),
@@ -28,11 +29,13 @@ internal class TestableRunner : SingleMicrosoftTestPlatformRunner
         TestSet testSet,
         object discoveryLock,
         Action onDispose,
-        Func<string, TestNode, string, Task<ICoverageRunResult>>? coverageHandler = null)
+        Func<string, TestNode, string, Task<ICoverageRunResult>>? coverageHandler = null,
+        Func<string, TestNode, string, Task<ICoverageRunResult>>? isolatedCoverageHandler = null)
         : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, NullLogger.Instance)
     {
         _onDispose = onDispose;
         _coverageHandler = coverageHandler;
+        _isolatedCoverageHandler = isolatedCoverageHandler;
     }
 
     internal override async Task<ICoverageRunResult> RunSingleTestForCoverageInReusedProcessAsync(
@@ -52,6 +55,28 @@ internal class TestableRunner : SingleMicrosoftTestPlatformRunner
         }
 
         return CoverageRunResult.Create(testId, CoverageConfidence.Normal,
+            Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
+    }
+
+    internal override async Task<ICoverageRunResult> RunSingleTestForCoverageInIsolatedProcessAsync(
+        string assembly, TestNode test, string testId)
+    {
+        if (_isolatedCoverageHandler is not null)
+        {
+            try
+            {
+                return await _isolatedCoverageHandler(assembly, test, testId).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // Mirrors the real runner: a failing isolated capture degrades to Dubious rather than
+                // tearing down the whole coverage phase.
+                return CoverageRunResult.Create(testId, CoverageConfidence.Dubious,
+                    Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
+            }
+        }
+
+        return CoverageRunResult.Create(testId, CoverageConfidence.Exact,
             Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
     }
 
