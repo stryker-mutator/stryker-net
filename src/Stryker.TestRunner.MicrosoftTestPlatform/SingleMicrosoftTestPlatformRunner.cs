@@ -405,7 +405,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    private bool TryReadEpochAck(string epochFilePath, out int ack)
+    private static bool TryReadEpochAck(string epochFilePath, out int ack)
     {
         ack = -1;
         if (!File.Exists(epochFilePath))
