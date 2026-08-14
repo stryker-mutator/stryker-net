@@ -3,17 +3,29 @@ This is the contribution guide for Stryker.NET. Great to have you here! Here are
 
 ## Creating issues
 Do you have an idea for a feature or have you found a bug? Please create an issue so we can talk about it!
+When you face an issue you can try using the `--diag` option (```dotnet stryker --diag```) this help you pinpoint the
+cause of your problem.
 If you found a bug, please run ```dotnet stryker --verbosity debug``` and add the output of the Stryker run to the issue.
 
-## Adding new features
-New features are welcome! Either as requests or proposals.
+## Pull requests
+Please open an issue or a discussion first. PR without a supporting issue or discussion are treated as low priority.
+Focus your PR on the problem you are trying to solve
 
-1.	Please create an issue first, so we know what to expect from you.
+### Proposing a fix
+1. Please open an issue with a clear description of the problem. 
+2. Your PR should include an integration test proving the issue is fixed (when possible).
+
+### Adding new features
+New features are welcome! Either as requests or proposals.
+1.	**Please create an issue first, so we know what to expect from you.**
+
+### Operational steps
 1.	Create a fork on your github account.
 1.	When writing your code, please conform to the [Microsoft coding guidelines](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions).
 1.	Please create or edit unit tests or integration tests.
 1.	Run the tests and verify they pass.
-1. Update documentation.
+1. Update documentation when relevant
+
 
 ## Adding a new mutator
 Please read the [dedicated document](adding_a_mutator.md).
