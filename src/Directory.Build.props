@@ -16,6 +16,8 @@
 
   <ItemGroup>
     <PackageReference Include="DotNet.ReproducibleBuilds" PrivateAssets="All" />
+   <!-- We explicitly reference the package to overwrite the vulnerable version Microsoft.Build.Tasks.Core brings in -->
+    <PackageReference Include="System.Security.Cryptography.Xml" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
