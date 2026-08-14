@@ -141,8 +141,10 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
+        // Only the project under test is mutated here, so this run holds a single mutated assembly. The
+        // extra test covers ExtraProject, which the solution run mutates as well; see MTPSolution.
         CheckReportMutants(report, total: 660, ignored: 271, survived: 1, killed: 1, timeout: 0, nocoverage: 353);
-        CheckReportTestCounts(report, total: 2);
+        CheckReportTestCounts(report, total: 3);
     }
 
     [Fact]
@@ -205,36 +207,17 @@ public class ValidateStrykerResults
         // by the MSTest project count as covered (1 survived + 2 timeout), like in the MSTestMTP run.
         // Before coverage files were split per test host, the final flush overwrote the shared
         // file, usually losing exactly those three mutants to NoCoverage.
-        CheckReportMutants(report, total: 670, ignored: 274, survived: 2, killed: 1, timeout: 2, nocoverage: 357);
-        CheckReportTestCounts(report, total: 10);
-    }
-
-    [Fact]
-    [Trait("Category", "MTPMultipleMutatedProjects")]
-    [Trait("Runtime", "netcore")]
-    public async Task CSharp_NetCore_MTPMultipleMutatedProjects()
-    {
-        var directory = new DirectoryInfo("../../../../../TargetProjects/MicrosoftTestPlatform/MultipleMutatedProjects/StrykerOutput");
-        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
-
-        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
-            .OrderByDescending(f => f.LastWriteTime)
-            .First();
-
-        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
-
-        var report = await strykerRunOutput.DeserializeJsonReportAsync();
-
-        // The test project references Calculator, which references Formatter, so a single test host
-        // loads two mutated assemblies and therefore two copies of the injected MutantControl, both
-        // resolving the same STRYKER_COVERAGE_FILE. Unless every copy writes its own file, the last
-        // flush overwrites the others and the assembly higher up the stack loses all of its coverage.
-        // Measured on the shared-file version: 8 of these 18 mutants fall back to NoCoverage.
-        // Checked before the global counts so that a regression reports the assembly at fault rather
-        // than a bare count mismatch.
-        CheckEveryMutatedProjectIsCovered(report, "Arithmetic.cs", "LabelFormatter.cs");
-        CheckReportMutants(report, total: 18, ignored: 0, survived: 3, killed: 15, timeout: 0, nocoverage: 0);
-        CheckReportTestCounts(report, total: 6);
+        // Teacher.cs and Lesson.cs belong to two mutated projects stacked on each other (ExtraProject
+        // calls ExtraLibrary), both reached from the single XUnit test that covers them. That test host
+        // therefore holds two copies of the injected MutantControl which both have coverage to report for
+        // the same test, and while the copies shared one coverage file the last one to write hid the
+        // other's mutants, leaving them reported as uncovered. Because that one test is their only
+        // coverage, whichever copy loses ends up with nothing killed, so this catches the regression
+        // whichever way the race goes. Checked per source file rather than through the counts below, since
+        // one assembly losing its coverage while another gains some keeps the totals correct.
+        CheckEveryMutatedProjectIsCovered(report, "KilledMutants.cs", "Teacher.cs", "Lesson.cs");
+        CheckReportMutants(report, total: 673, ignored: 275, survived: 2, killed: 3, timeout: 2, nocoverage: 357);
+        CheckReportTestCounts(report, total: 11);
     }
 
     [Fact]
@@ -333,10 +316,11 @@ public class ValidateStrykerResults
             var file = report.Files.SingleOrDefault(f => f.Key.EndsWith(sourceFile, StringComparison.Ordinal));
             file.Key.ShouldNotBeNull($"{sourceFile} is missing from the report entirely");
 
+            // An assembly whose coverage is lost has every one of its mutants reported as uncovered, so
+            // one killed mutant is enough to prove its coverage arrived. Asserting no uncovered mutants
+            // instead would be wrong: these files also hold code no test exercises.
             file.Value.Mutants.Count(m => m.Status == MutantStatus.Killed.ToString())
                 .ShouldBeGreaterThan(0, $"no mutant of {sourceFile} was killed: the coverage of its assembly was lost");
-            file.Value.Mutants.Count(m => m.Status == MutantStatus.NoCoverage.ToString())
-                .ShouldBe(0, $"{sourceFile} has uncovered mutants: the coverage of its assembly was overwritten");
         }
     }
 
