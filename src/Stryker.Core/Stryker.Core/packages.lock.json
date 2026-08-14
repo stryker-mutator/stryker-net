@@ -119,29 +119,29 @@
       },
       "Microsoft.TestPlatform": {
         "type": "Direct",
-        "requested": "[18.8.1, )",
-        "resolved": "18.8.1",
-        "contentHash": "xS6gtYqSHDWkbT7OOrv40KWp+CGhz0lplNejV347Cd3CxmiKFXV76rqvAYeIhDZEdkbqRl9lXeT6vPxxW+CECA=="
+        "requested": "[18.9.0, )",
+        "resolved": "18.9.0",
+        "contentHash": "9YeKCZeaLXjgU1Hc5K35YnLho+b+uRoQBOwrjElnC10qNyawx4esCwE7LsnCMMX2Yx3id6TWWsjMJNTQLYXCvQ=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Direct",
-        "requested": "[18.8.1, )",
-        "resolved": "18.8.1",
-        "contentHash": "qLbktNB1+b1XZLNJBTzaWVVJAd6PEzD7cgD406geMb6PcFZhp3EDNa1tctWx1+mtMU6MP/6ozVvFPC9vs2a9rw=="
+        "requested": "[18.9.0, )",
+        "resolved": "18.9.0",
+        "contentHash": "Fz/qXC52VXXopzHj7v2reCKcCqSxkTDCkEDfkNAH0vni/7qK/KLMiEYtRmnUanxO2F2g2zZZ60qCpxF0AF7URA=="
       },
       "Microsoft.TestPlatform.Portable": {
         "type": "Direct",
-        "requested": "[18.8.1, )",
-        "resolved": "18.8.1",
-        "contentHash": "3UzxQYNb57KLcXwwJGwGsCBZ/4FlHRHKajEK/Fkz+MYUw5NqpubaHZLup6HiQTFYa0UH47J0E4CSiibPtXUYPA=="
+        "requested": "[18.9.0, )",
+        "resolved": "18.9.0",
+        "contentHash": "qLflc5NkktSyxlBycH7/A8fKFL1AYd/b4tM+WCq46va2cqz7nSCCLsRd3/roP/h9I9Gx++GoClx7jV76YEtxzA=="
       },
       "Microsoft.TestPlatform.TranslationLayer": {
         "type": "Direct",
-        "requested": "[18.8.1, )",
-        "resolved": "18.8.1",
-        "contentHash": "iQKp3rEZM6efgO+VB2LoZAGHTEYzlmD9UtXHIikVPzubHGBNNdAlCVDxYzdS73m7+6ndmErfZpjTpUHSfyW/VA==",
+        "requested": "[18.9.0, )",
+        "resolved": "18.9.0",
+        "contentHash": "tertA+brxmQdJDSe6DEJitz9kxFgxdGM/YxXkalGbO4T78z0NOqjj40iJZKOhn0IN2BY3AnLc9aFooPSxF80qw==",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "18.8.1"
+          "Microsoft.TestPlatform.ObjectModel": "18.9.0"
         }
       },
       "Microsoft.Web.LibraryManager.Build": {
@@ -619,7 +619,7 @@
           "DotNet.Glob": "[3.1.3, )",
           "Microsoft.CodeAnalysis.CSharp": "[5.6.0, )",
           "Microsoft.CodeAnalysis.Common": "[5.6.0, )",
-          "Microsoft.TestPlatform.ObjectModel": "[18.8.1, )",
+          "Microsoft.TestPlatform.ObjectModel": "[18.9.0, )",
           "Serilog": "[4.4.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[22.2.0, )"
         }
@@ -638,8 +638,8 @@
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "[18.8.1, )",
-          "Microsoft.TestPlatform.Portable": "[18.8.1, )"
+          "Microsoft.TestPlatform.ObjectModel": "[18.9.0, )",
+          "Microsoft.TestPlatform.Portable": "[18.9.0, )"
         }
       },
       "stryker.regexmutators": {
@@ -658,7 +658,7 @@
       "stryker.testrunner": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "[18.8.1, )",
+          "Microsoft.TestPlatform.ObjectModel": "[18.9.0, )",
           "Stryker.Abstractions": "[4.16.0, )"
         }
       },
@@ -676,10 +676,10 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.11, )",
-          "Microsoft.TestPlatform": "[18.8.1, )",
-          "Microsoft.TestPlatform.ObjectModel": "[18.8.1, )",
-          "Microsoft.TestPlatform.Portable": "[18.8.1, )",
-          "Microsoft.TestPlatform.TranslationLayer": "[18.8.1, )",
+          "Microsoft.TestPlatform": "[18.9.0, )",
+          "Microsoft.TestPlatform.ObjectModel": "[18.9.0, )",
+          "Microsoft.TestPlatform.Portable": "[18.9.0, )",
+          "Microsoft.TestPlatform.TranslationLayer": "[18.9.0, )",
           "Stryker.Abstractions": "[4.16.0, )",
           "Stryker.DataCollector": "[4.16.0, )",
           "Stryker.TestRunner": "[4.16.0, )",
