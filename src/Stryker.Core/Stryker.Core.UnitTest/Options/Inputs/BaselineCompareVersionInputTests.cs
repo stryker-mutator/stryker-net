@@ -36,11 +36,11 @@ public class BaselineCompareVersionInputTests : TestBase
     }
 
     [TestMethod]
-    public void MustNotBeEmptyStringWhenBaselineEnabled()
+    public void ShouldAllowEmptyStringWhenBaselineEnabled()
     {
-        var action = () => new BaselineCompareVersionInput { SuppliedInput = "" }.Validate(baselineEnabled: true);
+        var validatedVersion = new BaselineCompareVersionInput { SuppliedInput = "" }.Validate(baselineEnabled: true);
 
-        Should.Throw<InputException>(action).Message.ShouldBe("The baseline compare version cannot be empty when the baseline feature is enabled");
+        validatedVersion.ShouldBe(string.Empty);
     }
 
     [TestMethod]

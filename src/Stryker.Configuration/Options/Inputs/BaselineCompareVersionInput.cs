@@ -1,5 +1,3 @@
-using Stryker.Abstractions.Exceptions;
-
 namespace Stryker.Configuration.Options.Inputs;
 
 public class BaselineCompareVersionInput : Input<string>
@@ -9,13 +7,8 @@ public class BaselineCompareVersionInput : Input<string>
 
     public string Validate(bool baselineEnabled)
     {
-        if (baselineEnabled && SuppliedInput is not null)
+        if (baselineEnabled && !string.IsNullOrWhiteSpace(SuppliedInput))
         {
-            if (string.IsNullOrWhiteSpace(SuppliedInput))
-            {
-                throw new InputException("The baseline compare version cannot be empty when the baseline feature is enabled");
-            }
-
             return SuppliedInput;
         }
 
