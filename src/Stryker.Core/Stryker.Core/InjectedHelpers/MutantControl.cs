@@ -33,6 +33,29 @@ namespace Stryker
         private static bool _coverageFilePathCached;
         private static bool _processExitRegistered;
 
+        // Epoch relay for MTP per-test coverage capture with a reused process (no restart between
+        // tests). The runner runs one test at a time and, right after each test completes, bumps the
+        // request half of this 8-byte memory-mapped file (offset 0). This background thread notices the
+        // change, flushes the coverage accumulated for the test that just ran to the coverage file, resets
+        // for the next test, and writes the ack half (offset 4) so the runner knows it is safe to read the
+        // file. Polling (rather than a wait handle) is used because named cross-process synchronization
+        // primitives are unreliable on Unix; the same tradeoff already governs the mutant-id file above.
+        private static string _cachedEpochFilePath = string.Empty;
+        private static object _epochMmf = new System.Object();
+        private static object _epochAccessor = new System.Object();
+        private static bool _epochMmfReady;
+        private static bool _epochMmfFailed;
+        private static bool _epochPollerStarted;
+        // Must match the request value the runner writes via InitializeEpochFile (0), NOT a sentinel
+        // distinct from it. The poller thread only starts once MutantControl is first touched, which is
+        // the first IsActive() call from mutated code - i.e., only once the first test has already begun
+        // running, with unpredictable OS thread-start latency before this thread gets its first time
+        // slice. A sentinel that guarantees "the first observed value looks new" would flush+reset
+        // whatever that already-running test registered before the runner ever requests epoch 1,
+        // discarding real coverage into a flush nobody reads. Starting equal to the file's true initial
+        // value means the poller does nothing until the runner's first genuine request (>= 1) arrives.
+        private static int _lastHandledEpoch = 0;
+
         // this attribute will be set by the Stryker Data Collector before each test
         public static bool CaptureCoverage;
         public static int ActiveMutant = -2;
@@ -43,20 +66,27 @@ namespace Stryker
             // Check for MTP file-based coverage mode at class initialization
             // Environment variable contains only the filename, not the full path
             string coverageFileName = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_FILE") ?? string.Empty;
-            
+
             if (!string.IsNullOrEmpty(coverageFileName))
             {
                 // Construct full path using temp directory
                 _cachedCoverageFilePath = BuildCoverageFilePath(coverageFileName);
                 _coverageFilePathCached = true;
                 CaptureCoverage = true;
-                
+
                 // Register for process exit to flush coverage data
                 if (!_processExitRegistered)
                 {
                     System.AppDomain.CurrentDomain.ProcessExit += delegate { FlushCoverageToFile(); };
                     _processExitRegistered = true;
                 }
+            }
+
+            string epochFileName = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_EPOCH_FILE") ?? string.Empty;
+            if (!string.IsNullOrEmpty(epochFileName))
+            {
+                _cachedEpochFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), epochFileName);
+                EnsureEpochPollerStarted();
             }
         }
 
@@ -306,6 +336,101 @@ namespace Stryker
             {
                 // Do not fail tests due to coverage write issues; log for diagnostics instead.
                 System.Diagnostics.Debug.WriteLine(string.Format("[Stryker] Failed to flush coverage to file '{0}': {1}", _cachedCoverageFilePath, ex));
+            }
+        }
+
+        private static void EnsureEpochPollerStarted()
+        {
+            if (_epochPollerStarted)
+            {
+                return;
+            }
+            _epochPollerStarted = true;
+
+            System.Threading.Thread thread = new System.Threading.Thread(EpochPollerLoop);
+            thread.IsBackground = true;
+            thread.Name = "StrykerCoverageEpochRelay";
+            thread.Start();
+        }
+
+        private static void EnsureEpochMmf()
+        {
+            if (_epochMmfReady || _epochMmfFailed)
+            {
+                return;
+            }
+
+            // The runner creates and initializes this file before starting the test host, so it should
+            // already exist. If not yet visible, leave it unmapped and retry on the next poll iteration.
+            if (!System.IO.File.Exists(_cachedEpochFilePath))
+            {
+                return;
+            }
+
+            try
+            {
+                System.IO.FileStream stream = new System.IO.FileStream(
+                    _cachedEpochFilePath,
+                    System.IO.FileMode.Open,
+                    System.IO.FileAccess.ReadWrite,
+                    System.IO.FileShare.ReadWrite);
+
+                System.IO.MemoryMappedFiles.MemoryMappedFile mmf = System.IO.MemoryMappedFiles.MemoryMappedFile.CreateFromFile(
+                    stream,
+                    null,
+                    8,
+                    System.IO.MemoryMappedFiles.MemoryMappedFileAccess.ReadWrite,
+                    System.IO.HandleInheritability.None,
+                    false);
+
+                System.IO.MemoryMappedFiles.MemoryMappedViewAccessor accessor = mmf.CreateViewAccessor(0, 8, System.IO.MemoryMappedFiles.MemoryMappedFileAccess.ReadWrite);
+
+                _epochMmf = mmf;
+                _epochAccessor = accessor;
+                _epochMmfReady = true;
+            }
+            catch
+            {
+                // Memory mapping unavailable; the runner's ack-wait will time out and the affected test's
+                // coverage is reported as Dubious rather than hanging indefinitely.
+                _epochMmfFailed = true;
+            }
+        }
+
+        private static void EpochPollerLoop()
+        {
+            while (true)
+            {
+                try
+                {
+                    if (!_epochMmfReady && !_epochMmfFailed)
+                    {
+                        EnsureEpochMmf();
+                    }
+
+                    if (_epochMmfReady)
+                    {
+                        System.IO.MemoryMappedFiles.MemoryMappedViewAccessor accessor =
+                            (System.IO.MemoryMappedFiles.MemoryMappedViewAccessor)_epochAccessor;
+                        int requestedEpoch = accessor.ReadInt32(0);
+                        if (requestedEpoch != _lastHandledEpoch)
+                        {
+                            // The previous test (or nothing, on the very first iteration) has finished;
+                            // publish what it covered and reset before the next test starts.
+                            FlushCoverageToFile();
+                            _lastHandledEpoch = requestedEpoch;
+                            accessor.Write(4, requestedEpoch);
+                            accessor.Flush();
+                        }
+                    }
+                }
+                catch
+                {
+                    // Best-effort relay; a transient failure here surfaces as an ack timeout on the
+                    // runner side for the current test, not a crash of the test host.
+                }
+
+                System.Threading.Thread.Sleep(1);
             }
         }
 
