@@ -457,6 +457,89 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         }
     }
 
+    /// <summary>
+    /// Returns the epoch relay files owned by a test host's copies of the injected MutantControl for a
+    /// path handed out through STRYKER_COVERAGE_EPOCH_FILE: one per mutated assembly the host loaded,
+    /// named after the handed-out path the same way the coverage files are (see
+    /// <see cref="EnumerateCoverageFiles"/>). The handed-out path itself is excluded - no copy relays
+    /// through it, so waiting for an ack on it would never return.
+    /// </summary>
+    private IReadOnlyList<string> EnumerateEpochRelayFiles(string basePath)
+    {
+        var directory = Path.GetDirectoryName(basePath);
+        if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
+        {
+            return Array.Empty<string>();
+        }
+
+        var baseFileName = Path.GetFileName(basePath);
+        var searchPattern = Path.GetFileNameWithoutExtension(basePath) + "*" + Path.GetExtension(basePath);
+        try
+        {
+            return Directory.GetFiles(directory, searchPattern)
+                .Where(path => !string.Equals(Path.GetFileName(path), baseFileName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "{RunnerId}: Failed to list epoch relay files matching {Pattern} in {Directory}",
+                RunnerId, searchPattern, directory);
+            return Array.Empty<string>();
+        }
+    }
+
+    /// <summary>
+    /// Asks every mutated assembly's relay in the test host to flush the coverage of the test that just
+    /// ran. One request per relay: a host with several mutated assemblies runs one relay per assembly,
+    /// each with its own coverage file, and each has to be told separately.
+    /// </summary>
+    internal void BroadcastEpochRequest(string basePath, int epoch)
+    {
+        // Keep the handed-out path in step so a relay that attaches to it later starts from this epoch
+        WriteEpochRequest(basePath, epoch);
+
+        foreach (var relayFilePath in EnumerateEpochRelayFiles(basePath))
+        {
+            WriteEpochRequest(relayFilePath, epoch);
+        }
+    }
+
+    /// <summary>
+    /// Waits until every relay that existed when the request was broadcast has acknowledged the epoch,
+    /// which is when all of the coverage for that test is on disk. Waiting for a single ack would let the
+    /// coverage files be read while another mutated assembly's relay has not flushed yet, attributing
+    /// that assembly's coverage to the next test.
+    /// The set of relays is snapshotted rather than re-read: a relay that appears mid-wait never received
+    /// the request, so it would never acknowledge it, and its coverage is flushed on the next epoch.
+    /// </summary>
+    internal async Task<bool> WaitForAllEpochAcksAsync(string basePath, int expectedEpoch, TimeSpan timeout)
+    {
+        var relayFilePaths = EnumerateEpochRelayFiles(basePath);
+        if (relayFilePaths.Count == 0)
+        {
+            // The test touched no mutated code, so no relay exists and there is nothing to flush
+            _logger.LogDebug("{RunnerId}: No coverage epoch relay found for {Path}; nothing to wait for",
+                RunnerId, basePath);
+            return true;
+        }
+
+        var deadline = DateTime.UtcNow + timeout;
+        while (true)
+        {
+            if (relayFilePaths.All(path => TryReadEpochAck(path, out var ack) && ack == expectedEpoch))
+            {
+                return true;
+            }
+
+            if (DateTime.UtcNow >= deadline)
+            {
+                return false;
+            }
+
+            await Task.Delay(1).ConfigureAwait(false);
+        }
+    }
+
     internal static bool TryReadEpochAck(string epochFilePath, out int ack)
     {
         ack = -1;
@@ -510,8 +593,17 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         {
             if (_initializedPerTestFiles.Add(assembly))
             {
+                // Relays left behind by an earlier run would be waited on and never acknowledge, or worse
+                // already show this epoch, so clear them before the host creates its own
+                foreach (var staleRelayFilePath in EnumerateEpochRelayFiles(epochFilePath))
+                {
+                    DeleteFileIfExists(staleRelayFilePath);
+                }
                 InitializeEpochFile(epochFilePath);
-                DeleteFileIfExists(coverageFilePath);
+                foreach (var staleCoverageFilePath in EnumerateCoverageFiles(coverageFilePath))
+                {
+                    DeleteFileIfExists(staleCoverageFilePath);
+                }
             }
         }
 
@@ -547,9 +639,9 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                     _perTestEpochCounters[assembly] = epoch;
                 }
 
-                WriteEpochRequest(epochFilePath, epoch);
+                BroadcastEpochRequest(epochFilePath, epoch);
 
-                var acked = await WaitForEpochAckAsync(epochFilePath, epoch, TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                var acked = await WaitForAllEpochAcksAsync(epochFilePath, epoch, TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                 if (!acked)
                 {
                     _logger.LogWarning(
@@ -1208,12 +1300,19 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                 }
                 foreach (var assembly in _initializedPerTestFiles)
                 {
-                    // One file per mutated assembly loaded by the host, so delete every match
+                    // One coverage file and one epoch relay per mutated assembly loaded by the host, so
+                    // delete every match rather than just the path handed out
                     foreach (var perTestCoverageFile in EnumerateCoverageFiles(GetPerTestCoverageFilePath(assembly)))
                     {
                         DeleteFileIfExists(perTestCoverageFile);
                     }
-                    DeleteFileIfExists(GetPerTestEpochFilePath(assembly));
+
+                    var epochFilePath = GetPerTestEpochFilePath(assembly);
+                    foreach (var relayFilePath in EnumerateEpochRelayFiles(epochFilePath))
+                    {
+                        DeleteFileIfExists(relayFilePath);
+                    }
+                    DeleteFileIfExists(epochFilePath);
                 }
             }
             catch (Exception ex)

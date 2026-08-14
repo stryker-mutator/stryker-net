@@ -1,3 +1,4 @@
+using System.IO.MemoryMappedFiles;
 using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 using Stryker.Abstractions.Testing;
@@ -640,6 +641,117 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         finally
         {
             if (File.Exists(epochFilePath)) File.Delete(epochFilePath);
+        }
+    }
+
+    // A test host loads one copy of the injected MutantControl per mutated assembly, and every copy
+    // runs its own epoch relay against its own relay file, derived from the path the runner handed out.
+    // The runner must therefore request a flush from every relay and wait for all of them: waiting on a
+    // single ack lets it read the coverage file while another copy has not flushed yet, which attributes
+    // that assembly's coverage to the next test.
+
+    private static string WriteEpochRelayFile(string basePath, string mutatedAssemblyName, int request, int ack)
+    {
+        var relayPath = Path.Combine(
+            Path.GetDirectoryName(basePath)!,
+            $"{Path.GetFileNameWithoutExtension(basePath)}-{mutatedAssemblyName}{Path.GetExtension(basePath)}");
+
+        using var stream = new FileStream(relayPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+        stream.SetLength(8);
+        using var mmf = MemoryMappedFile.CreateFromFile(stream, null, 8, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, leaveOpen: true);
+        using var accessor = mmf.CreateViewAccessor(0, 8, MemoryMappedFileAccess.ReadWrite);
+        accessor.Write(0, request);
+        accessor.Write(4, ack);
+        accessor.Flush();
+
+        return relayPath;
+    }
+
+    private static int ReadEpochRequest(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var mmf = MemoryMappedFile.CreateFromFile(stream, null, 8, MemoryMappedFileAccess.Read, HandleInheritability.None, leaveOpen: true);
+        using var accessor = mmf.CreateViewAccessor(0, 8, MemoryMappedFileAccess.Read);
+        return accessor.ReadInt32(0);
+    }
+
+    [TestMethod]
+    public void EpochRelay_BroadcastRequest_ReachesEveryMutatedAssemblyRelay()
+    {
+        var runnerId = 710;
+        var basePath = Path.Combine(Path.GetTempPath(), $"stryker-epoch-{runnerId}-broadcast.txt");
+        var firstRelay = WriteEpochRelayFile(basePath, "FirstMutatedAssembly", request: 0, ack: 0);
+        var secondRelay = WriteEpochRelayFile(basePath, "SecondMutatedAssembly", request: 0, ack: 0);
+
+        try
+        {
+            using var runner = CreateRunner(runnerId);
+            runner.InitializeEpochFile(basePath);
+
+            runner.BroadcastEpochRequest(basePath, 4);
+
+            ReadEpochRequest(firstRelay).ShouldBe(4);
+            ReadEpochRequest(secondRelay).ShouldBe(4);
+        }
+        finally
+        {
+            foreach (var path in new[] { basePath, firstRelay, secondRelay })
+            {
+                if (File.Exists(path)) File.Delete(path);
+            }
+        }
+    }
+
+    [TestMethod, Timeout(10000)]
+    public async Task EpochRelay_WaitForAllAcks_WaitsUntilEveryRelayHasFlushed()
+    {
+        var runnerId = 711;
+        var basePath = Path.Combine(Path.GetTempPath(), $"stryker-epoch-{runnerId}-waitall.txt");
+        var firstRelay = WriteEpochRelayFile(basePath, "FirstMutatedAssembly", request: 2, ack: 2);
+        var secondRelay = WriteEpochRelayFile(basePath, "SecondMutatedAssembly", request: 2, ack: 1);
+
+        try
+        {
+            using var runner = CreateRunner(runnerId);
+            runner.InitializeEpochFile(basePath);
+
+            var partiallyAcked = await runner.WaitForAllEpochAcksAsync(basePath, 2, TimeSpan.FromMilliseconds(200));
+            partiallyAcked.ShouldBeFalse("one relay is still one epoch behind, so its coverage is not on disk yet");
+
+            WriteEpochRelayFile(basePath, "SecondMutatedAssembly", request: 2, ack: 2);
+
+            var fullyAcked = await runner.WaitForAllEpochAcksAsync(basePath, 2, TimeSpan.FromSeconds(5));
+            fullyAcked.ShouldBeTrue("every relay has now flushed the epoch");
+        }
+        finally
+        {
+            foreach (var path in new[] { basePath, firstRelay, secondRelay })
+            {
+                if (File.Exists(path)) File.Delete(path);
+            }
+        }
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task EpochRelay_WaitForAllAcks_ReturnsTrue_WhenNoMutatedAssemblyRegistered()
+    {
+        // A test that touches no mutated code leaves no relay behind; there is nothing to flush, so the
+        // wait must return at once instead of burning the timeout on every such test.
+        var runnerId = 712;
+        var basePath = Path.Combine(Path.GetTempPath(), $"stryker-epoch-{runnerId}-norelay.txt");
+
+        try
+        {
+            using var runner = CreateRunner(runnerId);
+            runner.InitializeEpochFile(basePath);
+
+            var acked = await runner.WaitForAllEpochAcksAsync(basePath, 1, TimeSpan.FromSeconds(2));
+
+            acked.ShouldBeTrue();
+        }
+        finally
+        {
+            if (File.Exists(basePath)) File.Delete(basePath);
         }
     }
 

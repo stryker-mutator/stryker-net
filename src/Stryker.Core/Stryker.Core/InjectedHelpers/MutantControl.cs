@@ -85,7 +85,10 @@ namespace Stryker
             string epochFileName = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_EPOCH_FILE") ?? string.Empty;
             if (!string.IsNullOrEmpty(epochFileName))
             {
-                _cachedEpochFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), epochFileName);
+                // Suffixed per mutated assembly, like the coverage file: this copy of the class relays
+                // only its own coverage, and the runner waits for every relay before reading
+                _cachedEpochFilePath = BuildCoverageFilePath(epochFileName);
+                EnsureEpochFileExists();
                 EnsureEpochPollerStarted();
             }
         }
@@ -353,16 +356,47 @@ namespace Stryker
             thread.Start();
         }
 
+        /// <summary>
+        /// Creates this copy's epoch relay file, initialized to request=0/ack=0 to match the poller's
+        /// starting state. Done synchronously from the static constructor, not on the poller thread: the
+        /// runner discovers a test host's relays by listing files right after a test finishes, and has to
+        /// find a relay for every assembly whose mutated code ran during that test.
+        /// </summary>
+        private static void EnsureEpochFileExists()
+        {
+            try
+            {
+                if (System.IO.File.Exists(_cachedEpochFilePath))
+                {
+                    return;
+                }
+
+                System.IO.FileStream stream = new System.IO.FileStream(
+                    _cachedEpochFilePath,
+                    System.IO.FileMode.Create,
+                    System.IO.FileAccess.ReadWrite,
+                    System.IO.FileShare.ReadWrite);
+                try
+                {
+                    byte[] emptyRelay = new byte[8];
+                    stream.Write(emptyRelay, 0, emptyRelay.Length);
+                    stream.Flush();
+                }
+                finally
+                {
+                    stream.Close();
+                }
+            }
+            catch
+            {
+                // Mapping is retried by the poller; if that fails too the runner's ack wait times out and
+                // the affected test's coverage is reported as Dubious rather than hanging.
+            }
+        }
+
         private static void EnsureEpochMmf()
         {
             if (_epochMmfReady || _epochMmfFailed)
-            {
-                return;
-            }
-
-            // The runner creates and initializes this file before starting the test host, so it should
-            // already exist. If not yet visible, leave it unmapped and retry on the next poll iteration.
-            if (!System.IO.File.Exists(_cachedEpochFilePath))
             {
                 return;
             }
@@ -371,7 +405,7 @@ namespace Stryker
             {
                 System.IO.FileStream stream = new System.IO.FileStream(
                     _cachedEpochFilePath,
-                    System.IO.FileMode.Open,
+                    System.IO.FileMode.OpenOrCreate,
                     System.IO.FileAccess.ReadWrite,
                     System.IO.FileShare.ReadWrite);
 
