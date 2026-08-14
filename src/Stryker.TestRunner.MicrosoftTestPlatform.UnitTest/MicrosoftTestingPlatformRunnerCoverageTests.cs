@@ -7,7 +7,7 @@ using Stryker.TestRunner.Tests;
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
 
 [TestClass]
-public class SingleMicrosoftTestPlatformRunnerCoverageTests
+public class MicrosoftTestingPlatformRunnerCoverageTests
 {
     private Dictionary<string, List<TestNode>> _testsByAssembly = null!;
     private Dictionary<string, MtpTestDescription> _testDescriptions = null!;
@@ -23,7 +23,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         _discoveryLock = new object();
     }
 
-    private SingleMicrosoftTestPlatformRunner CreateRunner(int runnerId) =>
+    private MicrosoftTestingPlatformRunner CreateRunner(int runnerId) =>
         new(runnerId,
             _testsByAssembly,
             _testDescriptions,
@@ -42,7 +42,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
             using var runner = CreateRunner(runnerId);
 
             // Create a test assembly to trigger server creation
-            var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+            var testAssembly = typeof(MicrosoftTestingPlatformRunnerCoverageTests).Assembly.Location;
             await runner.DiscoverTestsAsync(testAssembly);
 
             // Create an existing coverage file for the assembly that should be deleted
@@ -85,7 +85,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         {
             using var runner = CreateRunner(runnerId);
 
-            var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+            var testAssembly = typeof(MicrosoftTestingPlatformRunnerCoverageTests).Assembly.Location;
 
             // Enable coverage mode first
             runner.SetCoverageMode(true);
@@ -130,7 +130,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         {
             using var runner = CreateRunner(runnerId);
 
-            var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+            var testAssembly = typeof(MicrosoftTestingPlatformRunnerCoverageTests).Assembly.Location;
             await runner.DiscoverTestsAsync(testAssembly);
             coverageFilePath = runner.GetCoverageFilePath(testAssembly);
 
@@ -176,7 +176,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
 
         using var runner = CreateRunner(runnerId);
 
-        var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+        var testAssembly = typeof(MicrosoftTestingPlatformRunnerCoverageTests).Assembly.Location;
 
         // Initial discovery without coverage
         var result1 = await runner.DiscoverTestsAsync(testAssembly);
@@ -471,7 +471,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         using var runner = CreateRunner(0);
 
         // Populate _assemblyServers by discovering tests against the real test assembly
-        var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+        var testAssembly = typeof(MicrosoftTestingPlatformRunnerCoverageTests).Assembly.Location;
         await runner.DiscoverTestsAsync(testAssembly);
 
         runner._assemblyServers.ShouldNotBeEmpty("servers should be populated after discovery");
@@ -495,13 +495,13 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
 
         try
         {
-            using var runner = new SingleMicrosoftTestPlatformRunner(
+            using var runner = new MicrosoftTestingPlatformRunner(
                 runnerId, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
             runner.InitializeEpochFile(epochFilePath);
             runner.WriteEpochRequest(epochFilePath, 5);
 
-            var found = SingleMicrosoftTestPlatformRunner.TryReadEpochAck(epochFilePath, out var ack);
+            var found = MicrosoftTestingPlatformRunner.TryReadEpochAck(epochFilePath, out var ack);
 
             found.ShouldBeTrue();
             ack.ShouldBe(0, "ack should still be 0; WriteEpochRequest only touches the request half");
@@ -520,7 +520,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
 
         try
         {
-            using var runner = new SingleMicrosoftTestPlatformRunner(
+            using var runner = new MicrosoftTestingPlatformRunner(
                 runnerId, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
             runner.InitializeEpochFile(epochFilePath);
@@ -535,7 +535,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
                 accessor.Write(4, 3);
             }
 
-            var acked = await runner.WaitForEpochAckAsync(epochFilePath, 3, TimeSpan.FromSeconds(5));
+            var acked = await MicrosoftTestingPlatformRunner.WaitForEpochAckAsync(epochFilePath, 3, TimeSpan.FromSeconds(5));
 
             acked.ShouldBeTrue();
         }
@@ -553,14 +553,14 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
 
         try
         {
-            using var runner = new SingleMicrosoftTestPlatformRunner(
+            using var runner = new MicrosoftTestingPlatformRunner(
                 runnerId, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
             runner.InitializeEpochFile(epochFilePath);
             runner.WriteEpochRequest(epochFilePath, 1);
 
             // Nothing ever writes ack=1, so this must time out quickly rather than hang.
-            var acked = await runner.WaitForEpochAckAsync(epochFilePath, 1, TimeSpan.FromMilliseconds(100));
+            var acked = await MicrosoftTestingPlatformRunner.WaitForEpochAckAsync(epochFilePath, 1, TimeSpan.FromMilliseconds(100));
 
             acked.ShouldBeFalse();
         }
@@ -573,7 +573,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
     [TestMethod, Timeout(5000)]
     public async Task RunSingleTestForCoverageInReusedProcessAsync_ReturnsDubious_WhenServerCannotStart()
     {
-        using var runner = new SingleMicrosoftTestPlatformRunner(
+        using var runner = new MicrosoftTestingPlatformRunner(
             703, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
         runner.SetPerTestCoverageMode(true);
@@ -593,7 +593,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
     [TestMethod, Timeout(5000)]
     public async Task RunSingleTestForCoverageInIsolatedProcessAsync_ReturnsDubious_WhenServerCannotStart()
     {
-        using var runner = new SingleMicrosoftTestPlatformRunner(
+        using var runner = new MicrosoftTestingPlatformRunner(
             710, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
         runner.SetCoverageMode(true);
@@ -616,7 +616,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         // next: no dead server may be reused, and every test gets its own attributable result.
         const string assembly = "/nonexistent/assembly.dll";
 
-        using var runner = new SingleMicrosoftTestPlatformRunner(
+        using var runner = new MicrosoftTestingPlatformRunner(
             712, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
         runner.SetCoverageMode(true);
@@ -642,7 +642,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         // Deliberately checked before calling GetCoverageFilePath, which would register it itself.
         const string assembly = "/nonexistent/coverage-path.dll";
 
-        using var runner = new SingleMicrosoftTestPlatformRunner(
+        using var runner = new MicrosoftTestingPlatformRunner(
             713, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
         await runner.RunSingleTestForCoverageInIsolatedProcessAsync(
@@ -677,7 +677,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
     [TestMethod]
     public void SetPerTestCoverageMode_ShouldResetPerAssemblyState_WhenToggled()
     {
-        using var runner = new SingleMicrosoftTestPlatformRunner(
+        using var runner = new MicrosoftTestingPlatformRunner(
             704, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
         runner.SetPerTestCoverageMode(true);

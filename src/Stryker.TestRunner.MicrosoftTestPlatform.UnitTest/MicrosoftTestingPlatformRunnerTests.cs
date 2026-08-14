@@ -11,12 +11,13 @@ using Stryker.TestRunner.Results;
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
 
 [TestClass]
-public class SingleMicrosoftTestPlatformRunnerTests
+public class MicrosoftTestingPlatformRunnerTests
 {
     private Dictionary<string, List<TestNode>> _testsByAssembly = null!;
     private Dictionary<string, MtpTestDescription> _testDescriptions = null!;
     private TestSet _testSet = null!;
     private object _discoveryLock = null!;
+    private List<string> _tempFiles = null!;
 
     [TestInitialize]
     public void Initialize()
@@ -25,9 +26,10 @@ public class SingleMicrosoftTestPlatformRunnerTests
         _testDescriptions = new Dictionary<string, MtpTestDescription>();
         _testSet = new TestSet();
         _discoveryLock = new object();
+        _tempFiles = [];
     }
 
-    private SingleMicrosoftTestPlatformRunner CreateRunner(int id = 0) =>
+    private MicrosoftTestingPlatformRunner CreateRunner(int id = 0) =>
         new(id, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
     [TestMethod, Timeout(1000)]
@@ -485,7 +487,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     // to verify the filter predicate in isolation, without needing a live test host.
 
     private static Func<TestNode, bool>? InvokeBuildTestUidFilter(IReadOnlyList<IMutant>? mutants) =>
-        SingleMicrosoftTestPlatformRunner.BuildTestUidFilter(mutants);
+        MicrosoftTestingPlatformRunner.BuildTestUidFilter(mutants);
 
     private static Mock<IMutant> MockMutant(int id, ITestIdentifiers assessingTests)
     {
@@ -771,7 +773,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
     /// Simulates an assembly whose test host crashes: <see cref="RunAssemblyTestsAsync"/> returns the
     /// failure sentinel produced by the real exception path, without starting any server process.
     /// </summary>
-    private sealed class CrashingAssemblyRunner : SingleMicrosoftTestPlatformRunner
+    private sealed class CrashingAssemblyRunner : MicrosoftTestingPlatformRunner
     {
         private readonly List<TestNode> _discovered;
 
@@ -788,6 +790,158 @@ public class SingleMicrosoftTestPlatformRunnerTests
             string assembly, ITimeoutValueCalculator? timeoutCalc, Func<TestNode, bool>? testUidFilter = null)
             => Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>(
                 (new TestRunResult(false, "simulated test host crash"), false, _discovered));
+    }
+
+    // --- Multi-assembly test-filter tests ---
+    //
+    // Regression coverage for the two bugs that made the MTPSolution integration run report its two
+    // genuinely surviving mutants as RuntimeError and Pending. Both need more than one test assembly
+    // to show up, which is why the single-project MTP scenarios never caught them.
+
+    [TestMethod, Timeout(5000)]
+    public async Task RunAssemblyTestsAsync_SkipsAssembly_WhenFilterMatchesNoTest()
+    {
+        // Regression: with coverage-based filtering, an assembly whose tests are all filtered out used
+        // to be handed a run request with an empty test list. Frameworks disagree on what that means -
+        // xUnit runs the whole assembly, NUnit's VSTest bridge throws on the empty filter it derives
+        // ("Empty parenthesis ( )") and tears down the RPC connection, which reads as a crashed host
+        // and mislabels the mutant RuntimeError. Nothing may be sent for such an assembly at all.
+        var assembly = CreateTempAssemblyFile();
+        _testsByAssembly[assembly] =
+        [
+            new TestNode("uid-1", "Test1", "test", "discovered"),
+            new TestNode("uid-2", "Test2", "test", "discovered"),
+        ];
+
+        var timeoutCalc = new Mock<ITimeoutValueCalculator>();
+        timeoutCalc.Setup(x => x.CalculateTimeoutValue(It.IsAny<int>())).Returns(1000);
+
+        using var runner = CreateRunner(0);
+
+        var (result, timedOut, discovered) = await runner.RunAssemblyTestsAsync(
+            assembly, timeoutCalc.Object, testUidFilter: _ => false);
+
+        // The sentinel the accumulator ignores completely: no result to aggregate, and no discovered
+        // count either - the assembly must not weigh on the executed-vs-discovered comparison.
+        result.ShouldBeNull();
+        timedOut.ShouldBeFalse();
+        discovered.ShouldBeNull();
+
+        // Proof the assembly was abandoned before any run was prepared: the skip happens ahead of the
+        // timeout calculation, which is the last thing to run before a server is asked for.
+        timeoutCalc.Verify(x => x.CalculateTimeoutValue(It.IsAny<int>()), Times.Never());
+    }
+
+    [TestMethod, Timeout(30000)]
+    public async Task RunAssemblyTestsAsync_RunsAssembly_WhenFilterMatchesAtLeastOneTest()
+    {
+        // Guards the test above against an implementation that skips unconditionally: as soon as one
+        // test matches, the assembly is prepared for a run (the server start then fails, since the
+        // temp file is not a real test assembly - that part is not what is under test here).
+        var assembly = CreateTempAssemblyFile();
+        _testsByAssembly[assembly] =
+        [
+            new TestNode("uid-1", "Test1", "test", "discovered"),
+            new TestNode("uid-2", "Test2", "test", "discovered"),
+        ];
+
+        var timeoutCalc = new Mock<ITimeoutValueCalculator>();
+        timeoutCalc.Setup(x => x.CalculateTimeoutValue(It.IsAny<int>())).Returns(1000);
+
+        using var runner = CreateRunner(0);
+
+        var (_, _, discovered) = await runner.RunAssemblyTestsAsync(
+            assembly, timeoutCalc.Object, testUidFilter: node => node.Uid == "uid-1");
+
+        discovered.ShouldNotBeNull();                                                  // not the skip sentinel
+        timeoutCalc.Verify(x => x.CalculateTimeoutValue(It.IsAny<int>()), Times.Once());
+    }
+
+    [TestMethod, Timeout(1000)]
+    public async Task RunAllTestsAsync_KeepsTestIdentities_WhenAnAssemblyRanEveryTest()
+    {
+        // Regression: "every test ran" is scoped to a single assembly, but the ran set is aggregated
+        // across all of them. The accumulator used to only count those runs, dropping which tests they
+        // were. With a filter active the aggregate count then stays below the total discovered count,
+        // so the aggregate could not collapse back to EveryTest either - leaving a ran set that did not
+        // contain the mutant's assessing tests, so AnalyzeTestRun fell through every branch and the
+        // mutant stayed Pending ("Stryker failed to test 1 mutant(s)") instead of Survived.
+        const string fullyRunAssembly = "/path/to/fully-run.dll";   // 2 of 2 tests ran => EveryTest
+        const string partiallyRunAssembly = "/path/to/partial.dll"; // 1 of 2 tests ran => explicit list
+
+        var perAssembly = new Dictionary<string, (TestRunResult Result, List<TestNode> Discovered)>
+        {
+            [fullyRunAssembly] = (
+                BuildResult(TestIdentifierList.EveryTest()),
+                [new TestNode("full-1", "Test1", "test", "passed"), new TestNode("full-2", "Test2", "test", "passed")]),
+            [partiallyRunAssembly] = (
+                BuildResult(new TestIdentifierList(new[] { "partial-1" })),
+                [new TestNode("partial-1", "Test1", "test", "passed"), new TestNode("partial-2", "Test2", "test", "discovered")]),
+        };
+
+        using var runner = new StubbedAssemblyRunner(
+            _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, perAssembly);
+
+        var mutant = MockMutant(1, new TestIdentifierList(new[] { "full-1", "full-2", "partial-1" }));
+
+        ITestIdentifiers? capturedRan = null;
+        bool Update(IReadOnlyList<IMutant> _, ITestIdentifiers __, ITestIdentifiers ran, ITestIdentifiers ___)
+        {
+            capturedRan = ran;
+            return true;
+        }
+
+        await runner.RunAllTestsAsync(
+            [fullyRunAssembly, partiallyRunAssembly], mutantId: 1, mutants: [mutant.Object], update: Update);
+
+        capturedRan.ShouldNotBeNull();
+        capturedRan!.IsEveryTest.ShouldBeFalse();   // 3 of 4 discovered ran, so no blanket shortcut
+        capturedRan.GetIdentifiers().ShouldBe(["full-1", "full-2", "partial-1"], ignoreOrder: true);
+
+        // The check Mutant.AnalyzeTestRun makes to reach Survived; false before the fix, because only
+        // the partially-run assembly contributed identifiers.
+        mutant.Object.AssessingTests.IsIncludedIn(capturedRan).ShouldBeTrue();
+    }
+
+    private static TestRunResult BuildResult(ITestIdentifiers executedTests) =>
+        new([], executedTests, TestIdentifierList.NoTest(), TestIdentifierList.NoTest(),
+            string.Empty, [], TimeSpan.FromMilliseconds(1));
+
+    /// <summary>
+    /// Creates an existing file to stand in for a test assembly, so <see cref="File.Exists"/> passes and
+    /// the code under test is reached. It is never loaded or executed.
+    /// </summary>
+    private string CreateTempAssemblyFile()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"stryker-mtp-test-{Guid.NewGuid():N}.dll");
+        File.WriteAllText(path, string.Empty);
+        _tempFiles.Add(path);
+        return path;
+    }
+
+    /// <summary>
+    /// Returns a canned per-assembly run result, so aggregation across assemblies can be verified
+    /// without starting any test host.
+    /// </summary>
+    private sealed class StubbedAssemblyRunner : MicrosoftTestingPlatformRunner
+    {
+        private readonly Dictionary<string, (TestRunResult Result, List<TestNode> Discovered)> _perAssembly;
+
+        public StubbedAssemblyRunner(
+            Dictionary<string, List<TestNode>> testsByAssembly,
+            Dictionary<string, MtpTestDescription> testDescriptions,
+            TestSet testSet,
+            object discoveryLock,
+            Dictionary<string, (TestRunResult Result, List<TestNode> Discovered)> perAssembly)
+            : base(0, testsByAssembly, testDescriptions, testSet, discoveryLock, NullLogger.Instance)
+            => _perAssembly = perAssembly;
+
+        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
+            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<TestNode, bool>? testUidFilter = null)
+        {
+            var (result, discovered) = _perAssembly[assembly];
+            return Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>((result, false, discovered));
+        }
     }
 
     [TestCleanup]
@@ -809,13 +963,25 @@ public class SingleMicrosoftTestPlatformRunnerTests
                 // Ignore cleanup errors
             }
         }
+
+        foreach (var tempFile in _tempFiles)
+        {
+            try
+            {
+                File.Delete(tempFile);
+            }
+            catch
+            {
+                // Ignore cleanup errors
+            }
+        }
     }
 
     [TestMethod, Timeout(1000)]
     public async Task DiscoverTestsAsync_ShouldReturnFalse_WhenAssemblyNotFound()
     {
         // Arrange
-        using var runner = new SingleMicrosoftTestPlatformRunner(
+        using var runner = new MicrosoftTestingPlatformRunner(
             0,
             _testsByAssembly,
             _testDescriptions,
@@ -837,7 +1003,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         var project = new Mock<IProjectAndTests>();
         project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { "/nonexistent/assembly.dll" });
 
-        using var runner = new SingleMicrosoftTestPlatformRunner(
+        using var runner = new MicrosoftTestingPlatformRunner(
             0,
             _testsByAssembly,
             _testDescriptions,
@@ -865,7 +1031,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         mutant.Setup(x => x.Id).Returns(1);
         var mutants = new List<IMutant> { mutant.Object };
 
-        using var runner = new SingleMicrosoftTestPlatformRunner(
+        using var runner = new MicrosoftTestingPlatformRunner(
             0,
             _testsByAssembly,
             _testDescriptions,
@@ -893,7 +1059,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         mutant.Setup(x => x.Id).Returns(42);
         var mutants = new List<IMutant> { mutant.Object };
 
-        using var runner = new SingleMicrosoftTestPlatformRunner(
+        using var runner = new MicrosoftTestingPlatformRunner(
             0,
             _testsByAssembly,
             _testDescriptions,
@@ -922,7 +1088,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         mutant2.Setup(x => x.Id).Returns(2);
         var mutants = new List<IMutant> { mutant1.Object, mutant2.Object };
 
-        using var runner = new SingleMicrosoftTestPlatformRunner(
+        using var runner = new MicrosoftTestingPlatformRunner(
             0,
             _testsByAssembly,
             _testDescriptions,
@@ -1445,7 +1611,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.SessionTimedOut.ShouldBeFalse();
     }
 
-    private class TestableRunner : SingleMicrosoftTestPlatformRunner
+    private class TestableRunner : MicrosoftTestingPlatformRunner
     {
         private int _disposeLogicExecutedCount;
 
@@ -1480,7 +1646,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         }
     }
 
-    private class TestableRunnerForCoverage : SingleMicrosoftTestPlatformRunner
+    private class TestableRunnerForCoverage : MicrosoftTestingPlatformRunner
     {
         public TestableRunnerForCoverage(
             int id,
@@ -1498,7 +1664,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         public bool IsCoverageModeEnabled => _coverageMode;
     }
 
-    private class TimeoutSimulatingRunner : SingleMicrosoftTestPlatformRunner
+    private class TimeoutSimulatingRunner : MicrosoftTestingPlatformRunner
     {
         public TimeoutSimulatingRunner(
             int id,
@@ -1525,7 +1691,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         }
     }
 
-    private class NoTimeoutSimulatingRunner : SingleMicrosoftTestPlatformRunner
+    private class NoTimeoutSimulatingRunner : MicrosoftTestingPlatformRunner
     {
         public NoTimeoutSimulatingRunner(
             int id,

@@ -6,7 +6,7 @@ using Stryker.TestRunner.Tests;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
 
-internal class TestableRunner : SingleMicrosoftTestPlatformRunner
+internal class TestableRunner : MicrosoftTestingPlatformRunner
 {
     private readonly Action _onDispose;
     private readonly Func<string, TestNode, string, Task<ICoverageRunResult>>? _coverageHandler;

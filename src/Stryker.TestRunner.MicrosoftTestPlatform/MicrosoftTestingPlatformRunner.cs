@@ -20,7 +20,7 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 /// Maintains persistent test server connections per assembly to reduce process startup overhead.
 /// Uses file-based mutant control to allow changing the active mutant without restarting processes.
 /// </summary>
-public class SingleMicrosoftTestPlatformRunner : IDisposable
+public class MicrosoftTestingPlatformRunner : IDisposable
 {
     // One coverage file per test assembly. The injected MutantControl flushes coverage with an
     // unconditional overwrite on process exit, so with test hosts sharing a single file the last
@@ -48,7 +48,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
     private string RunnerId => $"MtpRunner-{_id}";
 
-    public SingleMicrosoftTestPlatformRunner(
+    public MicrosoftTestingPlatformRunner(
         int id,
         Dictionary<string, List<TestNode>> testsByAssembly,
         Dictionary<string, MtpTestDescription> testDescriptions,
@@ -423,7 +423,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    internal async Task<bool> WaitForEpochAckAsync(string epochFilePath, int expectedEpoch, TimeSpan timeout)
+    internal static async Task<bool> WaitForEpochAckAsync(string epochFilePath, int expectedEpoch, TimeSpan timeout)
     {
         var deadline = DateTime.UtcNow + timeout;
         while (DateTime.UtcNow < deadline)
@@ -784,6 +784,12 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
 
             if (result.ExecutedTests.IsEveryTest)
             {
+                // "Every test" is scoped to one assembly, but this accumulator spans all of them, so the
+                // identifiers have to be recorded and not just counted. Counting alone loses which tests
+                // ran, and with a test filter active the aggregate count stays below the total discovered
+                // count, so BuildExecutedTests cannot collapse back to EveryTest either: the mutant's
+                // assessing tests would not be included in the ran set and it would stay Pending.
+                _executedTests.AddRange(discoveredTests?.Select(t => t.Uid) ?? []);
                 _totalExecutedTests += discoveredTests?.Count ?? 0;
             }
             else
@@ -947,6 +953,15 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
 
         var discoveredTests = GetDiscoveredTests(assembly);
+        var anyCoveringTests = testUidFilter is not null && discoveredTests is not null && !discoveredTests.Any(testUidFilter);
+
+        // When no tests in this assembly cover the mutant(s) under test, skip the assembly entirely.
+        if (anyCoveringTests)
+        {
+            _logger.LogDebug("{RunnerId}: No test in {Assembly} covers the mutant(s) under test; skipping this assembly",
+                RunnerId, Path.GetFileName(assembly));
+            return (null, false, null);
+        }
 
         TimeSpan? timeout = null;
         if (timeoutCalc is not null && discoveredTests is not null)

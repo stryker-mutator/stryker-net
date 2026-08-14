@@ -18,8 +18,8 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 {
     private readonly AutoResetEvent _runnerAvailableHandler = new(false);
-    private readonly ConcurrentBag<SingleMicrosoftTestPlatformRunner> _availableRunners = new();
-    private readonly ConcurrentBag<SingleMicrosoftTestPlatformRunner> _allRunners = new();
+    private readonly ConcurrentBag<MicrosoftTestingPlatformRunner> _availableRunners = new();
+    private readonly ConcurrentBag<MicrosoftTestingPlatformRunner> _allRunners = new();
     private bool _disposed;
     private readonly ILogger _logger;
     private readonly int _countOfRunners;
@@ -30,7 +30,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     private readonly ISingleRunnerFactory _runnerFactory;
     private readonly IStrykerOptions _options;
 
-    public IEnumerable<SingleMicrosoftTestPlatformRunner> Runners => _availableRunners;
+    public IEnumerable<MicrosoftTestingPlatformRunner> Runners => _availableRunners;
 
     public MicrosoftTestPlatformRunnerPool(IStrykerOptions options, ILogger? logger = null, ISingleRunnerFactory? runnerFactory = null)
     {
@@ -182,7 +182,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     /// <summary>
     /// Captures coverage one test at a time (each test's coverage is flushed and reset separately via
-    /// the epoch relay in <see cref="SingleMicrosoftTestPlatformRunner.RunSingleTestForCoverageInReusedProcessAsync"/>),
+    /// the epoch relay in <see cref="MicrosoftTestingPlatformRunner.RunSingleTestForCoverageInReusedProcessAsync"/>),
     /// so each mutant's covering tests can be narrowed down instead of assuming every test covers it.
     /// Tests are distributed across the whole pool for parallelism; a runner keeps its per-assembly
     /// server warm across the tests it is handed rather than restarting it for every test.
@@ -241,7 +241,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     /// <summary>
     /// Captures coverage one test at a time, restarting the test host process around each test (see
-    /// <see cref="SingleMicrosoftTestPlatformRunner.RunSingleTestForCoverageInIsolatedProcessAsync"/>) so
+    /// <see cref="MicrosoftTestingPlatformRunner.RunSingleTestForCoverageInIsolatedProcessAsync"/>) so
     /// no state (static or otherwise) can leak between tests. This lets each result be trusted with
     /// <see cref="CoverageConfidence.Exact"/>, at the cost of a much slower init phase than the
     /// reused-process "perTest" capture in <see cref="CaptureCoverageTestByTest"/>.
@@ -313,9 +313,9 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         return await RunThisAsync(runner => runner.TestMultipleMutantsAsync(project, timeoutCalc, mutants, update)).ConfigureAwait(false);
     }
 
-    private async Task<T> RunThisAsync<T>(Func<SingleMicrosoftTestPlatformRunner, Task<T>> task)
+    private async Task<T> RunThisAsync<T>(Func<MicrosoftTestingPlatformRunner, Task<T>> task)
     {
-        SingleMicrosoftTestPlatformRunner? runner;
+        MicrosoftTestingPlatformRunner? runner;
 
         // Try to get a runner with a timeout to prevent indefinite blocking
         var attempts = 0;
