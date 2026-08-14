@@ -226,22 +226,20 @@ public class BaselineMutantFilter : IMutantFilter
 
     private async Task<IJsonReport> GetBaselineAsync()
     {
-        var branchName = _gitInfoProvider.GetCurrentBranchName();
+        var compareVersion = BaselineVersion.Compare(_options, _gitInfoProvider);
 
-        var baselineLocation = $"baseline/{branchName}";
-
-        var report = await _baselineProvider.Load(baselineLocation);
+        var report = await _baselineProvider.Load($"baseline/{compareVersion}");
 
         if (report == null)
         {
             _logger.LogInformation(
-                "We could not locate a baseline for branch {BranchName}, now trying fallback version {FallbackVersion}",
-                branchName, _options.FallbackVersion);
+                "We could not locate a baseline for version {CompareVersion}, now trying fallback version {FallbackVersion}",
+                compareVersion, _options.FallbackVersion);
 
             return await GetFallbackBaselineAsync();
         }
 
-        _logger.LogInformation("Found baseline report for current branch {BranchName}", branchName);
+        _logger.LogInformation("Found baseline report for version {CompareVersion}", compareVersion);
 
         return report;
     }
@@ -255,12 +253,12 @@ public class BaselineMutantFilter : IMutantFilter
             if (baseline)
             {
                 _logger.LogDebug(
-                    "We could not locate a baseline report for the fallback version. Now trying regular fallback version.");
+                    "We could not locate a baseline report for the fallback version. Now trying the regular report stored for that version.");
                 return await GetFallbackBaselineAsync(false);
             }
 
             _logger.LogInformation(
-                "We could not locate a baseline report for the current branch, version or fallback version. Now running a complete test to establish a fresh baseline.");
+                "We could not locate a baseline report for the compare version or the fallback version. Now running a complete test to establish a fresh baseline.");
             return null;
         }
 

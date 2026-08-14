@@ -121,6 +121,9 @@ public class Baseline : IExtraData
     [JsonPropertyName("enabled")]
     public bool? Enabled { get; init; }
 
+    [JsonPropertyName("compare-version")]
+    public string CompareVersion { get; init; }
+
     [JsonPropertyName("provider")]
     public string Provider { get; init; }
 

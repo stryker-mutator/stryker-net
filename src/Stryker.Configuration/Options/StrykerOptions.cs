@@ -154,6 +154,11 @@ public class StrykerOptions : IStrykerOptions
     public bool WithBaseline { get; init; }
 
     /// <summary>
+    /// When using the baseline feature this version is used to load the baseline report to compare with.
+    /// </summary>
+    public string BaselineCompareVersion { get; init; }
+
+    /// <summary>
     /// When the baseline feature is enabled, this selects the source of the baseline.
     /// </summary>
     public BaselineProvider BaselineProvider { get; init; }

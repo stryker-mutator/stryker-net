@@ -38,7 +38,11 @@ public class GitDiffProvider : IDiffProvider
             ChangedTestFiles = new Collection<string>()
         };
 
-        // A git repository has been detected, calculate the diff to filter
+        if (!_gitInfoProvider.IsRepository)
+        {
+            throw new InputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the 'since' feature.");
+        }
+
         var repository = _gitInfoProvider.Repository;
         var commit = _gitInfoProvider.DetermineCommit(_options.SinceTarget);
 

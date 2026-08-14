@@ -54,6 +54,7 @@ public interface IStrykerOptions
     TestRunner TestRunner { get; init; }
     IThresholds Thresholds { get; init; }
     bool WithBaseline { get; init; }
+    string BaselineCompareVersion { get; init; }
     string WorkingDirectory { get; init; }
     IProvideId MutantIdProvider { get; set; }
 }

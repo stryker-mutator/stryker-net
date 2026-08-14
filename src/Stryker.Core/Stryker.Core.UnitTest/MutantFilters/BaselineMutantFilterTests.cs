@@ -64,16 +64,17 @@ public class BaselineMutantFilterTests : TestBase
 
         var jsonReport = JsonReport.Build(options, inputComponent, It.IsAny<TestProjectsInfo>());
 
+        gitInfoProvider.SetupGet(x => x.IsRepository).Returns(true);
         gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns(branchName);
 
-        baselineProvider.Setup(x => x.Load($"baseline/{branchName}")).Returns(Task.FromResult<IJsonReport>(null));
+        baselineProvider.Setup(x => x.Load($"baseline/{options.ProjectVersion}")).Returns(Task.FromResult<IJsonReport>(null));
         baselineProvider.Setup(x => x.Load($"baseline/{options.FallbackVersion}")).Returns(Task.FromResult(jsonReport));
 
         // Act
         var target = new BaselineMutantFilter(options, baselineProvider.Object, gitInfoProvider.Object);
 
         // Assert
-        baselineProvider.Verify(x => x.Load($"baseline/{branchName}"), Times.Once);
+        baselineProvider.Verify(x => x.Load($"baseline/{options.ProjectVersion}"), Times.Once);
         baselineProvider.Verify(x => x.Load($"baseline/{options.FallbackVersion}"), Times.Once);
         baselineProvider.VerifyNoOtherCalls();
     }
@@ -100,9 +101,10 @@ public class BaselineMutantFilterTests : TestBase
 
         var jsonReport = JsonReport.Build(options, inputComponent, It.IsAny<TestProjectsInfo>());
 
+        gitInfoProvider.SetupGet(x => x.IsRepository).Returns(true);
         gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns(branchName);
 
-        baselineProvider.Setup(x => x.Load(branchName)).Returns(Task.FromResult<IJsonReport>(null));
+        baselineProvider.Setup(x => x.Load(options.ProjectVersion)).Returns(Task.FromResult<IJsonReport>(null));
         baselineProvider.Setup(x => x.Load($"baseline/{options.FallbackVersion}")).Returns(Task.FromResult<IJsonReport>(null));
         baselineProvider.Setup(x => x.Load(options.FallbackVersion)).Returns(Task.FromResult(jsonReport));
 
@@ -110,7 +112,7 @@ public class BaselineMutantFilterTests : TestBase
         var target = new BaselineMutantFilter(options, baselineProvider.Object, gitInfoProvider.Object);
 
         // Assert
-        baselineProvider.Verify(x => x.Load($"baseline/{branchName}"), Times.Once);
+        baselineProvider.Verify(x => x.Load($"baseline/{options.ProjectVersion}"), Times.Once);
         baselineProvider.Verify(x => x.Load($"baseline/{options.FallbackVersion}"), Times.Once);
         baselineProvider.Verify(x => x.Load(options.FallbackVersion), Times.Once);
         baselineProvider.VerifyNoOtherCalls();
@@ -138,16 +140,66 @@ public class BaselineMutantFilterTests : TestBase
 
         var jsonReport = JsonReport.Build(options, inputComponent, It.IsAny<TestProjectsInfo>());
 
+        gitInfoProvider.SetupGet(x => x.IsRepository).Returns(true);
         gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns(branchName);
 
-        baselineProvider.Setup(x => x.Load($"baseline/{branchName}")).Returns(Task.FromResult(jsonReport));
+        baselineProvider.Setup(x => x.Load($"baseline/{options.ProjectVersion}")).Returns(Task.FromResult(jsonReport));
 
         // Act
         var target = new BaselineMutantFilter(options, gitInfoProvider: gitInfoProvider.Object, baselineProvider: baselineProvider.Object);
 
         // Assert
-        baselineProvider.Verify(x => x.Load($"baseline/{branchName}"), Times.Once);
+        baselineProvider.Verify(x => x.Load($"baseline/{options.ProjectVersion}"), Times.Once);
         baselineProvider.Verify(x => x.Load($"baseline/{options.FallbackVersion}"), Times.Never);
+        baselineProvider.VerifyNoOtherCalls();
+    }
+
+    [TestMethod]
+    public void GetBaseline_UsesBranchName_WhenProjectVersionIsEmpty()
+    {
+        var baselineProvider = new Mock<IBaselineProvider>();
+        var gitInfoProvider = new Mock<IGitInfoProvider>();
+        gitInfoProvider.SetupGet(x => x.IsRepository).Returns(true);
+        gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns("feature/branch");
+
+        var options = new StrykerOptions
+        {
+            WithBaseline = true,
+            FallbackVersion = "fallback/version"
+        };
+
+        var jsonReport = JsonReport.Build(options, new Mock<IReadOnlyProjectComponent>().Object, It.IsAny<TestProjectsInfo>());
+        baselineProvider.Setup(x => x.Load("baseline/feature/branch")).Returns(Task.FromResult(jsonReport));
+
+        _ = new BaselineMutantFilter(options, baselineProvider.Object, gitInfoProvider.Object);
+
+        baselineProvider.Verify(x => x.Load("baseline/feature/branch"), Times.Once);
+        baselineProvider.VerifyNoOtherCalls();
+    }
+
+    [TestMethod]
+    public void GetBaseline_UsesCompareVersion_InsteadOfCurrentVersion_WhenConfigured()
+    {
+        var baselineProvider = new Mock<IBaselineProvider>();
+        var gitInfoProvider = new Mock<IGitInfoProvider>();
+        gitInfoProvider.SetupGet(x => x.IsRepository).Returns(true);
+        gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns("feature/branch");
+
+        var options = new StrykerOptions
+        {
+            WithBaseline = true,
+            ProjectVersion = "feature/branch",
+            BaselineCompareVersion = "development",
+            FallbackVersion = "master"
+        };
+
+        var jsonReport = JsonReport.Build(options, new Mock<IReadOnlyProjectComponent>().Object, It.IsAny<TestProjectsInfo>());
+        baselineProvider.Setup(x => x.Load("baseline/development")).Returns(Task.FromResult(jsonReport));
+
+        _ = new BaselineMutantFilter(options, baselineProvider.Object, gitInfoProvider.Object);
+
+        baselineProvider.Verify(x => x.Load("baseline/development"), Times.Once);
+        baselineProvider.Verify(x => x.Load("baseline/feature/branch"), Times.Never);
         baselineProvider.VerifyNoOtherCalls();
     }
 

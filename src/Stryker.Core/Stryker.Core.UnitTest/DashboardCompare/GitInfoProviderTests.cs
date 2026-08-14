@@ -185,15 +185,15 @@ public class GitInfoProviderTests : TestBase
     }
 
     [TestMethod]
-    public void CreateRepository_Throws_InputException_When_RepositoryPath_Empty()
+    public void DoesNotCreateRepository_When_RepositoryPath_Empty()
     {
-        static void act() => new GitInfoProvider(new StrykerOptions()
+        var target = new GitInfoProvider(new StrykerOptions()
         {
             Since = true,
         }, repositoryPath: string.Empty);
 
-        Should.Throw<InputException>(act)
-            .Message.ShouldBe("Could not locate git repository.");
+        target.IsRepository.ShouldBeFalse();
+        target.Repository.ShouldBeNull();
     }
 
     [TestMethod]

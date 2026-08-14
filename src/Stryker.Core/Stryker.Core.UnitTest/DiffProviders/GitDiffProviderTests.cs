@@ -94,6 +94,7 @@ public class GitDiffProviderTests : TestBase
 
         gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
+        gitInfoMock.SetupGet(x => x.IsRepository).Returns(true);
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
         var target = new GitDiffProvider(options, null, gitInfoMock.Object);
@@ -159,6 +160,7 @@ public class GitDiffProviderTests : TestBase
 
         gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
+        gitInfoMock.SetupGet(x => x.IsRepository).Returns(true);
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
         var target = new GitDiffProvider(options, null, gitInfoMock.Object);
@@ -208,6 +210,7 @@ public class GitDiffProviderTests : TestBase
         var gitInfoMock = new Mock<IGitInfoProvider>();
 
         gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns((Commit)null);
+        gitInfoMock.SetupGet(x => x.IsRepository).Returns(true);
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         var target = new GitDiffProvider(options, null, gitInfoMock.Object);
 
@@ -278,6 +281,7 @@ public class GitDiffProviderTests : TestBase
 
         gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
+        gitInfoMock.SetupGet(x => x.IsRepository).Returns(true);
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
         var target = new GitDiffProvider(options, null, gitInfoMock.Object);
@@ -354,6 +358,7 @@ public class GitDiffProviderTests : TestBase
 
         gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
+        gitInfoMock.SetupGet(x => x.IsRepository).Returns(true);
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns(FilePathUtils.NormalizePathSeparators("/c/Path/To/Repo"));
         var target = new GitDiffProvider(options, null, gitInfoMock.Object);
@@ -430,6 +435,7 @@ public class GitDiffProviderTests : TestBase
 
         gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
+        gitInfoMock.SetupGet(x => x.IsRepository).Returns(true);
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns(FilePathUtils.NormalizePathSeparators("/c/Path/To/Repo"));
         var target = new GitDiffProvider(options, null, gitInfoMock.Object);
@@ -501,6 +507,7 @@ public class GitDiffProviderTests : TestBase
 
         gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
+        gitInfoMock.SetupGet(x => x.IsRepository).Returns(true);
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
         var target = new GitDiffProvider(options, null, gitInfoMock.Object);
@@ -591,6 +598,7 @@ public class GitDiffProviderTests : TestBase
 
         gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
+        gitInfoMock.SetupGet(x => x.IsRepository).Returns(true);
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
         var target = new GitDiffProvider(options, null, gitInfoMock.Object);
@@ -678,6 +686,7 @@ public class GitDiffProviderTests : TestBase
 
         gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
+        gitInfoMock.SetupGet(x => x.IsRepository).Returns(true);
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
         var target = new GitDiffProvider(options, null, gitInfoMock.Object);

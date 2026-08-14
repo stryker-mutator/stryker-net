@@ -540,6 +540,18 @@ Options:";
     }
 
     [TestMethod]
+    public async Task ShouldSetBaselineCompareVersionWhenPassed()
+    {
+        await _target.RunAsync(new[] { "--with-baseline:release" });
+
+        _strykerRunnerMock.VerifyAll();
+
+        _inputs.WithBaselineInput.SuppliedInput.Value.ShouldBeTrue();
+        _inputs.BaselineCompareVersionInput.SuppliedInput.ShouldBe("release");
+        _inputs.SinceTargetInput.SuppliedInput.ShouldBeNull();
+    }
+
+    [TestMethod]
     [DataRow("-o", null)]
     [DataRow("-o:html", "html")]
     [DataRow("--open-report", null)]

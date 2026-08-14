@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Utilities.Logging;
 
@@ -14,9 +13,11 @@ public class GitInfoProvider : IGitInfoProvider
     private readonly string _repositoryPath;
     private readonly ILogger<GitInfoProvider> _logger;
 
+    public bool IsRepository { get; }
+
     public IRepository Repository { get; }
 
-    public string RepositoryPath => _repositoryPath ?? LibGit2Sharp.Repository.Discover(_options.ProjectPath)?.Split(".git")[0];
+    public string RepositoryPath => _repositoryPath;
 
     public GitInfoProvider(IStrykerOptions options, IRepository repository = null, string repositoryPath = null, ILogger<GitInfoProvider> logger = null)
     {
@@ -24,12 +25,20 @@ public class GitInfoProvider : IGitInfoProvider
         _options = options;
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<GitInfoProvider>();
 
-        Repository = repository ?? CreateRepository();
+        _repositoryPath ??= DiscoverRepositoryPath();
+        Repository = repository ?? (string.IsNullOrEmpty(_repositoryPath) ? null : new Repository(_repositoryPath));
+        IsRepository = Repository is not null;
     }
 
-    public string? GetCurrentBranchName()
+    public string GetCurrentBranchName()
     {
-        string? branchName = null;
+        if (!IsRepository)
+        {
+            _logger.LogDebug("Could not locate a git repository, unable to determine the current branch name");
+            return null;
+        }
+
+        string branchName = null;
         if (Repository?.Branches?.FirstOrDefault(b => b.IsCurrentRepositoryHead) is var identifiedBranch && identifiedBranch is not null)
         {
             _logger.LogDebug("{BranchName} identified as current branch", identifiedBranch.FriendlyName);
@@ -41,19 +50,24 @@ public class GitInfoProvider : IGitInfoProvider
 
     public Commit DetermineCommit(string target)
     {
+        if (!IsRepository)
+        {
+            return null;
+        }
+
         var commit = GetCommit(target);
 
         return commit;
     }
 
-    private IRepository CreateRepository()
+    private string DiscoverRepositoryPath()
     {
-        if (string.IsNullOrEmpty(RepositoryPath))
+        if (string.IsNullOrWhiteSpace(_options.ProjectPath))
         {
-            throw new InputException("Could not locate git repository.");
+            return null;
         }
 
-        return new Repository(RepositoryPath);
+        return LibGit2Sharp.Repository.Discover(_options.ProjectPath)?.Split(".git")[0];
     }
 
     private Commit GetCommit(string target)

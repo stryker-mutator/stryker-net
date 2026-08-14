@@ -12,20 +12,19 @@ public class FallbackVersionInputTests : TestBase
     public void ShouldHaveHelpText()
     {
         var target = new FallbackVersionInput();
-        target.HelpText.ShouldBe(@"Commitish used as a fallback when no report could be found based on Git information for the baseline feature.
+        target.HelpText.ShouldBe(@"Version used as a bootstrap when no baseline report could be found for the compare version.
 Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing.
-When you don't specify a fallback version the since target will be used as fallback version.
-Example: If the current branch is based on the main branch, set 'main' as the fallback version | default: 'master'");
+Example: If the current branch is based on the main branch, set 'main' as the fallback version | default: 'main'");
     }
 
     [TestMethod]
     public void ShouldNotValidate_IfNotEnabled()
     {
-        var input = new FallbackVersionInput { SuppliedInput = "master" };
+        var input = new FallbackVersionInput { SuppliedInput = "development" };
 
-        var validatedInput = input.Validate(withBaseline: false, projectVersion: "master", sinceTarget: "master");
+        var validatedInput = input.Validate(withBaseline: false);
 
-        validatedInput.ShouldBe(new SinceTargetInput().Default);
+        validatedInput.ShouldBe("main");
     }
 
     [TestMethod]
@@ -33,17 +32,17 @@ Example: If the current branch is based on the main branch, set 'main' as the fa
     {
         var input = new FallbackVersionInput { SuppliedInput = "development" };
 
-        var validatedInput = input.Validate(withBaseline: true, projectVersion: "feat/feat4", sinceTarget: "master");
+        var validatedInput = input.Validate(withBaseline: true);
 
         validatedInput.ShouldBe("development");
     }
 
     [TestMethod]
-    public void ShouldUseSinceTarget_IfNotExplicitlySet()
+    public void ShouldUseDefault_IfNotExplicitlySet()
     {
         var input = new FallbackVersionInput();
 
-        var validatedInput = input.Validate(withBaseline: true, projectVersion: "development", sinceTarget: "main");
+        var validatedInput = input.Validate(withBaseline: true);
 
         validatedInput.ShouldBe("main");
     }

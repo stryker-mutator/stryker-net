@@ -20,6 +20,7 @@ public class StrykerInputsTests : TestBase
         AzureFileStorageUrlInput = new AzureFileStorageUrlInput(),
         BaselineProviderInput = new BaselineProviderInput(),
         BaselineOutputInput = new BaselineOutputInput(),
+        BaselineCompareVersionInput = new BaselineCompareVersionInput(),
         BasePathInput = new BasePathInput() { SuppliedInput = Directory.GetCurrentDirectory() },
         ConcurrencyInput = new ConcurrencyInput(),
         DashboardApiKeyInput = new DashboardApiKeyInput(),
@@ -191,6 +192,35 @@ public class StrykerInputsTests : TestBase
 
         var exception = Should.Throw<InputException>(() => _target.ValidateAll());
         exception.Message.ShouldBe("The since and baseline features are mutually exclusive.");
+    }
+
+    [TestMethod]
+    public void BaselineCompareVersionShouldBeIndependentFromSinceTarget()
+    {
+        _target.WithBaselineInput.SuppliedInput = true;
+        _target.BaselineCompareVersionInput.SuppliedInput = "release";
+        _target.SinceTargetInput.SuppliedInput = "develop";
+        _target.ProjectVersionInput.SuppliedInput = "current";
+        _target.FallbackVersionInput.SuppliedInput = null;
+        _target.BaselineOutputInput.SuppliedInput = Path.GetFullPath("StrykerOutput");
+
+        var result = _target.ValidateAll();
+
+        result.BaselineCompareVersion.ShouldBe("release");
+        result.SinceTarget.ShouldBe("master");
+        result.FallbackVersion.ShouldBe("main");
+    }
+
+    [TestMethod]
+    public void BaselineShouldNotRequireProjectVersion()
+    {
+        _target.WithBaselineInput.SuppliedInput = true;
+        _target.BaselineOutputInput.SuppliedInput = Path.GetFullPath("StrykerOutput");
+
+        var result = _target.ValidateAll();
+
+        result.ProjectVersion.ShouldBe(string.Empty);
+        result.BaselineCompareVersion.ShouldBe(string.Empty);
     }
 
     [TestMethod]

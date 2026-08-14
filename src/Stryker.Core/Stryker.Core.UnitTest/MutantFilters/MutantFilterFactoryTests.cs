@@ -154,6 +154,7 @@ public class MutantFilterFactoryTests : TestBase
         var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Strict);
         var baselineProviderMock = new Mock<IBaselineProvider>(MockBehavior.Strict);
         var branch = "branch";
+        gitInfoProviderMock.Setup(m => m.IsRepository).Returns(true);
         gitInfoProviderMock.Setup(m => m.GetCurrentBranchName()).Returns(branch);
         baselineProviderMock.Setup(m => m.Load($"baseline/{branch}")).ReturnsAsync(new JsonReport());
         diffProviderMock.Setup(m => m.ScanDiff()).Returns(new DiffResult());
