@@ -482,7 +482,8 @@ public class BaselineMutantFilterTests : TestBase
             WithBaseline = true,
             ProjectVersion = "version"
         };
-        var source = "class Tests { void Test() { Assert.IsTrue(true); } }";
+        var source = "class Source { }";
+        var testSource = "class Tests { void Test() { Assert.IsTrue(true); } }";
         var baselineMutants = new HashSet<IJsonMutant>
         {
             new JsonMutant { Status = "Killed", CoveredBy = ["test-id"] },
@@ -490,7 +491,7 @@ public class BaselineMutantFilterTests : TestBase
         };
         var baselineTestFile = new JsonTestFile
         {
-            Source = source,
+            Source = testSource,
             Tests = new HashSet<IJsonTest> { new JsonTest("test-id") }
         };
         var baseline = new MockJsonReport(null, new Dictionary<string, ISourceFile>
@@ -500,11 +501,11 @@ public class BaselineMutantFilterTests : TestBase
         {
             TestFiles = new Dictionary<string, IJsonTestFile> { ["tests.cs"] = baselineTestFile }
         };
-        var currentTest = CreateCurrentTest(source, "test-id");
+        var currentTest = CreateCurrentTest(testSource, "test-id");
         var currentTestFile = new Mock<ITestFile>();
         currentTestFile.SetupGet(x => x.RelativePath).Returns("tests.cs");
-        currentTestFile.SetupGet(x => x.Source).Returns(source);
-        currentTestFile.SetupGet(x => x.Tests).Returns(new List<ITestCase> { currentTest });
+        currentTestFile.SetupGet(x => x.Source).Returns(testSource);
+        currentTestFile.SetupGet(x => x.Tests).Returns(new List<Abstractions.ProjectComponents.ITestCase> { currentTest });
         var testProjectsInfo = new Mock<ITestProjectsInfo>();
         testProjectsInfo.SetupGet(x => x.TestFiles).Returns(new[] { currentTestFile.Object });
         var gitInfoProvider = new Mock<IGitInfoProvider>();
@@ -513,6 +514,7 @@ public class BaselineMutantFilterTests : TestBase
 
         baselineProvider.Setup(x => x.Load("baseline/version")).ReturnsAsync(baseline);
         diffProvider.Setup(x => x.GetContentDiff(source, source)).Returns(EmptyContentDiff);
+        diffProvider.Setup(x => x.GetContentDiff(testSource, testSource)).Returns(EmptyContentDiff);
         contentMatcher.Setup(x => x.MatchByLocation(It.IsAny<IEnumerable<IMutant>>(), It.IsAny<IJsonMutant>(), EmptyContentDiff)).Returns(mutants);
         contentTestMatcher.Setup(x => x.IsTestUnchanged(It.IsAny<IJsonTest>(), currentTest, EmptyContentDiff)).Returns(true);
 
@@ -523,6 +525,7 @@ public class BaselineMutantFilterTests : TestBase
 
         mutants.ShouldAllBe(mutant => mutant.ResultStatus == MutantStatus.Killed);
         diffProvider.Verify(x => x.GetContentDiff(source, source), Times.Once);
+        diffProvider.Verify(x => x.GetContentDiff(testSource, testSource), Times.Once);
         contentTestMatcher.Verify(x => x.IsTestUnchanged(It.IsAny<IJsonTest>(), currentTest, EmptyContentDiff), Times.Exactly(2));
     }
 
@@ -552,7 +555,7 @@ public class BaselineMutantFilterTests : TestBase
         var currentTestFile = new Mock<ITestFile>();
         currentTestFile.SetupGet(x => x.RelativePath).Returns("tests.cs");
         currentTestFile.SetupGet(x => x.Source).Returns(source);
-        currentTestFile.SetupGet(x => x.Tests).Returns(new List<ITestCase> { currentTest });
+        currentTestFile.SetupGet(x => x.Tests).Returns(new List<Abstractions.ProjectComponents.ITestCase> { currentTest });
         var testProjectsInfo = new Mock<ITestProjectsInfo>();
         testProjectsInfo.SetupGet(x => x.TestFiles).Returns(new[] { currentTestFile.Object });
         var gitInfoProvider = new Mock<IGitInfoProvider>();
@@ -586,8 +589,20 @@ public class BaselineMutantFilterTests : TestBase
         var baseline = new MockJsonReport(null, new Dictionary<string, ISourceFile>
         {
             ["foo.cs"] = new MockJsonReportFileComponent("", source, new HashSet<IJsonMutant> { baselineMutant })
-        });
+        })
+        {
+            TestFiles = new Dictionary<string, IJsonTestFile>
+            {
+                ["tests.cs"] = new JsonTestFile
+                {
+                    Source = "class Tests { }",
+                    Tests = new HashSet<IJsonTest> { new JsonTest("removed-test") }
+                }
+            }
+        };
         var gitInfoProvider = new Mock<IGitInfoProvider>();
+        var testProjectsInfo = new Mock<ITestProjectsInfo>();
+        testProjectsInfo.SetupGet(x => x.TestFiles).Returns(Enumerable.Empty<ITestFile>());
         var file = new CsharpFileLeaf { RelativePath = "foo.cs", SourceCode = source };
         var mutant = new Mutant { ResultStatus = MutantStatus.Killed };
 
@@ -596,7 +611,7 @@ public class BaselineMutantFilterTests : TestBase
         diffProvider.Setup(x => x.GetContentDiff(source, source)).Returns(EmptyContentDiff);
 
         var target = new BaselineMutantFilter(options, baselineProvider.Object, gitInfoProvider.Object,
-            diffProvider.Object, contentMatcher.Object);
+            diffProvider.Object, contentMatcher.Object, testProjectsInfo.Object);
 
         target.FilterMutants(new[] { mutant }, file, options).ToList();
 
@@ -604,11 +619,11 @@ public class BaselineMutantFilterTests : TestBase
         mutant.ResultStatusReason.ShouldBe("One or more covering tests changed since the previous run");
     }
 
-    private static ITestCase CreateCurrentTest(string source, string id)
+    private static Abstractions.ProjectComponents.ITestCase CreateCurrentTest(string source, string id)
     {
         var tree = CSharpSyntaxTree.ParseText(source);
         var node = tree.GetRoot().DescendantNodes().First();
-        var testCase = new Mock<ITestCase>();
+        var testCase = new Mock<Abstractions.ProjectComponents.ITestCase>();
         testCase.SetupGet(x => x.Id).Returns(id);
         testCase.SetupGet(x => x.Node).Returns(node);
         return testCase.Object;
