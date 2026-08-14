@@ -82,7 +82,7 @@ public class DiffResult
                     newCursor += length;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(op.Operation), op.Operation, "Unknown diff operation.");
+                    throw new Exception($"Unknown diff operation {op.Operation}.");
             }
         }
 

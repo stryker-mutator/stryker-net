@@ -22,7 +22,6 @@ public static class FileConfigReader
         // As json values are first in line we can just overwrite all supplied inputs
         inputs.ConcurrencyInput.SuppliedInput = config.Concurrency;
 
-
         if (config.Since is not null)
         {
             // Since is implicitly enabled when the object exists in the file config
