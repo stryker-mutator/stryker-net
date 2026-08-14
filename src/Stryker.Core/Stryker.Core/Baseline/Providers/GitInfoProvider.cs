@@ -99,12 +99,12 @@ public class GitInfoProvider : IGitInfoProvider
             }
         }
 
-        _logger.LogDebug("Looking for tag matching {target}", target);
+        _logger.LogDebug("Looking for tag matching {Target}", target);
         var tag = Repository.Tags.FirstOrDefault(t => t.Target is Commit && (t.CanonicalName?.Contains(target) ?? false));
         var tagCommit = tag?.Target as Commit;
         if (tagCommit != null)
         {
-            _logger.LogDebug("Found tag {tag} for diff target {target}", tag.CanonicalName, target);
+            _logger.LogDebug("Found tag {Tag} for diff target {Target}", tag.CanonicalName, target);
             return tagCommit;
         }
 
@@ -115,7 +115,7 @@ public class GitInfoProvider : IGitInfoProvider
 
             if (commit != null)
             {
-                _logger.LogDebug("Found commit {commit} for diff target {target}", commit.Sha, target);
+                _logger.LogDebug("Found commit {Commit} for diff target {Target}", commit.Sha, target);
                 return commit;
             }
         }
