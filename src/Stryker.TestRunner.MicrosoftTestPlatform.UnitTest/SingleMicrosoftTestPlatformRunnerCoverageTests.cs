@@ -474,16 +474,11 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
         await runner.DiscoverTestsAsync(testAssembly);
 
-        var serversField = typeof(SingleMicrosoftTestPlatformRunner)
-            .GetField("_assemblyServers", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
-
-        var serversBefore = (Dictionary<string, AssemblyTestServer>)serversField.GetValue(runner)!;
-        serversBefore.ShouldNotBeEmpty("servers should be populated after discovery");
+        runner._assemblyServers.ShouldNotBeEmpty("servers should be populated after discovery");
 
         await runner.ResetServerAsync();
 
-        var serversAfter = (Dictionary<string, AssemblyTestServer>)serversField.GetValue(runner)!;
-        serversAfter.ShouldBeEmpty("all servers should be disposed and removed after reset");
+        runner._assemblyServers.ShouldBeEmpty("all servers should be disposed and removed after reset");
     }
 
     // --- Per-test coverage epoch relay tests ---
@@ -491,13 +486,6 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
     // These exercise the runner side of the handshake documented on MutantControl's epoch poller:
     // the runner writes a request epoch, the (here: simulated) test host writes back an ack epoch once
     // it has flushed, and the runner waits for that ack before reading the coverage file.
-
-    private static object InvokePrivate(SingleMicrosoftTestPlatformRunner runner, string method, params object[] args)
-    {
-        var m = typeof(SingleMicrosoftTestPlatformRunner).GetMethod(method,
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
-        return m.Invoke(runner, args)!;
-    }
 
     [TestMethod]
     public void EpochRelay_WriteEpochRequest_DoesNotTouchAckHalf()
@@ -510,16 +498,13 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
             using var runner = new SingleMicrosoftTestPlatformRunner(
                 runnerId, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
-            InvokePrivate(runner, "InitializeEpochFile", epochFilePath);
-            InvokePrivate(runner, "WriteEpochRequest", epochFilePath, 5);
+            runner.InitializeEpochFile(epochFilePath);
+            runner.WriteEpochRequest(epochFilePath, 5);
 
-            var args = new object[] { epochFilePath, 0 };
-            var found = (bool)typeof(SingleMicrosoftTestPlatformRunner)
-                .GetMethod("TryReadEpochAck", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
-                .Invoke(runner, args)!;
+            var found = SingleMicrosoftTestPlatformRunner.TryReadEpochAck(epochFilePath, out var ack);
 
             found.ShouldBeTrue();
-            ((int)args[1]).ShouldBe(0, "ack should still be 0; WriteEpochRequest only touches the request half");
+            ack.ShouldBe(0, "ack should still be 0; WriteEpochRequest only touches the request half");
         }
         finally
         {
@@ -538,7 +523,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
             using var runner = new SingleMicrosoftTestPlatformRunner(
                 runnerId, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
-            InvokePrivate(runner, "InitializeEpochFile", epochFilePath);
+            runner.InitializeEpochFile(epochFilePath);
 
             // Write request AND ack = 3 directly, simulating the test host having already caught up.
             using (var stream = new FileStream(epochFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
@@ -550,11 +535,9 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
                 accessor.Write(4, 3);
             }
 
-            var method = typeof(SingleMicrosoftTestPlatformRunner).GetMethod("WaitForEpochAckAsync",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
-            var task = (Task<bool>)method.Invoke(runner, new object[] { epochFilePath, 3, TimeSpan.FromSeconds(5) })!;
+            var acked = await runner.WaitForEpochAckAsync(epochFilePath, 3, TimeSpan.FromSeconds(5));
 
-            (await task).ShouldBeTrue();
+            acked.ShouldBeTrue();
         }
         finally
         {
@@ -573,15 +556,13 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
             using var runner = new SingleMicrosoftTestPlatformRunner(
                 runnerId, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
-            InvokePrivate(runner, "InitializeEpochFile", epochFilePath);
-            InvokePrivate(runner, "WriteEpochRequest", epochFilePath, 1);
+            runner.InitializeEpochFile(epochFilePath);
+            runner.WriteEpochRequest(epochFilePath, 1);
 
-            var method = typeof(SingleMicrosoftTestPlatformRunner).GetMethod("WaitForEpochAckAsync",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
             // Nothing ever writes ack=1, so this must time out quickly rather than hang.
-            var task = (Task<bool>)method.Invoke(runner, new object[] { epochFilePath, 1, TimeSpan.FromMilliseconds(100) })!;
+            var acked = await runner.WaitForEpochAckAsync(epochFilePath, 1, TimeSpan.FromMilliseconds(100));
 
-            (await task).ShouldBeFalse();
+            acked.ShouldBeFalse();
         }
         finally
         {
@@ -608,11 +589,6 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
     //
     // The happyflow can't be tested here because it requires a real test host to run the test and flush coverage
     // to the coverage file. The happyflow is tested in the integration test project, which runs real tests in a real test host.
-
-    private static Dictionary<string, AssemblyTestServer> GetAssemblyServers(SingleMicrosoftTestPlatformRunner runner) =>
-        (Dictionary<string, AssemblyTestServer>)typeof(SingleMicrosoftTestPlatformRunner)
-            .GetField("_assemblyServers", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
-            .GetValue(runner)!;
 
     [TestMethod, Timeout(5000)]
     public async Task RunSingleTestForCoverageInIsolatedProcessAsync_ReturnsDubious_WhenServerCannotStart()
@@ -654,7 +630,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         second.Confidence.ShouldBe(CoverageConfidence.Dubious);
         first.TestId.ShouldBe("test-1");
         second.TestId.ShouldBe("test-2");
-        GetAssemblyServers(runner).ShouldNotContainKey(assembly);
+        runner._assemblyServers.ShouldNotContainKey(assembly);
     }
 
     [TestMethod, Timeout(10000)]
@@ -672,10 +648,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         await runner.RunSingleTestForCoverageInIsolatedProcessAsync(
             assembly, new TestNode("test-1", "Test1", "test", "discovered"), "test-1");
 
-        var registeredPaths = (System.Collections.Concurrent.ConcurrentDictionary<string, string>)
-            typeof(SingleMicrosoftTestPlatformRunner)
-                .GetField("_coverageFilePaths", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
-                .GetValue(runner)!;
+        var registeredPaths = runner._coverageFilePaths;
 
         registeredPaths.ShouldContainKey(assembly,
             "the isolated capture must resolve this assembly's aggregate coverage file");
@@ -708,11 +681,9 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
             704, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
         runner.SetPerTestCoverageMode(true);
-        var modeField = typeof(SingleMicrosoftTestPlatformRunner)
-            .GetField("_perTestCoverageMode", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
-        ((bool)modeField.GetValue(runner)!).ShouldBeTrue();
+        runner._perTestCoverageMode.ShouldBeTrue();
 
         runner.SetPerTestCoverageMode(false);
-        ((bool)modeField.GetValue(runner)!).ShouldBeFalse();
+        runner._perTestCoverageMode.ShouldBeFalse();
     }
 }

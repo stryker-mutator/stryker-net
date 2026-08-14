@@ -22,6 +22,17 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 /// </summary>
 public class SingleMicrosoftTestPlatformRunner : IDisposable
 {
+    // One coverage file per test assembly. The injected MutantControl flushes coverage with an
+    // unconditional overwrite on process exit, so with test hosts sharing a single file the last
+    // flush to land replaces all the others: only one assembly's coverage survives, and which one
+    // depends on server stop order and process shutdown timing. Giving every assembly's host its
+    // own file and unioning them at read time makes coverage independent of both.
+    internal readonly ConcurrentDictionary<string, string> _coverageFilePaths = new();
+    internal readonly Dictionary<string, AssemblyTestServer> _assemblyServers = new();
+    internal bool _disposed;
+    internal bool _coverageMode;
+    internal bool _perTestCoverageMode;
+
     private readonly int _id;
     private readonly Dictionary<string, List<TestNode>> _testsByAssembly;
     private readonly Dictionary<string, MtpTestDescription> _testDescriptions;
@@ -30,23 +41,8 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     private readonly ILogger _logger;
     private readonly string _mutantFilePath;
     private readonly string _coverageFilePathBase;
-    // One coverage file per test assembly. The injected MutantControl flushes coverage with an
-    // unconditional overwrite on process exit, so with test hosts sharing a single file the last
-    // flush to land replaces all the others: only one assembly's coverage survives, and which one
-    // depends on server stop order and process shutdown timing. Giving every assembly's host its
-    // own file and unioning them at read time makes coverage independent of both.
-    private readonly ConcurrentDictionary<string, string> _coverageFilePaths = new();
     private readonly IStrykerOptions? _options;
-
-    private readonly Dictionary<string, AssemblyTestServer> _assemblyServers = new();
     private readonly object _serverLock = new();
-    private bool _disposed;
-    private bool _coverageMode;
-
-    // Per-test coverage capture (reused process, "perTest" mode): each assembly gets its own dedicated
-    // coverage/epoch file pair so that two assembly-specific server processes kept warm on this runner
-    // never race each other's flush (see RunSingleTestForCoverageInReusedProcessAsync).
-    private bool _perTestCoverageMode;
     private readonly HashSet<string> _initializedPerTestFiles = new();
     private readonly Dictionary<string, int> _perTestEpochCounters = new();
 
@@ -366,7 +362,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     /// an assembly if it doesn't already exist, initialized to request=0/ack=0 to match the poller's
     /// starting state. Idempotent so it is safe to call before every per-test run.
     /// </summary>
-    private void InitializeEpochFile(string epochFilePath)
+    internal void InitializeEpochFile(string epochFilePath)
     {
         if (File.Exists(epochFilePath))
         {
@@ -389,7 +385,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    private void WriteEpochRequest(string epochFilePath, int epoch)
+    internal void WriteEpochRequest(string epochFilePath, int epoch)
     {
         try
         {
@@ -405,7 +401,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    private static bool TryReadEpochAck(string epochFilePath, out int ack)
+    internal static bool TryReadEpochAck(string epochFilePath, out int ack)
     {
         ack = -1;
         if (!File.Exists(epochFilePath))
@@ -427,7 +423,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
         }
     }
 
-    private async Task<bool> WaitForEpochAckAsync(string epochFilePath, int expectedEpoch, TimeSpan timeout)
+    internal async Task<bool> WaitForEpochAckAsync(string epochFilePath, int expectedEpoch, TimeSpan timeout)
     {
         var deadline = DateTime.UtcNow + timeout;
         while (DateTime.UtcNow < deadline)
@@ -830,7 +826,7 @@ public class SingleMicrosoftTestPlatformRunner : IDisposable
     /// is null/empty (initial/coverage runs), when a mutant is missing coverage data (defensive fallback),
     /// or when any mutant must be tested against every test (e.g. static mutants).
     /// </summary>
-    private static Func<TestNode, bool>? BuildTestUidFilter(IReadOnlyList<IMutant>? mutants)
+    internal static Func<TestNode, bool>? BuildTestUidFilter(IReadOnlyList<IMutant>? mutants)
     {
         if (mutants is null || mutants.Count == 0)
         {

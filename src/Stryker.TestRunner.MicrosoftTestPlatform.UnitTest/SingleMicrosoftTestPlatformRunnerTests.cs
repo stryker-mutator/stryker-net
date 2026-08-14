@@ -481,15 +481,11 @@ public class SingleMicrosoftTestPlatformRunnerTests
     // --- BuildTestUidFilter tests ---
     //
     // Coverage-based optimisation is only worth anything if the MTP runner actually restricts
-    // execution to a mutant's AssessingTests. These call the private static builder via reflection
+    // execution to a mutant's AssessingTests. These call the internal static builder directly
     // to verify the filter predicate in isolation, without needing a live test host.
 
-    private static Func<TestNode, bool>? InvokeBuildTestUidFilter(IReadOnlyList<IMutant>? mutants)
-    {
-        var method = typeof(SingleMicrosoftTestPlatformRunner).GetMethod(
-            "BuildTestUidFilter", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
-        return (Func<TestNode, bool>?)method.Invoke(null, new object?[] { mutants });
-    }
+    private static Func<TestNode, bool>? InvokeBuildTestUidFilter(IReadOnlyList<IMutant>? mutants) =>
+        SingleMicrosoftTestPlatformRunner.BuildTestUidFilter(mutants);
 
     private static Mock<IMutant> MockMutant(int id, ITestIdentifiers assessingTests)
     {
@@ -1470,14 +1466,11 @@ public class SingleMicrosoftTestPlatformRunnerTests
 
         public override void Dispose(bool disposing)
         {
-            var disposedField = typeof(SingleMicrosoftTestPlatformRunner).GetField("_disposed",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-            var wasDisposedBefore = (bool)disposedField!.GetValue(this)!;
+            var wasDisposedBefore = _disposed;
 
             base.Dispose(disposing);
 
-            var wasDisposedAfter = (bool)disposedField!.GetValue(this)!;
+            var wasDisposedAfter = _disposed;
 
             if (!wasDisposedBefore && wasDisposedAfter)
             {
@@ -1502,15 +1495,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
 
         public string CoverageFilePath => GetCoverageFilePath("TestableCoverage.dll");
 
-        public bool IsCoverageModeEnabled
-        {
-            get
-            {
-                var coverageModeField = typeof(SingleMicrosoftTestPlatformRunner).GetField("_coverageMode",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                return (bool)coverageModeField!.GetValue(this)!;
-            }
-        }
+        public bool IsCoverageModeEnabled => _coverageMode;
     }
 
     private class TimeoutSimulatingRunner : SingleMicrosoftTestPlatformRunner
