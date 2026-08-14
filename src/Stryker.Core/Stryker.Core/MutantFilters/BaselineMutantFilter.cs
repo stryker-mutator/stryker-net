@@ -90,7 +90,6 @@ public class BaselineMutantFilter : IMutantFilter
         }
     }
 
-
     public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file,
         IStrykerOptions options)
     {

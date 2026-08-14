@@ -40,7 +40,7 @@ public class GitDiffProvider : IDiffProvider
 
         // A git repository has been detected, calculate the diff to filter
         var repository = _gitInfoProvider.Repository;
-        var commit = _gitInfoProvider.DetermineCommit();
+        var commit = _gitInfoProvider.DetermineCommit(_options.SinceTarget);
 
         if (commit == null)
         {

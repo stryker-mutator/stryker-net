@@ -485,6 +485,8 @@ Set the diffing target in the config file by setting the [since target](#sinceta
 
 *\* For changes on test project files all mutants covered by tests in that file will be seen as changed.*
 
+*\* The baseline and since features are mutually exclusive. *
+
 ### `since.enabled` &lt;`flag`&gt;
 
 Default: `null`  
@@ -524,14 +526,14 @@ Default: `false`
 Command line: `--with-baseline:feat-2`  
 Config file: `"baseline": { }`
 
-Enabling `with-baseline` saves the mutation report to a storage location such as the filesystem. The mutation report is loaded at the start of the next mutation run. Any changed source code or unit test results in a reset of the mutants affected by the change. For unchanged mutants the previous result is reused. This feature expands on the [since](#since-flag-committish) feature by providing you with a full report after a partial mutation testrun.
+Enabling `with-baseline` saves the mutation report to a storage location such as the filesystem. The mutation report is loaded at the start of the next mutation run. Any changed source code or unit test results in a reset of the mutants affected by the change. For unchanged mutants the previous result is reused. Unlike [since](#since-flag-committish), baseline provides you with a full report after a partial mutation testrun.
 
 The report name is based on the current branch name or the [project-info.version](#project-infoversion-committish).
 
 Set the diffing target on the command line by passing a committish with the since flag.
 Set the diffing target in the config file by setting the [since target](#sincetarget-committish) option.
 
-*\* The baseline and since features are mutually exclusive. This feature implicitly enables the [since](#since-flag-committish) feature for now.*
+*\* The baseline and since features are mutually exclusive. *
 
 ### `baseline.enabled` &lt;`flag`&gt;
 

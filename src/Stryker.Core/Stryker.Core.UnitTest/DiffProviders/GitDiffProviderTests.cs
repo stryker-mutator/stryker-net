@@ -92,7 +92,7 @@ public class GitDiffProviderTests : TestBase
         repositoryMock
             .Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
 
-        gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
+        gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
@@ -102,6 +102,7 @@ public class GitDiffProviderTests : TestBase
         var res = target.ScanDiff();
 
         // Assert
+        gitInfoMock.Verify(x => x.DetermineCommit(options.SinceTarget), Times.Once);
         res.ChangedSourceFiles.Count().ShouldBe(1);
         res.ChangedTestFiles.Count().ShouldBe(0);
     }
@@ -156,7 +157,7 @@ public class GitDiffProviderTests : TestBase
         repositoryMock
             .Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
 
-        gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
+        gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
@@ -206,7 +207,7 @@ public class GitDiffProviderTests : TestBase
 
         var gitInfoMock = new Mock<IGitInfoProvider>();
 
-        gitInfoMock.Setup(x => x.DetermineCommit()).Returns((Commit)null);
+        gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns((Commit)null);
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         var target = new GitDiffProvider(options, null, gitInfoMock.Object);
 
@@ -275,7 +276,7 @@ public class GitDiffProviderTests : TestBase
         repositoryMock
             .Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
 
-        gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
+        gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
@@ -351,7 +352,7 @@ public class GitDiffProviderTests : TestBase
         repositoryMock
             .Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
 
-        gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
+        gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns(FilePathUtils.NormalizePathSeparators("/c/Path/To/Repo"));
@@ -427,7 +428,7 @@ public class GitDiffProviderTests : TestBase
         repositoryMock
             .Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
 
-        gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
+        gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns(FilePathUtils.NormalizePathSeparators("/c/Path/To/Repo"));
@@ -498,7 +499,7 @@ public class GitDiffProviderTests : TestBase
         repositoryMock
             .Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
 
-        gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
+        gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
@@ -588,7 +589,7 @@ public class GitDiffProviderTests : TestBase
         repositoryMock
             .Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
 
-        gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
+        gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
@@ -675,7 +676,7 @@ public class GitDiffProviderTests : TestBase
         repositoryMock
             .Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
 
-        gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
+        gitInfoMock.Setup(x => x.DetermineCommit(options.SinceTarget)).Returns(commitMock.Object);
 
         gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
         gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");

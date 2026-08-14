@@ -10,5 +10,5 @@ public interface IGitInfoProvider
 
     string GetCurrentBranchName();
 
-    Commit DetermineCommit();
+    Commit DetermineCommit(string target);
 }
