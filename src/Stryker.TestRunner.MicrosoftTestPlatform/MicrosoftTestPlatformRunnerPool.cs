@@ -108,11 +108,11 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         // VsTestRunnerPool's routing.
         if (_options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
         {
-            return CaptureCoveragePerIsolatedTests(project);
+            return CaptureCoveragePerIsolatedTests();
         }
 
         return _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest)
-            ? CaptureCoverageTestByTest(project)
+            ? CaptureCoverageTestByTest()
             : CaptureCoverageInOneGo(project);
     }
 
@@ -187,7 +187,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     /// Tests are distributed across the whole pool for parallelism; a runner keeps its per-assembly
     /// server warm across the tests it is handed rather than restarting it for every test.
     /// </summary>
-    private IEnumerable<ICoverageRunResult> CaptureCoverageTestByTest(IProjectAndTests project)
+    private IEnumerable<ICoverageRunResult> CaptureCoverageTestByTest()
     {
         _logger.LogInformation("Starting per-test coverage capture for MTP runner");
 
@@ -232,7 +232,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         }
         finally
         {
-            foreach (var runner in _availableRunners)
+            foreach (var runner in _allRunners)
             {
                 runner.SetPerTestCoverageMode(false);
             }
@@ -246,7 +246,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     /// <see cref="CoverageConfidence.Exact"/>, at the cost of a much slower init phase than the
     /// reused-process "perTest" capture in <see cref="CaptureCoverageTestByTest"/>.
     /// </summary>
-    private IEnumerable<ICoverageRunResult> CaptureCoveragePerIsolatedTests(IProjectAndTests project)
+    private IEnumerable<ICoverageRunResult> CaptureCoveragePerIsolatedTests()
     {
         _logger.LogInformation("Starting per-test-in-isolation coverage capture for MTP runner");
 
