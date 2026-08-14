@@ -866,7 +866,7 @@ public class MicrosoftTestingPlatformRunnerTests
     /// run, without starting a real test host. Records the assemblies that were actually run so a test can
     /// assert which ones were skipped after a bail.
     /// </summary>
-    private sealed class StreamingAssemblyRunner : SingleMicrosoftTestPlatformRunner
+    private sealed class StreamingAssemblyRunner : MicrosoftTestingPlatformRunner
     {
         private readonly List<string> _runAssemblies;
 
@@ -880,7 +880,10 @@ public class MicrosoftTestingPlatformRunnerTests
             => _runAssemblies = runAssemblies;
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null)
+            string assembly,
+            ITimeoutValueCalculator? timeoutCalc,
+            Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null,
+            Func<TestNode, bool>? testUidFilter = null)
         {
             _runAssemblies.Add(assembly);
             var discovered = GetDiscoveredTests(assembly) ?? [];
@@ -914,7 +917,10 @@ public class MicrosoftTestingPlatformRunnerTests
             => _discovered = discovered;
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<TestNode, bool>? testUidFilter = null, Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null)
+            string assembly,
+            ITimeoutValueCalculator? timeoutCalc,
+            Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null,
+            Func<TestNode, bool>? testUidFilter = null)
             => Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>(
                 (new TestRunResult(false, "simulated test host crash"), false, _discovered));
     }
@@ -1064,7 +1070,10 @@ public class MicrosoftTestingPlatformRunnerTests
             => _perAssembly = perAssembly;
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<TestNode, bool>? testUidFilter = null)
+            string assembly,
+            ITimeoutValueCalculator? timeoutCalc,
+            Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null,
+            Func<TestNode, bool>? testUidFilter = null)
         {
             var (result, discovered) = _perAssembly[assembly];
             return Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>((result, false, discovered));
@@ -1803,7 +1812,10 @@ public class MicrosoftTestingPlatformRunnerTests
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<TestNode, bool>? testUidFilter = null, Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null)
+            string assembly,
+            ITimeoutValueCalculator? timeoutCalc,
+            Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null,
+            Func<TestNode, bool>? testUidFilter = null)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
             var result = new TestRunResult(
@@ -1830,7 +1842,10 @@ public class MicrosoftTestingPlatformRunnerTests
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<TestNode, bool>? testUidFilter = null, Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null)
+            string assembly,
+            ITimeoutValueCalculator? timeoutCalc,
+            Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null,
+            Func<TestNode, bool>? testUidFilter = null)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
             var result = new TestRunResult(
