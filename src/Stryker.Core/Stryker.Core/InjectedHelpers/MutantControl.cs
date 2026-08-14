@@ -255,28 +255,35 @@ namespace Stryker
         private static string BuildCoverageFilePath(string coverageFileName)
         {
             string directory = System.IO.Path.GetTempPath();
-            string assemblyName = GetOwningAssemblyName();
-            if (assemblyName.Length == 0)
+            string discriminator = GetOwningAssemblyDiscriminator();
+            if (discriminator.Length == 0)
             {
                 return System.IO.Path.Combine(directory, coverageFileName);
             }
 
             string nameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(coverageFileName);
             string extension = System.IO.Path.GetExtension(coverageFileName);
-            return System.IO.Path.Combine(directory, nameWithoutExtension + "-" + assemblyName + extension);
+            return System.IO.Path.Combine(directory, nameWithoutExtension + "-" + discriminator + extension);
         }
 
         /// <summary>
-        /// Name of the assembly this copy of the class was compiled into, reduced to characters that are
-        /// safe in a file name and truncated so the resulting path stays well clear of length limits.
-        /// Returns an empty string when the name cannot be determined.
+        /// Identifies the assembly this copy of the class was compiled into, uniquely among the copies a
+        /// test host loads. The assembly name alone cannot do that: characters that a file name cannot hold
+        /// are replaced, so names such as A.B and A-B would collide, and the name has to be trimmed to keep
+        /// the path within length limits, so names sharing a long prefix would collide too. Two colliding
+        /// copies would write to the same file and hide each other's coverage, which is exactly what this
+        /// naming exists to prevent, so the module id - assigned per compiled module - is what separates
+        /// them; the trimmed name is only kept to make the file recognizable while debugging.
+        /// Returns an empty string when the identity cannot be read.
         /// </summary>
-        private static string GetOwningAssemblyName()
+        private static string GetOwningAssemblyDiscriminator()
         {
             string name;
+            System.Guid moduleId;
             try
             {
                 name = typeof(MutantControl).Assembly.GetName().Name ?? string.Empty;
+                moduleId = typeof(MutantControl).Module.ModuleVersionId;
             }
             catch (System.Exception)
             {
@@ -284,12 +291,7 @@ namespace Stryker
                 return string.Empty;
             }
 
-            if (string.IsNullOrEmpty(name))
-            {
-                return string.Empty;
-            }
-
-            int length = name.Length < 64 ? name.Length : 64;
+            int length = name.Length < 16 ? name.Length : 16;
             char[] safeName = new char[length];
             for (int i = 0; i < length; i++)
             {
@@ -297,7 +299,7 @@ namespace Stryker
                 safeName[i] = char.IsLetterOrDigit(current) ? current : '-';
             }
 
-            return new string(safeName);
+            return new string(safeName) + "-" + moduleId.ToString("N");
         }
 
         /// <summary>

@@ -28,6 +28,56 @@ public class MutantControlCoverageFileTests : TestBase
     private readonly List<Assembly> _loadedHelpers = new();
 
     [TestMethod]
+    public void FlushCoverage_ShouldWriteOneFilePerMutatedAssembly_WhenTheirNamesCannotBeToldApartByCharacter()
+    {
+        // The file name cannot be derived from the assembly name alone. Characters that are not valid in a
+        // file name are replaced, so A.B and A-B end up identical, and a name has to be trimmed to keep the
+        // path short, so names sharing a long prefix end up identical too. Either way the two copies would
+        // write to the same file and hide each other's mutants, which is the loss this all exists to stop.
+        var coverageFileName = $"stryker-coverage-test-{Guid.NewGuid():N}.txt";
+        var previousEnvironmentValue = Environment.GetEnvironmentVariable(CoverageFileEnvironmentVariable);
+        var longPrefix = new string('a', 70);
+
+        try
+        {
+            Environment.SetEnvironmentVariable(CoverageFileEnvironmentVariable, coverageFileName);
+
+            var dotted = CompileMutantControl("Collide.Name");
+            var dashed = CompileMutantControl("Collide-Name");
+            var firstLongName = CompileMutantControl($"{longPrefix}.First");
+            var secondLongName = CompileMutantControl($"{longPrefix}.Second");
+
+            RegisterCoverage(dotted, 1);
+            RegisterCoverage(dashed, 2);
+            RegisterCoverage(firstLongName, 3);
+            RegisterCoverage(secondLongName, 4);
+
+            FlushCoverage(dotted);
+            FlushCoverage(dashed);
+            FlushCoverage(firstLongName);
+            FlushCoverage(secondLongName);
+
+            var coverageByFile = FindCoverageFiles(coverageFileName)
+                .Select(file => ParseCoveredMutants(File.ReadAllText(file)))
+                .ToList();
+
+            coverageByFile.ShouldContain(covered => covered.Contains(1), "Collide.Name lost its coverage");
+            coverageByFile.ShouldContain(covered => covered.Contains(2), "Collide-Name lost its coverage");
+            coverageByFile.ShouldContain(covered => covered.Contains(3), $"{longPrefix}.First lost its coverage");
+            coverageByFile.ShouldContain(covered => covered.Contains(4), $"{longPrefix}.Second lost its coverage");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(CoverageFileEnvironmentVariable, previousEnvironmentValue);
+            DisableLoadedHelpers();
+            foreach (var file in FindCoverageFiles(coverageFileName))
+            {
+                File.Delete(file);
+            }
+        }
+    }
+
+    [TestMethod]
     public void DisableLoadedHelpers_ShouldStopAHelperFromWritingItsCoverageFileAgain()
     {
         // Assembly.Load keeps a helper in the default load context for the life of this process, and its
