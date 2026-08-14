@@ -28,7 +28,8 @@ namespace Stryker.Core.UnitTest.Reporters.Json;
 public class JsonReporterTests : TestBase
 {
     private readonly IFileSystem _fileSystemMock = new MockFileSystem();
-    private readonly string _testFilePath = "c:\\mytestfile.cs";
+    private readonly string _testProjectPath = Path.Combine("project", "test.csproj");
+    private readonly string _testFilePath = Path.Combine("project", "mytestfile.cs");
     private readonly string _testFileContents = @"using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ExtraProject.XUnit
@@ -43,7 +44,11 @@ namespace ExtraProject.XUnit
     }
 }
 ";
-    public JsonReporterTests() => _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
+    public JsonReporterTests()
+    {
+        _fileSystemMock.Directory.CreateDirectory(Path.GetDirectoryName(_testFilePath));
+        _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
+    }
 
     [TestMethod]
     public void JsonMutantPositionLine_ThrowsArgumentExceptionWhenSetToLessThan1()
@@ -236,6 +241,7 @@ namespace ExtraProject.XUnit
             TestProjects = new List<TestProject>
             {
                 new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
+                    projectFilePath: _testProjectPath,
                     sourceFiles: [_testFilePath]).Object)
             }
         };
@@ -287,8 +293,11 @@ namespace ExtraProject.XUnit
             TestProjects = new List<TestProject>
             {
                 new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
+                    projectFilePath: _testProjectPath,
                     sourceFiles: new[] { _testFilePath }).Object),
-                new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(sourceFiles: new[] { _testFilePath }).Object)
+                new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
+                    projectFilePath: _testProjectPath,
+                    sourceFiles: new[] { _testFilePath }).Object)
             }
         };
         var node = CSharpSyntaxTree.ParseText(_testFileContents).GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
