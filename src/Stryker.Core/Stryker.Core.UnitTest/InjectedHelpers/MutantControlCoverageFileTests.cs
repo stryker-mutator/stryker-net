@@ -25,6 +25,50 @@ public class MutantControlCoverageFileTests : TestBase
     private const string CoverageFileEnvironmentVariable = "STRYKER_COVERAGE_FILE";
     private const string EpochFileEnvironmentVariable = "STRYKER_COVERAGE_EPOCH_FILE";
 
+    private readonly List<Assembly> _loadedHelpers = new();
+
+    [TestMethod]
+    public void DisableLoadedHelpers_ShouldStopAHelperFromWritingItsCoverageFileAgain()
+    {
+        // Assembly.Load keeps a helper in the default load context for the life of this process, and its
+        // static constructor registered a process-exit flush against the path it cached then. Deleting the
+        // file is not enough: the handler would write it again when the test process exits, leaving a file
+        // per test run behind. Cleanup has to disarm the helper, which is what this asserts.
+        var coverageFileName = $"stryker-coverage-test-{Guid.NewGuid():N}.txt";
+        var previousEnvironmentValue = Environment.GetEnvironmentVariable(CoverageFileEnvironmentVariable);
+
+        try
+        {
+            Environment.SetEnvironmentVariable(CoverageFileEnvironmentVariable, coverageFileName);
+
+            var assembly = CompileMutantControl("DisarmedAssembly");
+            RegisterCoverage(assembly, 3);
+            FlushCoverage(assembly);
+            FindCoverageFiles(coverageFileName).Count.ShouldBe(1, "setup: the helper should have written its file");
+
+            DisableLoadedHelpers();
+            foreach (var file in FindCoverageFiles(coverageFileName))
+            {
+                File.Delete(file);
+            }
+
+            // Stands in for the process-exit handler, which calls exactly this
+            FlushCoverage(assembly);
+
+            FindCoverageFiles(coverageFileName).ShouldBeEmpty(
+                "a disarmed helper must not write its coverage file again");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(CoverageFileEnvironmentVariable, previousEnvironmentValue);
+            DisableLoadedHelpers();
+            foreach (var file in FindCoverageFiles(coverageFileName))
+            {
+                File.Delete(file);
+            }
+        }
+    }
+
     [TestMethod]
     public void FlushCoverage_ShouldWriteOneFilePerMutatedAssembly_WhenSeveralShareATestHost()
     {
@@ -60,6 +104,7 @@ public class MutantControlCoverageFileTests : TestBase
         finally
         {
             Environment.SetEnvironmentVariable(CoverageFileEnvironmentVariable, previousEnvironmentValue);
+            DisableLoadedHelpers();
             foreach (var file in FindCoverageFiles(coverageFileName))
             {
                 File.Delete(file);
@@ -94,6 +139,7 @@ public class MutantControlCoverageFileTests : TestBase
         finally
         {
             Environment.SetEnvironmentVariable(CoverageFileEnvironmentVariable, previousEnvironmentValue);
+            DisableLoadedHelpers();
             foreach (var file in FindCoverageFiles(coverageFileName))
             {
                 File.Delete(file);
@@ -151,16 +197,11 @@ public class MutantControlCoverageFileTests : TestBase
         {
             Environment.SetEnvironmentVariable(CoverageFileEnvironmentVariable, previousCoverage);
             Environment.SetEnvironmentVariable(EpochFileEnvironmentVariable, previousEpoch);
+            // Releases the relay threads' mapping on the epoch files, so they can be deleted below
+            DisableLoadedHelpers();
             foreach (var file in FindCoverageFiles(coverageFileName).Concat(FindCoverageFiles(epochFileName)))
             {
-                try
-                {
-                    File.Delete(file);
-                }
-                catch (IOException)
-                {
-                    // The relay threads keep their file mapped for the life of the process
-                }
+                File.Delete(file);
             }
         }
     }
@@ -197,6 +238,47 @@ public class MutantControlCoverageFileTests : TestBase
         return accessor.ReadInt32(4);
     }
 
+    /// <summary>
+    /// Disarms every helper this test loaded, and is also called from each test before it deletes files.
+    /// <see cref="Assembly.Load(byte[])"/> keeps a helper in the default load context for the life of this
+    /// process, so a helper outlives the test that loaded it: its static constructor registered a
+    /// process-exit flush against the coverage path it cached then, and its relay thread holds a memory
+    /// mapping on its epoch file. Left alone, the exit handler rewrites a coverage file the test already
+    /// deleted, and the mapping keeps the epoch file undeletable, so every run would leave files behind.
+    /// Clearing the cached paths makes the flush a no-op, and releasing the mapping frees the epoch file.
+    /// </summary>
+    [TestCleanup]
+    public void DisableLoadedHelpers()
+    {
+        foreach (var mutantControl in _loadedHelpers.Select(GetMutantControl))
+        {
+            // Stop the relay thread from touching the mapping before it is released; it swallows the
+            // exceptions of a disposed accessor, but there is no reason to make it race for them
+            SetStaticField(mutantControl, "_epochMmfReady", false);
+            SetStaticField(mutantControl, "_epochMmfFailed", true);
+            DisposeStaticField(mutantControl, "_epochAccessor");
+            DisposeStaticField(mutantControl, "_epochMmf");
+
+            // FlushCoverageToFile returns without writing when it has no path, which is what the
+            // process-exit handler ends up calling
+            SetStaticField(mutantControl, "_cachedCoverageFilePath", string.Empty);
+            SetStaticField(mutantControl, "_cachedEpochFilePath", string.Empty);
+        }
+
+        _loadedHelpers.Clear();
+    }
+
+    private static void SetStaticField(Type mutantControl, string name, object value) =>
+        mutantControl.GetField(name, BindingFlags.NonPublic | BindingFlags.Static)!.SetValue(null, value);
+
+    private static void DisposeStaticField(Type mutantControl, string name)
+    {
+        var field = mutantControl.GetField(name, BindingFlags.NonPublic | BindingFlags.Static)!;
+        (field.GetValue(null) as IDisposable)?.Dispose();
+        // The helper roots these with a plain object sentinel rather than null
+        field.SetValue(null, new object());
+    }
+
     private static List<string> FindCoverageFiles(string coverageFileName) =>
         Directory.GetFiles(
                 Path.GetTempPath(),
@@ -223,7 +305,7 @@ public class MutantControlCoverageFileTests : TestBase
     /// Compiles the injected helpers into their own assembly, as Stryker does for every mutated
     /// project, and loads it. Each assembly gets its own copy of the helper statics.
     /// </summary>
-    private static Assembly CompileMutantControl(string assemblyName)
+    private Assembly CompileMutantControl(string assemblyName)
     {
         var codeInjection = new CodeInjection();
         var syntaxTrees = codeInjection.MutantHelpers
@@ -245,6 +327,11 @@ public class MutantControlCoverageFileTests : TestBase
         result.Success.ShouldBeTrue(
             $"the injected helpers should compile: {string.Join(Environment.NewLine, result.Diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error))}");
 
-        return Assembly.Load(peStream.ToArray());
+        // Tracked so cleanup can disarm it: this assembly stays in the default load context for the life
+        // of the process, and its statics outlive the test that loaded it (see DisableLoadedHelpers)
+        var helper = Assembly.Load(peStream.ToArray());
+        _loadedHelpers.Add(helper);
+
+        return helper;
     }
 }
