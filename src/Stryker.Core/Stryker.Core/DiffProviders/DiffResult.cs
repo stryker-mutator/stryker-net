@@ -81,8 +81,6 @@ public class DiffResult
                 case DiffOperation.Insert:
                     newCursor += length;
                     break;
-                default:
-                    throw new Exception($"Unknown diff operation {op.Operation}.");
             }
         }
 
