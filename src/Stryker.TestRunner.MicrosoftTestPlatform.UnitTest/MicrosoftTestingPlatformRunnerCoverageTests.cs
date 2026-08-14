@@ -1,12 +1,13 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
+using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 using Stryker.TestRunner.Tests;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
 
 [TestClass]
-public class SingleMicrosoftTestPlatformRunnerCoverageTests
+public class MicrosoftTestingPlatformRunnerCoverageTests
 {
     private Dictionary<string, List<TestNode>> _testsByAssembly = null!;
     private Dictionary<string, MtpTestDescription> _testDescriptions = null!;
@@ -22,7 +23,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         _discoveryLock = new object();
     }
 
-    private SingleMicrosoftTestPlatformRunner CreateRunner(int runnerId) =>
+    private MicrosoftTestingPlatformRunner CreateRunner(int runnerId) =>
         new(runnerId,
             _testsByAssembly,
             _testDescriptions,
@@ -41,7 +42,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
             using var runner = CreateRunner(runnerId);
 
             // Create a test assembly to trigger server creation
-            var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+            var testAssembly = typeof(MicrosoftTestingPlatformRunnerCoverageTests).Assembly.Location;
             await runner.DiscoverTestsAsync(testAssembly);
 
             // Create an existing coverage file for the assembly that should be deleted
@@ -84,7 +85,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         {
             using var runner = CreateRunner(runnerId);
 
-            var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+            var testAssembly = typeof(MicrosoftTestingPlatformRunnerCoverageTests).Assembly.Location;
 
             // Enable coverage mode first
             runner.SetCoverageMode(true);
@@ -129,7 +130,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         {
             using var runner = CreateRunner(runnerId);
 
-            var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+            var testAssembly = typeof(MicrosoftTestingPlatformRunnerCoverageTests).Assembly.Location;
             await runner.DiscoverTestsAsync(testAssembly);
             coverageFilePath = runner.GetCoverageFilePath(testAssembly);
 
@@ -175,7 +176,7 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
 
         using var runner = CreateRunner(runnerId);
 
-        var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+        var testAssembly = typeof(MicrosoftTestingPlatformRunnerCoverageTests).Assembly.Location;
 
         // Initial discovery without coverage
         var result1 = await runner.DiscoverTestsAsync(testAssembly);
@@ -470,18 +471,219 @@ public class SingleMicrosoftTestPlatformRunnerCoverageTests
         using var runner = CreateRunner(0);
 
         // Populate _assemblyServers by discovering tests against the real test assembly
-        var testAssembly = typeof(SingleMicrosoftTestPlatformRunnerCoverageTests).Assembly.Location;
+        var testAssembly = typeof(MicrosoftTestingPlatformRunnerCoverageTests).Assembly.Location;
         await runner.DiscoverTestsAsync(testAssembly);
 
-        var serversField = typeof(SingleMicrosoftTestPlatformRunner)
-            .GetField("_assemblyServers", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
-
-        var serversBefore = (Dictionary<string, AssemblyTestServer>)serversField.GetValue(runner)!;
-        serversBefore.ShouldNotBeEmpty("servers should be populated after discovery");
+        runner._assemblyServers.ShouldNotBeEmpty("servers should be populated after discovery");
 
         await runner.ResetServerAsync();
 
-        var serversAfter = (Dictionary<string, AssemblyTestServer>)serversField.GetValue(runner)!;
-        serversAfter.ShouldBeEmpty("all servers should be disposed and removed after reset");
+        runner._assemblyServers.ShouldBeEmpty("all servers should be disposed and removed after reset");
+    }
+
+    // --- Per-test coverage epoch relay tests ---
+    //
+    // These exercise the runner side of the handshake documented on MutantControl's epoch poller:
+    // the runner writes a request epoch, the (here: simulated) test host writes back an ack epoch once
+    // it has flushed, and the runner waits for that ack before reading the coverage file.
+
+    [TestMethod]
+    public void EpochRelay_WriteEpochRequest_DoesNotTouchAckHalf()
+    {
+        var runnerId = 700;
+        var epochFilePath = Path.Combine(Path.GetTempPath(), $"stryker-epoch-{runnerId}-roundtrip.txt");
+
+        try
+        {
+            using var runner = new MicrosoftTestingPlatformRunner(
+                runnerId, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+            runner.InitializeEpochFile(epochFilePath);
+            runner.WriteEpochRequest(epochFilePath, 5);
+
+            var found = MicrosoftTestingPlatformRunner.TryReadEpochAck(epochFilePath, out var ack);
+
+            found.ShouldBeTrue();
+            ack.ShouldBe(0, "ack should still be 0; WriteEpochRequest only touches the request half");
+        }
+        finally
+        {
+            if (File.Exists(epochFilePath)) File.Delete(epochFilePath);
+        }
+    }
+
+    [TestMethod]
+    public async Task EpochRelay_WaitForAck_ReturnsTrue_WhenAckAlreadyMatches()
+    {
+        var runnerId = 701;
+        var epochFilePath = Path.Combine(Path.GetTempPath(), $"stryker-epoch-{runnerId}-match.txt");
+
+        try
+        {
+            using var runner = new MicrosoftTestingPlatformRunner(
+                runnerId, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+            runner.InitializeEpochFile(epochFilePath);
+
+            // Write request AND ack = 3 directly, simulating the test host having already caught up.
+            using (var stream = new FileStream(epochFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+            using (var mmf = System.IO.MemoryMappedFiles.MemoryMappedFile.CreateFromFile(stream, null, 8,
+                       System.IO.MemoryMappedFiles.MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, leaveOpen: true))
+            using (var accessor = mmf.CreateViewAccessor(0, 8, System.IO.MemoryMappedFiles.MemoryMappedFileAccess.ReadWrite))
+            {
+                accessor.Write(0, 3);
+                accessor.Write(4, 3);
+            }
+
+            var acked = await MicrosoftTestingPlatformRunner.WaitForEpochAckAsync(epochFilePath, 3, TimeSpan.FromSeconds(5));
+
+            acked.ShouldBeTrue();
+        }
+        finally
+        {
+            if (File.Exists(epochFilePath)) File.Delete(epochFilePath);
+        }
+    }
+
+    [TestMethod, Timeout(2000)]
+    public async Task EpochRelay_WaitForAck_TimesOut_WhenAckNeverArrives()
+    {
+        var runnerId = 702;
+        var epochFilePath = Path.Combine(Path.GetTempPath(), $"stryker-epoch-{runnerId}-timeout.txt");
+
+        try
+        {
+            using var runner = new MicrosoftTestingPlatformRunner(
+                runnerId, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+            runner.InitializeEpochFile(epochFilePath);
+            runner.WriteEpochRequest(epochFilePath, 1);
+
+            // Nothing ever writes ack=1, so this must time out quickly rather than hang.
+            var acked = await MicrosoftTestingPlatformRunner.WaitForEpochAckAsync(epochFilePath, 1, TimeSpan.FromMilliseconds(100));
+
+            acked.ShouldBeFalse();
+        }
+        finally
+        {
+            if (File.Exists(epochFilePath)) File.Delete(epochFilePath);
+        }
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task RunSingleTestForCoverageInReusedProcessAsync_ReturnsDubious_WhenServerCannotStart()
+    {
+        using var runner = new MicrosoftTestingPlatformRunner(
+            703, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+        runner.SetPerTestCoverageMode(true);
+        var testNode = new TestNode("test-1", "Test1", "test", "discovered");
+
+        var result = await runner.RunSingleTestForCoverageInReusedProcessAsync("/nonexistent/assembly.dll", testNode, "test-1");
+
+        result.Confidence.ShouldBe(CoverageConfidence.Dubious);
+        result.MutationsCovered.ShouldBeEmpty();
+    }
+
+    // --- Isolated ("perTestInIsolation") per-test coverage capture ---
+    //
+    // The happyflow can't be tested here because it requires a real test host to run the test and flush coverage
+    // to the coverage file. The happyflow is tested in the integration test project, which runs real tests in a real test host.
+
+    [TestMethod, Timeout(5000)]
+    public async Task RunSingleTestForCoverageInIsolatedProcessAsync_ReturnsDubious_WhenServerCannotStart()
+    {
+        using var runner = new MicrosoftTestingPlatformRunner(
+            710, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+        runner.SetCoverageMode(true);
+        var testNode = new TestNode("test-1", "Test1", "test", "discovered");
+
+        var result = await runner.RunSingleTestForCoverageInIsolatedProcessAsync(
+            "/nonexistent/assembly.dll", testNode, "test-1");
+
+        // A capture that never ran must not be reported as Exact - that confidence is what lets the
+        // pool drop mutants no test covered, so a silent empty-but-Exact result would kill real mutants.
+        result.Confidence.ShouldBe(CoverageConfidence.Dubious);
+        result.MutationsCovered.ShouldBeEmpty();
+        result.TestId.ShouldBe("test-1", "the result must stay attributable to the test that was asked for");
+    }
+
+    [TestMethod, Timeout(10000)]
+    public async Task RunSingleTestForCoverageInIsolatedProcessAsync_ShouldKeepFailingCleanly_WhenCalledRepeatedly()
+    {
+        // Each isolated capture starts from scratch, so a failure for one test must not poison the
+        // next: no dead server may be reused, and every test gets its own attributable result.
+        const string assembly = "/nonexistent/assembly.dll";
+
+        using var runner = new MicrosoftTestingPlatformRunner(
+            712, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+        runner.SetCoverageMode(true);
+
+        var first = await runner.RunSingleTestForCoverageInIsolatedProcessAsync(
+            assembly, new TestNode("test-1", "Test1", "test", "discovered"), "test-1");
+        var second = await runner.RunSingleTestForCoverageInIsolatedProcessAsync(
+            assembly, new TestNode("test-2", "Test2", "test", "discovered"), "test-2");
+
+        first.Confidence.ShouldBe(CoverageConfidence.Dubious);
+        second.Confidence.ShouldBe(CoverageConfidence.Dubious);
+        first.TestId.ShouldBe("test-1");
+        second.TestId.ShouldBe("test-2");
+        runner._assemblyServers.ShouldNotContainKey(assembly);
+    }
+
+    [TestMethod, Timeout(10000)]
+    public async Task RunSingleTestForCoverageInIsolatedProcessAsync_ShouldClaimAggregateCoverageFile_NotThePerTestOne()
+    {
+        // The isolated path reads the aggregate per-assembly coverage file (the one MutantControl
+        // flushes on process exit), NOT the "perTest" epoch-relay file. Reading the wrong file would
+        // silently report empty coverage for every test, so assert the aggregate path was registered.
+        // Deliberately checked before calling GetCoverageFilePath, which would register it itself.
+        const string assembly = "/nonexistent/coverage-path.dll";
+
+        using var runner = new MicrosoftTestingPlatformRunner(
+            713, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+        await runner.RunSingleTestForCoverageInIsolatedProcessAsync(
+            assembly, new TestNode("test-1", "Test1", "test", "discovered"), "test-1");
+
+        var registeredPaths = runner._coverageFilePaths;
+
+        registeredPaths.ShouldContainKey(assembly,
+            "the isolated capture must resolve this assembly's aggregate coverage file");
+
+        var coverageFilePath = registeredPaths[assembly];
+        // The per-test relay file (stryker-coverage-pt-) belongs to the reused-process mode.
+        Path.GetFileName(coverageFilePath).ShouldStartWith("stryker-coverage-");
+        Path.GetFileName(coverageFilePath).ShouldNotStartWith("stryker-coverage-pt-");
+
+        try
+        {
+            // The path the capture resolved must be the one ReadCoverageData later drains.
+            await File.WriteAllTextAsync(coverageFilePath, "1,2;9");
+
+            var (covered, statics) = runner.ReadCoverageData();
+
+            covered.ShouldBe(new[] { 1, 2 }, ignoreOrder: true);
+            statics.ShouldBe(new[] { 9 }, ignoreOrder: true);
+        }
+        finally
+        {
+            if (File.Exists(coverageFilePath)) File.Delete(coverageFilePath);
+        }
+    }
+
+    [TestMethod]
+    public void SetPerTestCoverageMode_ShouldResetPerAssemblyState_WhenToggled()
+    {
+        using var runner = new MicrosoftTestingPlatformRunner(
+            704, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+        runner.SetPerTestCoverageMode(true);
+        runner._perTestCoverageMode.ShouldBeTrue();
+
+        runner.SetPerTestCoverageMode(false);
+        runner._perTestCoverageMode.ShouldBeFalse();
     }
 }
