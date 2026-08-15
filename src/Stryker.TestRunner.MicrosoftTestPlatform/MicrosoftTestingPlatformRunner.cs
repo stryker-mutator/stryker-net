@@ -490,36 +490,39 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
     /// <summary>
     /// Asks every mutated assembly's relay in the test host to flush the coverage of the test that just
-    /// ran. One request per relay: a host with several mutated assemblies runs one relay per assembly,
-    /// each with its own coverage file, and each has to be told separately.
+    /// ran, and returns the relays it reached. One request per relay: a host with several mutated
+    /// assemblies runs one relay per assembly, each with its own coverage file, and each has to be told
+    /// separately. The returned set is what <see cref="WaitForAllEpochAcksAsync"/> then waits for, so
+    /// that a relay created after this point is not waited on: it never received the request, so it
+    /// could never acknowledge it, and its coverage is flushed on the next epoch instead.
     /// </summary>
-    internal void BroadcastEpochRequest(string basePath, int epoch)
+    internal IReadOnlyList<string> BroadcastEpochRequest(string basePath, int epoch)
     {
         // Keep the handed-out path in step so a relay that attaches to it later starts from this epoch
         WriteEpochRequest(basePath, epoch);
 
-        foreach (var relayFilePath in EnumerateEpochRelayFiles(basePath))
+        var relayFilePaths = EnumerateEpochRelayFiles(basePath);
+        foreach (var relayFilePath in relayFilePaths)
         {
             WriteEpochRequest(relayFilePath, epoch);
         }
+
+        return relayFilePaths;
     }
 
     /// <summary>
-    /// Waits until every relay that existed when the request was broadcast has acknowledged the epoch,
-    /// which is when all of the coverage for that test is on disk. Waiting for a single ack would let the
-    /// coverage files be read while another mutated assembly's relay has not flushed yet, attributing
-    /// that assembly's coverage to the next test.
-    /// The set of relays is snapshotted rather than re-read: a relay that appears mid-wait never received
-    /// the request, so it would never acknowledge it, and its coverage is flushed on the next epoch.
+    /// Waits until every relay the request reached has acknowledged the epoch, which is when all of the
+    /// coverage for that test is on disk. Waiting for a single ack would let the coverage files be read
+    /// while another mutated assembly's relay has not flushed yet, attributing that assembly's coverage
+    /// to the next test.
     /// </summary>
-    internal async Task<bool> WaitForAllEpochAcksAsync(string basePath, int expectedEpoch, TimeSpan timeout)
+    internal async Task<bool> WaitForAllEpochAcksAsync(
+        IReadOnlyList<string> relayFilePaths, int expectedEpoch, TimeSpan timeout)
     {
-        var relayFilePaths = EnumerateEpochRelayFiles(basePath);
         if (relayFilePaths.Count == 0)
         {
             // The test touched no mutated code, so no relay exists and there is nothing to flush
-            _logger.LogDebug("{RunnerId}: No coverage epoch relay found for {Path}; nothing to wait for",
-                RunnerId, basePath);
+            _logger.LogDebug("{RunnerId}: No coverage epoch relay to wait for", RunnerId);
             return true;
         }
 
@@ -639,9 +642,9 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                     _perTestEpochCounters[assembly] = epoch;
                 }
 
-                BroadcastEpochRequest(epochFilePath, epoch);
+                var requestedRelays = BroadcastEpochRequest(epochFilePath, epoch);
 
-                var acked = await WaitForAllEpochAcksAsync(epochFilePath, epoch, TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                var acked = await WaitForAllEpochAcksAsync(requestedRelays, epoch, TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                 if (!acked)
                 {
                     _logger.LogWarning(

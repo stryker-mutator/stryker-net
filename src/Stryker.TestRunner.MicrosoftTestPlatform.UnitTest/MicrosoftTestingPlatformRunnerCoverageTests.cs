@@ -703,6 +703,43 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
     }
 
     [TestMethod, Timeout(10000)]
+    public async Task EpochRelay_WaitForAllAcks_IgnoresARelayThatAppearedAfterTheRequest()
+    {
+        // A copy of the injected MutantControl creates its relay when the assembly it belongs to first
+        // runs mutated code, which can happen while the runner is already waiting. Such a relay never
+        // received the request, so it can never acknowledge it: waiting for it would burn the whole
+        // timeout and throw away the coverage of a test that was in fact fully flushed. Its own coverage
+        // is flushed on the next epoch instead.
+        var runnerId = 713;
+        var basePath = Path.Combine(Path.GetTempPath(), $"stryker-epoch-{runnerId}-latecomer.txt");
+        var reachedRelay = WriteEpochRelayFile(basePath, "AssemblyPresentAtRequest", request: 0, ack: 0);
+        string? lateRelay = null;
+
+        try
+        {
+            using var runner = CreateRunner(runnerId);
+            runner.InitializeEpochFile(basePath);
+
+            var requestedRelays = runner.BroadcastEpochRequest(basePath, 1);
+
+            // The copy that shows up too late to be asked, and the one that was asked answering
+            lateRelay = WriteEpochRelayFile(basePath, "AssemblyLoadedWhileWaiting", request: 0, ack: 0);
+            WriteEpochRelayFile(basePath, "AssemblyPresentAtRequest", request: 1, ack: 1);
+
+            var acked = await runner.WaitForAllEpochAcksAsync(requestedRelays, 1, TimeSpan.FromSeconds(5));
+
+            acked.ShouldBeTrue("every relay the request reached has acknowledged it");
+        }
+        finally
+        {
+            foreach (var path in new[] { basePath, reachedRelay, lateRelay })
+            {
+                if (path is not null && File.Exists(path)) File.Delete(path);
+            }
+        }
+    }
+
+    [TestMethod, Timeout(10000)]
     public async Task EpochRelay_WaitForAllAcks_WaitsUntilEveryRelayHasFlushed()
     {
         var runnerId = 711;
@@ -715,12 +752,15 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
             using var runner = CreateRunner(runnerId);
             runner.InitializeEpochFile(basePath);
 
-            var partiallyAcked = await runner.WaitForAllEpochAcksAsync(basePath, 2, TimeSpan.FromMilliseconds(200));
+            var requestedRelays = runner.BroadcastEpochRequest(basePath, 2);
+            requestedRelays.Count.ShouldBe(2, "both relays existed when the request went out");
+
+            var partiallyAcked = await runner.WaitForAllEpochAcksAsync(requestedRelays, 2, TimeSpan.FromMilliseconds(200));
             partiallyAcked.ShouldBeFalse("one relay is still one epoch behind, so its coverage is not on disk yet");
 
             WriteEpochRelayFile(basePath, "SecondMutatedAssembly", request: 2, ack: 2);
 
-            var fullyAcked = await runner.WaitForAllEpochAcksAsync(basePath, 2, TimeSpan.FromSeconds(5));
+            var fullyAcked = await runner.WaitForAllEpochAcksAsync(requestedRelays, 2, TimeSpan.FromSeconds(5));
             fullyAcked.ShouldBeTrue("every relay has now flushed the epoch");
         }
         finally
@@ -745,7 +785,10 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
             using var runner = CreateRunner(runnerId);
             runner.InitializeEpochFile(basePath);
 
-            var acked = await runner.WaitForAllEpochAcksAsync(basePath, 1, TimeSpan.FromSeconds(2));
+            var requestedRelays = runner.BroadcastEpochRequest(basePath, 1);
+            requestedRelays.ShouldBeEmpty("no mutated assembly ran, so no copy created a relay");
+
+            var acked = await runner.WaitForAllEpochAcksAsync(requestedRelays, 1, TimeSpan.FromSeconds(2));
 
             acked.ShouldBeTrue();
         }
