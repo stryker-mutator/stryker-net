@@ -697,6 +697,16 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             // test starts in a fresh process rather than one that already ran other code.
             await DiscardServerAsync(assembly).ConfigureAwait(false);
 
+            // Clear what an earlier test left on disk. Coverage files are written per mutated assembly,
+            // so a host that does not load one of them never rewrites its file, and reading it would
+            // credit this test with the earlier one's coverage - at Exact confidence, which the pool
+            // trusts enough to drop mutants no test covers. A single shared file gave this for free,
+            // since every host rewrote it whole.
+            foreach (var staleCoverageFilePath in EnumerateCoverageFiles(coverageFilePath))
+            {
+                DeleteFileIfExists(staleCoverageFilePath);
+            }
+
             var server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
             var (_, timedOut) = await server.RunTestsAsync(new[] { test }, CalculateSingleTestTimeout(test)).ConfigureAwait(false);
             if (timedOut)

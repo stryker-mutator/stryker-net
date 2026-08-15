@@ -794,6 +794,44 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         result.TestId.ShouldBe("test-1", "the result must stay attributable to the test that was asked for");
     }
 
+    [TestMethod, Timeout(5000)]
+    public async Task RunSingleTestForCoverageInIsolatedProcessAsync_ShouldDiscardCoverageLeftByAnEarlierTest()
+    {
+        // Every isolated capture runs in a host started for it alone, so anything already on disk was
+        // written for an earlier test. The coverage files are per mutated assembly, so a host that does
+        // not load one of them never rewrites its file: reading it would credit this test with the
+        // earlier test's coverage, and at Exact confidence, which is trusted enough to drop mutants no
+        // test covers. Clearing them first is what the single shared file used to give for free, since
+        // every host rewrote it whole.
+        const string assembly = "/nonexistent/assembly.dll";
+
+        using var runner = CreateRunner(713);
+        runner.SetCoverageMode(true);
+
+        var handedOutPath = runner.GetCoverageFilePath(assembly);
+        var earlierTestFilePath = Path.Combine(
+            Path.GetDirectoryName(handedOutPath)!,
+            $"{Path.GetFileNameWithoutExtension(handedOutPath)}-AssemblyFromAnEarlierTest.txt");
+
+        try
+        {
+            File.WriteAllText(earlierTestFilePath, "1,2,3;10");
+
+            await runner.RunSingleTestForCoverageInIsolatedProcessAsync(
+                assembly, new TestNode("test-1", "Test1", "test", "discovered"), "test-1");
+
+            File.Exists(earlierTestFilePath).ShouldBeFalse(
+                "coverage written for an earlier test must not survive into this one");
+        }
+        finally
+        {
+            if (File.Exists(earlierTestFilePath))
+            {
+                File.Delete(earlierTestFilePath);
+            }
+        }
+    }
+
     [TestMethod, Timeout(10000)]
     public async Task RunSingleTestForCoverageInIsolatedProcessAsync_ShouldKeepFailingCleanly_WhenCalledRepeatedly()
     {
