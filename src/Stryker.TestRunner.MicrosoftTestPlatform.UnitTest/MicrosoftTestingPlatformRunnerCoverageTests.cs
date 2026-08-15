@@ -818,6 +818,62 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
     // The happyflow can't be tested here because it requires a real test host to run the test and flush coverage
     // to the coverage file. The happyflow is tested in the integration test project, which runs real tests in a real test host.
 
+    [TestMethod, Timeout(10000)]
+    public async Task SetPerTestCoverageMode_ShouldDeleteThePerTestFiles_WhenLeavingTheMode()
+    {
+        // The runner remembers which assemblies it set per-test files up for, and that record is what
+        // names the files to delete when it is disposed. Leaving the mode used to drop the record, so by
+        // the time anything came to clean up there was nothing left to name: every run leaked a coverage
+        // file and an epoch relay per mutated assembly into the temp directory.
+        const string assembly = "/nonexistent/assembly.dll";
+
+        using var runner = CreateRunner(714);
+        runner.SetPerTestCoverageMode(true);
+
+        // Registers the assembly the way a real capture does, then fails for want of a test host
+        await runner.RunSingleTestForCoverageInReusedProcessAsync(
+            assembly, new TestNode("test-1", "Test1", "test", "discovered"), "test-1");
+
+        var coverageFilePath = runner.GetPerTestCoverageFilePath(assembly);
+        var epochFilePath = runner.GetPerTestEpochFilePath(assembly);
+        // What the copies of the injected MutantControl in the host would have written
+        var writtenByTheHost = new[]
+        {
+            SuffixedPath(coverageFilePath, "FirstMutatedAssembly"),
+            SuffixedPath(coverageFilePath, "SecondMutatedAssembly"),
+            SuffixedPath(epochFilePath, "FirstMutatedAssembly"),
+            SuffixedPath(epochFilePath, "SecondMutatedAssembly")
+        };
+
+        try
+        {
+            foreach (var path in writtenByTheHost)
+            {
+                File.WriteAllText(path, "1,2;10");
+            }
+
+            runner.SetPerTestCoverageMode(false);
+
+            foreach (var path in writtenByTheHost)
+            {
+                File.Exists(path).ShouldBeFalse($"{Path.GetFileName(path)} should not outlive the capture");
+            }
+            File.Exists(epochFilePath).ShouldBeFalse("the epoch file the runner created should go too");
+        }
+        finally
+        {
+            foreach (var path in writtenByTheHost.Concat(new[] { coverageFilePath, epochFilePath }))
+            {
+                if (File.Exists(path)) File.Delete(path);
+            }
+        }
+    }
+
+    private static string SuffixedPath(string path, string suffix) =>
+        Path.Combine(
+            Path.GetDirectoryName(path)!,
+            $"{Path.GetFileNameWithoutExtension(path)}-{suffix}{Path.GetExtension(path)}");
+
     [TestMethod, Timeout(5000)]
     public async Task RunSingleTestForCoverageInIsolatedProcessAsync_ReturnsDubious_WhenServerCannotStart()
     {

@@ -247,18 +247,45 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                 server.Dispose();
             }
             _assemblyServers.Clear();
+
+            DeletePerTestFiles();
+
             _initializedPerTestFiles.Clear();
             _perTestEpochCounters.Clear();
+        }
+    }
+
+    /// <summary>
+    /// Deletes the coverage and epoch files of every assembly this runner set up for per-test capture.
+    /// Both come as one file per mutated assembly the host loaded, named after the path handed out, so
+    /// each one is matched by prefix rather than by that exact path.
+    /// Callers hold <see cref="_serverLock"/>.
+    /// </summary>
+    private void DeletePerTestFiles()
+    {
+        foreach (var assembly in _initializedPerTestFiles)
+        {
+            foreach (var coverageFilePath in EnumerateCoverageFiles(GetPerTestCoverageFilePath(assembly)))
+            {
+                DeleteFileIfExists(coverageFilePath);
+            }
+
+            var epochFilePath = GetPerTestEpochFilePath(assembly);
+            foreach (var relayFilePath in EnumerateEpochRelayFiles(epochFilePath))
+            {
+                DeleteFileIfExists(relayFilePath);
+            }
+            DeleteFileIfExists(epochFilePath);
         }
     }
 
     private static string SanitizeAssemblyName(string assembly) =>
         $"{Path.GetFileNameWithoutExtension(assembly)}-{(uint)assembly.GetHashCode()}";
 
-    private string GetPerTestCoverageFilePath(string assembly) =>
+    internal string GetPerTestCoverageFilePath(string assembly) =>
         Path.Combine(Path.GetTempPath(), $"stryker-coverage-pt-{_id}-{SanitizeAssemblyName(assembly)}.txt");
 
-    private string GetPerTestEpochFilePath(string assembly) =>
+    internal string GetPerTestEpochFilePath(string assembly) =>
         Path.Combine(Path.GetTempPath(), $"stryker-epoch-{_id}-{SanitizeAssemblyName(assembly)}.txt");
 
     /// <summary>
@@ -1311,22 +1338,9 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                 {
                     File.Delete(_mutantFilePath);
                 }
-                foreach (var assembly in _initializedPerTestFiles)
-                {
-                    // One coverage file and one epoch relay per mutated assembly loaded by the host, so
-                    // delete every match rather than just the path handed out
-                    foreach (var perTestCoverageFile in EnumerateCoverageFiles(GetPerTestCoverageFilePath(assembly)))
-                    {
-                        DeleteFileIfExists(perTestCoverageFile);
-                    }
-
-                    var epochFilePath = GetPerTestEpochFilePath(assembly);
-                    foreach (var relayFilePath in EnumerateEpochRelayFiles(epochFilePath))
-                    {
-                        DeleteFileIfExists(relayFilePath);
-                    }
-                    DeleteFileIfExists(epochFilePath);
-                }
+                // Only has anything to do when the runner is disposed while still in per-test mode;
+                // leaving the mode deletes these files and forgets the assemblies they belong to
+                DeletePerTestFiles();
             }
             catch (Exception ex)
             {
