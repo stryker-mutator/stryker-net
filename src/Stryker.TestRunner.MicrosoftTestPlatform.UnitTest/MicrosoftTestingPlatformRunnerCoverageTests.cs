@@ -818,6 +818,35 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
     // The happyflow can't be tested here because it requires a real test host to run the test and flush coverage
     // to the coverage file. The happyflow is tested in the integration test project, which runs real tests in a real test host.
 
+    [TestMethod]
+    public void PerTestFilePaths_ShouldBeUniquePerRun_LikeTheWholeRunCoveragePath()
+    {
+        // These paths are read, overwritten and deleted while a run is in flight, so they have to name
+        // one run and no other. Two Stryker processes on one machine hand their runners the same small
+        // ids, and a crashed run leaves files a later one would find: the whole-run coverage path already
+        // carries the process id and a per-instance nonce for exactly that reason.
+        using var runner = CreateRunner(720);
+        using var sameIdRunner = CreateRunner(720);
+
+        var coveragePath = runner.GetPerTestCoverageFilePath("/some/dir/Tests.dll");
+        var epochPath = runner.GetPerTestEpochFilePath("/some/dir/Tests.dll");
+
+        coveragePath.ShouldBe(runner.GetPerTestCoverageFilePath("/some/dir/Tests.dll"),
+            "the path must stay the same for the same assembly, it is written and read across a whole capture");
+        coveragePath.ShouldNotBe(runner.GetPerTestCoverageFilePath("/some/dir/OtherTests.dll"),
+            "different assemblies must not share a file");
+        coveragePath.ShouldNotBe(epochPath, "the coverage file and the epoch relay are different files");
+
+        sameIdRunner.GetPerTestCoverageFilePath("/some/dir/Tests.dll").ShouldNotBe(coveragePath,
+            "two runner instances sharing an id must not share a file");
+        sameIdRunner.GetPerTestEpochFilePath("/some/dir/Tests.dll").ShouldNotBe(epochPath,
+            "two runner instances sharing an id must not share a relay");
+
+        // A concurrent Stryker process must not land on these paths
+        Path.GetFileName(coveragePath).ShouldStartWith($"stryker-coverage-pt-{Environment.ProcessId}-");
+        Path.GetFileName(epochPath).ShouldStartWith($"stryker-epoch-{Environment.ProcessId}-");
+    }
+
     [TestMethod, Timeout(10000)]
     public async Task SetPerTestCoverageMode_ShouldDeleteThePerTestFiles_WhenLeavingTheMode()
     {

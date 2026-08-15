@@ -40,6 +40,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     private readonly object _discoveryLock;
     private readonly ILogger _logger;
     private readonly string _mutantFilePath;
+    private readonly string _runIdentity;
     private readonly string _coverageFilePathBase;
     private readonly IStrykerOptions? _options;
     private readonly object _serverLock = new();
@@ -66,15 +67,16 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         _options = options;
 
         // Create unique file paths for this runner to communicate with the test process.
-        // The coverage base name embeds the process id plus a per-instance nonce: coverage files
-        // are only deleted once their path has been assigned, so a predictable name could let a
-        // run read a stale file left behind by a crashed earlier run (same runner id, same
-        // assembly), and concurrent Stryker processes could clobber each other's files. The nonce
-        // covers what the process id alone does not (pid reuse, several runner instances with the
-        // same id in one process).
+        // The names embed the process id plus a per-instance nonce: coverage files are only deleted
+        // once their path has been assigned, so a predictable name could let a run read a stale file
+        // left behind by a crashed earlier run (same runner id, same assembly), and concurrent
+        // Stryker processes could clobber each other's files. The nonce covers what the process id
+        // alone does not (pid reuse, several runner instances with the same id in one process).
+        // Shared by the whole-run coverage files and by the per-test ones, which are read, rewritten
+        // and deleted while a run is in flight and so must name one run and no other.
+        _runIdentity = $"{Environment.ProcessId}-{_id}-{Guid.NewGuid().ToString("N")[..8]}";
         _mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-{_id}.txt");
-        _coverageFilePathBase = Path.Combine(Path.GetTempPath(),
-            $"stryker-coverage-{Environment.ProcessId}-{_id}-{Guid.NewGuid().ToString("N")[..8]}");
+        _coverageFilePathBase = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{_runIdentity}");
 
         // Initialize with no active mutation
         WriteMutantIdToFile(-1);
@@ -283,10 +285,10 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         $"{Path.GetFileNameWithoutExtension(assembly)}-{(uint)assembly.GetHashCode()}";
 
     internal string GetPerTestCoverageFilePath(string assembly) =>
-        Path.Combine(Path.GetTempPath(), $"stryker-coverage-pt-{_id}-{SanitizeAssemblyName(assembly)}.txt");
+        Path.Combine(Path.GetTempPath(), $"stryker-coverage-pt-{_runIdentity}-{SanitizeAssemblyName(assembly)}.txt");
 
     internal string GetPerTestEpochFilePath(string assembly) =>
-        Path.Combine(Path.GetTempPath(), $"stryker-epoch-{_id}-{SanitizeAssemblyName(assembly)}.txt");
+        Path.Combine(Path.GetTempPath(), $"stryker-epoch-{_runIdentity}-{SanitizeAssemblyName(assembly)}.txt");
 
     /// <summary>
     /// Reads coverage data from the coverage files written by the test processes, unioned across all
