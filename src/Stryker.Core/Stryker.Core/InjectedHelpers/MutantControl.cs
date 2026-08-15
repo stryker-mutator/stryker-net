@@ -28,6 +28,12 @@ namespace Stryker
         private static bool _mutantMmfReady;
         private static bool _mutantMmfFailed;
 
+        // Tells this copy of the class apart from the copies of the other mutated assemblies the test
+        // host loads; see GetOwningAssemblyDiscriminator. Computed once: the fallback it uses when the
+        // identity cannot be read has to stay the same for every file this copy writes.
+        private static string _cachedDiscriminator = string.Empty;
+        private static bool _discriminatorCached;
+
         // Coverage file path for MTP runner (file-based IPC)
         private static string _cachedCoverageFilePath = string.Empty;
         private static bool _coverageFilePathCached;
@@ -255,15 +261,10 @@ namespace Stryker
         private static string BuildCoverageFilePath(string coverageFileName)
         {
             string directory = System.IO.Path.GetTempPath();
-            string discriminator = GetOwningAssemblyDiscriminator();
-            if (discriminator.Length == 0)
-            {
-                return System.IO.Path.Combine(directory, coverageFileName);
-            }
-
             string nameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(coverageFileName);
             string extension = System.IO.Path.GetExtension(coverageFileName);
-            return System.IO.Path.Combine(directory, nameWithoutExtension + "-" + discriminator + extension);
+            return System.IO.Path.Combine(
+                directory, nameWithoutExtension + "-" + GetOwningAssemblyDiscriminator() + extension);
         }
 
         /// <summary>
@@ -274,10 +275,17 @@ namespace Stryker
         /// copies would write to the same file and hide each other's coverage, which is exactly what this
         /// naming exists to prevent, so the module id - assigned per compiled module - is what separates
         /// them; the trimmed name is only kept to make the file recognizable while debugging.
-        /// Returns an empty string when the identity cannot be read.
+        /// Never returns an empty string: a copy that cannot read its own identity still has to get a name
+        /// of its own rather than fall back to the name the runner handed out, because the runner treats
+        /// that one as its own bookkeeping and never waits for a relay on it.
         /// </summary>
         private static string GetOwningAssemblyDiscriminator()
         {
+            if (_discriminatorCached)
+            {
+                return _cachedDiscriminator;
+            }
+
             string name;
             System.Guid moduleId;
             try
@@ -287,8 +295,11 @@ namespace Stryker
             }
             catch (System.Exception)
             {
-                // Never fail the tests over coverage bookkeeping
-                return string.Empty;
+                // Never fail the tests over coverage bookkeeping. A fresh id keeps this copy apart from
+                // the others for as long as the process lives, which is all these files are used for.
+                _cachedDiscriminator = "unknown-" + System.Guid.NewGuid().ToString("N");
+                _discriminatorCached = true;
+                return _cachedDiscriminator;
             }
 
             int length = name.Length < 16 ? name.Length : 16;
@@ -299,7 +310,9 @@ namespace Stryker
                 safeName[i] = char.IsLetterOrDigit(current) ? current : '-';
             }
 
-            return new string(safeName) + "-" + moduleId.ToString("N");
+            _cachedDiscriminator = new string(safeName) + "-" + moduleId.ToString("N");
+            _discriminatorCached = true;
+            return _cachedDiscriminator;
         }
 
         /// <summary>
