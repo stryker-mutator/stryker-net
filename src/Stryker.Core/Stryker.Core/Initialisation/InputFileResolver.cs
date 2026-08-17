@@ -334,7 +334,7 @@ public class InputFileResolver(
                         // Stryker will recursively scan projects
                         // add any project reference for progressive discovery (when not using solution file)
                         list.Add(projectAnalysisContext.GetProjectReferences()
-                            .Where(projectReference => FileSystem.File.Exists(projectReference)));
+                            .Where(projectReference => FileSystem.File.Exists(projectReference)).ToList());
                     }
                 );
             }
@@ -418,12 +418,12 @@ public class InputFileResolver(
     }
 
     private (List<MutableProjectTree>, List<ProjectSimulatedBuildWrapper>) ExtractMutableProjectTrees(
-        IEnumerable<ProjectSimulatedBuildWrapper> mutableProjectsAnalyzerResults)
+        IEnumerable<ProjectSimulatedBuildWrapper> projectsSimulatedBuild)
     {
         // separate test projects from mutable projects, and keep only analyzer results building an assembly (exclude solution folders and such)
         var testProjects = new List<ProjectSimulatedBuildWrapper>();
         var mutableProjects = new List<ProjectSimulatedBuildWrapper>();
-        foreach (var project in mutableProjectsAnalyzerResults)
+        foreach (var project in projectsSimulatedBuild)
         {
             if (project.IsTestProject())
             {
@@ -432,6 +432,10 @@ public class InputFileResolver(
             else if (project.BuildsAnAssembly())
             {
                 mutableProjects.Add(project);
+            }
+            else
+            {
+                _logger.LogDebug("Disregarding project {discarded} as it does not build an assembly.", project.ProjectFileName);
             }
         }
         var mutableToTestMap = mutableProjects.ToDictionary(p =>p, p => new MutableProjectTree(p, _logger));
@@ -477,7 +481,7 @@ public class InputFileResolver(
                         continue;
                     }
                     // find the entry
-                    mutableToTestMap[candidateProject][candidateTarget].TestProjects.Add(variant);
+                    mutableToTestMap[candidateProject][candidateTarget].AddTestProject(variant);
 
                     foundOneProject = true;
                 }
@@ -512,7 +516,7 @@ public class InputFileResolver(
                 {
                     continue;
                 }
-                mutableToTestMap[candidateProject][candidateVariant].TestProjects.Add(variant);
+                mutableToTestMap[candidateProject][candidateVariant].AddTestProject(variant);
 
                 foundOneProject = true;
             }

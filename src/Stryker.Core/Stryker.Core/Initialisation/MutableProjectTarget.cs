@@ -29,6 +29,22 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
     private static readonly string[] FoldersToExclude = ["obj", "bin", "node_modules", "StrykerOutput"];
 
     /// <summary>
+    /// Add a new test project
+    /// </summary>
+    /// <param name="testProject"></param>
+    /// <returns></returns>
+    public bool AddTestProject(IAnalyzerResult testProject)
+    {
+        // this is a workaround for multitargeting projects
+        if (TestProjects.Any(tp => tp.ProjectFilePath == testProject.ProjectFilePath))
+        {
+            return false;
+        }
+        TestProjects.Add(testProject);
+        return true;
+    }
+
+    /// <summary>
     /// Builds a <see cref="SourceProjectInfo"/> instance describing a project its associated test project(s)
     /// </summary>
     /// <param name="options">Stryker options</param>

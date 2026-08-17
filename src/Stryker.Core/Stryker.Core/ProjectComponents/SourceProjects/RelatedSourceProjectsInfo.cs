@@ -28,7 +28,7 @@ public class RelatedSourceProjectsInfo(
             return true;
         }
         var testProjects = SourceProjectInfos.SelectMany(p => p.TestProjectsInfo.AnalyzerResults)
-            .Distinct().ToList();
+            .Distinct().GroupBy(p => p.ProjectFilePath).Select(g => g.First()).ToList();
         for (var i = 0; i < testProjects.Count; i++)
         {
             logger?.LogInformation(
