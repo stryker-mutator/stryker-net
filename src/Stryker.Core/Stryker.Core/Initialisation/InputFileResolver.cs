@@ -435,7 +435,7 @@ public class InputFileResolver(
             }
             else
             {
-                _logger.LogDebug("Disregarding project {discarded} as it does not build an assembly.", project.ProjectFileName);
+                _logger.LogDebug("Disregarding project {Discarded} as it does not build an assembly.", project.ProjectFileName);
             }
         }
         var mutableToTestMap = mutableProjects.ToDictionary(p =>p, p => new MutableProjectTree(p, _logger));
