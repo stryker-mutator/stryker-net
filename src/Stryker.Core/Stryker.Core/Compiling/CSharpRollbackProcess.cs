@@ -271,8 +271,13 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             {
                 var identifierText = ExtractIdentifier(diagnostic, brokenMutation);
                 if (!string.IsNullOrEmpty(identifierText)
-                    && ScanErasingMutation(
-                        x => x.AssignsThis(identifierText), brokenMutation, brokenMutations, mode))
+                    && (ScanErasingMutation(
+                            x => x.AssignsThis(identifierText), brokenMutation, brokenMutations, mode)
+                        // a mutation erasing a throw statement can also break definite assignment,
+                        // e.g. when a catch clause no longer throws, execution can continue past the
+                        // try/catch without the variable being assigned
+                        || ScanErasingMutation(
+                            x => x is ThrowStatementSyntax, brokenMutation, brokenMutations, mode)))
                 {
                     continue;
                 }
@@ -285,7 +290,8 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                     // CS0161 implies a block body
                     brokenMutation = methodDeclarationSyntax.Body!.Statements.Last();
                 }
-                if (ScanErasingMutation(x => x is ReturnStatementSyntax, brokenMutation, brokenMutations, mode))
+                // erasing a throw statement can also make the end of a non-void method reachable
+                if (ScanErasingMutation(x => x is ReturnStatementSyntax or ThrowStatementSyntax, brokenMutation, brokenMutations, mode))
                 {
                     continue;
                 }
