@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 
 namespace Stryker.Configuration.Options.Inputs;
@@ -15,10 +14,6 @@ public class ProjectVersionInput : Input<string>
     {
         if (reporters.Contains(Reporter.Dashboard) || reporters.Contains(Reporter.RealTimeDashboard) || withBaseline)
         {
-            if (withBaseline && string.IsNullOrWhiteSpace(SuppliedInput))
-            {
-                throw new InputException("Project version cannot be empty when baseline is enabled");
-            }
             return SuppliedInput ?? Default;
         }
 

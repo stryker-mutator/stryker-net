@@ -41,6 +41,13 @@ stages:
         custom: 'restore'
         arguments: --force-evaluate
         workingDirectory: 'integrationtest/TargetProjects/NetFramework'
+    - task: DotNetCoreCLI@2
+      displayName: 'Update Microsoft Test Platform integrationtest lock files'
+      inputs:
+        command: 'custom'
+        custom: 'restore'
+        arguments: 'MicrosoftTestPlatform.slnx --force-evaluate'
+        workingDirectory: 'integrationtest/TargetProjects'
     - script: |
         git config --global user.email "renovatebot@stryker-mutator.io"
         git config --global user.name "renovatebot"

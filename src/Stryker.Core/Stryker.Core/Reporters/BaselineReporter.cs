@@ -5,6 +5,7 @@ using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Baseline.Utils;
 using Stryker.Core.Reporters.Json;
 
 namespace Stryker.Core.Reporters;
@@ -25,10 +26,9 @@ public class BaselineReporter : IReporter
     public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
     {
         var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
-        var projectVersion = _gitInfoProvider.GetCurrentBranchName();
-        var baselineVersion = $"baseline/{projectVersion}";
+        var baselineLocation = $"baseline/{BaselineVersion.Current(_options, _gitInfoProvider)}";
 
-        _baselineProvider.Save(mutationReport, baselineVersion).Wait();
+        _baselineProvider.Save(mutationReport, baselineLocation).Wait();
     }
 
     public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)

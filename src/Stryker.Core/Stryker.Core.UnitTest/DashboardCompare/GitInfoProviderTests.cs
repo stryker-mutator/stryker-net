@@ -32,7 +32,7 @@ public class GitInfoProviderTests : TestBase
     }
 
     [TestMethod]
-    public void DoesNotCheckForRepositoryPathWhenDisabled()
+    public void UsesProvidedRepositoryWhenSinceIsDisabled()
     {
         var repository = new Mock<IRepository>(MockBehavior.Strict);
 
@@ -42,7 +42,7 @@ public class GitInfoProviderTests : TestBase
         };
         var target = new GitInfoProvider(options, repository.Object, null);
 
-        target.Repository.ShouldBe(null);
+        target.Repository.ShouldBe(repository.Object);
     }
 
     [TestMethod]
@@ -67,7 +67,7 @@ public class GitInfoProviderTests : TestBase
     }
 
     [TestMethod]
-    public void ThrowsExceptionIfNoCurrentBranchOrProjectVersionSet()
+    public void ReturnsNullIfNoCurrentBranchIsAvailable()
     {
         // Arrange
         var options = new StrykerOptions();
@@ -75,10 +75,10 @@ public class GitInfoProviderTests : TestBase
 
         var target = new GitInfoProvider(options, repository.Object);
         // Act
-        Action result = () => target.GetCurrentBranchName();
+        var result = target.GetCurrentBranchName();
 
         // Assert
-        result.ShouldThrow<InputException>();
+        result.ShouldBeNull();
     }
 
     [TestMethod]
@@ -185,19 +185,19 @@ public class GitInfoProviderTests : TestBase
     }
 
     [TestMethod]
-    public void CreateRepository_Throws_InputException_When_RepositoryPath_Empty()
+    public void DoesNotCreateRepository_When_RepositoryPath_Empty()
     {
-        static void act() => new GitInfoProvider(new StrykerOptions()
+        var target = new GitInfoProvider(new StrykerOptions()
         {
             Since = true,
         }, repositoryPath: string.Empty);
 
-        Should.Throw<InputException>(act)
-            .Message.ShouldBe("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the 'since' feature.");
+        target.IsRepository.ShouldBeFalse();
+        target.Repository.ShouldBeNull();
     }
 
     [TestMethod]
-    public void DetermineCommitThrowsStrykerInputException()
+    public void DetermineCommitReturnsNullWhenTargetCannotBeResolved()
     {
         var options = new StrykerOptions()
         {
@@ -226,9 +226,9 @@ public class GitInfoProviderTests : TestBase
         var target = new GitInfoProvider(options, repository.Object);
 
 
-        void act() => target.DetermineCommit();
+        var result = target.DetermineCommit("main");
 
-        Should.Throw<InputException>(act);
+        result.ShouldBeNull();
     }
 
     [TestMethod]
@@ -262,11 +262,46 @@ public class GitInfoProviderTests : TestBase
         var target = new GitInfoProvider(options, repositoryMock.Object);
 
         // Act
-        var result = target.DetermineCommit();
+        var result = target.DetermineCommit(sha);
 
         // Assert
         result.ShouldNotBeNull();
         repositoryMock.Verify(x => x.Lookup(It.Is<ObjectId>(x => x.Sha == sha)), Times.Once);
+    }
+
+    [TestMethod]
+    public void ReturnsTargetCommit_When_TagNameMatchesTarget()
+    {
+        var options = new StrykerOptions();
+        var commitMock = new Mock<Commit>();
+        var tagMock = new Mock<Tag>(MockBehavior.Strict);
+        var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
+        var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
+        var tagCollectionMock = new Mock<TagCollection>(MockBehavior.Strict);
+
+        branchCollectionMock
+            .Setup(x => x.GetEnumerator())
+            .Returns(((IEnumerable<Branch>)new List<Branch>()).GetEnumerator());
+
+        tagMock
+            .SetupGet(x => x.CanonicalName)
+            .Returns("refs/tags/v1.0.0");
+        tagMock
+            .SetupGet(x => x.Target)
+            .Returns(commitMock.Object);
+
+        tagCollectionMock
+            .Setup(x => x.GetEnumerator())
+            .Returns(((IEnumerable<Tag>)new List<Tag> { tagMock.Object }).GetEnumerator());
+
+        repositoryMock.SetupGet(x => x.Branches).Returns(branchCollectionMock.Object);
+        repositoryMock.SetupGet(x => x.Tags).Returns(tagCollectionMock.Object);
+
+        var target = new GitInfoProvider(options, repositoryMock.Object);
+
+        var result = target.DetermineCommit("v1.0.0");
+
+        result.ShouldBe(commitMock.Object);
     }
 
     [TestMethod]
@@ -312,7 +347,7 @@ public class GitInfoProviderTests : TestBase
         var target = new GitInfoProvider(options, repositoryMock.Object);
 
         // Act
-        var res = target.DetermineCommit();
+        var res = target.DetermineCommit("origin/master");
 
         // Assert
         res.ShouldNotBeNull();
@@ -322,7 +357,7 @@ public class GitInfoProviderTests : TestBase
     }
 
     [TestMethod]
-    public void GetTargetCommit_Does_Not_Throw_NullReferenceException_When_Branch_Is_Null()
+    public void DetermineCommitReturnsNullWhenBranchPropertiesAreUnavailable()
     {
         // Arrange
         var options = new StrykerOptions()
@@ -363,10 +398,10 @@ public class GitInfoProviderTests : TestBase
         var target = new GitInfoProvider(options, repositoryMock.Object);
 
         // Act
-        void act() => target.DetermineCommit();
+        var result = target.DetermineCommit("origin/master");
 
         // Assert
-        Should.Throw<InputException>(act);
+        result.ShouldBeNull();
     }
 
     [TestMethod]
@@ -412,7 +447,7 @@ public class GitInfoProviderTests : TestBase
         var target = new GitInfoProvider(options, repositoryMock.Object);
 
         // Act
-        var res = target.DetermineCommit();
+        var res = target.DetermineCommit("master");
 
         // Assert
         res.ShouldNotBeNull();
@@ -464,7 +499,7 @@ public class GitInfoProviderTests : TestBase
         var target = new GitInfoProvider(options, repositoryMock.Object);
 
         // Act
-        var res = target.DetermineCommit();
+        var res = target.DetermineCommit("refs/heads/master");
 
         // Assert
         res.ShouldNotBeNull();

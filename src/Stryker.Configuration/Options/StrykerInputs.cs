@@ -15,6 +15,7 @@ public interface IStrykerInputs
     AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; }
     BaselineProviderInput BaselineProviderInput { get; init; }
     BaselineOutputInput BaselineOutputInput { get; init; }
+    BaselineCompareVersionInput BaselineCompareVersionInput { get; init; }
     BasePathInput BasePathInput { get; init; }
     ConcurrencyInput ConcurrencyInput { get; init; }
     ConfigurationInput ConfigurationInput { get; init; }
@@ -92,6 +93,7 @@ public class StrykerInputs : IStrykerInputs
     public ReportersInput ReportersInput { get; init; } = new();
     public BaselineProviderInput BaselineProviderInput { get; init; } = new();
     public BaselineOutputInput BaselineOutputInput { get; init; } = new();
+    public BaselineCompareVersionInput BaselineCompareVersionInput { get; init; } = new();
     public AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; } = new();
     public AzureFileStorageSasInput AzureFileStorageSasInput { get; init; } = new();
     public S3BucketNameInput S3BucketNameInput { get; init; } = new();
@@ -126,9 +128,9 @@ public class StrykerInputs : IStrykerInputs
         var withBaseline = WithBaselineInput.Validate();
         var reporters = ReportersInput.Validate(withBaseline);
         var baselineProvider = BaselineProviderInput.Validate(reporters, withBaseline);
+        var baselineCompareVersion = BaselineCompareVersionInput.Validate(withBaseline);
         var sinceEnabled = SinceInput.Validate(WithBaselineInput.SuppliedInput);
         var sinceTarget = SinceTargetInput.Validate(sinceEnabled);
-        var projectVersion = ProjectVersionInput.Validate(reporters, withBaseline);
         var testRunner = TestRunnerInput.Validate();
 
         _strykerOptionsCache ??= new StrykerOptions()
@@ -179,9 +181,10 @@ public class StrykerInputs : IStrykerInputs
             WithBaseline = withBaseline,
             BaselineProvider = baselineProvider,
             BaselineOutputPath = BaselineOutputInput.Validate(baselineProvider, withBaseline),
-            FallbackVersion = FallbackVersionInput.Validate(withBaseline, projectVersion, sinceTarget),
+            FallbackVersion = FallbackVersionInput.Validate(withBaseline),
             Since = sinceEnabled,
             SinceTarget = sinceTarget,
+            BaselineCompareVersion = baselineCompareVersion,
             ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate()),
             BreakOnInitialTestFailure = BreakOnInitialTestFailureInput.Validate(),
             TestRunner = testRunner,

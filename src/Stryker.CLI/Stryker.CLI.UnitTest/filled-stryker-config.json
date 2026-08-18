@@ -50,6 +50,7 @@
     },
     "baseline": {
       "enabled": false,
+      "compare-version": "release",
       "fallback-version": "master",
       "azure-fileshare-url": "",
       "s3-bucket-name": "my-bucket",

@@ -10,14 +10,9 @@ public class SinceInput : Input<bool?>
 
     public bool Validate(bool? withBaseline)
     {
-        if (withBaseline.IsNotNullAndTrue())
+        if (withBaseline.IsNotNullAndTrue() && SuppliedInput.HasValue && SuppliedInput.Value)
         {
-            if (SuppliedInput.HasValue && SuppliedInput.Value)
-            {
-                throw new InputException("The since and baseline features are mutually exclusive.");
-            }
-
-            return true;
+            throw new InputException("The since and baseline features are mutually exclusive.");
         }
 
         return SuppliedInput ?? false;

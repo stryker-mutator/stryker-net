@@ -63,9 +63,9 @@ public class JsonReport : IJsonReport
     {
         if (fileComponent.IsComponentExcluded(options.Mutate))
         {
-            return new Dictionary<string, ISourceFile> { { fileComponent.FullPath, SourceFile.Ignored } };
+            return new Dictionary<string, ISourceFile> { { fileComponent.RootRelativePath, SourceFile.Ignored } };
         }
-        return new Dictionary<string, ISourceFile> { { fileComponent.FullPath, new SourceFile(fileComponent) } };
+        return new Dictionary<string, ISourceFile> { { fileComponent.RootRelativePath, new SourceFile(fileComponent) } };
      }
 
     private void AddTestFiles(ITestProjectsInfo testProjectsInfo)
@@ -75,13 +75,14 @@ public class JsonReport : IJsonReport
             TestFiles = new Dictionary<string, IJsonTestFile>();
             foreach (var testFile in testProjectsInfo.TestFiles)
             {
-                if (TestFiles.TryGetValue(testFile.FilePath, out var jsonFile))
+                var key = testFile.RelativePath;
+                if (TestFiles.TryGetValue(key, out var jsonFile))
                 {
                     jsonFile.AddTestFile(testFile);
                 }
                 else
                 {
-                    TestFiles.Add(testFile.FilePath, new JsonTestFile(testFile));
+                    TestFiles.Add(key, new JsonTestFile(testFile));
                 }
             }
         }

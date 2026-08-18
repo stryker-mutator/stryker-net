@@ -58,15 +58,12 @@ public class ProjectVersionInputTests : TestBase
     }
 
     [TestMethod]
-    public void ProjectVersion_CannotBeEmpty_WhenBaselineEnabled()
+    public void ProjectVersion_MayBeEmpty_WhenBaselineEnabled()
     {
         var input = new ProjectVersionInput();
 
-        var exception = Should.Throw<InputException>(() =>
-        {
-            input.Validate(reporters: Enumerable.Empty<Reporter>(), withBaseline: true);
-        });
+        var result = input.Validate(reporters: Enumerable.Empty<Reporter>(), withBaseline: true);
 
-        exception.Message.ShouldBe("Project version cannot be empty when baseline is enabled");
+        result.ShouldBe(string.Empty);
     }
 }

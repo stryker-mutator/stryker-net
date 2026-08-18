@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -23,6 +24,12 @@ public class GitDiffProvider : IDiffProvider
         _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
     }
 
+    // TODO: LibGit2Sharp's PatchEntryChanges (available in the diff walk in ScanDiff()) already
+    // contains line-level hunk data, so this could be implemented using git's own diff instead of
+    // falling back to DiffMatchPatchProvider. Not yet implemented.
+    public DiffResult GetContentDiff(string oldSource, string newSource) =>
+        throw new NotSupportedException($"{nameof(GitDiffProvider)} does not yet support content-level diffing.");
+
     public DiffResult ScanDiff()
     {
         var diffResult = new DiffResult()
@@ -31,9 +38,13 @@ public class GitDiffProvider : IDiffProvider
             ChangedTestFiles = new Collection<string>()
         };
 
-        // A git repository has been detected, calculate the diff to filter
+        if (!_gitInfoProvider.IsRepository)
+        {
+            throw new InputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the 'since' feature.");
+        }
+
         var repository = _gitInfoProvider.Repository;
-        var commit = _gitInfoProvider.DetermineCommit();
+        var commit = _gitInfoProvider.DetermineCommit(_options.SinceTarget);
 
         if (commit == null)
         {

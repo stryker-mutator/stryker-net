@@ -478,12 +478,14 @@ Config file: `"since": { }`
 
 Use git information to test only code changes since the given target. Stryker will only report on mutants within the changed code. All other mutants will not have a result.
 
-If you wish to test only changed sources and tests but would like to have a complete mutation report see [with-baseline](#with-baseline-flag-committish).
+If you wish to test only changed sources and tests but would like to have a complete mutation report see [with-baseline](#with-baseline-flag-version).
 
 Set the diffing target on the command line by passing a committish with the since flag in the format `--since:<committish>`.
-Set the diffing target in the config file by setting the [since target](#sincetarget-committish) option.
+Set the diffing target in the config file by setting the [since target](#since-target-committish) option.
 
 *\* For changes on test project files all mutants covered by tests in that file will be seen as changed.*
+
+*\* The baseline and since features are mutually exclusive. *
 
 ### `since.enabled` &lt;`flag`&gt;
 
@@ -518,20 +520,19 @@ Use [globbing syntax](https://en.wikipedia.org/wiki/Glob_(programming)) for wild
 
 ## Baseline
 
-### `with-baseline` &lt;`flag`&gt; [`:committish`]
+### `with-baseline` &lt;`flag`&gt; [`:version`]
 
 Default: `false`  
 Command line: `--with-baseline:feat-2`  
 Config file: `"baseline": { }`
 
-Enabling `with-baseline` saves the mutation report to a storage location such as the filesystem. The mutation report is loaded at the start of the next mutation run. Any changed source code or unit test results in a reset of the mutants affected by the change. For unchanged mutants the previous result is reused. This feature expands on the [since](#since-flag-committish) feature by providing you with a full report after a partial mutation testrun.
+Enabling `with-baseline` saves the mutation report to a storage location such as the filesystem. The mutation report is loaded at the start of the next mutation run. Any changed source code or unit test results in a reset of the mutants affected by the change. For unchanged mutants the previous result is reused. Unlike [since](#since-flag-committish), baseline provides you with a full report after a partial mutation testrun.
 
-The report name is based on the current branch name or the [project-info.version](#project-infoversion-committish).
+The report is always **saved** under the version of the current run. That version is the [project-info.version](#project-infoversion-committish), or the current git branch name when no project version is set.
 
-Set the diffing target on the command line by passing a committish with the since flag.
-Set the diffing target in the config file by setting the [since target](#sincetarget-committish) option.
+The report that is **loaded** is set by the [baseline.compare-version](#baseline-compare-version-version) option, either on the command line by passing a version with the with-baseline flag, or in the config file. It defaults to the version of the current run, which makes the run incremental. Because the two are separate, comparing against another version never overwrites that version's baseline.
 
-*\* The baseline and since features are mutually exclusive. This feature implicitly enables the [since](#since-flag-committish) feature for now.*
+*\* The baseline and since features are mutually exclusive. *
 
 ### `baseline.enabled` &lt;`flag`&gt;
 
@@ -539,44 +540,56 @@ Default: `null`
 Command line: `N/A`  
 Config file: `"baseline": { "enabled": false }`
 
-Enable or disable [with-baseline](#with-baseline-flag-committish). If the enabled property is not set but the `baseline` object exists in the config file it is assumed to be enabled. Use this option to (temporarily) disable `with-baseline` without having to delete the other baseline configuration.
+Enable or disable [with-baseline](#with-baseline-flag-version). If the enabled property is not set but the `baseline` object exists in the config file it is assumed to be enabled. Use this option to (temporarily) disable `with-baseline` without having to delete the other baseline configuration.
+
+### `baseline.compare-version` &lt;`version`&gt;
+
+Default: the version of the current run  
+Command line: `--with-baseline:feat-2`  
+Config file: `"baseline": { "compare-version": 'feat-2' }`
+
+The version of the stored baseline report that the current codebase is compared with.
+
+Leave it empty for an **incremental** run: the run reuses its own previous report, so only mutants affected by changes since your last run are tested. Set it to another version, for example `master`, for an **always-compare** run: every run reports what changed relative to that version, and your own previous results are not reused.
+
+This version is only ever read. The new report is still saved under the version of the current run, so pointing at another version cannot overwrite that version's baseline.
 
 ### `baseline.fallback-version` &lt;`string`&gt;
 
-Default: [since-target](#since-flag-committish)  
+Default: `main`  
 Command line: `N/A`  
 Config file: `"baseline": { "fallback-version": 'develop' }`
 
-When [with-baseline](#with-baseline-flag-committish) is enabled and Stryker cannot find an existing report for the current branch the fallback version is used. When Stryker is still unable to find a baseline we will do a complete instead of partial testrun. The complete testrun will then be saved as the new baseline for the next mutation testrun.
+Used only to bootstrap the very first run, when no baseline report exists yet for the [compare version](#baseline-compare-version-version). Stryker then looks for:
 
-**Example**:
+1. a baseline report stored for the fallback version;
+2. a regular report stored for the fallback version, for example one published by the [dashboard reporter](./reporters.md#dashboard-reporter).
+
+When neither exists, Stryker runs a complete testrun and saves that as the new baseline.
+
+**Example**: working on `feat-2`, with `"baseline": { "fallback-version": 'development' }`
+
 ```json
-"since-target": 'development',
-"current-branch" 'feat-2'
-```
-```json
-baseline exists for branch feat-2: false
-baseline exists for branch development: false
+baseline exists for feat-2: false
+report exists for development: false
 
 baseline used: null (complete instead of partial testrun)
 new baseline saved to: feat-2
 ```
 ```json
-baseline exists for branch feat-2: false
-baseline exists for branch development: true
+baseline exists for feat-2: false
+report exists for development: true
 
 baseline used: development
 new baseline saved to: feat-2
 ```
 ```json
-baseline exists for branch feat-2: true
-baseline exists for branch development: true
+baseline exists for feat-2: true
+report exists for development: true
 
 baseline used: feat-2
 new baseline saved to: feat-2
 ```
-
-*\* The [since-target](#sincetarget-committish) explicit or default value is used as the fallback version unless the fallback version is explicitly set.*
 
 ### `baseline.provider` &lt;`string`&gt;
 
@@ -584,7 +597,7 @@ Default: `Disk`
 Command line: `N/A`  
 Config file: `"baseline": { "provider": 'AzureFileStorage'}`
 
-Sets the storage provider for the baseline used by [with-baseline](#with-baseline-flag-committish). By default this is set to disk, when the dashboard [reporter](#reporter-string) is enabled this is automatically set to Dashboard.
+Sets the storage provider for the baseline used by [with-baseline](#with-baseline-flag-version). By default this is set to disk, when the dashboard [reporter](#reporter-string) is enabled this is automatically set to Dashboard.
 
 Supported storage providers are:
 

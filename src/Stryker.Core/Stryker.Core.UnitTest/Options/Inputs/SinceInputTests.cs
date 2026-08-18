@@ -57,11 +57,11 @@ public class SinceInputTests : TestBase
     }
 
     [TestMethod]
-    public void ShouldBeImplicitlyEnabledWithBaseline()
+    public void ShouldNotBeImplicitlyEnabledWithBaseline()
     {
         var sinceEnabled = new SinceInput().Validate(withBaseline: true);
 
-        sinceEnabled.ShouldBeTrue();
+        sinceEnabled.ShouldBeFalse();
     }
 
     [TestMethod]

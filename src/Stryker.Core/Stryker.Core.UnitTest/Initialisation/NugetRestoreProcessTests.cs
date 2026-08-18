@@ -17,7 +17,7 @@ public class NugetRestoreProcessTests : TestBase
     private readonly string _solutionDir = Path.GetDirectoryName(Path.GetFullPath(SolutionPath));
 
     [TestMethodWithIgnoreIfSupport]
-    [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
+    [IgnoreIf(nameof(Is.NotWindows))]
     public void HappyFlow()
     {
         var nugetPath = @"C:\choco\bin\NuGet.exe";
@@ -69,7 +69,7 @@ public class NugetRestoreProcessTests : TestBase
     }
 
     [TestMethodWithIgnoreIfSupport]
-    [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
+    [IgnoreIf(nameof(Is.NotWindows))]
     public void RetryIfRestoreFails()
     {
         var nugetPath = @"C:\choco\bin\NuGet.exe";
@@ -130,7 +130,7 @@ public class NugetRestoreProcessTests : TestBase
     }
 
     [TestMethodWithIgnoreIfSupport]
-    [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
+    [IgnoreIf(nameof(Is.NotWindows))]
     public void FailToGetMsBuildVersion()
     {
         var nugetPath = @"C:\choco\bin\NuGet.exe";
@@ -190,7 +190,7 @@ public class NugetRestoreProcessTests : TestBase
     }
 
     [TestMethodWithIgnoreIfSupport]
-    [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
+    [IgnoreIf(nameof(Is.NotWindows))]
     public void NugetIsUsingSuppliedMsBuild()
     {
         var nugetPath = @"C:\choco\bin\NuGet.exe";
@@ -254,7 +254,7 @@ public class NugetRestoreProcessTests : TestBase
     }
 
     [TestMethodWithIgnoreIfSupport]
-    [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
+    [IgnoreIf(nameof(Is.NotWindows))]
     public void ShouldThrowOnNugetNotInstalled()
     {
         var processExecutorMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
@@ -294,7 +294,7 @@ public class NugetRestoreProcessTests : TestBase
     }
 
     [TestMethodWithIgnoreIfSupport]
-    [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
+    [IgnoreIf(nameof(Is.NotWindows))]
     public void ShouldPickFirstNugetPath()
     {
         var firstNugetPath = @"C:\choco\bin\NuGet.exe";

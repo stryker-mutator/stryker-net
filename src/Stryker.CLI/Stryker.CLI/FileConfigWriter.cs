@@ -22,6 +22,7 @@ public static class FileConfigGenerator
                 Baseline = new Baseline
                 {
                     Enabled = inputs.WithBaselineInput.SuppliedInput ?? inputs.WithBaselineInput.Default,
+                    CompareVersion = inputs.BaselineCompareVersionInput.SuppliedInput ?? inputs.BaselineCompareVersionInput.Default,
                     Provider = inputs.BaselineProviderInput.SuppliedInput ?? inputs.BaselineProviderInput.Default,
                     FallbackVersion = inputs.FallbackVersionInput.SuppliedInput ?? inputs.FallbackVersionInput.Default,
                     AzureFileShareUrl = inputs.AzureFileStorageUrlInput.SuppliedInput ?? inputs.AzureFileStorageUrlInput.Default,

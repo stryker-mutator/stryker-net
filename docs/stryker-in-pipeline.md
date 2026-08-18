@@ -48,7 +48,7 @@ dotnet stryker --break-at 80
 Dashboard compare is very useful when running stryker in pipelines because it cuts down on the total runtime by only testing mutations that have changed compared to for example master
 The following minimal steps are needed to use dashboard compare
 
-1. Enable --with-baseline and choose the comparison target
+1. Enable --with-baseline and pick the version to compare against
 1. Choose a storage provider (Dashboard for public projects, Azure File Share or S3-compatible storage for private projects)
 1. Set up authentication for the chosen storage provider
 1. Set --version to the name of the source branch (usually current branch)
@@ -58,6 +58,8 @@ Example for azure devops with dashboard storage provider:
 ```
 dotnet stryker --with-baseline:$(System.PullRequest.TargetBranch) --dashboard-api-key $(Stryker.Dashboard.Api.Key) --version $(System.PullRequest.SourceBranch)
 ```
+
+This compares every run against the target branch, so the report always shows what the pull request changed. Drop the `:$(System.PullRequest.TargetBranch)` part to compare against the previous run of the source branch instead, which is faster because already tested mutants are reused. Either way the report is saved under `--version`, so the target branch baseline is never overwritten.
 
 ```json
 {

@@ -58,6 +58,16 @@ public class CommandLineConfigReaderTests
     }
 
     [TestMethod]
+    public void ShouldHandleBaselineCompareVersionWithValue()
+    {
+        _target.ReadCommandLineConfig(["--with-baseline:release"], _app, _inputs);
+
+        _inputs.WithBaselineInput.SuppliedInput.ShouldBe(true);
+        _inputs.BaselineCompareVersionInput.SuppliedInput.ShouldBe("release");
+        _inputs.SinceTargetInput.SuppliedInput.ShouldBeNull();
+    }
+
+    [TestMethod]
     public void ShouldHandleMultiValue()
     {
         _target.ReadCommandLineConfig(["--reporter test", "--reporter test2"], _app, _inputs);
