@@ -32,7 +32,8 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
     /// Add a new test project
     /// </summary>
     /// <param name="testProject"></param>
-    /// <returns></returns>
+    /// <returns>true if the project was added, false if it was already present</returns>
+    /// <remarks>This method filters duplicate on project name (not assembly name)</remarks>
     public bool AddTestProject(IAnalyzerResult testProject)
     {
         // this is a workaround for multitargeting projects

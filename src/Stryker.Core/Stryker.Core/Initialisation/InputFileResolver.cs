@@ -334,7 +334,7 @@ public class InputFileResolver(
                         // Stryker will recursively scan projects
                         // add any project reference for progressive discovery (when not using solution file)
                         list.Add(projectAnalysisContext.GetProjectReferences()
-                            .Where(projectReference => FileSystem.File.Exists(projectReference)).ToList());
+                            .Where(projectReference => FileSystem.File.Exists(projectReference)));
                     }
                 );
             }
