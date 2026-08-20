@@ -1123,6 +1123,137 @@ public class CSharpRollbackProcessTests : TestBase
     }
 
     [TestMethod]
+    public void RollbackProcess_ShouldRollbackMutationErasingTerminalThrow()
+    {
+        // a mutation erasing the terminal throw of a non-void method triggers CS0161 at the method
+        // declaration; the rollback process must attribute it instead of entering safe mode (issue #3783)
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+        """
+        using System;
+        using System.Collections.Generic;
+        namespace ExampleProject
+        {
+            public class MethodResolver
+            {
+                public int ActiveMutation = 1;
+                private readonly List<string> _log = new List<string>();
+
+                public int FailForMissingKey(string key)
+                {
+                    {
+                        if(ActiveMutation == 4){;}else{_log.Add(key);}
+                        if(ActiveMutation == 5){;}else{throw new InvalidOperationException("No handler matched " + key);}
+                    }
+                }
+            }
+        }
+        """);
+        var root = syntaxTree.GetRoot();
+
+        var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(
+            mutantIf1,
+            mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(4), GetMutationTypeMarker(Mutator.Statement), _ifEngineMarker)
+        );
+        var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
+        root = root.ReplaceNode(
+            mutantIf2,
+            mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(5), GetMutationTypeMarker(Mutator.Statement), _ifEngineMarker)
+        );
+        var annotatedSyntaxTree = root.SyntaxTree;
+
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            });
+
+        var target = new CSharpRollbackProcess();
+
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
+
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        var rollbackResult = compilerWrapper.Emit(ms);
+
+        rollbackResult.Success.ShouldBeTrue();
+        // only the throw erasing mutation should be rolled back, the other mutation must survive
+        ids.ShouldBe(new Collection<int> { 5 });
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbackMutationErasingThrowInCatchClause()
+    {
+        // a mutation erasing the throw of a catch clause lets the catch complete normally, which breaks
+        // definite assignment (CS0165) at the use site; the rollback process must attribute it instead of
+        // entering safe mode (issue #3783)
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+        """
+        using System;
+        namespace ExampleProject
+        {
+            public class Transformer
+            {
+                public int ActiveMutation = 1;
+
+                public string Translate(string input)
+                {
+                    var dummy = 0;
+                    if(ActiveMutation == 3){dummy = 2;}else{dummy = 1;}
+                    string result;
+                    try
+                    {
+                        result = input.ToUpperInvariant();
+                    }
+                    catch (Exception e)
+                    {
+                        if(ActiveMutation == 6){;}else{throw new InvalidOperationException("failed", e);}
+                    }
+                    return result + dummy;
+                }
+            }
+        }
+        """);
+        var root = syntaxTree.GetRoot();
+
+        var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(
+            mutantIf1,
+            mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(3), GetMutationTypeMarker(Mutator.Statement), _ifEngineMarker)
+        );
+        var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
+        root = root.ReplaceNode(
+            mutantIf2,
+            mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(6), GetMutationTypeMarker(Mutator.Statement), _ifEngineMarker)
+        );
+        var annotatedSyntaxTree = root.SyntaxTree;
+
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            });
+
+        var target = new CSharpRollbackProcess();
+
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
+
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        var rollbackResult = compilerWrapper.Emit(ms);
+
+        rollbackResult.Success.ShouldBeTrue();
+        // only the throw erasing mutation should be rolled back, the other mutation must survive
+        ids.ShouldBe(new Collection<int> { 6 });
+    }
+
+    [TestMethod]
     public void RollbackProcess_ShouldRollbackError_RolledBackCompilationShouldCompileWhenUriIsEmpty()
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(
