@@ -23,6 +23,14 @@ namespace NetCoreTestProject.NUnit
             ClassicAssert.AreEqual(expired, result);
         }
 
+        [Test]
+        public void GetHelloUtf8_ShouldReturnHello()
+        {
+            var result = TargetProject.Constructs.CSharp11.GetHelloUtf8();
+            var expected = "Hello"u8.ToArray();
+            ClassicAssert.AreEqual(expected, result.ToArray());
+        }
+
         // indirect
         private static IEnumerable<(int, string)> TupleSource()
         {
