@@ -270,9 +270,11 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             if (diagnostic.Id is "CS0165" or "CS0177")
             {
                 var identifierText = ExtractIdentifier(diagnostic, brokenMutation);
+                // starting from the method's end we look for any mutation that erases either
+                // a return statement, a throw expression or an assignment to the variable in question
                 if (!string.IsNullOrEmpty(identifierText)
-                    && ScanErasingMutation(
-                        x => x.AssignsThis(identifierText), brokenMutation, brokenMutations, mode))
+                    && ScanErasingMutation(x => IsEarlyExit(x) || x.AssignsThis(identifierText),
+                        brokenMutation, brokenMutations, mode))
                 {
                     continue;
                 }
@@ -285,7 +287,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                     // CS0161 implies a block body
                     brokenMutation = methodDeclarationSyntax.Body!.Statements.Last();
                 }
-                if (ScanErasingMutation(x => x is ReturnStatementSyntax, brokenMutation, brokenMutations, mode))
+                if (ScanErasingMutation(IsEarlyExit, brokenMutation, brokenMutations, mode))
                 {
                     continue;
                 }
@@ -295,6 +297,8 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         }
 
         return brokenMutations;
+        // check if the node allows an early exit
+        bool IsEarlyExit(SyntaxNode x) => x is ReturnStatementSyntax or ThrowStatementSyntax;
     }
 
     private bool ScanErasingMutation(Func<SyntaxNode, bool> predicate,
