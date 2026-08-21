@@ -17,7 +17,8 @@ internal static class RoslynHelper
     /// <returns>true if it is a string</returns>
     public static bool IsAStringExpression(this ExpressionSyntax node) =>
         node.Kind() is SyntaxKind.StringLiteralExpression or
-        SyntaxKind.InterpolatedStringExpression;
+        SyntaxKind.InterpolatedStringExpression or
+        SyntaxKind.Utf8StringLiteralExpression;
 
     /// <summary>
     /// Check if an expression is a string using the semantic model.
@@ -26,7 +27,8 @@ internal static class RoslynHelper
     /// <param name="model">Semantic model</param>
     /// <returns>true if it is a string</returns>
     public static bool IsAStringExpression(this ExpressionSyntax node, SemanticModel model) =>
-        node.IsAStringExpression() || model.GetTypeInfo(node).Type?.SpecialType == SpecialType.System_String;
+        node.Kind() is SyntaxKind.StringLiteralExpression or SyntaxKind.InterpolatedStringExpression
+        || model.GetTypeInfo(node).Type?.SpecialType == SpecialType.System_String;
 
     /// <summary>
     /// Check if an expression contains a declaration

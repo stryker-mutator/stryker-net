@@ -99,6 +99,11 @@ public class CSharp11
         var empty = ""u8;
     }
 
+    public static System.ReadOnlySpan<byte> GetHelloUtf8()
+    {
+        return "Hello"u8;
+    }
+
     // required members
     public class Person
     {
