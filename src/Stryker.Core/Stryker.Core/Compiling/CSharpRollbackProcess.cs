@@ -270,7 +270,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                 // handles uninitialized variables
                 case "CS0165" or "CS0177":
                 {
-                    if (FindMutationCausingUnitVariableError(mode, diagnostic, brokenMutation, brokenMutations))
+                    if (FindMutationCausingUninitializedVariableError(mode, diagnostic, brokenMutation, brokenMutations))
                     {
                         continue;
                     }
@@ -312,7 +312,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         return false;
     }
 
-    private bool FindMutationCausingUnitVariableError(ICSharpRollbackProcess.Mode mode, Diagnostic diagnostic, SyntaxNode brokenMutation,
+    private bool FindMutationCausingUninitializedVariableError(ICSharpRollbackProcess.Mode mode, Diagnostic diagnostic, SyntaxNode brokenMutation,
         Collection<SyntaxNode> brokenMutations)
     {
         var identifierText = ExtractIdentifier(diagnostic, brokenMutation);
