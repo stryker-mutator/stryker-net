@@ -158,7 +158,8 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     {
         var envVars = new Dictionary<string, string?>
         {
-            ["STRYKER_MUTANT_FILE"] = _mutantFilePath
+            ["STRYKER_MUTANT_FILE"] = _mutantFilePath,
+            ["MinVerSkip"] = "true"
         };
 
         ExternalEnvironmentVariables.Add(envVars);
@@ -606,7 +607,9 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             await deadServer.StopAsync(force: true).ConfigureAwait(false);
         }
 
-        var environmentVariables = BuildEnvironmentVariables(assembly);
+        var environmentVariables = deadServer is not null
+            ? deadServer.EnvironmentVariables
+            : BuildEnvironmentVariables(assembly);
         var server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options);
 
         var started = await server.StartAsync().ConfigureAwait(false);
@@ -749,6 +752,72 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         }
     }
 
+    /// <summary>
+    /// Accumulates streamed test results during a single mutation run and feeds them to the mutation
+    /// <see cref="TestUpdateHandler"/> so a verdict can be reached before every test has run. Mirrors the
+    /// VsTest runner's incremental update handling: the handler returns <c>false</c> once every tested mutant
+    /// is resolved (and bail is not disabled), which is the signal to cancel the remaining tests.
+    /// </summary>
+    private sealed class BailState(IReadOnlyList<IMutant>? mutants, TestUpdateHandler? update)
+    {
+        private readonly IReadOnlyList<IMutant>? _mutants = mutants;
+        private readonly TestUpdateHandler? _update = update;
+        private readonly object _lock = new();
+        private readonly HashSet<string> _executed = [];
+        private readonly HashSet<string> _failed = [];
+        private readonly HashSet<string> _timedOut = [];
+
+        public bool IsEnabled => _update is not null && _mutants is not null;
+
+        public bool BailRequested { get; private set; }
+
+        /// <summary>
+        /// Called with each batch of streamed test results. Returns <c>true</c> when the current run should be
+        /// cancelled because every tested mutant's fate is decided.
+        /// </summary>
+        public bool OnResultsUpdated(IReadOnlyList<TestNodeUpdate> updates)
+        {
+            if (!IsEnabled)
+            {
+                return false;
+            }
+
+            lock (_lock)
+            {
+                foreach (var node in updates.Select(u => u.Node))
+                {
+                    var state = node.ExecutionState;
+                    if (!TestNodeStates.IsFinished(state))
+                    {
+                        continue;
+                    }
+
+                    _executed.Add(node.Uid);
+                    if (TestNodeStates.IsFailure(state))
+                    {
+                        _failed.Add(node.Uid);
+                    }
+                    else if (TestNodeStates.IsTimeout(state))
+                    {
+                        _timedOut.Add(node.Uid);
+                    }
+                }
+
+                var failed = new TestIdentifierList(_failed);
+                var executed = new TestIdentifierList(_executed);
+                var timedOut = _timedOut.Count == 0 ? TestIdentifierList.NoTest() : new TestIdentifierList(_timedOut);
+
+                var continueRun = _update!.Invoke(_mutants!, failed, executed, timedOut);
+                if (!continueRun)
+                {
+                    BailRequested = true;
+                }
+
+                return BailRequested;
+            }
+        }
+    }
+
     private sealed class TestRunAccumulator
     {
         private readonly List<string> _executedTests = [];
@@ -855,6 +924,12 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         TestUpdateHandler? update,
         ITimeoutValueCalculator? timeoutCalc = null)
     {
+        // Evaluate streamed results as they arrive so the run can bail out as soon as every tested mutant's
+        // fate is decided. The handler returns true while mutants remain pending and always returns true when
+        // --disable-bail is set, so respecting its return value here is all that is needed to honour that option.
+        var bailState = new BailState(mutants, update);
+        Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = bailState.IsEnabled ? bailState.OnResultsUpdated : null;
+
         try
         {
             WriteMutantIdToFile(mutantId);
@@ -864,7 +939,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
             foreach (var assembly in assemblies)
             {
-                var (result, timedOut, discoveredTests) = await RunAssemblyTestsAsync(assembly, timeoutCalc, testUidFilter).ConfigureAwait(false);
+                var (result, timedOut, discoveredTests) = await RunAssemblyTestsAsync(assembly, timeoutCalc, shouldBail, testUidFilter).ConfigureAwait(false);
 
                 if (discoveredTests is not null)
                 {
@@ -880,6 +955,14 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                 if (result is not null)
                 {
                     accumulator.Aggregate(result, discoveredTests);
+                }
+
+                if (bailState.BailRequested)
+                {
+                    // Every tested mutant has been killed/resolved, so the remaining assemblies cannot change
+                    // any verdict. Skip them just like the VsTest runner cancels its session on first failure.
+                    _logger.LogDebug("{RunnerId}: Bailing out; skipping the remaining test assemblies", RunnerId);
+                    break;
                 }
             }
 
@@ -945,6 +1028,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     internal virtual async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
         string assembly,
         ITimeoutValueCalculator? timeoutCalc,
+        Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null,
         Func<TestNode, bool>? testUidFilter = null)
     {
         if (!File.Exists(assembly))
@@ -969,7 +1053,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             timeout = CalculateAssemblyTimeout(discoveredTests, timeoutCalc, assembly);
         }
 
-        var (testResults, timedOut) = await RunAssemblyTestsInternalAsync(assembly, testUidFilter, timeout).ConfigureAwait(false);
+        var (testResults, timedOut) = await RunAssemblyTestsInternalAsync(assembly, testUidFilter, timeout, shouldBail).ConfigureAwait(false);
 
         return (testResults as TestRunResult, timedOut, discoveredTests);
     }
@@ -977,7 +1061,8 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     internal async Task<(ITestRunResult Result, bool TimedOut)> RunAssemblyTestsInternalAsync(
         string assembly,
         Func<TestNode, bool>? testUidFilter,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        Func<IReadOnlyList<TestNodeUpdate>, bool>? shouldBail = null)
     {
         // A crashed test host tears down the RPC connection, so the run throws (rather than timing out).
         // Retry once on a freshly started server: a crash caused by a *previous* mutant then self-heals
@@ -1013,7 +1098,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
                 var testsToRun = tests?.Where(t => testUidFilter is null || testUidFilter(t)).ToArray();
 
-                var (testResults, timedOut) = await server.RunTestsAsync(testsToRun, timeout).ConfigureAwait(false);
+                var (testResults, timedOut) = await server.RunTestsAsync(testsToRun, timeout, shouldBail).ConfigureAwait(false);
 
                 var duration = DateTime.UtcNow - startTime;
                 var result = BuildTestRunResult(testResults, tests?.Count ?? 0, duration);
