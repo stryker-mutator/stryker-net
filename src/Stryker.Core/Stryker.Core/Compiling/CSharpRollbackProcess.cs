@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Exceptions;
 using Stryker.Core.Helpers;
 using Stryker.Core.Mutants;
 using Stryker.Utilities.Logging;
@@ -271,30 +270,20 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                 // handles uninitialized variables
                 case "CS0165" or "CS0177":
                 {
-                    var identifierText = ExtractIdentifier(diagnostic, brokenMutation);
-                    // starting from the method's end we look for any mutation that erases either
-                    // a return statement, a throw expression or an assignment to the variable in question
-                    if (!string.IsNullOrEmpty(identifierText)
-                        && ScanErasingMutation(x => IsEarlyExit(x) || x.AssignsThis(identifierText),
-                            brokenMutation, brokenMutations, mode))
+                    if (FindMutationCausingUnitVariableError(mode, diagnostic, brokenMutation, brokenMutations))
                     {
                         continue;
                     }
-                    // we failed to find a candidate mutation
                     break;
                 }
                 // handles missing return statement
                 case "CS0161":
                 {
-                    if (brokenMutation is MethodDeclarationSyntax methodDeclarationSyntax)
-                    {
-                        // CS0161 applies to a block, we force the location to its last statement
-                        brokenMutation = methodDeclarationSyntax.Body!.Statements.Last();
-                    }
-                    if (ScanErasingMutation(IsEarlyExit, brokenMutation, brokenMutations, mode))
+                    if (FindMutationCausingFailToReturnValue(mode, brokenMutations, ref brokenMutation))
                     {
                         continue;
                     }
+
                     // we failed to find a candidate mutation
                     break;
                 }
@@ -305,8 +294,41 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
 
         return brokenMutations;
         // check if the node allows an early exit
-        bool IsEarlyExit(SyntaxNode x) => x is ReturnStatementSyntax or ThrowStatementSyntax;
     }
+
+    private bool FindMutationCausingFailToReturnValue(ICSharpRollbackProcess.Mode mode, Collection<SyntaxNode> brokenMutations, ref SyntaxNode brokenMutation)
+    {
+        if (brokenMutation is MethodDeclarationSyntax methodDeclarationSyntax)
+        {
+            // CS0161 applies to a block, we force the location to its last statement
+            brokenMutation = methodDeclarationSyntax.Body!.Statements.Last();
+        }
+
+        if (ScanErasingMutation(IsEarlyExit, brokenMutation, brokenMutations, mode))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool FindMutationCausingUnitVariableError(ICSharpRollbackProcess.Mode mode, Diagnostic diagnostic, SyntaxNode brokenMutation,
+        Collection<SyntaxNode> brokenMutations)
+    {
+        var identifierText = ExtractIdentifier(diagnostic, brokenMutation);
+        // starting from the method's end we look for any mutation that erases either
+        // a return statement, a throw expression or an assignment to the variable in question
+        if (!string.IsNullOrEmpty(identifierText)
+            && ScanErasingMutation(x => IsEarlyExit(x) || x.AssignsThis(identifierText),
+                brokenMutation, brokenMutations, mode))
+        {
+            return true;
+        }
+        // we failed to find a candidate mutation
+        return false;
+    }
+
+    private static bool IsEarlyExit(SyntaxNode x) => x is ReturnStatementSyntax or ThrowStatementSyntax;
 
     private bool ScanErasingMutation(Func<SyntaxNode, bool> predicate,
         SyntaxNode brokenMutation, Collection<SyntaxNode> brokenMutations, ICSharpRollbackProcess.Mode mode)
