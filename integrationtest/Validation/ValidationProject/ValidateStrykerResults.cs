@@ -207,14 +207,8 @@ public class ValidateStrykerResults
         // by the MSTest project count as covered (1 survived + 2 timeout), like in the MSTestMTP run.
         // Before coverage files were split per test host, the final flush overwrote the shared
         // file, usually losing exactly those three mutants to NoCoverage.
-        // Teacher.cs and Lesson.cs belong to two mutated projects stacked on each other (ExtraProject
-        // calls ExtraLibrary), both reached from the single XUnit test that covers them. That test host
-        // therefore holds two copies of the injected MutantControl which both have coverage to report for
-        // the same test, and while the copies shared one coverage file the last one to write hid the
-        // other's mutants, leaving them reported as uncovered. Because that one test is their only
-        // coverage, whichever copy loses ends up with nothing killed, so this catches the regression
-        // whichever way the race goes. Checked per source file rather than through the counts below, since
-        // one assembly losing its coverage while another gains some keeps the totals correct.
+        // Teacher.cs and Lesson.cs are reached from one test that spans both of their assemblies, so
+        // losing either one's coverage names the assembly at fault instead of moving a global count by one.
         CheckEveryMutatedProjectIsCovered(report, "KilledMutants.cs", "Teacher.cs", "Lesson.cs");
         CheckReportMutants(report, total: 673, ignored: 275, survived: 2, killed: 3, timeout: 2, nocoverage: 357);
         CheckReportTestCounts(report, total: 11);
