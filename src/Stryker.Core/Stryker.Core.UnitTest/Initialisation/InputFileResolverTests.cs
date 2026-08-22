@@ -1078,6 +1078,39 @@ using System.Reflection;
     }
 
     [TestMethod]
+    public void ShouldHandleTestProjectsWithMultipleTargets()
+    {
+        // Arrange
+        var fileSystem = BuildMockFileSystem();
+
+        var options = new StrykerOptions
+        {
+            ProjectPath = Path.Combine(_sourcePath),
+            TestProjects = new List<string>
+            {
+                _testProjectFilePath,
+            }
+        };
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath, []);
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1", "net8.0"]);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object },
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+
+        var target = BuildTestResolver(fileSystem);
+        // Act
+        var result = target.ResolveSourceProjectInfos(options).SourceProjectInfos.First();
+
+        // Assert
+        result.TestProjectsInfo.TestProjects.Count().ShouldBe(1);
+    }
+
+    [TestMethod]
     public void ShouldFindSourceProjectWhenSingleProjectReferenceAndNoFilter()
     {
         var fileSystem = InitializeAllMocks();
