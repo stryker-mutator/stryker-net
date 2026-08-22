@@ -30,10 +30,10 @@ public class MutantControlCoverageFileTests : TestBase
     [TestMethod]
     public void FlushCoverage_ShouldWriteOneFilePerMutatedAssembly_WhenTheirNamesCannotBeToldApartByCharacter()
     {
-        // The file name cannot be derived from the assembly name alone. Characters that are not valid in a
-        // file name are replaced, so A.B and A-B end up identical, and a name has to be trimmed to keep the
-        // path short, so names sharing a long prefix end up identical too. Either way the two copies would
-        // write to the same file and hide each other's mutants, which is the loss this all exists to stop.
+        // Guards against naming these files after the assembly they belong to. Characters a file name
+        // cannot hold would have to be replaced, making A.B and A-B identical, and the name would have to
+        // be trimmed to keep the path short, making names that share a long prefix identical too. Either
+        // way the two copies write to one file and hide each other's mutants, the loss this exists to stop.
         var coverageFileName = $"stryker-coverage-test-{Guid.NewGuid():N}.txt";
         var previousEnvironmentValue = Environment.GetEnvironmentVariable(CoverageFileEnvironmentVariable);
         var longPrefix = new string('a', 70);

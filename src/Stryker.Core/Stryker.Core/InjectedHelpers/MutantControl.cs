@@ -29,8 +29,8 @@ namespace Stryker
         private static bool _mutantMmfFailed;
 
         // Tells this copy of the class apart from the copies of the other mutated assemblies the test
-        // host loads; see GetOwningAssemblyDiscriminator. Computed once: the fallback it uses when the
-        // identity cannot be read has to stay the same for every file this copy writes.
+        // host loads; see GetOwningAssemblyDiscriminator. Computed once, so every file this copy writes
+        // carries the same one.
         private static string _cachedDiscriminator = string.Empty;
         private static bool _discriminatorCached;
 
@@ -254,9 +254,9 @@ namespace Stryker
         /// Resolves the coverage file this copy of the class writes to, from the file name the runner
         /// handed out through STRYKER_COVERAGE_FILE.
         /// A test host loads one copy of this class per mutated assembly and every copy reads the same
-        /// environment variable, so the name is suffixed with the assembly this copy belongs to: without
-        /// it, the copies overwrite each other's coverage and only the last flush survives. The runner
-        /// reads every file whose name starts with the name it handed out (minus the extension).
+        /// environment variable, so the name is suffixed per copy: without it, the copies overwrite each
+        /// other's coverage and only the last flush survives. The runner reads every file whose name
+        /// starts with the name it handed out (minus the extension).
         /// </summary>
         private static string BuildCoverageFilePath(string coverageFileName)
         {
@@ -268,50 +268,18 @@ namespace Stryker
         }
 
         /// <summary>
-        /// Identifies the assembly this copy of the class was compiled into, uniquely among the copies a
-        /// test host loads. The assembly name alone cannot do that: characters that a file name cannot hold
-        /// are replaced, so names such as A.B and A-B would collide, and the name has to be trimmed to keep
-        /// the path within length limits, so names sharing a long prefix would collide too. Two colliding
-        /// copies would write to the same file and hide each other's coverage, which is exactly what this
-        /// naming exists to prevent, so the module id - assigned per compiled module - is what separates
-        /// them; the trimmed name is only kept to make the file recognizable while debugging.
-        /// Never returns an empty string: a copy that cannot read its own identity still has to get a name
-        /// of its own rather than fall back to the name the runner handed out, because the runner treats
-        /// that one as its own bookkeeping and never waits for a relay on it.
+        /// Tells this copy of the class apart from the copies the other mutated assemblies of a test host
+        /// carry. A fresh id per copy is all that is needed: the runner finds these files by the prefix it
+        /// handed out, never by this part of the name, and they live no longer than the process.
         /// </summary>
         private static string GetOwningAssemblyDiscriminator()
         {
-            if (_discriminatorCached)
+            if (!_discriminatorCached)
             {
-                return _cachedDiscriminator;
-            }
-
-            string name;
-            System.Guid moduleId;
-            try
-            {
-                name = typeof(MutantControl).Assembly.GetName().Name ?? string.Empty;
-                moduleId = typeof(MutantControl).Module.ModuleVersionId;
-            }
-            catch (System.Exception)
-            {
-                // Never fail the tests over coverage bookkeeping. A fresh id keeps this copy apart from
-                // the others for as long as the process lives, which is all these files are used for.
-                _cachedDiscriminator = "unknown-" + System.Guid.NewGuid().ToString("N");
+                _cachedDiscriminator = System.Guid.NewGuid().ToString("N");
                 _discriminatorCached = true;
-                return _cachedDiscriminator;
             }
 
-            int length = name.Length < 16 ? name.Length : 16;
-            char[] safeName = new char[length];
-            for (int i = 0; i < length; i++)
-            {
-                char current = name[i];
-                safeName[i] = char.IsLetterOrDigit(current) ? current : '-';
-            }
-
-            _cachedDiscriminator = new string(safeName) + "-" + moduleId.ToString("N");
-            _discriminatorCached = true;
             return _cachedDiscriminator;
         }
 
