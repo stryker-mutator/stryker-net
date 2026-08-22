@@ -89,8 +89,14 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
-      "extraproject": {
+      "extralibrary": {
         "type": "Project"
+      },
+      "extraproject": {
+        "type": "Project",
+        "dependencies": {
+          "ExtraLibrary": "[1.0.0, )"
+        }
       }
     }
   }

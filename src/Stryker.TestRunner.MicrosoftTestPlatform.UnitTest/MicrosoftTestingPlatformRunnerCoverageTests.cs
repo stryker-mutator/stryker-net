@@ -1,3 +1,4 @@
+using System.IO.MemoryMappedFiles;
 using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 using Stryker.Abstractions.Testing;
@@ -466,6 +467,79 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
     }
 
     [TestMethod]
+    public void ReadCoverageData_ShouldUnionCoverageAcrossMutatedAssembliesOfOneTestHost()
+    {
+        // Regression test for the case where a test host references several mutated assemblies: the
+        // host loads one copy of the injected MutantControl per mutated assembly, and every copy
+        // resolves the single STRYKER_COVERAGE_FILE the runner handed out. Each copy therefore writes
+        // its own file, whose name starts with the name the runner handed out (minus the extension).
+        using var runner = CreateRunner(511);
+        var handedOutPath = runner.GetCoverageFilePath("Tests.dll");
+        var withoutExtension = Path.Combine(
+            Path.GetDirectoryName(handedOutPath)!,
+            Path.GetFileNameWithoutExtension(handedOutPath));
+        var firstMutatedAssemblyPath = $"{withoutExtension}-FirstMutatedAssembly.txt";
+        var secondMutatedAssemblyPath = $"{withoutExtension}-SecondMutatedAssembly.txt";
+
+        try
+        {
+            File.WriteAllText(firstMutatedAssemblyPath, "1,2;10");
+            File.WriteAllText(secondMutatedAssemblyPath, "2,3;20");
+
+            var result = runner.ReadCoverageData();
+
+            result.CoveredMutants.Count.ShouldBe(3,
+                "coverage of every mutated assembly in the host must be unioned");
+            result.CoveredMutants.ShouldContain(1);
+            result.CoveredMutants.ShouldContain(2);
+            result.CoveredMutants.ShouldContain(3);
+
+            result.StaticMutants.Count.ShouldBe(2);
+            result.StaticMutants.ShouldContain(10);
+            result.StaticMutants.ShouldContain(20);
+        }
+        finally
+        {
+            foreach (var path in new[] { firstMutatedAssemblyPath, secondMutatedAssemblyPath })
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+        }
+    }
+
+    [TestMethod]
+    public void DeleteCoverageFiles_ShouldDeleteFilesWrittenByEveryMutatedAssembly()
+    {
+        // Stale files from a previous run must not be read as this run's coverage
+        using var runner = CreateRunner(512);
+        var handedOutPath = runner.GetCoverageFilePath("Tests.dll");
+        var withoutExtension = Path.Combine(
+            Path.GetDirectoryName(handedOutPath)!,
+            Path.GetFileNameWithoutExtension(handedOutPath));
+        var mutatedAssemblyPath = $"{withoutExtension}-SomeMutatedAssembly.txt";
+
+        try
+        {
+            File.WriteAllText(mutatedAssemblyPath, "1,2;10");
+
+            runner.SetCoverageMode(true);
+
+            File.Exists(mutatedAssemblyPath).ShouldBeFalse(
+                "per-mutated-assembly coverage files must be deleted when entering coverage mode");
+        }
+        finally
+        {
+            if (File.Exists(mutatedAssemblyPath))
+            {
+                File.Delete(mutatedAssemblyPath);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task ResetServerAsync_ShouldDisposeAndClearAllServers()
     {
         using var runner = CreateRunner(0);
@@ -570,6 +644,160 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         }
     }
 
+    // A test host loads one copy of the injected MutantControl per mutated assembly, and every copy
+    // runs its own epoch relay against its own relay file, derived from the path the runner handed out.
+    // The runner must therefore request a flush from every relay and wait for all of them: waiting on a
+    // single ack lets it read the coverage file while another copy has not flushed yet, which attributes
+    // that assembly's coverage to the next test.
+
+    private static string WriteEpochRelayFile(string basePath, string mutatedAssemblyName, int request, int ack)
+    {
+        var relayPath = Path.Combine(
+            Path.GetDirectoryName(basePath)!,
+            $"{Path.GetFileNameWithoutExtension(basePath)}-{mutatedAssemblyName}{Path.GetExtension(basePath)}");
+
+        using var stream = new FileStream(relayPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+        stream.SetLength(8);
+        using var mmf = MemoryMappedFile.CreateFromFile(stream, null, 8, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, leaveOpen: true);
+        using var accessor = mmf.CreateViewAccessor(0, 8, MemoryMappedFileAccess.ReadWrite);
+        accessor.Write(0, request);
+        accessor.Write(4, ack);
+        accessor.Flush();
+
+        return relayPath;
+    }
+
+    private static int ReadEpochRequest(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var mmf = MemoryMappedFile.CreateFromFile(stream, null, 8, MemoryMappedFileAccess.Read, HandleInheritability.None, leaveOpen: true);
+        using var accessor = mmf.CreateViewAccessor(0, 8, MemoryMappedFileAccess.Read);
+        return accessor.ReadInt32(0);
+    }
+
+    [TestMethod]
+    public void EpochRelay_BroadcastRequest_ReachesEveryMutatedAssemblyRelay()
+    {
+        var runnerId = 710;
+        var basePath = Path.Combine(Path.GetTempPath(), $"stryker-epoch-{runnerId}-broadcast.txt");
+        var firstRelay = WriteEpochRelayFile(basePath, "FirstMutatedAssembly", request: 0, ack: 0);
+        var secondRelay = WriteEpochRelayFile(basePath, "SecondMutatedAssembly", request: 0, ack: 0);
+
+        try
+        {
+            using var runner = CreateRunner(runnerId);
+            runner.InitializeEpochFile(basePath);
+
+            runner.BroadcastEpochRequest(basePath, 4);
+
+            ReadEpochRequest(firstRelay).ShouldBe(4);
+            ReadEpochRequest(secondRelay).ShouldBe(4);
+        }
+        finally
+        {
+            foreach (var path in new[] { basePath, firstRelay, secondRelay })
+            {
+                if (File.Exists(path)) File.Delete(path);
+            }
+        }
+    }
+
+    [TestMethod, Timeout(10000)]
+    public async Task EpochRelay_WaitForAllAcks_IgnoresARelayThatAppearedAfterTheRequest()
+    {
+        // A copy of the injected MutantControl creates its relay when the assembly it belongs to first
+        // runs mutated code, which can happen while the runner is already waiting. Such a relay never
+        // received the request, so it can never acknowledge it: waiting for it would burn the whole
+        // timeout and throw away the coverage of a test that was in fact fully flushed. Its own coverage
+        // is flushed on the next epoch instead.
+        var runnerId = 713;
+        var basePath = Path.Combine(Path.GetTempPath(), $"stryker-epoch-{runnerId}-latecomer.txt");
+        var reachedRelay = WriteEpochRelayFile(basePath, "AssemblyPresentAtRequest", request: 0, ack: 0);
+        string? lateRelay = null;
+
+        try
+        {
+            using var runner = CreateRunner(runnerId);
+            runner.InitializeEpochFile(basePath);
+
+            var requestedRelays = runner.BroadcastEpochRequest(basePath, 1);
+
+            // The copy that shows up too late to be asked, and the one that was asked answering
+            lateRelay = WriteEpochRelayFile(basePath, "AssemblyLoadedWhileWaiting", request: 0, ack: 0);
+            WriteEpochRelayFile(basePath, "AssemblyPresentAtRequest", request: 1, ack: 1);
+
+            var acked = await runner.WaitForAllEpochAcksAsync(requestedRelays, 1, TimeSpan.FromSeconds(5));
+
+            acked.ShouldBeTrue("every relay the request reached has acknowledged it");
+        }
+        finally
+        {
+            foreach (var path in new[] { basePath, reachedRelay, lateRelay })
+            {
+                if (path is not null && File.Exists(path)) File.Delete(path);
+            }
+        }
+    }
+
+    [TestMethod, Timeout(10000)]
+    public async Task EpochRelay_WaitForAllAcks_WaitsUntilEveryRelayHasFlushed()
+    {
+        var runnerId = 711;
+        var basePath = Path.Combine(Path.GetTempPath(), $"stryker-epoch-{runnerId}-waitall.txt");
+        var firstRelay = WriteEpochRelayFile(basePath, "FirstMutatedAssembly", request: 2, ack: 2);
+        var secondRelay = WriteEpochRelayFile(basePath, "SecondMutatedAssembly", request: 2, ack: 1);
+
+        try
+        {
+            using var runner = CreateRunner(runnerId);
+            runner.InitializeEpochFile(basePath);
+
+            var requestedRelays = runner.BroadcastEpochRequest(basePath, 2);
+            requestedRelays.Count.ShouldBe(2, "both relays existed when the request went out");
+
+            var partiallyAcked = await runner.WaitForAllEpochAcksAsync(requestedRelays, 2, TimeSpan.FromMilliseconds(200));
+            partiallyAcked.ShouldBeFalse("one relay is still one epoch behind, so its coverage is not on disk yet");
+
+            WriteEpochRelayFile(basePath, "SecondMutatedAssembly", request: 2, ack: 2);
+
+            var fullyAcked = await runner.WaitForAllEpochAcksAsync(requestedRelays, 2, TimeSpan.FromSeconds(5));
+            fullyAcked.ShouldBeTrue("every relay has now flushed the epoch");
+        }
+        finally
+        {
+            foreach (var path in new[] { basePath, firstRelay, secondRelay })
+            {
+                if (File.Exists(path)) File.Delete(path);
+            }
+        }
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task EpochRelay_WaitForAllAcks_ReturnsTrue_WhenNoMutatedAssemblyRegistered()
+    {
+        // A test that touches no mutated code leaves no relay behind; there is nothing to flush, so the
+        // wait must return at once instead of burning the timeout on every such test.
+        var runnerId = 712;
+        var basePath = Path.Combine(Path.GetTempPath(), $"stryker-epoch-{runnerId}-norelay.txt");
+
+        try
+        {
+            using var runner = CreateRunner(runnerId);
+            runner.InitializeEpochFile(basePath);
+
+            var requestedRelays = runner.BroadcastEpochRequest(basePath, 1);
+            requestedRelays.ShouldBeEmpty("no mutated assembly ran, so no copy created a relay");
+
+            var acked = await runner.WaitForAllEpochAcksAsync(requestedRelays, 1, TimeSpan.FromSeconds(2));
+
+            acked.ShouldBeTrue();
+        }
+        finally
+        {
+            if (File.Exists(basePath)) File.Delete(basePath);
+        }
+    }
+
     [TestMethod, Timeout(5000)]
     public async Task RunSingleTestForCoverageInReusedProcessAsync_ReturnsDubious_WhenServerCannotStart()
     {
@@ -590,6 +818,91 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
     // The happyflow can't be tested here because it requires a real test host to run the test and flush coverage
     // to the coverage file. The happyflow is tested in the integration test project, which runs real tests in a real test host.
 
+    [TestMethod]
+    public void PerTestFilePaths_ShouldBeUniquePerRun_LikeTheWholeRunCoveragePath()
+    {
+        // These paths are read, overwritten and deleted while a run is in flight, so they have to name
+        // one run and no other. Two Stryker processes on one machine hand their runners the same small
+        // ids, and a crashed run leaves files a later one would find: the whole-run coverage path already
+        // carries the process id and a per-instance nonce for exactly that reason.
+        using var runner = CreateRunner(720);
+        using var sameIdRunner = CreateRunner(720);
+
+        var coveragePath = runner.GetPerTestCoverageFilePath("/some/dir/Tests.dll");
+        var epochPath = runner.GetPerTestEpochFilePath("/some/dir/Tests.dll");
+
+        coveragePath.ShouldBe(runner.GetPerTestCoverageFilePath("/some/dir/Tests.dll"),
+            "the path must stay the same for the same assembly, it is written and read across a whole capture");
+        coveragePath.ShouldNotBe(runner.GetPerTestCoverageFilePath("/some/dir/OtherTests.dll"),
+            "different assemblies must not share a file");
+        coveragePath.ShouldNotBe(epochPath, "the coverage file and the epoch relay are different files");
+
+        sameIdRunner.GetPerTestCoverageFilePath("/some/dir/Tests.dll").ShouldNotBe(coveragePath,
+            "two runner instances sharing an id must not share a file");
+        sameIdRunner.GetPerTestEpochFilePath("/some/dir/Tests.dll").ShouldNotBe(epochPath,
+            "two runner instances sharing an id must not share a relay");
+
+        // A concurrent Stryker process must not land on these paths
+        Path.GetFileName(coveragePath).ShouldStartWith($"stryker-coverage-pt-{Environment.ProcessId}-");
+        Path.GetFileName(epochPath).ShouldStartWith($"stryker-epoch-{Environment.ProcessId}-");
+    }
+
+    [TestMethod, Timeout(10000)]
+    public async Task SetPerTestCoverageMode_ShouldDeleteThePerTestFiles_WhenLeavingTheMode()
+    {
+        // The runner remembers which assemblies it set per-test files up for, and that record is what
+        // names the files to delete when it is disposed. Leaving the mode used to drop the record, so by
+        // the time anything came to clean up there was nothing left to name: every run leaked a coverage
+        // file and an epoch relay per mutated assembly into the temp directory.
+        const string assembly = "/nonexistent/assembly.dll";
+
+        using var runner = CreateRunner(714);
+        runner.SetPerTestCoverageMode(true);
+
+        // Registers the assembly the way a real capture does, then fails for want of a test host
+        await runner.RunSingleTestForCoverageInReusedProcessAsync(
+            assembly, new TestNode("test-1", "Test1", "test", "discovered"), "test-1");
+
+        var coverageFilePath = runner.GetPerTestCoverageFilePath(assembly);
+        var epochFilePath = runner.GetPerTestEpochFilePath(assembly);
+        // What the copies of the injected MutantControl in the host would have written
+        var writtenByTheHost = new[]
+        {
+            SuffixedPath(coverageFilePath, "FirstMutatedAssembly"),
+            SuffixedPath(coverageFilePath, "SecondMutatedAssembly"),
+            SuffixedPath(epochFilePath, "FirstMutatedAssembly"),
+            SuffixedPath(epochFilePath, "SecondMutatedAssembly")
+        };
+
+        try
+        {
+            foreach (var path in writtenByTheHost)
+            {
+                File.WriteAllText(path, "1,2;10");
+            }
+
+            runner.SetPerTestCoverageMode(false);
+
+            foreach (var path in writtenByTheHost)
+            {
+                File.Exists(path).ShouldBeFalse($"{Path.GetFileName(path)} should not outlive the capture");
+            }
+            File.Exists(epochFilePath).ShouldBeFalse("the epoch file the runner created should go too");
+        }
+        finally
+        {
+            foreach (var path in writtenByTheHost.Concat(new[] { coverageFilePath, epochFilePath }))
+            {
+                if (File.Exists(path)) File.Delete(path);
+            }
+        }
+    }
+
+    private static string SuffixedPath(string path, string suffix) =>
+        Path.Combine(
+            Path.GetDirectoryName(path)!,
+            $"{Path.GetFileNameWithoutExtension(path)}-{suffix}{Path.GetExtension(path)}");
+
     [TestMethod, Timeout(5000)]
     public async Task RunSingleTestForCoverageInIsolatedProcessAsync_ReturnsDubious_WhenServerCannotStart()
     {
@@ -607,6 +920,44 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         result.Confidence.ShouldBe(CoverageConfidence.Dubious);
         result.MutationsCovered.ShouldBeEmpty();
         result.TestId.ShouldBe("test-1", "the result must stay attributable to the test that was asked for");
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task RunSingleTestForCoverageInIsolatedProcessAsync_ShouldDiscardCoverageLeftByAnEarlierTest()
+    {
+        // Every isolated capture runs in a host started for it alone, so anything already on disk was
+        // written for an earlier test. The coverage files are per mutated assembly, so a host that does
+        // not load one of them never rewrites its file: reading it would credit this test with the
+        // earlier test's coverage, and at Exact confidence, which is trusted enough to drop mutants no
+        // test covers. Clearing them first is what the single shared file used to give for free, since
+        // every host rewrote it whole.
+        const string assembly = "/nonexistent/assembly.dll";
+
+        using var runner = CreateRunner(713);
+        runner.SetCoverageMode(true);
+
+        var handedOutPath = runner.GetCoverageFilePath(assembly);
+        var earlierTestFilePath = Path.Combine(
+            Path.GetDirectoryName(handedOutPath)!,
+            $"{Path.GetFileNameWithoutExtension(handedOutPath)}-AssemblyFromAnEarlierTest.txt");
+
+        try
+        {
+            File.WriteAllText(earlierTestFilePath, "1,2,3;10");
+
+            await runner.RunSingleTestForCoverageInIsolatedProcessAsync(
+                assembly, new TestNode("test-1", "Test1", "test", "discovered"), "test-1");
+
+            File.Exists(earlierTestFilePath).ShouldBeFalse(
+                "coverage written for an earlier test must not survive into this one");
+        }
+        finally
+        {
+            if (File.Exists(earlierTestFilePath))
+            {
+                File.Delete(earlierTestFilePath);
+            }
+        }
     }
 
     [TestMethod, Timeout(10000)]

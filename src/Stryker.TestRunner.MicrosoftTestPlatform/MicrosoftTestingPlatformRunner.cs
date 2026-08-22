@@ -40,6 +40,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     private readonly object _discoveryLock;
     private readonly ILogger _logger;
     private readonly string _mutantFilePath;
+    private readonly string _runIdentity;
     private readonly string _coverageFilePathBase;
     private readonly IStrykerOptions? _options;
     private readonly object _serverLock = new();
@@ -66,15 +67,16 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         _options = options;
 
         // Create unique file paths for this runner to communicate with the test process.
-        // The coverage base name embeds the process id plus a per-instance nonce: coverage files
-        // are only deleted once their path has been assigned, so a predictable name could let a
-        // run read a stale file left behind by a crashed earlier run (same runner id, same
-        // assembly), and concurrent Stryker processes could clobber each other's files. The nonce
-        // covers what the process id alone does not (pid reuse, several runner instances with the
-        // same id in one process).
+        // The names embed the process id plus a per-instance nonce: coverage files are only deleted
+        // once their path has been assigned, so a predictable name could let a run read a stale file
+        // left behind by a crashed earlier run (same runner id, same assembly), and concurrent
+        // Stryker processes could clobber each other's files. The nonce covers what the process id
+        // alone does not (pid reuse, several runner instances with the same id in one process).
+        // Shared by the whole-run coverage files and by the per-test ones, which are read, rewritten
+        // and deleted while a run is in flight and so must name one run and no other.
+        _runIdentity = $"{Environment.ProcessId}-{_id}-{Guid.NewGuid().ToString("N")[..8]}";
         _mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-{_id}.txt");
-        _coverageFilePathBase = Path.Combine(Path.GetTempPath(),
-            $"stryker-coverage-{Environment.ProcessId}-{_id}-{Guid.NewGuid().ToString("N")[..8]}");
+        _coverageFilePathBase = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{_runIdentity}");
 
         // Initialize with no active mutation
         WriteMutantIdToFile(-1);
@@ -247,23 +249,51 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                 server.Dispose();
             }
             _assemblyServers.Clear();
+
+            DeletePerTestFiles();
+
             _initializedPerTestFiles.Clear();
             _perTestEpochCounters.Clear();
+        }
+    }
+
+    /// <summary>
+    /// Deletes the coverage and epoch files of every assembly this runner set up for per-test capture.
+    /// Both come as one file per mutated assembly the host loaded, named after the path handed out, so
+    /// each one is matched by prefix rather than by that exact path.
+    /// Callers hold <see cref="_serverLock"/>.
+    /// </summary>
+    private void DeletePerTestFiles()
+    {
+        foreach (var assembly in _initializedPerTestFiles)
+        {
+            foreach (var coverageFilePath in EnumerateCoverageFiles(GetPerTestCoverageFilePath(assembly)))
+            {
+                DeleteFileIfExists(coverageFilePath);
+            }
+
+            var epochFilePath = GetPerTestEpochFilePath(assembly);
+            foreach (var relayFilePath in EnumerateEpochRelayFiles(epochFilePath))
+            {
+                DeleteFileIfExists(relayFilePath);
+            }
+            DeleteFileIfExists(epochFilePath);
         }
     }
 
     private static string SanitizeAssemblyName(string assembly) =>
         $"{Path.GetFileNameWithoutExtension(assembly)}-{(uint)assembly.GetHashCode()}";
 
-    private string GetPerTestCoverageFilePath(string assembly) =>
-        Path.Combine(Path.GetTempPath(), $"stryker-coverage-pt-{_id}-{SanitizeAssemblyName(assembly)}.txt");
+    internal string GetPerTestCoverageFilePath(string assembly) =>
+        Path.Combine(Path.GetTempPath(), $"stryker-coverage-pt-{_runIdentity}-{SanitizeAssemblyName(assembly)}.txt");
 
-    private string GetPerTestEpochFilePath(string assembly) =>
-        Path.Combine(Path.GetTempPath(), $"stryker-epoch-{_id}-{SanitizeAssemblyName(assembly)}.txt");
+    internal string GetPerTestEpochFilePath(string assembly) =>
+        Path.Combine(Path.GetTempPath(), $"stryker-epoch-{_runIdentity}-{SanitizeAssemblyName(assembly)}.txt");
 
     /// <summary>
-    /// Reads coverage data from the per-assembly coverage files written by the test processes,
-    /// unioned across all assemblies this runner started a server for.
+    /// Reads coverage data from the coverage files written by the test processes, unioned across all
+    /// test assemblies this runner started a server for and, within each of them, across every mutated
+    /// assembly the host loaded (see <see cref="EnumerateCoverageFiles"/>).
     /// Returns the covered mutants and static mutants as separate lists.
     /// </summary>
     public (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants) ReadCoverageData()
@@ -271,7 +301,35 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         var coveredMutants = new HashSet<int>();
         var staticMutants = new HashSet<int>();
 
-        foreach (var (assembly, coverageFilePath) in _coverageFilePaths)
+        foreach (var (assembly, handedOutPath) in _coverageFilePaths)
+        {
+            var (covered, statics) = ReadCoverageForHandedOutPath(handedOutPath, assembly);
+            coveredMutants.UnionWith(covered);
+            staticMutants.UnionWith(statics);
+        }
+
+        return (coveredMutants.ToList(), staticMutants.ToList());
+    }
+
+    /// <summary>
+    /// Reads the coverage written for one path handed out through STRYKER_COVERAGE_FILE, unioned across
+    /// every mutated assembly the test host loaded (see <see cref="EnumerateCoverageFiles"/>).
+    /// </summary>
+    private (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants) ReadCoverageForHandedOutPath(
+        string handedOutPath, string? assembly = null)
+    {
+        var coverageFilePaths = EnumerateCoverageFiles(handedOutPath);
+        if (coverageFilePaths.Count == 0)
+        {
+            _logger.LogDebug("{RunnerId}: No coverage file{ForAssembly} found at {Path}",
+                RunnerId, assembly is null ? string.Empty : $" for {Path.GetFileName(assembly)}", handedOutPath);
+            return (Array.Empty<int>(), Array.Empty<int>());
+        }
+
+        var coveredMutants = new HashSet<int>();
+        var staticMutants = new HashSet<int>();
+
+        foreach (var coverageFilePath in coverageFilePaths)
         {
             var (covered, statics) = ReadCoverageDataFrom(coverageFilePath, assembly);
             coveredMutants.UnionWith(covered);
@@ -282,9 +340,36 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     }
 
     /// <summary>
+    /// Returns the coverage files written for a path handed out by <see cref="GetCoverageFilePath"/> or
+    /// <see cref="GetPerTestCoverageFilePath"/>. A test host loads one copy of the injected MutantControl
+    /// per mutated assembly, and each copy suffixes the name it was given with its own assembly name so
+    /// the copies do not overwrite each other, so a single handed-out path can yield several files.
+    /// </summary>
+    private IReadOnlyList<string> EnumerateCoverageFiles(string handedOutPath)
+    {
+        var directory = Path.GetDirectoryName(handedOutPath);
+        if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
+        {
+            return Array.Empty<string>();
+        }
+
+        var searchPattern = Path.GetFileNameWithoutExtension(handedOutPath) + "*" + Path.GetExtension(handedOutPath);
+        try
+        {
+            return Directory.GetFiles(directory, searchPattern);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "{RunnerId}: Failed to list coverage files matching {Pattern} in {Directory}",
+                RunnerId, searchPattern, directory);
+            return Array.Empty<string>();
+        }
+    }
+
+    /// <summary>
     /// Reads coverage data from a single coverage file written by a test process. Shared by the
-    /// per-assembly union in <see cref="ReadCoverageData"/> and the single-file, single-test read
-    /// used by <see cref="RunSingleTestForCoverageInReusedProcessAsync"/>.
+    /// per-assembly union in <see cref="ReadCoverageData"/> and the single-test read used by
+    /// <see cref="RunSingleTestForCoverageInReusedProcessAsync"/>.
     /// </summary>
     private (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants) ReadCoverageDataFrom(string coverageFilePath, string? assembly = null)
     {
@@ -351,7 +436,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
     private void DeleteCoverageFiles()
     {
-        foreach (var coverageFilePath in _coverageFilePaths.Values)
+        foreach (var coverageFilePath in _coverageFilePaths.Values.SelectMany(EnumerateCoverageFiles))
         {
             DeleteFileIfExists(coverageFilePath);
         }
@@ -398,6 +483,92 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "{RunnerId}: Failed to write coverage epoch request to {Path}", RunnerId, epochFilePath);
+        }
+    }
+
+    /// <summary>
+    /// Returns the epoch relay files owned by a test host's copies of the injected MutantControl for a
+    /// path handed out through STRYKER_COVERAGE_EPOCH_FILE: one per mutated assembly the host loaded,
+    /// named after the handed-out path the same way the coverage files are (see
+    /// <see cref="EnumerateCoverageFiles"/>). The handed-out path itself is excluded - no copy relays
+    /// through it, so waiting for an ack on it would never return.
+    /// </summary>
+    private IReadOnlyList<string> EnumerateEpochRelayFiles(string basePath)
+    {
+        var directory = Path.GetDirectoryName(basePath);
+        if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
+        {
+            return Array.Empty<string>();
+        }
+
+        var baseFileName = Path.GetFileName(basePath);
+        var searchPattern = Path.GetFileNameWithoutExtension(basePath) + "*" + Path.GetExtension(basePath);
+        try
+        {
+            return Directory.GetFiles(directory, searchPattern)
+                .Where(path => !string.Equals(Path.GetFileName(path), baseFileName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "{RunnerId}: Failed to list epoch relay files matching {Pattern} in {Directory}",
+                RunnerId, searchPattern, directory);
+            return Array.Empty<string>();
+        }
+    }
+
+    /// <summary>
+    /// Asks every mutated assembly's relay in the test host to flush the coverage of the test that just
+    /// ran, and returns the relays it reached. One request per relay: a host with several mutated
+    /// assemblies runs one relay per assembly, each with its own coverage file, and each has to be told
+    /// separately. The returned set is what <see cref="WaitForAllEpochAcksAsync"/> then waits for, so
+    /// that a relay created after this point is not waited on: it never received the request, so it
+    /// could never acknowledge it, and its coverage is flushed on the next epoch instead.
+    /// </summary>
+    internal IReadOnlyList<string> BroadcastEpochRequest(string basePath, int epoch)
+    {
+        // Keep the handed-out path in step so a relay that attaches to it later starts from this epoch
+        WriteEpochRequest(basePath, epoch);
+
+        var relayFilePaths = EnumerateEpochRelayFiles(basePath);
+        foreach (var relayFilePath in relayFilePaths)
+        {
+            WriteEpochRequest(relayFilePath, epoch);
+        }
+
+        return relayFilePaths;
+    }
+
+    /// <summary>
+    /// Waits until every relay the request reached has acknowledged the epoch, which is when all of the
+    /// coverage for that test is on disk. Waiting for a single ack would let the coverage files be read
+    /// while another mutated assembly's relay has not flushed yet, attributing that assembly's coverage
+    /// to the next test.
+    /// </summary>
+    internal async Task<bool> WaitForAllEpochAcksAsync(
+        IReadOnlyList<string> relayFilePaths, int expectedEpoch, TimeSpan timeout)
+    {
+        if (relayFilePaths.Count == 0)
+        {
+            // The test touched no mutated code, so no relay exists and there is nothing to flush
+            _logger.LogDebug("{RunnerId}: No coverage epoch relay to wait for", RunnerId);
+            return true;
+        }
+
+        var deadline = DateTime.UtcNow + timeout;
+        while (true)
+        {
+            if (relayFilePaths.All(path => TryReadEpochAck(path, out var ack) && ack == expectedEpoch))
+            {
+                return true;
+            }
+
+            if (DateTime.UtcNow >= deadline)
+            {
+                return false;
+            }
+
+            await Task.Delay(1).ConfigureAwait(false);
         }
     }
 
@@ -454,8 +625,17 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         {
             if (_initializedPerTestFiles.Add(assembly))
             {
+                // Relays left behind by an earlier run would be waited on and never acknowledge, or worse
+                // already show this epoch, so clear them before the host creates its own
+                foreach (var staleRelayFilePath in EnumerateEpochRelayFiles(epochFilePath))
+                {
+                    DeleteFileIfExists(staleRelayFilePath);
+                }
                 InitializeEpochFile(epochFilePath);
-                DeleteFileIfExists(coverageFilePath);
+                foreach (var staleCoverageFilePath in EnumerateCoverageFiles(coverageFilePath))
+                {
+                    DeleteFileIfExists(staleCoverageFilePath);
+                }
             }
         }
 
@@ -491,9 +671,9 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                     _perTestEpochCounters[assembly] = epoch;
                 }
 
-                WriteEpochRequest(epochFilePath, epoch);
+                var requestedRelays = BroadcastEpochRequest(epochFilePath, epoch);
 
-                var acked = await WaitForEpochAckAsync(epochFilePath, epoch, TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                var acked = await WaitForAllEpochAcksAsync(requestedRelays, epoch, TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                 if (!acked)
                 {
                     _logger.LogWarning(
@@ -503,7 +683,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                         Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
                 }
 
-                var (covered, staticMutants) = ReadCoverageDataFrom(coverageFilePath);
+                var (covered, staticMutants) = ReadCoverageForHandedOutPath(coverageFilePath);
                 return CoverageRunResult.Create(testId, CoverageConfidence.Normal, covered, staticMutants, Array.Empty<int>());
             }
             catch (Exception ex)
@@ -549,6 +729,16 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             // test starts in a fresh process rather than one that already ran other code.
             await DiscardServerAsync(assembly).ConfigureAwait(false);
 
+            // Clear what an earlier test left on disk. Coverage files are written per mutated assembly,
+            // so a host that does not load one of them never rewrites its file, and reading it would
+            // credit this test with the earlier one's coverage - at Exact confidence, which the pool
+            // trusts enough to drop mutants no test covers. A single shared file gave this for free,
+            // since every host rewrote it whole.
+            foreach (var staleCoverageFilePath in EnumerateCoverageFiles(coverageFilePath))
+            {
+                DeleteFileIfExists(staleCoverageFilePath);
+            }
+
             var server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
             var (_, timedOut) = await server.RunTestsAsync(new[] { test }, CalculateSingleTestTimeout(test)).ConfigureAwait(false);
             if (timedOut)
@@ -565,7 +755,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             // this test's (and only this test's) coverage to file before the process goes away.
             await server.StopAsync().ConfigureAwait(false);
 
-            var (covered, _) = ReadCoverageDataFrom(coverageFilePath, assembly);
+            var (covered, _) = ReadCoverageForHandedOutPath(coverageFilePath, assembly);
             return CoverageRunResult.Create(testId, CoverageConfidence.Exact, covered, Array.Empty<int>(), Array.Empty<int>());
         }
         catch (Exception ex)
@@ -1150,11 +1340,9 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                 {
                     File.Delete(_mutantFilePath);
                 }
-                foreach (var assembly in _initializedPerTestFiles)
-                {
-                    DeleteFileIfExists(GetPerTestCoverageFilePath(assembly));
-                    DeleteFileIfExists(GetPerTestEpochFilePath(assembly));
-                }
+                // Only has anything to do when the runner is disposed while still in per-test mode;
+                // leaving the mode deletes these files and forgets the assemblies they belong to
+                DeletePerTestFiles();
             }
             catch (Exception ex)
             {
