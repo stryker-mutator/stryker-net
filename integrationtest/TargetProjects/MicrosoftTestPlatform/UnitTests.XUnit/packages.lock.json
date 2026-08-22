@@ -169,6 +169,15 @@
           "xunit.v3.runner.common": "[3.2.2]"
         }
       },
+      "extralibrary": {
+        "type": "Project"
+      },
+      "extraproject": {
+        "type": "Project",
+        "dependencies": {
+          "ExtraLibrary": "[1.0.0, )"
+        }
+      },
       "library": {
         "type": "Project"
       },

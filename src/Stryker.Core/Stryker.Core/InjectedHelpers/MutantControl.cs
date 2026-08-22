@@ -28,6 +28,12 @@ namespace Stryker
         private static bool _mutantMmfReady;
         private static bool _mutantMmfFailed;
 
+        // Tells this copy of the class apart from the copies of the other mutated assemblies the test
+        // host loads; see GetOwningAssemblyDiscriminator. Computed once, so every file this copy writes
+        // carries the same one.
+        private static string _cachedDiscriminator = string.Empty;
+        private static bool _discriminatorCached;
+
         // Coverage file path for MTP runner (file-based IPC)
         private static string _cachedCoverageFilePath = string.Empty;
         private static bool _coverageFilePathCached;
@@ -70,7 +76,7 @@ namespace Stryker
             if (!string.IsNullOrEmpty(coverageFileName))
             {
                 // Construct full path using temp directory
-                _cachedCoverageFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), coverageFileName);
+                _cachedCoverageFilePath = BuildCoverageFilePath(coverageFileName);
                 _coverageFilePathCached = true;
                 CaptureCoverage = true;
 
@@ -85,7 +91,10 @@ namespace Stryker
             string epochFileName = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_EPOCH_FILE") ?? string.Empty;
             if (!string.IsNullOrEmpty(epochFileName))
             {
-                _cachedEpochFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), epochFileName);
+                // Suffixed per mutated assembly, like the coverage file: this copy of the class relays
+                // only its own coverage, and the runner waits for every relay before reading
+                _cachedEpochFilePath = BuildCoverageFilePath(epochFileName);
+                EnsureEpochFileExists();
                 EnsureEpochPollerStarted();
             }
         }
@@ -242,6 +251,39 @@ namespace Stryker
         }
 
         /// <summary>
+        /// Resolves the coverage file this copy of the class writes to, from the file name the runner
+        /// handed out through STRYKER_COVERAGE_FILE.
+        /// A test host loads one copy of this class per mutated assembly and every copy reads the same
+        /// environment variable, so the name is suffixed per copy: without it, the copies overwrite each
+        /// other's coverage and only the last flush survives. The runner reads every file whose name
+        /// starts with the name it handed out (minus the extension).
+        /// </summary>
+        private static string BuildCoverageFilePath(string coverageFileName)
+        {
+            string directory = System.IO.Path.GetTempPath();
+            string nameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(coverageFileName);
+            string extension = System.IO.Path.GetExtension(coverageFileName);
+            return System.IO.Path.Combine(
+                directory, nameWithoutExtension + "-" + GetOwningAssemblyDiscriminator() + extension);
+        }
+
+        /// <summary>
+        /// Tells this copy of the class apart from the copies the other mutated assemblies of a test host
+        /// carry. A fresh id per copy is all that is needed: the runner finds these files by the prefix it
+        /// handed out, never by this part of the name, and they live no longer than the process.
+        /// </summary>
+        private static string GetOwningAssemblyDiscriminator()
+        {
+            if (!_discriminatorCached)
+            {
+                _cachedDiscriminator = System.Guid.NewGuid().ToString("N");
+                _discriminatorCached = true;
+            }
+
+            return _cachedDiscriminator;
+        }
+
+        /// <summary>
         /// Writes accumulated coverage data to a file for MTP runner IPC.
         /// Called automatically on process exit to capture all coverage from tests run in this process.
         /// Format: "coveredMutants;staticMutants" (comma-separated IDs)
@@ -255,7 +297,7 @@ namespace Stryker
                 if (!string.IsNullOrEmpty(coverageFileName))
                 {
                     // Construct full path using temp directory
-                    _cachedCoverageFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), coverageFileName);
+                    _cachedCoverageFilePath = BuildCoverageFilePath(coverageFileName);
                 }
                 _coverageFilePathCached = true;
             }
@@ -297,16 +339,47 @@ namespace Stryker
             thread.Start();
         }
 
+        /// <summary>
+        /// Creates this copy's epoch relay file, initialized to request=0/ack=0 to match the poller's
+        /// starting state. Done synchronously from the static constructor, not on the poller thread: the
+        /// runner discovers a test host's relays by listing files right after a test finishes, and has to
+        /// find a relay for every assembly whose mutated code ran during that test.
+        /// </summary>
+        private static void EnsureEpochFileExists()
+        {
+            try
+            {
+                if (System.IO.File.Exists(_cachedEpochFilePath))
+                {
+                    return;
+                }
+
+                System.IO.FileStream stream = new System.IO.FileStream(
+                    _cachedEpochFilePath,
+                    System.IO.FileMode.Create,
+                    System.IO.FileAccess.ReadWrite,
+                    System.IO.FileShare.ReadWrite);
+                try
+                {
+                    byte[] emptyRelay = new byte[8];
+                    stream.Write(emptyRelay, 0, emptyRelay.Length);
+                    stream.Flush();
+                }
+                finally
+                {
+                    stream.Close();
+                }
+            }
+            catch
+            {
+                // Mapping is retried by the poller; if that fails too the runner's ack wait times out and
+                // the affected test's coverage is reported as Dubious rather than hanging.
+            }
+        }
+
         private static void EnsureEpochMmf()
         {
             if (_epochMmfReady || _epochMmfFailed)
-            {
-                return;
-            }
-
-            // The runner creates and initializes this file before starting the test host, so it should
-            // already exist. If not yet visible, leave it unmapped and retry on the next poll iteration.
-            if (!System.IO.File.Exists(_cachedEpochFilePath))
             {
                 return;
             }
@@ -315,7 +388,7 @@ namespace Stryker
             {
                 System.IO.FileStream stream = new System.IO.FileStream(
                     _cachedEpochFilePath,
-                    System.IO.FileMode.Open,
+                    System.IO.FileMode.OpenOrCreate,
                     System.IO.FileAccess.ReadWrite,
                     System.IO.FileShare.ReadWrite);
 

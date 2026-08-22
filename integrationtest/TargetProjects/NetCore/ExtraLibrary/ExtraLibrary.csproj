@@ -6,8 +6,4 @@
     <SuppressTfmSupportBuildErrors>true</SuppressTfmSupportBuildErrors>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ExtraLibrary\ExtraLibrary.csproj" />
-  </ItemGroup>
-
 </Project>

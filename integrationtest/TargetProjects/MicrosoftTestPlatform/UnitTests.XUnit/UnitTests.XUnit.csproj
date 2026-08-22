@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\NetCore\TargetProject\TargetProject.csproj" />
+    <ProjectReference Include="..\..\NetCore\ExtraProject\ExtraProject.csproj" />
   </ItemGroup>
 
 </Project>
