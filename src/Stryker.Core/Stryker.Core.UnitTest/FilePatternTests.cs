@@ -38,14 +38,14 @@ public class FilePatternTests : TestBase
     }
 
     [TestMethod]
-    [DataRow("{10..20}", 14, 16, true)]          // Fully contained
-    [DataRow("{10..20}", 04, 06, false)]         // Before
-    [DataRow("{10..20}", 24, 26, false)]         // After
-    [DataRow("{10..20}", 14, 26, false)]         // Partial overlap; exceeds end
-    [DataRow("{10..20}", 04, 16, false)]         // Partial overlap; exceeds start
-    [DataRow("{10..20}{20..30}", 15, 25, true)]  // Two intersecting spans fully contain span
-    [DataRow("{10..23}{17..30}", 15, 25, true)]  // Two overlapping spans fully contain span
-    [DataRow("{10..19}{20..30}", 15, 25, false)] // Two spans with gab; start and end of span are in the spans
+    [DataRow(":10:0:20:0", 14, 16, true)]          // Fully contained
+    [DataRow(":10:0:20:0", 04, 06, false)]         // Before
+    [DataRow(":10:0:20:0", 24, 26, false)]         // After
+    [DataRow(":10:0:20:0", 14, 26, false)]         // Partial overlap; exceeds end
+    [DataRow(":10:0:20:0", 04, 16, false)]         // Partial overlap; exceeds start
+    [DataRow(":10:0:20:0:20:0:30:0", 15, 25, true)]  // Two intersecting spans fully contain span
+    [DataRow(":10:0:23:0:17:0:30:0", 15, 25, true)]  // Two overlapping spans fully contain span
+    [DataRow(":10:0:19:0:20:0:30:0", 15, 25, false)] // Two spans with gab; start and end of span are in the spans
     public void IsMatch_should_match_textSpans(string spanPattern, int spanStart, int spanEnd, bool isMatch)
     {
         // Arrange
@@ -59,9 +59,9 @@ public class FilePatternTests : TestBase
     }
 
     [TestMethod]
-    [DataRow("**/*.cs{10..20}", "**/*.cs", false, new[] { 10, 20 })]
-    [DataRow("**/*.cs{10..20}{20..30}", "**/*.cs", false, new[] { 10, 30 })]
-    [DataRow("**/*.cs{10..20}{30..40}", "**/*.cs", false, new[] { 10, 20, 30, 40 })]
+    [DataRow("**/*.cs:10:0:20:0", "**/*.cs", false, new[] { 10, 20 })]
+    [DataRow("**/*.cs:10:0:20:0:20:0:30:0", "**/*.cs", false, new[] { 10, 30 })]
+    [DataRow("**/*.cs:10:0:20:0:30:0:40:0", "**/*.cs", false, new[] { 10, 20, 30, 40 })]
     [DataRow("!**/*.cs", "**/*.cs", true, new[] { 0, int.MaxValue })]
     public void Parse_should_parse_correctly(string spanPattern, string glob, bool isExclude, int[] spans)
     {
