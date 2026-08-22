@@ -557,7 +557,7 @@ public class CSharpRollbackProcessTests : TestBase
 
         var ids = new CSharpRollbackProcess().RollbackMutationsInError(
             compilerWrapper,
-            ImmutableArray.Create(CreateErrorDiagnostic("TEST0001", brokenStatement)),
+            [CreateErrorDiagnostic("TEST0001", brokenStatement)],
             ICSharpRollbackProcess.Mode.Normal,
             false);
 
@@ -1018,6 +1018,108 @@ public class CSharpRollbackProcessTests : TestBase
         rollbackResult.Success.ShouldBeTrue();
         // validate that mutations 8 and 7 were rolled back
         ids.ShouldBe(new Collection<int> { 8, 7 });
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbackEveryMutationsErasingAssignmentInAggressiveMode()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+        """
+        using System;
+        namespace ExampleProject
+        {
+            public class StringMagic
+            {
+                public int ActiveMutation = 1;
+
+                public string AddTwoStrings(out string third)
+                {
+                    string first = string.Empty;
+                    string second = string.Empty;
+                    var dummy = "";
+                    if(ActiveMutation == 8){
+                        while (first.Length > 2)
+                        {
+                            dummy = first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second + first;
+                        }
+                    }else{if(ActiveMutation == 7){
+                    while (first.Length > 2)
+                        {
+                            dummy =  first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second + first;
+                        }
+                    }else{if(ActiveMutation == 6){
+                        third = "good";
+                        while (first.Length == 2)
+                        {
+                            dummy =  first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second + first;
+                        }
+                    }else{
+                        third = "good";
+                        while (first.Length == 2)
+                        {
+                            dummy =  first + second;
+                        }
+                        while (first.Length < 2)
+                        {
+                            dummy =  second + first;
+                        }
+                    }}}
+                    return dummy;
+                }
+            }
+        }
+        """);
+        var root = syntaxTree.GetRoot();
+
+        var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(
+            mutantIf1,
+            mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(8), _ifEngineMarker)
+        );
+        var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
+        root = root.ReplaceNode(
+            mutantIf2,
+            mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(7), _ifEngineMarker)
+        );
+        var mutantIf3 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[2];
+        root = root.ReplaceNode(
+            mutantIf3,
+            mutantIf3.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
+        );
+        var annotatedSyntaxTree = root.SyntaxTree;
+
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            });
+
+        var target = new CSharpRollbackProcess();
+
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
+
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Aggressive, false);
+        var rollbackResult = compilerWrapper.Emit(ms);
+
+        rollbackResult.Success.ShouldBeTrue();
+        // validate that mutations 8 was rolled back in normal mode
+        ids.ShouldBe(new Collection<int> { 8 , 7});
     }
 
     [TestMethod]
