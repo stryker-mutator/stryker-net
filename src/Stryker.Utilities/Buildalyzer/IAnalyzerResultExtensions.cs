@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -321,6 +322,101 @@ public static class IAnalyzerResultExtensions
         analyzerResult.Properties.TryGetValue(name, out value) && !string.IsNullOrEmpty(value);
 
     private static IProjectItem[] GetItem(this IAnalyzerResult analyzerResult, string name) => !analyzerResult.Items.TryGetValue(name, out var item) ? [] : item;
+
+    private static string ResolveAnalyzerConfigPath(string path, string? projectDirectory, IFileSystem fileSystem) =>
+        string.IsNullOrEmpty(projectDirectory) || fileSystem.Path.IsPathRooted(path)
+            ? path
+            : fileSystem.Path.Combine(projectDirectory, path);
+
+    public static IEnumerable<string> GetAnalyzerConfigFiles(this IAnalyzerResult result, IFileSystem fileSystem)
+    {
+        const string ArgName = "analyzerconfig:";
+        var projectDirectory = fileSystem.Path.GetDirectoryName(result.ProjectFilePath);
+        // Analyzer config paths in the compiler command line are often RELATIVE to the project
+        // directory (e.g. obj/.../<Project>.GeneratedMSBuildEditorConfig.editorconfig, which carries
+        // the CompilerVisibleProperty / CompilerVisibleItemMetadata that generators such as CsWin32
+        // read). They must be resolved against the project directory, not the current working
+        // directory, or File.Exists silently drops them and the generator options are lost.
+        return result.CompilerArguments.Where( arg => ValidateArg(arg))
+            .Select(arg =>
+                ResolveAnalyzerConfigPath(arg[(ArgName.Length + 1)..], projectDirectory, fileSystem))
+            .Distinct();
+
+        bool ValidateArg(string arg)
+        {
+            return arg[0] is '/' or '-' && arg[1..(ArgName.Length+1)] == ArgName;
+        }
+    }
+
+    public static AnalyzerConfigOptionsProvider GetAnalyzerConfigOptionsProvider(this IAnalyzerResult result, IFileSystem fileSystem)
+    {
+        var analyzerConfigFiles = result.GetAnalyzerConfigFiles(fileSystem).ToList();
+        if (analyzerConfigFiles.Count == 0)
+        {
+            return new AnalyzerConfigOptionsProviderFromProperties(result.Properties);
+        }
+
+        var analyzerConfigs = analyzerConfigFiles
+            .Select(path => AnalyzerConfig.Parse(SourceText.From(fileSystem.File.ReadAllText(path)), path));
+        var set = AnalyzerConfigSet.Create(analyzerConfigs.ToImmutableArray());
+        return new AnalyzerConfigOptionsProviderFromSet(set);
+    }
+
+    // analyzer option provider using additional files
+    private sealed class AnalyzerConfigOptionsProviderFromSet(AnalyzerConfigSet configSet) : AnalyzerConfigOptionsProvider
+    {
+        private readonly DictionaryAnalyzerConfigOptions _emptyAnalyzerConfigOptions =
+            new(ImmutableDictionary<string, string>.Empty.WithComparers(AnalyzerConfigOptions.KeyComparer));
+
+        public override AnalyzerConfigOptions GlobalOptions =>
+            new DictionaryAnalyzerConfigOptions(configSet.GlobalConfigOptions.AnalyzerOptions);
+
+        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) =>
+            GetOptionsForPath(tree?.FilePath);
+
+        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) =>
+            GetOptionsForPath(textFile?.Path);
+
+        private DictionaryAnalyzerConfigOptions GetOptionsForPath(string? path) =>
+            string.IsNullOrEmpty(path)
+                ? _emptyAnalyzerConfigOptions
+                : new DictionaryAnalyzerConfigOptions(configSet.GetOptionsForSourcePath(NormalizePath(path)).AnalyzerOptions);
+
+        // Roslyn's AnalyzerConfigSet matches section headers using forward slashes, so a
+        // backslash Windows path must be normalized or per-file build_metadata never resolves.
+        private static string NormalizePath(string path) => path.Replace('\\', '/');
+    }
+
+    private sealed class AnalyzerConfigOptionsProviderFromProperties(IReadOnlyDictionary<string, string> properties) : AnalyzerConfigOptionsProvider
+    {
+        public override AnalyzerConfigOptions GlobalOptions => new AnalyzerConfigOptionsFromProperties(properties);
+
+        private static readonly AnalyzerConfigOptions NullAnalyzerConfigOptions = new EmptyAnalyzerConfigOptions();
+
+        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => NullAnalyzerConfigOptions;
+
+        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => NullAnalyzerConfigOptions;
+    }
+
+    private sealed class AnalyzerConfigOptionsFromProperties(IReadOnlyDictionary<string, string> properties) : DictionaryAnalyzerConfigOptions(
+        properties
+            .ToImmutableDictionary(
+                keyValuePair => $"build_property.{keyValuePair.Key}",
+                keyValuePair => keyValuePair.Value,
+                keyComparer: KeyComparer))
+    {
+    }
+
+    private sealed class EmptyAnalyzerConfigOptions()
+        : DictionaryAnalyzerConfigOptions(
+            ImmutableDictionary<string, string>.Empty.WithComparers(AnalyzerConfigOptions.KeyComparer));
+
+    private class DictionaryAnalyzerConfigOptions(ImmutableDictionary<string, string> options) : AnalyzerConfigOptions
+    {
+        public override bool TryGetValue(string key, out string value) => options.TryGetValue(key, out value!);
+
+        public override IEnumerable<string> Keys => options.Keys;
+    }
 
     private sealed class AnalyzerAssemblyLoader : IAnalyzerAssemblyLoader
     {
