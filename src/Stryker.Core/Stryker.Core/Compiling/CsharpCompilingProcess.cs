@@ -91,7 +91,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
             throw new CompilationException("Internal error: project contents type does not support unmutated compilation.");
         }
         InitCSharpCompilation(projectContents.UnmutatedSyntaxTrees);
-        var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger);
+        var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources();
 
         // reset the memoryStreams
         ilStream.SetLength(0);
@@ -213,7 +213,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         _logger.LogDebug("Trying compilation for the {retryCount} time.", ReadableNumber(retryCount));
         var emitOptions = symbolStream == null ? null : new EmitOptions(false, DebugInformationFormat.PortablePdb,
             _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
-        var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger);
+        var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources();
         if (previousEmitResult != null)
         {
             // remove broken mutations
@@ -297,7 +297,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
                 using var ms = new MemoryStream();
                 local.Emit(
                     ms,
-                    manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
+                    manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(),
                     options: null);
                 cleanedSyntaxTrees.Add(st);
             }

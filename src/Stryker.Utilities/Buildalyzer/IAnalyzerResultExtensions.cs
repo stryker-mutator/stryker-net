@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using Buildalyzer;
+using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
@@ -22,88 +23,6 @@ namespace Stryker.Utilities.Buildalyzer;
 
 public static class IAnalyzerResultExtensions
 {
-    public static string GetAssemblyFileName(this IAnalyzerResult analyzerResult) =>
-        FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetFileName"]);
-
-    public static bool BuildsAnAssembly(this IAnalyzerResult analyzerResult) => analyzerResult.Properties.ContainsKey("TargetFileName");
-
-    public static string GetReferenceAssemblyPath(this IAnalyzerResult analyzerResult) => analyzerResult.Properties.TryGetValue("TargetRefPath", out var property) ? FilePathUtils.NormalizePathSeparators(property) : analyzerResult.GetAssemblyPath();
-
-    public static string GetAssemblyDirectoryPath(this IAnalyzerResult analyzerResult) =>
-        FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetDir"]);
-
-    public static string GetAssemblyPath(this IAnalyzerResult analyzerResult) =>
-        FilePathUtils.NormalizePathSeparators(Path.Combine(analyzerResult.GetAssemblyDirectoryPath(),
-            analyzerResult.GetAssemblyFileName()));
-
-    public static string GetAssemblyName(this IAnalyzerResult analyzerResult) =>
-        FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["AssemblyName"]);
-
-    public static IEnumerable<ResourceDescription> GetResources(this IAnalyzerResult analyzerResult, ILogger logger)
-    {
-        var rootNamespace = analyzerResult.GetRootNamespace();
-        var embeddedResources = analyzerResult.GetItem("EmbeddedResource").Select(x => x.ItemSpec);
-        return EmbeddedResourcesGenerator.GetManifestResources(
-            analyzerResult.GetAssemblyPath(),
-            analyzerResult.ProjectFilePath,
-            rootNamespace,
-            embeddedResources);
-    }
-
-    public static string AssemblyAttributeFileName(this IAnalyzerResult analyzerResult) =>
-        analyzerResult.GetPropertyOrDefault("GeneratedAssemblyInfoFile",
-            (Path.GetFileNameWithoutExtension(analyzerResult.ProjectFilePath) + ".AssemblyInfo.cs")
-            .ToLowerInvariant());
-
-    public static string GetSymbolFileName(this IAnalyzerResult analyzerResult) =>
-        analyzerResult.GetAssemblyName() + ".pdb";
-
-    public static string TargetPlatform(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("TargetPlatform", "AnyCPU");
-
-    public static string? MsBuildPath(this IAnalyzerResult analyzerResult) => analyzerResult.Analyzer?.EnvironmentFactory.GetBuildEnvironment()?.MsBuildExePath;
-
-    public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger)
-    {
-        ArgumentNullException.ThrowIfNull(logger);
-
-        var generators = new List<ISourceGenerator>();
-        foreach (var analyzer in analyzerResult.AnalyzerReferences)
-        {
-            try
-            {
-                var analyzerFileReference = new AnalyzerFileReference(analyzer, AnalyzerAssemblyLoader.Instance);
-                analyzerFileReference.AnalyzerLoadFailed += (sender, e) => LogAnalyzerLoadError(logger, sender, e);
-                generators.AddRange(analyzerFileReference.GetGenerators(LanguageNames.CSharp));
-            }
-            catch (Exception e)
-            {
-                logger.LogWarning(e,
-                    """
-                    Analyzer/Generator assembly {0} could not be loaded.
-                    Generated source code may be missing.
-                    """, analyzer);
-            }
-        }
-
-        return generators;
-    }
-
-    public static IEnumerable<AdditionalText> GetAdditionalTexts(this IAnalyzerResult result) =>
-        result.AdditionalFiles?.Select(additionalFile => new AdditionalTextFromFile(additionalFile)) ?? [];
-
-    // Roslyn does not appear to expose usable implementations of these types (required for additional files support)
-    private sealed class AdditionalTextFromFile(string path) : AdditionalText
-    {
-        private readonly Lazy<string> _source = new(() => File.ReadAllText(path));
-
-        public override SourceText? GetText(CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return SourceText.From(_source.Value, Encoding.UTF8);
-        }
-
-        public override string Path => path;
-    }
 
     [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]
     private static void LogAnalyzerLoadError(ILogger? logger, object? sender, AnalyzerLoadFailureEventArgs e)
@@ -138,7 +57,6 @@ public static class IAnalyzerResultExtensions
         || (targetFrameworks.Length>0
             && Array.TrueForAll(targetFrameworks, fmw => br.Results.Any( r=> r.IsValidFor(fmw))));
 
-
     public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
 
     private static IEnumerable<string> ParseDiagnostics(string diagnostics)
@@ -157,6 +75,76 @@ public static class IAnalyzerResultExtensions
 
     extension(IAnalyzerResult analyzerResult)
     {
+       public string GetAssemblyFileName() =>
+            FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetFileName"]);
+
+        public  bool BuildsAnAssembly() => analyzerResult.Properties.ContainsKey("TargetFileName");
+
+        public string GetReferenceAssemblyPath() =>
+            analyzerResult.Properties.TryGetValue("TargetRefPath", out var property) ?
+                FilePathUtils.NormalizePathSeparators(property) : analyzerResult.GetAssemblyPath();
+
+        public string GetAssemblyDirectoryPath() =>
+            FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetDir"]);
+
+        public string GetAssemblyPath() =>
+            FilePathUtils.NormalizePathSeparators(Path.Combine(analyzerResult.GetAssemblyDirectoryPath(),
+                analyzerResult.GetAssemblyFileName()));
+
+        public string GetAssemblyName() =>
+            FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["AssemblyName"]);
+
+        public IEnumerable<ResourceDescription> GetResources()
+        {
+            var rootNamespace = analyzerResult.GetRootNamespace();
+            var embeddedResources = analyzerResult.GetItem("EmbeddedResource").Select(x => x.ItemSpec);
+            return EmbeddedResourcesGenerator.GetManifestResources(
+                analyzerResult.GetAssemblyPath(),
+                analyzerResult.ProjectFilePath,
+                rootNamespace,
+                embeddedResources);
+        }
+
+        public string AssemblyAttributeFileName() =>
+            analyzerResult.GetPropertyOrDefault("GeneratedAssemblyInfoFile",
+                (Path.GetFileNameWithoutExtension(analyzerResult.ProjectFilePath) + ".AssemblyInfo.cs")
+                .ToLowerInvariant());
+
+        public string GetSymbolFileName() => analyzerResult.GetAssemblyName() + ".pdb";
+
+        public string TargetPlatform() => analyzerResult.GetPropertyOrDefault("TargetPlatform", "AnyCPU");
+
+        public string? MsBuildPath() => analyzerResult.Analyzer?.EnvironmentFactory.GetBuildEnvironment()?.MsBuildExePath;
+
+        public IEnumerable<ISourceGenerator> GetSourceGenerators(ILogger logger)
+        {
+            ArgumentNullException.ThrowIfNull(logger);
+
+            var generators = new List<ISourceGenerator>();
+            foreach (var analyzer in analyzerResult.AnalyzerReferences)
+            {
+                try
+                {
+                    var analyzerFileReference = new AnalyzerFileReference(analyzer, AnalyzerAssemblyLoader.Instance);
+                    analyzerFileReference.AnalyzerLoadFailed += (sender, e) => LogAnalyzerLoadError(logger, sender, e);
+                    generators.AddRange(analyzerFileReference.GetGenerators(LanguageNames.CSharp));
+                }
+                catch (Exception e)
+                {
+                    logger.LogWarning(e,
+                        """
+                        Analyzer/Generator assembly {0} could not be loaded.
+                        Generated source code may be missing.
+                        """, analyzer);
+                }
+            }
+
+            return generators;
+        }
+
+        public IEnumerable<AdditionalText> GetAdditionalTexts() =>
+            analyzerResult .AdditionalFiles?.Select(additionalFile => new AdditionalTextFromFile(additionalFile)) ?? [];
+
         public IEnumerable<MetadataReference> LoadReferences()
         {
             foreach (var reference in analyzerResult.References)
@@ -301,6 +289,19 @@ public static class IAnalyzerResultExtensions
             return diagnosticOptions.ToImmutableDictionary();
         }
 
+        public AnalyzerConfigOptionsProvider GetAnalyzerConfigOptionsProvider(IFileSystem fileSystem)
+        {
+            var analyzerConfigFiles = analyzerResult.GetAnalyzerConfigFiles(fileSystem).ToList();
+            if (analyzerConfigFiles.Count == 0)
+            {
+                return new AnalyzerConfigOptionsProviderFromProperties(analyzerResult.Properties);
+            }
+
+            var analyzerConfigs = analyzerConfigFiles
+                .Select(path => AnalyzerConfig.Parse(SourceText.From(fileSystem.File.ReadAllText(path)), path));
+            var set = AnalyzerConfigSet.Create(analyzerConfigs.ToImmutableArray());
+            return new AnalyzerConfigOptionsProviderFromSet(set);
+        }
 
         public int GetWarningLevel() =>
             int.Parse(analyzerResult.GetPropertyOrDefault("WarningLevel", "4"));
@@ -324,50 +325,36 @@ public static class IAnalyzerResultExtensions
             string defaultValue = default) =>
             analyzerResult.Properties.GetValueOrDefault(name, defaultValue);
 
-        public bool TryGetProperty(string name, [NotNullWhen(true)] out string? value) =>
+        private bool TryGetProperty(string name, [NotNullWhen(true)] out string? value) =>
             analyzerResult.Properties.TryGetValue(name, out value) && !string.IsNullOrEmpty(value);
 
         private IProjectItem[] GetItem(string name) => !analyzerResult.Items.TryGetValue(name, out var item) ? [] : item;
+
+        private IEnumerable<string> GetAnalyzerConfigFiles(IFileSystem fileSystem)
+        {
+            const string ArgName = "analyzerconfig:";
+            var projectDirectory = fileSystem.Path.GetDirectoryName(analyzerResult.ProjectFilePath);
+            // Analyzer config paths in the compiler command line are often RELATIVE to the project
+            // directory (e.g. obj/.../<Project>.GeneratedMSBuildEditorConfig.editorconfig, which carries
+            // the CompilerVisibleProperty / CompilerVisibleItemMetadata that generators such as CsWin32
+            // read). They must be resolved against the project directory, not the current working
+            // directory, or File.Exists silently drops them and the generator options are lost.
+            return analyzerResult.CompilerArguments.Where(ValidateArg)
+                .Select(arg =>
+                    ResolveAnalyzerConfigPath(arg[(ArgName.Length + 1)..].TrimQuotes(), projectDirectory, fileSystem))
+                .Distinct();
+
+            bool ValidateArg(string arg)
+            {
+                return arg[0] is '/' or '-' && arg.Length > ArgName.Length+2 && arg[1..(ArgName.Length+1)] == ArgName;
+            }
+        }
     }
 
     private static string ResolveAnalyzerConfigPath(string path, string? projectDirectory, IFileSystem fileSystem) =>
         string.IsNullOrEmpty(projectDirectory) || fileSystem.Path.IsPathRooted(path)
             ? path
             : fileSystem.Path.Combine(projectDirectory, path);
-
-    public static IEnumerable<string> GetAnalyzerConfigFiles(this IAnalyzerResult result, IFileSystem fileSystem)
-    {
-        const string ArgName = "analyzerconfig:";
-        var projectDirectory = fileSystem.Path.GetDirectoryName(result.ProjectFilePath);
-        // Analyzer config paths in the compiler command line are often RELATIVE to the project
-        // directory (e.g. obj/.../<Project>.GeneratedMSBuildEditorConfig.editorconfig, which carries
-        // the CompilerVisibleProperty / CompilerVisibleItemMetadata that generators such as CsWin32
-        // read). They must be resolved against the project directory, not the current working
-        // directory, or File.Exists silently drops them and the generator options are lost.
-        return result.CompilerArguments.Where( arg => ValidateArg(arg))
-            .Select(arg =>
-                ResolveAnalyzerConfigPath(arg[(ArgName.Length + 1)..], projectDirectory, fileSystem))
-            .Distinct();
-
-        bool ValidateArg(string arg)
-        {
-            return arg[0] is '/' or '-' && arg[1..(ArgName.Length+1)] == ArgName;
-        }
-    }
-
-    public static AnalyzerConfigOptionsProvider GetAnalyzerConfigOptionsProvider(this IAnalyzerResult result, IFileSystem fileSystem)
-    {
-        var analyzerConfigFiles = result.GetAnalyzerConfigFiles(fileSystem).ToList();
-        if (analyzerConfigFiles.Count == 0)
-        {
-            return new AnalyzerConfigOptionsProviderFromProperties(result.Properties);
-        }
-
-        var analyzerConfigs = analyzerConfigFiles
-            .Select(path => AnalyzerConfig.Parse(SourceText.From(fileSystem.File.ReadAllText(path)), path));
-        var set = AnalyzerConfigSet.Create(analyzerConfigs.ToImmutableArray());
-        return new AnalyzerConfigOptionsProviderFromSet(set);
-    }
 
     // analyzer option provider using additional files
     private sealed class AnalyzerConfigOptionsProviderFromSet(AnalyzerConfigSet configSet) : AnalyzerConfigOptionsProvider
@@ -416,13 +403,27 @@ public static class IAnalyzerResultExtensions
 
     private sealed class EmptyAnalyzerConfigOptions()
         : DictionaryAnalyzerConfigOptions(
-            ImmutableDictionary<string, string>.Empty.WithComparers(AnalyzerConfigOptions.KeyComparer));
+            ImmutableDictionary<string, string>.Empty.WithComparers(KeyComparer));
 
     private class DictionaryAnalyzerConfigOptions(ImmutableDictionary<string, string> options) : AnalyzerConfigOptions
     {
         public override bool TryGetValue(string key, out string value) => options.TryGetValue(key, out value!);
 
         public override IEnumerable<string> Keys => options.Keys;
+    }
+
+    // Roslyn does not appear to expose usable implementations of these types (required for additional files support)
+    private sealed class AdditionalTextFromFile(string path) : AdditionalText
+    {
+        private readonly Lazy<string> _source = new(() => File.ReadAllText(path));
+
+        public override SourceText? GetText(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return SourceText.From(_source.Value, Encoding.UTF8);
+        }
+
+        public override string Path => path;
     }
 
     private sealed class AnalyzerAssemblyLoader : IAnalyzerAssemblyLoader
