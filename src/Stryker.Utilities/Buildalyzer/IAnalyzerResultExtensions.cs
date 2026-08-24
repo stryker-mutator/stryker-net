@@ -126,69 +126,7 @@ public static class IAnalyzerResultExtensions
         }
     }
 
-    public static IEnumerable<MetadataReference> LoadReferences(this IAnalyzerResult analyzerResult)
-    {
-        foreach (var reference in analyzerResult.References)
-        {
-
-            if (!analyzerResult.ReferenceAliases.TryGetValue(reference, out var aliases))
-            {
-                aliases = [];
-            }
-
-            // If no alias is found, return the reference without aliases
-            yield return MetadataReference.CreateFromFile(reference).WithAliases(aliases);
-        }
-    }
-
-    public static NuGetFramework? GetNuGetFramework(this IAnalyzerResult analyzerResult)
-    {
-        var frameworkText = analyzerResult.TargetFramework;
-        if (string.IsNullOrEmpty(frameworkText))
-        {
-            return null;
-        }
-        var framework = NuGetFramework.Parse(frameworkText);
-        if (framework != NuGetFramework.UnsupportedFramework)
-        {
-            return framework;
-        }
-
-        var atPath = string.IsNullOrEmpty(analyzerResult.ProjectFilePath)
-            ? ""
-            : $" at '{analyzerResult.ProjectFilePath}'";
-        var message =
-            $"The target framework '{frameworkText}' is not supported. Please fix the target framework in the csproj{atPath}.";
-        throw new InputException(message);
-    }
-
-    public static bool TargetsDesktop(this IAnalyzerResult analyzerResult) => analyzerResult.GetNuGetFramework()?.IsDesktop() == true;
-
-    public static Language GetLanguage(this IAnalyzerResult analyzerResult) =>
-        analyzerResult.GetPropertyOrDefault("Language") switch
-        {
-            "F#" => Language.Fsharp,
-            "C#" => Language.Csharp,
-            _ => Language.Undefined,
-        };
-
     private static readonly string[] KnownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit", "nunit"];
-
-    /// <summary>
-    /// checks if an analyzer result is valid
-    /// </summary>
-    /// <param name="br">analyzer result used for determination</param>
-    /// <returns>true if result is complete enough</returns>
-    public static bool IsValid(this IAnalyzerResult br) => br.Succeeded || (br.SourceFiles.Length > 0 && br.References.Length > 0)
-    || (br.IsTestProject() && br.Properties.ContainsKey("TargetDir") && br.ProjectReferences.Any());
-
-    /// <summary>
-    /// checks if an analyzer result is valid for a specific framework
-    /// </summary>
-    /// <param name="br">analyzer result used for determination</param>
-    /// <param name="framework">framework to test for</param>
-    /// <returns>true if result is complete enough</returns>
-    private static bool IsValidFor(this IAnalyzerResult br, string framework) => br.IsValid() && br.TargetFramework == framework;
 
     /// <summary>
     /// Checks if a project analysis is valid for all given target frameworks. If no target frameworks are given, it checks if the overall analysis was successful.
@@ -200,87 +138,8 @@ public static class IAnalyzerResultExtensions
         || (targetFrameworks.Length>0
             && Array.TrueForAll(targetFrameworks, fmw => br.Results.Any( r=> r.IsValidFor(fmw))));
 
+
     public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
-
-    private static bool IsTestProject(this IAnalyzerResult analyzerResult)
-    {
-        // if 'IsTestingPlatformApplication' is defined and true, this is a test project
-        if (analyzerResult.TryGetProperty("IsTestingPlatformApplication", out var value)
-            && bool.TryParse(value, out var isMtp)
-            && isMtp)
-        {
-            return true;
-        }
-
-        // if 'IsTestProject' is defined, we use its value to check if it's a test project (or not)
-        if (analyzerResult.TryGetProperty("IsTestProject", out value))
-        {
-            return bool.TryParse(value, out var isTestProject) && isTestProject;
-        }
-
-        if (Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n)))
-        {
-            return true;
-        }
-
-        const string TestProjectTypeGuid = "{3AC096D0-A1C2-E12C-1390-A8335801FDAB}";
-        return analyzerResult
-            .GetPropertyOrDefault("ProjectTypeGuids", "")
-            .Contains(TestProjectTypeGuid);
-    }
-
-    public static OutputKind GetOutputKind(this IAnalyzerResult analyzerResult) =>
-        analyzerResult.GetPropertyOrDefault("OutputType") switch
-        {
-            "Exe" => OutputKind.ConsoleApplication,
-            "WinExe" => OutputKind.WindowsApplication,
-            "Module" => OutputKind.NetModule,
-            "AppContainerExe" => OutputKind.WindowsRuntimeApplication,
-            "WinMdObj" => OutputKind.WindowsRuntimeMetadata,
-            _ => OutputKind.DynamicallyLinkedLibrary
-        };
-
-    public static string GetCompilerApiVersion(this IAnalyzerResult analyzerResult) =>
-        analyzerResult.GetPropertyOrDefault("CompilerAPIVersion", "Unknown");
-
-    public static bool IsSignedAssembly(this IAnalyzerResult analyzerResult) =>
-        analyzerResult.GetPropertyOrDefault("SignAssembly", false);
-
-    public static bool IsDelayedSignedAssembly(this IAnalyzerResult analyzerResult) =>
-            analyzerResult.GetPropertyOrDefault("DelaySign", false);
-
-    public static string? GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult)
-    {
-        var assemblyKeyFileProp = analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile");
-        return string.IsNullOrEmpty(assemblyKeyFileProp) ? null : Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath) ?? ".", assemblyKeyFileProp);
-    }
-
-    public static ImmutableDictionary<string, ReportDiagnostic> GetDiagnosticOptions(
-        this IAnalyzerResult analyzerResult)
-    {
-        var noWarnString = analyzerResult.GetPropertyOrDefault("NoWarn");
-        var noWarn = ParseDiagnostics(noWarnString).ToDictionary(x => x, _ => ReportDiagnostic.Suppress);
-
-        var warningsAsErrorsString = analyzerResult.GetPropertyOrDefault("WarningsAsErrors");
-        var warningsAsErrors = ParseDiagnostics(warningsAsErrorsString).ToDictionary(x => x, _ => ReportDiagnostic.Error);
-
-        var warningsNotAsErrorsString = analyzerResult.GetPropertyOrDefault("WarningsNotAsErrors");
-        var warningsNotAsErrors = ParseDiagnostics(warningsNotAsErrorsString).ToDictionary(x => x, _ => ReportDiagnostic.Warn);
-
-        // merge settings,
-        var diagnosticOptions = new Dictionary<string, ReportDiagnostic>(warningsAsErrors);
-        foreach (var item in warningsNotAsErrors)
-        {
-            diagnosticOptions[item.Key] = item.Value;
-        }
-
-        foreach (var item in noWarn)
-        {
-            diagnosticOptions[item.Key] = item.Value;
-        }
-
-        return diagnosticOptions.ToImmutableDictionary();
-    }
 
     private static IEnumerable<string> ParseDiagnostics(string diagnostics)
     {
@@ -296,32 +155,180 @@ public static class IAnalyzerResultExtensions
             .Where(x => !string.IsNullOrWhiteSpace(x));
     }
 
-    public static int GetWarningLevel(this IAnalyzerResult analyzerResult) =>
-        int.Parse(analyzerResult.GetPropertyOrDefault("WarningLevel", "4"));
-
-    private static string GetRootNamespace(this IAnalyzerResult analyzerResult) =>
-        analyzerResult.Properties.TryGetValue("RootNamespace", out var rootNamespace) &&
-        !string.IsNullOrEmpty(rootNamespace)
-            ? rootNamespace
-            : analyzerResult.GetAssemblyName();
-
-    public static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean)
+    extension(IAnalyzerResult analyzerResult)
     {
-        if (analyzerResult.Properties.TryGetValue(name, out var value) && !string.IsNullOrEmpty(value))
+        public IEnumerable<MetadataReference> LoadReferences()
         {
-            return bool.Parse(value);
+            foreach (var reference in analyzerResult.References)
+            {
+
+                if (!analyzerResult.ReferenceAliases.TryGetValue(reference, out var aliases))
+                {
+                    aliases = [];
+                }
+
+                // If no alias is found, return the reference without aliases
+                yield return MetadataReference.CreateFromFile(reference).WithAliases(aliases);
+            }
         }
-        return defaultBoolean;
+
+        public NuGetFramework? GetNuGetFramework()
+        {
+            var frameworkText = analyzerResult.TargetFramework;
+            if (string.IsNullOrEmpty(frameworkText))
+            {
+                return null;
+            }
+            var framework = NuGetFramework.Parse(frameworkText);
+            if (framework != NuGetFramework.UnsupportedFramework)
+            {
+                return framework;
+            }
+
+            var atPath = string.IsNullOrEmpty(analyzerResult.ProjectFilePath)
+                ? ""
+                : $" at '{analyzerResult.ProjectFilePath}'";
+            var message =
+                $"The target framework '{frameworkText}' is not supported. Please fix the target framework in the csproj{atPath}.";
+            throw new InputException(message);
+        }
+
+        public bool TargetsDesktop() => analyzerResult.GetNuGetFramework()?.IsDesktop() == true;
+
+        public Language GetLanguage() =>
+            analyzerResult.GetPropertyOrDefault("Language") switch
+            {
+                "F#" => Language.Fsharp,
+                "C#" => Language.Csharp,
+                _ => Language.Undefined,
+            };
+
+
+        /// <summary>
+        /// checks if an analyzer result is valid
+        /// </summary>
+        /// <param name="br">analyzer result used for determination</param>
+        /// <returns>true if result is complete enough</returns>
+        public bool IsValid() => analyzerResult.Succeeded || (analyzerResult.SourceFiles.Length > 0 && analyzerResult.References.Length > 0)
+                                                          || (analyzerResult.IsTestProject()
+                                                              && analyzerResult.Properties.ContainsKey("TargetDir")
+                                                              && analyzerResult.ProjectReferences.Any());
+
+        /// <summary>
+        /// checks if an analyzer result is valid for a specific framework
+        /// </summary>
+        /// <param name="br">analyzer result used for determination</param>
+        /// <param name="framework">framework to test for</param>
+        /// <returns>true if result is complete enough</returns>
+        private bool IsValidFor(string framework) => analyzerResult.IsValid() && analyzerResult.TargetFramework == framework;
+
+        private bool IsTestProject()
+        {
+            // if 'IsTestingPlatformApplication' is defined and true, this is a test project
+            if (analyzerResult.TryGetProperty("IsTestingPlatformApplication", out var value)
+                && bool.TryParse(value, out var isMtp)
+                && isMtp)
+            {
+                return true;
+            }
+
+            // if 'IsTestProject' is defined, we use its value to check if it's a test project (or not)
+            if (analyzerResult.TryGetProperty("IsTestProject", out value))
+            {
+                return bool.TryParse(value, out var isTestProject) && isTestProject;
+            }
+
+            if (Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n)))
+            {
+                return true;
+            }
+
+            const string TestProjectTypeGuid = "{3AC096D0-A1C2-E12C-1390-A8335801FDAB}";
+            return analyzerResult
+                .GetPropertyOrDefault("ProjectTypeGuids", "")
+                .Contains(TestProjectTypeGuid);
+        }
+
+        public OutputKind GetOutputKind() =>
+            analyzerResult.GetPropertyOrDefault("OutputType") switch
+            {
+                "Exe" => OutputKind.ConsoleApplication,
+                "WinExe" => OutputKind.WindowsApplication,
+                "Module" => OutputKind.NetModule,
+                "AppContainerExe" => OutputKind.WindowsRuntimeApplication,
+                "WinMdObj" => OutputKind.WindowsRuntimeMetadata,
+                _ => OutputKind.DynamicallyLinkedLibrary
+            };
+
+        public string GetCompilerApiVersion() =>
+            analyzerResult.GetPropertyOrDefault("CompilerAPIVersion", "Unknown");
+
+        public bool IsSignedAssembly() =>
+            analyzerResult.GetPropertyOrDefault("SignAssembly", false);
+
+        public bool IsDelayedSignedAssembly() =>
+                analyzerResult.GetPropertyOrDefault("DelaySign", false);
+
+        public string? GetAssemblyOriginatorKeyFile()
+        {
+            var assemblyKeyFileProp = analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile");
+            return string.IsNullOrEmpty(assemblyKeyFileProp) ? null : Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath) ?? ".", assemblyKeyFileProp);
+        }
+
+        public ImmutableDictionary<string, ReportDiagnostic> GetDiagnosticOptions()
+        {
+            var noWarnString = analyzerResult.GetPropertyOrDefault("NoWarn");
+            var noWarn = ParseDiagnostics(noWarnString).ToDictionary(x => x, _ => ReportDiagnostic.Suppress);
+
+            var warningsAsErrorsString = analyzerResult.GetPropertyOrDefault("WarningsAsErrors");
+            var warningsAsErrors = ParseDiagnostics(warningsAsErrorsString).ToDictionary(x => x, _ => ReportDiagnostic.Error);
+
+            var warningsNotAsErrorsString = analyzerResult.GetPropertyOrDefault("WarningsNotAsErrors");
+            var warningsNotAsErrors = ParseDiagnostics(warningsNotAsErrorsString).ToDictionary(x => x, _ => ReportDiagnostic.Warn);
+
+            // merge settings,
+            var diagnosticOptions = new Dictionary<string, ReportDiagnostic>(warningsAsErrors);
+            foreach (var item in warningsNotAsErrors)
+            {
+                diagnosticOptions[item.Key] = item.Value;
+            }
+
+            foreach (var item in noWarn)
+            {
+                diagnosticOptions[item.Key] = item.Value;
+            }
+
+            return diagnosticOptions.ToImmutableDictionary();
+        }
+
+
+        public int GetWarningLevel() =>
+            int.Parse(analyzerResult.GetPropertyOrDefault("WarningLevel", "4"));
+
+        private string GetRootNamespace() =>
+            analyzerResult.Properties.TryGetValue("RootNamespace", out var rootNamespace) &&
+            !string.IsNullOrEmpty(rootNamespace)
+                ? rootNamespace
+                : analyzerResult.GetAssemblyName();
+
+        public bool GetPropertyOrDefault(string name, bool defaultBoolean)
+        {
+            if (analyzerResult.Properties.TryGetValue(name, out var value) && !string.IsNullOrEmpty(value))
+            {
+                return bool.Parse(value);
+            }
+            return defaultBoolean;
+        }
+
+        public string GetPropertyOrDefault(string name,
+            string defaultValue = default) =>
+            analyzerResult.Properties.GetValueOrDefault(name, defaultValue);
+
+        public bool TryGetProperty(string name, [NotNullWhen(true)] out string? value) =>
+            analyzerResult.Properties.TryGetValue(name, out value) && !string.IsNullOrEmpty(value);
+
+        private IProjectItem[] GetItem(string name) => !analyzerResult.Items.TryGetValue(name, out var item) ? [] : item;
     }
-
-    public static string GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name,
-        string defaultValue = default) =>
-        analyzerResult.Properties.GetValueOrDefault(name, defaultValue);
-
-    public static bool TryGetProperty(this IAnalyzerResult analyzerResult, string name, [NotNullWhen(true)] out string? value) =>
-        analyzerResult.Properties.TryGetValue(name, out value) && !string.IsNullOrEmpty(value);
-
-    private static IProjectItem[] GetItem(this IAnalyzerResult analyzerResult, string name) => !analyzerResult.Items.TryGetValue(name, out var item) ? [] : item;
 
     private static string ResolveAnalyzerConfigPath(string path, string? projectDirectory, IFileSystem fileSystem) =>
         string.IsNullOrEmpty(projectDirectory) || fileSystem.Path.IsPathRooted(path)
