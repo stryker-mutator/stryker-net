@@ -195,7 +195,6 @@ public static class IAnalyzerResultExtensions
         /// <summary>
         /// checks if an analyzer result is valid
         /// </summary>
-        /// <param name="br">analyzer result used for determination</param>
         /// <returns>true if result is complete enough</returns>
         public bool IsValid() => analyzerResult.Succeeded || (analyzerResult.SourceFiles.Length > 0 && analyzerResult.References.Length > 0)
                                                           || (analyzerResult.IsTestProject()
@@ -205,7 +204,6 @@ public static class IAnalyzerResultExtensions
         /// <summary>
         /// checks if an analyzer result is valid for a specific framework
         /// </summary>
-        /// <param name="br">analyzer result used for determination</param>
         /// <param name="framework">framework to test for</param>
         /// <returns>true if result is complete enough</returns>
         private bool IsValidFor(string framework) => analyzerResult.IsValid() && analyzerResult.TargetFramework == framework;
@@ -289,7 +287,7 @@ public static class IAnalyzerResultExtensions
             return diagnosticOptions.ToImmutableDictionary();
         }
 
-        public AnalyzerConfigOptionsProvider GetAnalyzerConfigOptionsProvider(IFileSystem fileSystem)
+        public AnalyzerConfigOptionsProvider GetAnalyzerConfigOptionsProvider(IFileSystem fileSystem, Func<string, bool>? handleError = null)
         {
             var analyzerConfigFiles = analyzerResult.GetAnalyzerConfigFiles(fileSystem).ToList();
             if (analyzerConfigFiles.Count == 0)
@@ -298,6 +296,7 @@ public static class IAnalyzerResultExtensions
             }
 
             var analyzerConfigs = analyzerConfigFiles
+                .Where(path => fileSystem.File.Exists(path) || handleError?.Invoke(path) == true)
                 .Select(path => AnalyzerConfig.Parse(SourceText.From(fileSystem.File.ReadAllText(path)), path));
             var set = AnalyzerConfigSet.Create(analyzerConfigs.ToImmutableArray());
             return new AnalyzerConfigOptionsProviderFromSet(set);

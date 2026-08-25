@@ -195,7 +195,11 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
             .Create(analyzerResult.GetSourceGenerators(_logger),
                 parseOptions: analyzerResult.GetParseOptions(_options),
                 additionalTexts:[..analyzerResult.GetAdditionalTexts()],
-                optionsProvider: analyzerResult.GetAnalyzerConfigOptionsProvider(new FileSystem()));
+                optionsProvider: analyzerResult.GetAnalyzerConfigOptionsProvider(new FileSystem(), path =>
+                {
+                    _logger.LogWarning("Failed to load config files {Path}", path);
+                    return false;
+                }));
         // run the generators
         _needToRunGenerators = true;
         RunSourceGenerators();
