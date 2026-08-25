@@ -260,10 +260,8 @@ public class StrykerInputsTests : TestBase
     [TestMethod]
     public void ShouldThrowWhenUsingProjectNameInSolutionMode()
     {
-        const string SolutionFile = "/root/test.sln";
-        const string ProjectFile = "/root/project.csproj";
-        _target.BasePathInput.SuppliedInput = "/root";
-        _target.OutputPathInput.SuppliedInput = "/";
+        const string SolutionFile = "/test.sln";
+        const string ProjectFile = "/project.csproj";
         _fileSystem.Directory.CreateDirectory("/root");
         _fileSystem.File.WriteAllText(SolutionFile, string.Empty);
         _fileSystem.File.WriteAllText(ProjectFile, string.Empty);
@@ -277,10 +275,8 @@ public class StrykerInputsTests : TestBase
     [TestMethod]
     public void ShouldThrowWhenUsingTestProjectsInSolutionMode()
     {
-        const string SolutionFile = "/root/test.sln";
-        const string ProjectFile = "/root/project.csproj";
-        _target.BasePathInput.SuppliedInput = "/root";
-        _target.OutputPathInput.SuppliedInput = "/";
+        const string SolutionFile = "/test.sln";
+        const string ProjectFile = "/project.csproj";
         _fileSystem.Directory.CreateDirectory("/root");
         _fileSystem.File.WriteAllText(SolutionFile, string.Empty);
 
@@ -288,5 +284,14 @@ public class StrykerInputsTests : TestBase
         _target.SolutionInput.SuppliedInput = SolutionFile;
         Action action = () => _target.ValidateAll();
         action.ShouldThrow<InputException>().Message.ShouldBe("Test projects cannot be specified when running Stryker in solution context.");
+    }
+
+    [TestMethod]
+    public void ShouldThrowWhenTestProjectsDoesNotExist()
+    {
+        var projectFile = _fileSystem.Path.Combine("/", "project.csproj");
+        _target.TestProjectsInput.SuppliedInput = [projectFile];
+        Action action = () => _target.ValidateAll();
+        action.ShouldThrow<InputException>().Message.ShouldBe($"TestProject not found: {projectFile}");
     }
 }
