@@ -289,7 +289,7 @@ public class StrykerInputsTests : TestBase
     [TestMethod]
     public void ShouldThrowWhenTestProjectsDoesNotExist()
     {
-        var projectFile = _fileSystem.Path.Combine("/", "project.csproj");
+        var projectFile = _fileSystem.Path.GetFullPath( "project.csproj");
         _target.TestProjectsInput.SuppliedInput = [projectFile];
         Action action = () => _target.ValidateAll();
         action.ShouldThrow<InputException>().Message.ShouldBe($"TestProject not found: {projectFile}");
