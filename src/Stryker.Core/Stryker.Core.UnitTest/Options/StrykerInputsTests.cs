@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Shouldly;
 using Stryker.Abstractions.Exceptions;
@@ -248,5 +249,23 @@ public class StrykerInputsTests : TestBase
         result.BaselineProvider.ShouldBe(BaselineProvider.Disk);
         result.AzureFileStorageSas.ShouldBe(string.Empty);
         result.AzureFileStorageUrl.ShouldBe(string.Empty);
+    }
+
+    [TestMethod]
+    public void ShouldThrowWhenUsingProjectNameInSolutionMode()
+    {
+        _target.ProjectNameInput.SuppliedInput = "/root/project.csproj";
+        _target.SolutionInput.SuppliedInput = "/root/test.sln";
+        Action action = () => _target.ValidateAll();
+        action.ShouldThrow<InputException>();
+    }
+
+    [TestMethod]
+    public void ShouldThrowWhenUsingTestProjectsInSolutionMode()
+    {
+        _target.TestProjectsInput.SuppliedInput = ["/root/test.csproj"];
+        _target.SolutionInput.SuppliedInput = "/root/test.sln";
+        Action action = () => _target.ValidateAll();
+        action.ShouldThrow<InputException>();
     }
 }
