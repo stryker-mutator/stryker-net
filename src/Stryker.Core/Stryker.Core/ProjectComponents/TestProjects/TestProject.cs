@@ -30,9 +30,12 @@ public sealed class TestProject : IEquatable<ITestProject>, ITestProject
         var testFiles = new List<TestFile>();
         foreach (var file in testProjectAnalyzerResult.SourceFiles)
         {
-            var sourceCode = fileSystem.File.ReadAllText(file);
+            var sourceFilePath = fileSystem.Path.IsPathRooted(file) || string.IsNullOrEmpty(ProjectFilePath)
+                ? file
+                : fileSystem.Path.Combine(fileSystem.Path.GetDirectoryName(ProjectFilePath), file);
+            var sourceCode = fileSystem.File.ReadAllText(sourceFilePath);
             var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode,
-                path: file,
+                path: sourceFilePath,
                 encoding: Encoding.UTF32,
                 options: new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.None, preprocessorSymbols: testProjectAnalyzerResult.PreprocessorSymbols));
 
@@ -41,7 +44,7 @@ public sealed class TestProject : IEquatable<ITestProject>, ITestProject
                 testFiles.Add(new TestFile
                 {
                     SyntaxTree = syntaxTree,
-                    FilePath = file,
+                    FilePath = sourceFilePath,
                     Source = sourceCode
                 });
             }

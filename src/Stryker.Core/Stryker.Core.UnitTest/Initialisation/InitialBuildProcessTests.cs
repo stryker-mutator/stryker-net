@@ -133,6 +133,24 @@ public class InitialBuildProcessTests : TestBase
             Times.Once);
     }
 
+            [TestMethodWithIgnoreIfSupport]
+            [IgnoreIf(nameof(Is.NotWindows))]
+            public void InitialBuildProcess_WithSdkMsBuild_SetsDotnetHostPath()
+            {
+            var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+            processMock.SetupProcessMockToReturn("");
+            var target = new InitialBuildProcess(processMock.Object, new MockFileSystem(), TestLoggerFactory.CreateLogger<InitialBuildProcess>());
+
+            target.InitialBuild(true, null, "./ExampleProject.sln", msbuildPath: @"C:\Program Files\dotnet\sdk\10.0.111\MSBuild.dll");
+
+            processMock.Verify(x => x.Start(It.IsAny<string>(),
+                "dotnet",
+                It.Is<string>(arguments => arguments.Contains("/property:DOTNET_HOST_PATH=\"") && arguments.Contains("dotnet.exe\"")),
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()),
+                Times.Once);
+            }
+
     [TestMethod]
     public void InitialBuildProcess_ShouldUseProvidedConfiguration()
     {
