@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using Shouldly;
 using Stryker.Abstractions.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -13,47 +16,50 @@ namespace Stryker.Core.UnitTest.Options;
 [TestClass]
 public class StrykerInputsTests : TestBase
 {
-    private readonly StrykerInputs _target = new StrykerInputs()
-    {
+    private IFileSystem _fileSystem = new  MockFileSystem();
+    private readonly StrykerInputs _target;
 
-        AdditionalTimeoutInput = new AdditionalTimeoutInput(),
-        AzureFileStorageSasInput = new AzureFileStorageSasInput(),
-        AzureFileStorageUrlInput = new AzureFileStorageUrlInput(),
-        BaselineProviderInput = new BaselineProviderInput(),
-        BaselineOutputInput = new BaselineOutputInput(),
-        BasePathInput = new BasePathInput() { SuppliedInput = Directory.GetCurrentDirectory() },
-        ConcurrencyInput = new ConcurrencyInput(),
-        DashboardApiKeyInput = new DashboardApiKeyInput(),
-        DashboardUrlInput = new DashboardUrlInput(),
-        DiagModeInput = new DiagModeInput(),
-        DiffIgnoreChangesInput = new DiffIgnoreChangesInput(),
-        DisableBailInput = new DisableBailInput(),
-        DisableMixMutantsInput = new DisableMixMutantsInput(),
-        IgnoreMutationsInput = new IgnoreMutationsInput(),
-        FallbackVersionInput = new FallbackVersionInput(),
-        IgnoredMethodsInput = new IgnoreMethodsInput(),
-        LanguageVersionInput = new LanguageVersionInput(),
-        VerbosityInput = new VerbosityInput(),
-        LogToFileInput = new LogToFileInput(),
-        ModuleNameInput = new ModuleNameInput(),
-        MutateInput = new MutateInput(),
-        MutationLevelInput = new MutationLevelInput(),
-        CoverageAnalysisInput = new CoverageAnalysisInput(),
-        OutputPathInput = new OutputPathInput() { SuppliedInput = Directory.GetCurrentDirectory() },
-        ProjectNameInput = new ProjectNameInput(),
-        SourceProjectNameInput = new SourceProjectNameInput(),
-        ProjectVersionInput = new ProjectVersionInput(),
-        ReportersInput = new ReportersInput(),
-        SinceInput = new SinceInput(),
-        SinceTargetInput = new SinceTargetInput(),
-        SolutionInput = new SolutionInput(),
-        TestProjectsInput = new TestProjectsInput(),
-        ThresholdBreakInput = new ThresholdBreakInput(),
-        ThresholdHighInput = new ThresholdHighInput(),
-        ThresholdLowInput = new ThresholdLowInput(),
-        WithBaselineInput = new WithBaselineInput(),
-        BreakOnInitialTestFailureInput = new BreakOnInitialTestFailureInput(),
-    };
+    public StrykerInputsTests() =>
+        _target = new StrykerInputs(_fileSystem)
+        {
+            AdditionalTimeoutInput = new AdditionalTimeoutInput(),
+            AzureFileStorageSasInput = new AzureFileStorageSasInput(),
+            AzureFileStorageUrlInput = new AzureFileStorageUrlInput(),
+            BaselineProviderInput = new BaselineProviderInput(),
+            BaselineOutputInput = new BaselineOutputInput(),
+            BasePathInput = new BasePathInput { SuppliedInput = _fileSystem.Directory.GetCurrentDirectory() },
+            ConcurrencyInput = new ConcurrencyInput(),
+            DashboardApiKeyInput = new DashboardApiKeyInput(),
+            DashboardUrlInput = new DashboardUrlInput(),
+            DiagModeInput = new DiagModeInput(),
+            DiffIgnoreChangesInput = new DiffIgnoreChangesInput(),
+            DisableBailInput = new DisableBailInput(),
+            DisableMixMutantsInput = new DisableMixMutantsInput(),
+            IgnoreMutationsInput = new IgnoreMutationsInput(),
+            FallbackVersionInput = new FallbackVersionInput(),
+            IgnoredMethodsInput = new IgnoreMethodsInput(),
+            LanguageVersionInput = new LanguageVersionInput(),
+            VerbosityInput = new VerbosityInput(),
+            LogToFileInput = new LogToFileInput(),
+            ModuleNameInput = new ModuleNameInput(),
+            MutateInput = new MutateInput(),
+            MutationLevelInput = new MutationLevelInput(),
+            CoverageAnalysisInput = new CoverageAnalysisInput(),
+            OutputPathInput = new OutputPathInput { SuppliedInput = _fileSystem.Directory.GetCurrentDirectory() },
+            ProjectNameInput = new ProjectNameInput(),
+            SourceProjectNameInput = new SourceProjectNameInput(),
+            ProjectVersionInput = new ProjectVersionInput(),
+            ReportersInput = new ReportersInput(),
+            SinceInput = new SinceInput(),
+            SinceTargetInput = new SinceTargetInput(),
+            SolutionInput = new SolutionInput(),
+            TestProjectsInput = new TestProjectsInput(),
+            ThresholdBreakInput = new ThresholdBreakInput(),
+            ThresholdHighInput = new ThresholdHighInput(),
+            ThresholdLowInput = new ThresholdLowInput(),
+            WithBaselineInput = new WithBaselineInput(),
+            BreakOnInitialTestFailureInput = new BreakOnInitialTestFailureInput(),
+        };
 
     [TestMethod]
     public void PerTestInIsolationShouldSetOptimizationFlags()
@@ -254,18 +260,33 @@ public class StrykerInputsTests : TestBase
     [TestMethod]
     public void ShouldThrowWhenUsingProjectNameInSolutionMode()
     {
-        _target.ProjectNameInput.SuppliedInput = "/root/project.csproj";
-        _target.SolutionInput.SuppliedInput = "/root/test.sln";
+        const string SolutionFile = "/root/test.sln";
+        const string ProjectFile = "/root/project.csproj";
+        _target.BasePathInput.SuppliedInput = "/root";
+        _target.OutputPathInput.SuppliedInput = "/";
+        _fileSystem.Directory.CreateDirectory("/root");
+        _fileSystem.File.WriteAllText(SolutionFile, string.Empty);
+        _fileSystem.File.WriteAllText(ProjectFile, string.Empty);
+
+        _target.ProjectNameInput.SuppliedInput = ProjectFile;
+        _target.SolutionInput.SuppliedInput = SolutionFile;
         Action action = () => _target.ValidateAll();
-        action.ShouldThrow<InputException>();
+        action.ShouldThrow<InputException>().Message.ShouldBe("Project name cannot be specified when running Stryker in solution context.");
     }
 
     [TestMethod]
     public void ShouldThrowWhenUsingTestProjectsInSolutionMode()
     {
-        _target.TestProjectsInput.SuppliedInput = ["/root/test.csproj"];
-        _target.SolutionInput.SuppliedInput = "/root/test.sln";
+        const string SolutionFile = "/root/test.sln";
+        const string ProjectFile = "/root/project.csproj";
+        _target.BasePathInput.SuppliedInput = "/root";
+        _target.OutputPathInput.SuppliedInput = "/";
+        _fileSystem.Directory.CreateDirectory("/root");
+        _fileSystem.File.WriteAllText(SolutionFile, string.Empty);
+
+        _target.TestProjectsInput.SuppliedInput = [ProjectFile];
+        _target.SolutionInput.SuppliedInput = SolutionFile;
         Action action = () => _target.ValidateAll();
-        action.ShouldThrow<InputException>();
+        action.ShouldThrow<InputException>().Message.ShouldBe("Test projects cannot be specified when running Stryker in solution context.");
     }
 }

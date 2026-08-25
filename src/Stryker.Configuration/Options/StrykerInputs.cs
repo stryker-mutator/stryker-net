@@ -1,4 +1,3 @@
-using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using Stryker.Abstractions;
@@ -212,13 +211,13 @@ public class StrykerInputs : IStrykerInputs
 
         foreach (var testProject in _strykerOptionsCache.TestProjects)
         {
-            CheckFile("TestProject", testProject);
+            CheckFile( "TestProject", testProject);
         }
     }
 
-    private static void CheckFile(string label, string filePath)
+    private void CheckFile(string label, string filePath)
     {
-        if (File.Exists(filePath))
+        if (_fileSystem.File.Exists(filePath))
         {
             return;
         }
