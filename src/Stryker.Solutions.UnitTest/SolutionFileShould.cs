@@ -123,6 +123,8 @@ public sealed class SolutionFileShould
         {
             Path.Combine(solutionPath, "NetCore", "TargetProject", "TargetProject.csproj"),
             Path.Combine(solutionPath, "NetCore", "Library", "Library.csproj"),
+            Path.Combine(solutionPath, "NetCore", "ExtraProject", "ExtraProject.csproj"),
+            Path.Combine(solutionPath, "NetCore", "ExtraLibrary", "ExtraLibrary.csproj"),
             Path.Combine(solutionPath, "MicrosoftTestPlatform", "UnitTests.MSTest", "UnitTests.MSTest.csproj"),
             Path.Combine(solutionPath, "MicrosoftTestPlatform", "UnitTests.XUnit", "UnitTests.XUnit.csproj"),
             Path.Combine(solutionPath, "MicrosoftTestPlatform", "UnitTests.NUnit", "UnitTests.NUnit.csproj"),

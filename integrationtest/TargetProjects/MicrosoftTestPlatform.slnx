@@ -6,6 +6,8 @@
   </Configurations>
   <Project Path="NetCore/TargetProject/TargetProject.csproj" />
   <Project Path="NetCore/Library/Library.csproj" />
+  <Project Path="NetCore/ExtraProject/ExtraProject.csproj" />
+  <Project Path="NetCore/ExtraLibrary/ExtraLibrary.csproj" />
   <Project Path="MicrosoftTestPlatform/UnitTests.MSTest/UnitTests.MSTest.csproj" />
   <Project Path="MicrosoftTestPlatform/UnitTests.XUnit/UnitTests.XUnit.csproj" />
   <Project Path="MicrosoftTestPlatform/UnitTests.NUnit/UnitTests.NUnit.csproj" />

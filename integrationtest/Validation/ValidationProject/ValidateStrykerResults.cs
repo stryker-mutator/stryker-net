@@ -141,8 +141,10 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
+        // Only the project under test is mutated here, so this run holds a single mutated assembly. The
+        // extra test covers ExtraProject, which the solution run mutates as well; see MTPSolution.
         CheckReportMutants(report, total: 660, ignored: 271, survived: 1, killed: 1, timeout: 0, nocoverage: 353);
-        CheckReportTestCounts(report, total: 2);
+        CheckReportTestCounts(report, total: 3);
     }
 
     [Fact]
@@ -205,8 +207,11 @@ public class ValidateStrykerResults
         // by the MSTest project count as covered (1 survived + 2 timeout), like in the MSTestMTP run.
         // Before coverage files were split per test host, the final flush overwrote the shared
         // file, usually losing exactly those three mutants to NoCoverage.
-        CheckReportMutants(report, total: 670, ignored: 274, survived: 2, killed: 1, timeout: 2, nocoverage: 357);
-        CheckReportTestCounts(report, total: 10);
+        // Teacher.cs and Lesson.cs are reached from one test that spans both of their assemblies, so
+        // losing either one's coverage names the assembly at fault instead of moving a global count by one.
+        CheckEveryMutatedProjectIsCovered(report, "KilledMutants.cs", "Teacher.cs", "Lesson.cs");
+        CheckReportMutants(report, total: 673, ignored: 275, survived: 2, killed: 3, timeout: 2, nocoverage: 357);
+        CheckReportTestCounts(report, total: 11);
     }
 
     [Fact]
@@ -290,6 +295,26 @@ public class ValidateStrykerResults
                         $"Mutation {mutation.MutatorName} on line {mutation.Location.Start.Line} in file {file.Key} does not have one of the known parent syntax kinds as it's parent.{Environment.NewLine}" +
                         $"Instead it has: {Environment.NewLine} {string.Join($",{Environment.NewLine}", node.AncestorsAndSelf().Select(n => n.Kind()))}");
             }
+        }
+    }
+
+    /// <summary>
+    /// Asserts that every mutated project contributed its own coverage to the report.
+    /// A global count can stay correct while one assembly loses its coverage and another gains some,
+    /// so each source file is checked on its own and the failure message names the assembly at fault.
+    /// </summary>
+    private void CheckEveryMutatedProjectIsCovered(IJsonReport report, params string[] sourceFiles)
+    {
+        foreach (var sourceFile in sourceFiles)
+        {
+            var file = report.Files.SingleOrDefault(f => f.Key.EndsWith(sourceFile, StringComparison.Ordinal));
+            file.Key.ShouldNotBeNull($"{sourceFile} is missing from the report entirely");
+
+            // An assembly whose coverage is lost has every one of its mutants reported as uncovered, so
+            // one killed mutant is enough to prove its coverage arrived. Asserting no uncovered mutants
+            // instead would be wrong: these files also hold code no test exercises.
+            file.Value.Mutants.Count(m => m.Status == MutantStatus.Killed.ToString())
+                .ShouldBeGreaterThan(0, $"no mutant of {sourceFile} was killed: the coverage of its assembly was lost");
         }
     }
 
