@@ -17,27 +17,70 @@ Focus your PR on the problem you are trying to solve
 
 ### Adding new features
 New features are welcome! Either as requests or proposals.
-1.	**Please create an issue first, so we know what to expect from you.**
+
+**Create an issue first, so we know what to expect from you.** And please wait for feedback and oor guidance regarding
+how to move forward
 
 ### Operational steps
-1.	Create a fork on your github account.
+#### Working on the code
+1.	Create a fork on your GitHub account.
 1.	When writing your code, please conform to the [Microsoft coding guidelines](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions).
 1.	Please create or edit unit tests or integration tests.
-1.	Run the tests and verify they pass.
-1. Update documentation when relevant
+1.	Run the tests and verify they pass (including integration tests). 
+2. Update documentation when relevant
+
+#### Submitting your proposal
+1. Push your code on GitHub and create a pull request to the main repository.
+2. The PR will go through the CI/CD pipeline
+3. Ensure the pipeline passes:
+    1. Unit tests are green
+   2. Integration tests are green
+   3. There is no blocking SONAR issues
+4. We can help you if you have trouble dealing with test or Sonar issues, please add a comment to the PR and we will help you out.
+5. Once the pipeline is green, we will review your PR and provide feedback. 
+6. We recommand you try to keep your PR up to date with the main branch, so we can merge it as soon as possible.
+Please be patient, we are a small team and have limited time to review PRs.
+
+### Review policy
+When reviewing a PR, we concentrate on:
+1. The quality of the code, including readability, maintainability, and adherence to coding standards.
+2. The quality of the tests, including coverage and effectiveness.
+3. The design, to ensure the codebase remains modular and maintainable.
+4. The consistency of the PR. A PR should focus on a single issue or feature, and not include unrelated changes.
+
+You should assume the maintainers will request changes or explanations on your PRs, so please be prepared to respond to 
+feedback and make necessary adjustments. We appreciate your contributions and want to ensure they meet the project's
+standards. 
+
+#### General considerations regarding contributions (PRs and Issues)
+- they are triaged and reviewed according to their perceived priority. We use labels to track our decisions
+- PRs and issues with no activity for a while will be considered abandoned and may be closed. We usually warn and grant
+a grace period before closing one, but this is not guaranteed.
+- PRs must be up to date with the main branch before being merged, but it may be done after a PR have been validated by
+a maintainer.
+
+#### General considerations regarding LLMs & agents (AI code)
+- This project is solely driven by humans. As of today, no agent is involved in Stryker
+- We do not have a strict policy regarding the use of LLMs or agents to generate code
+- We hold AI generated/assisted contributions to the same standards as human contributions.
+- AI generated/assisted contributions should be marked as such, for statistical purposes
+- Please ensure your AI contributions remain terse and not too verbose. This will slow down integration
+- Please take the time to **discuss** with maintainers during review and refrain from using AI for fast turn around on 
+feedback. We want to ensure the quality of the codebase and that you understand the code you are contributing.
+- AI can act as a multiplier force for abusive behavior, such as pressuring maintainers to address issues/merge PR.
+We reserve the right to ban users showing such behavior.
 
 
-## Adding a new mutator
-Please read the [dedicated document](adding_a_mutator.md).
 
-## Setup Stryker.NET locally
+## Working locally on Stryker
 While developing on Stryker.NET we advise to work in [the latest Visual Studio](https://www.visualstudio.com/downloads/) or [VSCode](https://code.visualstudio.com/Download) and to set Stryker up to run on a project on your local disk.
 
 ## Prerequisites
 - Ensure you have .NET 10 SDK or later installed
 
 ### Visual Studio Setup
-
+Note that you can use alternative IDEs, such as Rider or Visual Studio Code, but we recommand Visual Studio for the time
+being.
 *	Clone the repository `https://github.com/stryker-mutator/stryker-net.git`
 *	Open `Stryker.slnx`
 *	On `Stryker.CLI` open `properties > Debug`
@@ -85,6 +128,9 @@ If you prefer using Visual Studio Code instead of Visual Studio, follow these st
 Running Stryker on itself doesn't work as stryker will try to write to the assemblies but they will be in use by Visual Studio (Code). To run stryker on stryker use the dedicated `stryker on stryker` github action or use the `stryker-on-stryker.ps1` script locally.
 
 For debugging clone Stryker another time to use as a test project locally.
+
+## Adding a new mutator
+Please read the [dedicated document](adding_a_mutator.md).
 
 #### Compiler Platform SDK
 We advise to use the `.NET Compiler Platform SDK` during development. The `Syntax Visualizer` can help to understand Abstract Syntax Trees and find out types of `SyntaxNodes` you need to target for certain mutators. The `.NET Compiler Platform SDK` is available as a component in the Visual Studio Installer.
