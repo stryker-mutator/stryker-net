@@ -197,7 +197,7 @@ public class StrykerInputs : IStrykerInputs
     // check that the configuration has no blocking error and is consistent (no conflicting options)
     private void CheckConsistency()
     {
-        if (!string.IsNullOrEmpty(_strykerOptionsCache.SolutionPath))
+        if (_strykerOptionsCache.IsSolutionContext)
         {
             if (_strykerOptionsCache.TestProjects.Any())
             {
