@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
@@ -16,7 +15,7 @@ namespace Stryker.Core.UnitTest.Options;
 [TestClass]
 public class StrykerInputsTests : TestBase
 {
-    private IFileSystem _fileSystem = new  MockFileSystem();
+    private readonly IFileSystem _fileSystem = new  MockFileSystem();
     private readonly StrykerInputs _target;
 
     public StrykerInputsTests() =>
@@ -273,6 +272,18 @@ public class StrykerInputsTests : TestBase
     }
 
     [TestMethod]
+    public void ShouldPassWhenSolutionModeWithoutConflict()
+    {
+        const string SolutionFile = "/test.sln";
+        _fileSystem.Directory.CreateDirectory("/root");
+        _fileSystem.File.WriteAllText(SolutionFile, string.Empty);
+
+        _target.SolutionInput.SuppliedInput = SolutionFile;
+        Action action = () => _target.ValidateAll();
+        action.ShouldNotThrow();
+    }
+
+    [TestMethod]
     public void ShouldThrowWhenUsingTestProjectsInSolutionMode()
     {
         const string SolutionFile = "/test.sln";
@@ -287,11 +298,21 @@ public class StrykerInputsTests : TestBase
     }
 
     [TestMethod]
-    public void ShouldThrowWhenTestProjectsDoesNotExist()
+    public void ShouldThrowWhenAtLeastOneTestProjectDoesNotExist()
     {
         var projectFile = _fileSystem.Path.GetFullPath( "project.csproj");
         _target.TestProjectsInput.SuppliedInput = [projectFile];
         Action action = () => _target.ValidateAll();
         action.ShouldThrow<InputException>().Message.ShouldBe($"TestProject not found: {projectFile}");
+    }
+
+    [TestMethod]
+    public void ShouldPassWhenTestProjectExists()
+    {
+        var projectFile = _fileSystem.Path.GetFullPath( "project.csproj");
+        _target.TestProjectsInput.SuppliedInput = [projectFile];
+        _fileSystem.File.WriteAllText(projectFile, string.Empty);
+        Action action = () => _target.ValidateAll();
+        action.ShouldNotThrow();
     }
 }
