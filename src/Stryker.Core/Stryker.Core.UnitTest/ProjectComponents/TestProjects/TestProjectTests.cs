@@ -88,4 +88,21 @@ public class TestProjectTests
         var nodes = testProject.TestFiles.First().SyntaxTree.GetRoot().DescendantNodes();
         testProject.TestFiles.First().SyntaxTree.GetRoot().DescendantNodes().Where(n => n is MethodDeclarationSyntax).Count().ShouldBe(4);
     }
+
+    [TestMethod]
+    public void ConstructorResolvesRelativeSourceFilesFromProjectDirectory()
+    {
+        var fileSystem = new MockFileSystem();
+        var projectPath = Path.Combine("c:", "repo", "tests", "Tests.fsproj");
+        var relativeSourcePath = Path.Combine("SimulationSetup", "Tests.fs");
+        var expectedSourcePath = Path.Combine("c:", "repo", "tests", relativeSourcePath);
+        fileSystem.AddFile(expectedSourcePath, new MockFileData("module Tests"));
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            projectFilePath: projectPath,
+            sourceFiles: [relativeSourcePath]);
+
+        var sut = new TestProject(fileSystem, analyzerResult.Object);
+
+        sut.TestFiles.Single().FilePath.ShouldBe(expectedSourcePath);
+    }
 }

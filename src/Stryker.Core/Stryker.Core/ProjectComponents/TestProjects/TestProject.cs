@@ -6,9 +6,11 @@ using System.Text;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.MutantFilters;
+using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.ProjectComponents.TestProjects;
 
@@ -28,11 +30,22 @@ public sealed class TestProject : IEquatable<ITestProject>, ITestProject
         AnalyzerResult = testProjectAnalyzerResult;
 
         var testFiles = new List<TestFile>();
+        if (testProjectAnalyzerResult.GetLanguage() != Language.Csharp)
+        {
+            TestFiles = testFiles;
+            return;
+        }
+        var projectRoot = fileSystem.Path.GetFullPath(fileSystem.Path.GetDirectoryName(AnalyzerResult.ProjectFilePath)??"");
         foreach (var file in testProjectAnalyzerResult.SourceFiles)
         {
-            var sourceCode = fileSystem.File.ReadAllText(file);
+            var filePath = file;
+            if (!string.IsNullOrEmpty(projectRoot) && !fileSystem.Path.IsPathRooted(filePath))
+            {
+                filePath = fileSystem.Path.Combine(projectRoot, file);
+            }
+            var sourceCode = fileSystem.File.ReadAllText(filePath);
             var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode,
-                path: file,
+                path: filePath,
                 encoding: Encoding.UTF32,
                 options: new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.None, preprocessorSymbols: testProjectAnalyzerResult.PreprocessorSymbols));
 
@@ -41,7 +54,7 @@ public sealed class TestProject : IEquatable<ITestProject>, ITestProject
                 testFiles.Add(new TestFile
                 {
                     SyntaxTree = syntaxTree,
-                    FilePath = file,
+                    FilePath = filePath,
                     Source = sourceCode
                 });
             }
