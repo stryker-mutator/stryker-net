@@ -35,13 +35,27 @@ public sealed class TestProject : IEquatable<ITestProject>, ITestProject
             TestFiles = testFiles;
             return;
         }
-        var projectRoot = fileSystem.Path.GetFullPath(fileSystem.Path.GetDirectoryName(AnalyzerResult.ProjectFilePath)??"");
+
+        var iPath = fileSystem.Path;
+        var directoryName = iPath.GetDirectoryName(AnalyzerResult.ProjectFilePath);
+        if (string.IsNullOrEmpty(directoryName))
+        {
+            if (iPath.IsPathRooted(AnalyzerResult.ProjectFilePath))
+            {
+                directoryName = iPath.GetPathRoot(AnalyzerResult.ProjectFilePath);
+            }
+            else
+            {
+                directoryName = iPath.GetPathRoot(fileSystem.Directory.GetCurrentDirectory());
+            }
+        }
+        var projectRoot = iPath.GetFullPath(directoryName);
         foreach (var file in testProjectAnalyzerResult.SourceFiles)
         {
             var filePath = file;
-            if (!string.IsNullOrEmpty(projectRoot) && !fileSystem.Path.IsPathRooted(filePath))
+            if (!string.IsNullOrEmpty(projectRoot) && !iPath.IsPathRooted(filePath))
             {
-                filePath = fileSystem.Path.Combine(projectRoot, file);
+                filePath = iPath.Combine(projectRoot, file);
             }
             var sourceCode = fileSystem.File.ReadAllText(filePath);
             var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode,

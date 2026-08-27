@@ -69,8 +69,9 @@ public class TestProjectTests
     {
         // Arrange
         var fileSystem = new MockFileSystem();
-        var rootPath = Path.Combine("c", "TestProject");
-        var filePath = Path.Combine(rootPath, "ExampleTestFilePreprocessorSymbols.cs");
+        var path = fileSystem.Path;
+        var rootPath = path.Combine("c", "TestProject");
+        var filePath = path.Combine(rootPath, "ExampleTestFilePreprocessorSymbols.cs");
         fileSystem.AddDirectory(rootPath);
 
         var testProjectAnalyzerResultMock = TestHelper.SetupProjectAnalyzerResult(
@@ -78,7 +79,7 @@ public class TestProjectTests
             sourceFiles: new string[] { filePath },
             preprocessorSymbols: new string[] { "NET6_0_OR_GREATER" }
         );
-        var file = File.ReadAllText(Path.Combine(".", "TestResources", "ExampleTestFilePreprocessorSymbols.cs"));
+        var file = File.ReadAllText(path.Combine(".", "TestResources", "ExampleTestFilePreprocessorSymbols.cs"));
         fileSystem.AddFile(filePath, new MockFileData(file));
 
         // Act
@@ -93,9 +94,10 @@ public class TestProjectTests
     public void ConstructorResolvesRelativeSourceFilesFromProjectDirectory()
     {
         var fileSystem = new MockFileSystem();
-        var projectPath = Path.Combine("c:", "repo", "tests", "Tests.fsproj");
-        var relativeSourcePath = Path.Combine("SimulationSetup", "Tests.fs");
-        var expectedSourcePath = Path.Combine("c:", "repo", "tests", relativeSourcePath);
+        var path = fileSystem.Path;
+        var projectPath =  path.GetFullPath(path.Combine("repo", "tests", "Tests.fsproj"));
+        var relativeSourcePath = path.GetFullPath(path.Combine("SimulationSetup", "Tests.fs"));
+        var expectedSourcePath = path.GetFullPath(path.Combine("repo", "tests", relativeSourcePath));
         fileSystem.AddFile(expectedSourcePath, new MockFileData("module Tests"));
         var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
             projectFilePath: projectPath,

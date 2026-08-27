@@ -32,7 +32,7 @@ public class ProjectMutatorTests : TestBase
     private readonly Mock<IInitialisationProcess> _initialisationProcessMock = new(MockBehavior.Strict);
     private readonly MutationTestInput _mutationTestInput;
     private readonly IFileSystem _fileSystemMock = new MockFileSystem();
-    private readonly string _testFilePath = "c:\\mytestfile.cs";
+    private readonly string _testFilePath;
     private readonly string _testFileContents = @"using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ExtraProject.XUnit
@@ -56,6 +56,9 @@ namespace ExtraProject.XUnit
 
     public ProjectMutatorTests()
     {
+        var iPath = _fileSystemMock.Path;
+        var root = iPath.GetPathRoot(_fileSystemMock.Directory.GetCurrentDirectory()) ?? "";
+        _testFilePath = iPath.Combine(root, "mytestfile.cs");
         _mutationTestProcessMock.Setup(x => x.Mutate());
         _mutationTestProcessMock.Setup(x => x.Initialize(It.IsAny<MutationTestInput>(), It.IsAny<IStrykerOptions>(), It.IsAny<IReporter>()));
         _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
@@ -65,10 +68,10 @@ namespace ExtraProject.XUnit
             {
                 { "Language", "C#" },
                 { "AssemblyName", "TestProject" },
-                { "TargetDir", "c:\\bin\\Debug\\netcoreapp3.1" },
+                { "TargetDir", iPath.Combine(root, "bin","Debug","netcoreapp3.1") },
                 { "TargetFileName", "TestProject.dll" }
             },
-            projectFilePath: "c:\\project.csproj",
+            projectFilePath: iPath.Combine(root, "project.csproj"),
             targetFramework: "netcoreapp3.1",
             projectReferences: Array.Empty<string>(),
             sourceFiles: Array.Empty<string>()).Object;
@@ -76,7 +79,7 @@ namespace ExtraProject.XUnit
         var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf
         {
-            FullPath = "c:\\TestClass.cs",
+            FullPath = iPath.Combine(root, "TestClass.cs"),
             SyntaxTree = CSharpSyntaxTree.ParseText("class TestClass { }")
         });
 
@@ -85,14 +88,14 @@ namespace ExtraProject.XUnit
             TestProjects = new List<TestProject>
             {
                 new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
-                    projectFilePath: "c:\\testproject.csproj",
+                    projectFilePath: iPath.Combine(root, "testproject.csproj"),
                     targetFramework: "netcoreapp3.1",
                     sourceFiles: [_testFilePath]).Object)
             }
         };
         _mutationTestInput = new MutationTestInput()
         {
-            SourceProjectInfo = new Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo(analyzerResult, testProjectsInfo)
+            SourceProjectInfo = new SourceProjectInfo(analyzerResult, testProjectsInfo)
             {
                 ProjectContents = folder,
             }
@@ -224,9 +227,11 @@ namespace MyProject.MSTest
     {
         // arrange
         var fileSystem = new MockFileSystem();
-        const string fileA = "C:\\tests\\NUnitTests.cs";
-        const string fileB = "C:\\tests\\XUnitTests.cs";
-        fileSystem.Directory.CreateDirectory("C:\\tests");
+        var iPath = fileSystem.Path;
+        var root = iPath.GetPathRoot(fileSystem.Directory.GetCurrentDirectory())??"";
+        var fileA = iPath.Combine(root, "tests","NUnitTests.cs");
+        var fileB = iPath.Combine(root, "tests","XUnitTests.cs");
+        fileSystem.Directory.CreateDirectory(iPath.Combine(root, "tests"));
         fileSystem.File.WriteAllText(fileA, @"
 namespace MyProject.NUnit
 {
@@ -371,6 +376,10 @@ namespace MyProject.Tests
             sourceFiles: []);
 
         var testAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            properties: new Dictionary<string, string>
+            {
+                { "Language", "C#" }
+            },
             projectFilePath: "c:\\testproject.csproj",
             targetFramework: "net",
             sourceFiles: testFilePaths);
