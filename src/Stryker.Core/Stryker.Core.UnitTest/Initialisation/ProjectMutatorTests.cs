@@ -228,7 +228,6 @@ namespace MyProject.MSTest
     public void MutateProject_WithMultipleFilesWithSameClassAndMethod_UsesNamespaceToSelectCorrectFile()
     {
         // arrange
-
         var fileA = _iPath.Combine(_pathRoot, "tests","NUnitTests.cs");
         var fileB = _iPath.Combine(_pathRoot, "tests","XUnitTests.cs");
         _fileSystemMock.Directory.CreateDirectory(_iPath.Combine(_pathRoot, "tests"));
@@ -268,9 +267,9 @@ namespace MyProject.XUnit
     [TestMethod]
     public void MutateProject_WhenMethodNotFoundInAnyFile_RegistersNoTest()
     {
+        var filePath = _iPath.Combine(_pathRoot, "tests","SampleTests.cs");
         // arrange
-        const string filePath = "c:\\tests\\SampleTests.cs";
-        _fileSystemMock.Directory.CreateDirectory("c:\\tests");
+        _fileSystemMock.Directory.CreateDirectory("tests");
         _fileSystemMock.File.WriteAllText(filePath, @"
 namespace MyProject.Tests
 {
