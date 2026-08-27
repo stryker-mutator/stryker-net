@@ -34,7 +34,7 @@ public static class TestHelper
             analyzerResultMock.Setup(x => x.Properties).Returns(properties);
         }
 
-        properties["Language"] = "C#";
+        properties.TryAdd("Language", "C#");
         projectFilePath ??= "testproject.csproj";
         if (projectFilePath != null)
         {
