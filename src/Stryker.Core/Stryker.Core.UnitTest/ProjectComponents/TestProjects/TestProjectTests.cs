@@ -96,8 +96,8 @@ public class TestProjectTests
         var fileSystem = new MockFileSystem();
         var path = fileSystem.Path;
         var projectPath =  path.GetFullPath(path.Combine("repo", "tests", "Tests.fsproj"));
-        var relativeSourcePath = path.GetFullPath(path.Combine("SimulationSetup", "Tests.fs"));
-        var expectedSourcePath = path.GetFullPath(path.Combine("repo", "tests", relativeSourcePath));
+        var relativeSourcePath = path.Combine("SimulationSetup", "Tests.fs");
+        var expectedSourcePath = path.Combine("repo", "tests", relativeSourcePath);
         fileSystem.AddFile(expectedSourcePath, new MockFileData("module Tests"));
         var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
             projectFilePath: projectPath,
@@ -105,6 +105,6 @@ public class TestProjectTests
 
         var sut = new TestProject(fileSystem, analyzerResult.Object);
 
-        sut.TestFiles.Single().FilePath.ShouldBe(expectedSourcePath);
+        sut.TestFiles.Single().FilePath.ShouldBe(path.GetFullPath(expectedSourcePath));
     }
 }
