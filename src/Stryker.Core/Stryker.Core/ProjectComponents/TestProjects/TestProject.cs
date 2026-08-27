@@ -40,16 +40,10 @@ public sealed class TestProject : IEquatable<ITestProject>, ITestProject
         var directoryName = iPath.GetDirectoryName(AnalyzerResult.ProjectFilePath);
         if (string.IsNullOrEmpty(directoryName))
         {
-            if (iPath.IsPathRooted(AnalyzerResult.ProjectFilePath))
-            {
-                directoryName = iPath.GetPathRoot(AnalyzerResult.ProjectFilePath);
-            }
-            else
-            {
-                directoryName = iPath.GetPathRoot(fileSystem.Directory.GetCurrentDirectory());
-            }
+            directoryName = iPath.GetPathRoot(iPath.IsPathRooted(AnalyzerResult.ProjectFilePath) ? AnalyzerResult.ProjectFilePath
+                : fileSystem.Directory.GetCurrentDirectory());
         }
-        var projectRoot = iPath.GetFullPath(directoryName);
+        var projectRoot = iPath.GetFullPath(directoryName!);
         foreach (var file in testProjectAnalyzerResult.SourceFiles)
         {
             var filePath = file;
