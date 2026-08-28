@@ -15,7 +15,7 @@ public class TimeoutRatioInputTests : TestBase
         var target = new TimeoutRatioInput();
         target.HelpText.ShouldBe(@"The ratio the estimated test time is multiplied by when calculating the timeout for a mutant.
 A timeout is calculated per mutant based on the initial unit test run before mutating.
-Increase this value if you experience a lot of timeouts, decrease it to catch endless loops faster. | default: '1.5'");
+Increase this value if you experience a lot of timeouts, decrease it to catch endless loops faster. | default: '2'");
     }
 
     [TestMethod]
@@ -25,7 +25,7 @@ Increase this value if you experience a lot of timeouts, decrease it to catch en
 
         var result = target.Validate();
 
-        result.ShouldBe(1.5);
+        result.ShouldBe(2);
     }
 
     [TestMethod]
