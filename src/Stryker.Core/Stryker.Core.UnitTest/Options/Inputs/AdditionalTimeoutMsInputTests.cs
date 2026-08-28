@@ -36,7 +36,7 @@ If you experience a lot of timeouts you might need to increase the timeout value
 
         var result = target.Validate();
 
-        result.ShouldBe(1000);
+        result.ShouldBe(3000);
     }
 
     [TestMethod]

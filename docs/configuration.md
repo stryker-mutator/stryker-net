@@ -301,9 +301,9 @@ If HTML and/or JSON reporting is being used you can use this option to change th
 
 ### `additional-timeout` &lt;`number`&gt;
 
-Default: `1000`  
+Default: `3000`  
 Command line: `N/A`  
-Config file: `"additional-timeout": 3000`
+Config file: `"additional-timeout": 1000`
 
 Some mutations can create endless loops inside your code. To detect and stop these loops Stryker cancels a unit test run after a set time.
 
