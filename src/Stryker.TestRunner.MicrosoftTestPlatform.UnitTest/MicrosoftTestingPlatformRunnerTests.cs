@@ -1041,7 +1041,7 @@ public class MicrosoftTestingPlatformRunnerTests
             => _perAssembly = perAssembly;
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, Func<TestNode, bool>? testUidFilter = null)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null)
         {
             var (result, discovered) = _perAssembly[assembly];
             return Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>((result, false, discovered));

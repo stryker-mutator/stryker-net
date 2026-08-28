@@ -41,6 +41,7 @@
   <Project Path="Stryker.DataCollector/Stryker.DataCollector.csproj" />
   <Project Path="Stryker.RegexMutators/Stryker.RegexMutators.UnitTest/Stryker.RegexMutators.UnitTest.csproj" />
   <Project Path="Stryker.RegexMutators/Stryker.RegexMutators/Stryker.RegexMutators.csproj" />
+  <Project Path="Stryker.Solutions.UnitTest/Stryker.Solutions.UnitTest.csproj" />
   <Project Path="Stryker.Solutions/Stryker.Solutions.csproj" />
   <Project Path="Stryker.TestRunner.MicrosoftTestPlatform.UnitTest/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest.csproj" />
   <Project Path="Stryker.TestRunner.MicrosoftTestPlatform/Stryker.TestRunner.MicrosoftTestPlatform.csproj" />
