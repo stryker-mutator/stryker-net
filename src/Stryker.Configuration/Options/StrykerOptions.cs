@@ -119,6 +119,11 @@ public class StrykerOptions : IStrykerOptions
     public int AdditionalTimeout { get; init; }
 
     /// <summary>
+    /// The ratio the estimated test time is multiplied by when calculating the timeout for a mutant.
+    /// </summary>
+    public double TimeoutRatio { get; init; } = 1.5;
+
+    /// <summary>
     /// The C# language version
     /// </summary>
     public LanguageVersion LanguageVersion { get; init; }

@@ -58,7 +58,9 @@ public class StrykerInputsTests : TestBase
             ThresholdLowInput = new ThresholdLowInput(),
             WithBaselineInput = new WithBaselineInput(),
             BreakOnInitialTestFailureInput = new BreakOnInitialTestFailureInput(),
+            TimeoutRatioInput = new TimeoutRatioInput(),
         };
+
 
     [TestMethod]
     public void PerTestInIsolationShouldSetOptimizationFlags()
