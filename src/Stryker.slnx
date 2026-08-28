@@ -42,7 +42,6 @@
   <Project Path="Stryker.RegexMutators/Stryker.RegexMutators.UnitTest/Stryker.RegexMutators.UnitTest.csproj" />
   <Project Path="Stryker.RegexMutators/Stryker.RegexMutators/Stryker.RegexMutators.csproj" />
   <Project Path="Stryker.Solutions/Stryker.Solutions.csproj" />
-  <Project Path="Stryker.Solutions.Test/Stryker.Solutions.Test.csproj" />
   <Project Path="Stryker.TestRunner.MicrosoftTestPlatform.UnitTest/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest.csproj" />
   <Project Path="Stryker.TestRunner.MicrosoftTestPlatform/Stryker.TestRunner.MicrosoftTestPlatform.csproj" />
   <Project Path="Stryker.TestRunner.VsTest.UnitTest/Stryker.TestRunner.VsTest.UnitTest.csproj" />

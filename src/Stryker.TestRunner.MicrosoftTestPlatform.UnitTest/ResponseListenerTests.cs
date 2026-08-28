@@ -57,10 +57,7 @@ public class ResponseListenerTests
         // Act
         var completionTask = listener.WaitCompletionAsync(TimeSpan.FromSeconds(1));
 
-        // Complete the listener using reflection (internal method)
-        var completeMethod = typeof(ResponseListener).GetMethod("Complete",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        completeMethod?.Invoke(listener, null);
+        listener.Complete();
 
         var result = await completionTask;
 
@@ -92,10 +89,7 @@ public class ResponseListenerTests
         // Act
         var completionTask = listener.WaitCompletionAsync();
 
-        // Complete the listener using reflection
-        var completeMethod = typeof(ResponseListener).GetMethod("Complete",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        completeMethod?.Invoke(listener, null);
+        listener.Complete();
 
         // Wait with a timeout to prevent hanging the test
         var completedInTime = await Task.WhenAny(completionTask, Task.Delay(1000)) == completionTask;
