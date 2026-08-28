@@ -14,6 +14,11 @@ public static class Program
 {
     public static async Task<int> Main(string[] args)
     {
+        if (MacOsSignalWorkaround.TryReExec(args, out var relayedExitCode))
+        {
+            return relayedExitCode;
+        }
+
         try
         {
             // Build DI container
