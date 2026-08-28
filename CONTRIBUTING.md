@@ -5,11 +5,15 @@ This is the contribution guide for Stryker.NET. Great to have you here! Here are
 Do you have an idea for a feature or have you found a bug? Please create an issue so we can talk about it!
 When you face an issue you can try using the `--diag` option (```dotnet stryker --diag```) this help you pinpoint the
 cause of your problem.
-If you found a bug, please run ```dotnet stryker --verbosity debug``` and add the output of the Stryker run to the issue.
+### Diagnosis related options
+- L: write all logs in a tex file
+- diag: performs supplemental checks and logs additional information to help diagnose issues
+- verbosity: controls the amount of detail in the output. The default is `info`, but you can set it to `debug` or
+`trace`for more detailed information.
 
 ## Pull requests
 Please open an issue or a discussion first. PR without a supporting issue or discussion are treated as low priority.
-Focus your PR on the problem you are trying to solve
+Focus your PR on the problem you are trying to solve.
 
 ### Proposing a fix
 1. Please open an issue with a clear description of the problem. 
@@ -19,7 +23,7 @@ Focus your PR on the problem you are trying to solve
 New features are welcome! Either as requests or proposals.
 
 **Create an issue first, so we know what to expect from you.** And please wait for feedback and oor guidance regarding
-how to move forward
+how to move forward.
 
 ### Operational steps
 #### Working on the code
@@ -27,7 +31,7 @@ how to move forward
 1.	When writing your code, please conform to the [Microsoft coding guidelines](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions).
 1.	Please create or edit unit tests or integration tests.
 1.	Run the tests and verify they pass (including integration tests). 
-2. Update documentation when relevant
+2.  Update documentation when relevant
 
 #### Submitting your proposal
 1. Push your code on GitHub and create a pull request to the main repository.
@@ -60,15 +64,15 @@ a grace period before closing one, but this is not guaranteed.
 a maintainer.
 
 #### General considerations regarding LLMs & agents (AI code)
-- This project is solely driven by humans. As of today, no agent is involved in Stryker
+- This project is solely driven by humans. As of today, no agent is involved in maintaining Stryker.Net
 - We do not have a strict policy regarding the use of LLMs or agents to generate code
 - We hold AI generated/assisted contributions to the same standards as human contributions.
-- AI generated/assisted contributions should be marked as such, for statistical purposes
+- AI generated/assisted contributions should be labelled as such, for statistical purposes
 - Please ensure your AI contributions remain terse and not too verbose. This will slow down integration
 - Please take the time to **discuss** with maintainers during review and refrain from using AI for fast turn around on 
 feedback. We want to ensure the quality of the codebase and that you understand the code you are contributing.
 - AI can act as a multiplier force for abusive behavior, such as pressuring maintainers to address issues/merge PR.
-We reserve the right to ban users showing such behavior.
+We reserve the right to ban contributors showing such behavior.
 
 
 
@@ -86,7 +90,8 @@ being.
 *	On `Stryker.CLI` open `properties > Debug`
 *	Create a new Debug profile
 *	Set `Launch` as `Project`
-*	Set `WorkingDirectory` as your local installation dir, pointing to a UnitTest project `example: (C:\Repos\MyProject\src\MyProject\MyProject.UnitTest)`. You can use the ready made projects in `.\integrationtest\TargetProjects` for this.
+*	Set `WorkingDirectory` as your local installation dir, pointing to a UnitTest project `example: (C:\Repos\MyProject\src\MyProject\MyProject.UnitTest)`.
+* You can use the ready-made projects in `.\integrationtest\TargetProjects` for this.
 *	Run the program with `Stryker.CLI` as the startup project with the newly created Debug profile
 
 ### Visual Studio Code Setup
@@ -125,7 +130,8 @@ If you prefer using Visual Studio Code instead of Visual Studio, follow these st
 
 ### Running Stryker on Stryker
 
-Running Stryker on itself doesn't work as stryker will try to write to the assemblies but they will be in use by Visual Studio (Code). To run stryker on stryker use the dedicated `stryker on stryker` github action or use the `stryker-on-stryker.ps1` script locally.
+Running Stryker on itself doesn't work as Stryker will try to write to the assemblies, but they will be in use by Visual Studio (Code).
+To run stryker on stryker use the dedicated `stryker on stryker` GitHub action or use the `stryker-on-stryker.ps1` script locally.
 
 For debugging clone Stryker another time to use as a test project locally.
 

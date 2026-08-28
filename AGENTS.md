@@ -7,6 +7,7 @@ Reference these instruction files when applicable:
 - **Always**: [Conventional Commit Guidelines](.github/instructions/conventional-commit.instructions.md)
 - **Always**: [Security Best Practices](.github/instructions/security-and-owasp.instructions.md)
 - **Always**: [Self-Explanatory Code Commenting](.github/instructions/self-explanatory-code-commenting.instructions.md)
+- **Always**: [Contributing Guidelines](CONTRIBUTING.md)
 - **When writing documentation**: [Markdown Instructions](.github/instructions/markdown.instructions.md)
 - **When writing C#**: [C# Instructions](.github/instructions/csharp.instructions.md)
 - **When working with Azure Pipelines**: [Azure DevOps Pipelines](.github/instructions/azure-devops-pipelines.instructions.md)
