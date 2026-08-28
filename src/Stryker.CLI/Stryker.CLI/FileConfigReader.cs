@@ -50,6 +50,7 @@ public static class FileConfigReader
         inputs.DisableBailInput.SuppliedInput = config.DisableBail;
         inputs.DisableMixMutantsInput.SuppliedInput = config.DisableMixMutants;
         inputs.AdditionalTimeoutInput.SuppliedInput = config.AdditionalTimeout;
+        inputs.TimeoutRatioInput.SuppliedInput = config.TimeoutRatio;
         inputs.MutateInput.SuppliedInput = config.Mutate;
         inputs.MutationLevelInput.SuppliedInput = config.MutationLevel;
         inputs.ProjectNameInput.SuppliedInput = config.ProjectInfo?.Name;
