@@ -72,7 +72,6 @@ a maintainer.
 - Please take the time to **discuss** with maintainers during review and refrain from using AI for fast turn around on 
 feedback. We want to ensure the quality of the codebase and that you understand the code you are contributing.
 - AI can act as a multiplier force for abusive behavior, such as pressuring maintainers to address issues/merge PR.
-We reserve the right to ban contributors showing such behavior.
 
 
 
