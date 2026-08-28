@@ -62,10 +62,10 @@ public interface IStrykerInputs
     IStrykerOptions ValidateAll();
 }
 
-public class StrykerInputs(IStrykerOptions strykerOptionsCache, IFileSystem? fileSystem = null)
+public class StrykerInputs(IFileSystem? fileSystem = null)
     : IStrykerInputs
 {
-    private IStrykerOptions _strykerOptionsCache = strykerOptionsCache;
+    private IStrykerOptions? _strykerOptionsCache;
     private readonly IFileSystem _fileSystem = fileSystem ?? new FileSystem();
 
     public DiagModeInput DiagModeInput { get; init; } = new();
