@@ -4,12 +4,12 @@ namespace Stryker.Configuration.Options.Inputs;
 
 public class TimeoutRatioInput : Input<double?>
 {
-    public override double? Default => 1.5;
+    public override double? Default => 2;
 
     protected override string Description => @"The ratio the estimated test time is multiplied by when calculating the timeout for a mutant.
 A timeout is calculated per mutant based on the initial unit test run before mutating.
 Increase this value if you experience a lot of timeouts, decrease it to catch endless loops faster.";
-
+    
     public double Validate()
     {
         if (SuppliedInput.HasValue)
@@ -21,6 +21,6 @@ Increase this value if you experience a lot of timeouts, decrease it to catch en
             return SuppliedInput.Value;
         }
 
-        return Default.Value;
+        return Default!.Value;
     }
 }
