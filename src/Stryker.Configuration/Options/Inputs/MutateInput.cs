@@ -13,8 +13,8 @@ public class MutateInput : Input<IEnumerable<string>>
     protected override string Description => @"Allows to specify file that should in- or excluded for the mutations.
     Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
     Use '!' at the start of a pattern to exclude all matched files.
-    Use '{<start>..<end>}' at the end of a pattern to specify spans of text in files to in- or exclude.
-    Example: ['**/*Service.cs','!**/MySpecialService.cs', '**/MyOtherService.cs{1..10}{32..45}']";
+    Use ':<startLine>:<startCol>:<endLine>:<endCol>' at the end of a pattern to specify spans of lines in files to in- or exclude.
+    Example: ['**/*Service.cs','!**/MySpecialService.cs', '**/MyOtherService.cs:1:0:10:0:32:0:45:0']";
 
     public IEnumerable<IFilePattern> Validate()
     {
