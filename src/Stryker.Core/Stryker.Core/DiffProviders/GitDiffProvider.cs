@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -27,8 +28,8 @@ public class GitDiffProvider : IDiffProvider
     {
         var diffResult = new DiffResult()
         {
-            ChangedSourceFiles = new Collection<string>(),
-            ChangedTestFiles = new Collection<string>()
+            ChangedSourceFiles = new Dictionary<string, List<int>>(),
+            ChangedTestFiles = new Dictionary<string, List<int>>(),
         };
 
         // A git repository has been detected, calculate the diff to filter
@@ -58,13 +59,44 @@ public class GitDiffProvider : IDiffProvider
 
             if (testPaths.Any(testPath => diffPath.StartsWith(testPath)))
             {
-                diffResult.ChangedTestFiles.Add(diffPath);
+                for (var i = 0; i < patchChanges.AddedLines.Count; i++)
+                {
+                    if (!diffResult.ChangedTestFiles.ContainsKey(diffPath))
+                    {
+                        diffResult.ChangedTestFiles.Add(diffPath, [patchChanges.AddedLines[i].LineNumber]);
+
+                    }
+                    else
+
+                    {
+                        var entry = diffResult.ChangedTestFiles[diffPath];
+                        entry.Add(patchChanges.AddedLines[i].LineNumber);
+                    }
+                }
             }
             else
             {
-                diffResult.ChangedSourceFiles.Add(diffPath);
+                if (patchChanges.AddedLines.Count > 0)
+                {
+                    for (var i = 0; i < patchChanges.AddedLines.Count; i++)
+                    {
+                        if (!diffResult.ChangedSourceFiles.ContainsKey(diffPath))
+                        {
+                            diffResult.ChangedSourceFiles.Add(diffPath, [patchChanges.AddedLines[i].LineNumber]);
+
+                        }
+                        else
+
+                        {
+                            var entry = diffResult.ChangedSourceFiles[diffPath];
+                            entry.Add(patchChanges.AddedLines[i].LineNumber);
+                        }
+                    }
+
+                }
             }
         }
+
         RemoveFilteredOutFiles(diffResult);
 
         return diffResult;
@@ -74,8 +106,8 @@ public class GitDiffProvider : IDiffProvider
     {
         foreach (var glob in _options.DiffIgnoreChanges.Select(d => d.Glob))
         {
-            diffResult.ChangedSourceFiles = diffResult.ChangedSourceFiles.Where(diffResultFile => !glob.IsMatch(diffResultFile)).ToList();
-            diffResult.ChangedTestFiles = diffResult.ChangedTestFiles.Where(diffResultFile => !glob.IsMatch(diffResultFile)).ToList();
+            diffResult.ChangedSourceFiles = diffResult.ChangedSourceFiles.Where(diffResultFile => !glob.IsMatch(diffResultFile.Key)).ToDictionary();
+            diffResult.ChangedTestFiles = diffResult.ChangedTestFiles.Where(diffResultFile => !glob.IsMatch(diffResultFile.Key)).ToDictionary();
         }
     }
 }
