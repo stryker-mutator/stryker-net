@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -17,6 +18,7 @@ public class SinceMutantFilter : IMutantFilter
     private readonly DiffResult _diffResult;
     private readonly ITestSet _tests;
     private readonly ILogger<SinceMutantFilter> _logger;
+    private readonly HashSet<string> _loggedRelevantTestFiles = new();
 
     public MutantFilter Type => MutantFilter.Since;
     public string DisplayName => "since filter";
@@ -32,20 +34,23 @@ public class SinceMutantFilter : IMutantFilter
         {
             _logger.LogInformation("{ChangedFilesCount} files changed", (_diffResult.ChangedSourceFiles?.Count ?? 0) + (_diffResult.ChangedTestFiles?.Count ?? 0));
 
-            if (_diffResult.ChangedSourceFiles != null)
-            {
-                foreach (var changedFile in _diffResult.ChangedSourceFiles)
-                {
-                    _logger.LogInformation("Changed file {ChangedFile}", changedFile);
-                }
-            }
-            if (_diffResult.ChangedTestFiles != null)
-            {
-                foreach (var changedFile in _diffResult.ChangedTestFiles)
-                {
-                    _logger.LogInformation("Changed test file {ChangedFile}", changedFile);
-                }
-            }
+            LogChangedFiles(_diffResult.ChangedSourceFiles, "Changed file {ChangedFile}");
+            LogChangedFiles(_diffResult.ChangedTestFiles, "Changed test file {ChangedFile}");
+        }
+    }
+
+    private void LogChangedFiles(ICollection<string> changedFiles, string message)
+    {
+        if (changedFiles is null)
+        {
+            return;
+        }
+
+        foreach (var changedFile in changedFiles)
+        {
+            // For non-csharp files we cannot determine whether they are relevant for the project under test, so always log those.
+            var logLevel = changedFile.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ? LogLevel.Debug : LogLevel.Information;
+            _logger.Log(logLevel, message, changedFile);
         }
     }
 
@@ -64,7 +69,7 @@ public class SinceMutantFilter : IMutantFilter
         // If the diff result flags this file as modified, we want to run all mutants again
         if (_diffResult.ChangedSourceFiles != null && _diffResult.ChangedSourceFiles.Contains(file.FullPath))
         {
-            _logger.LogDebug("Returning all mutants in {RelativePath} because the file is modified", file.RelativePath);
+            _logger.LogInformation("Changed file {FullPath} is part of the project under test; all mutants in it will be tested", file.FullPath);
             return SetMutantStatusForFileChanged(mutants);
         }
         else
@@ -135,9 +140,28 @@ public class SinceMutantFilter : IMutantFilter
                 mutant.ResultStatusReason = "One or more covering tests changed";
 
                 filteredMutants.Add(mutant);
+
+                LogRelevantChangedTestFiles(coveringTests);
             }
         }
 
         return filteredMutants;
+    }
+
+    private void LogRelevantChangedTestFiles(IEnumerable<ITestDescription> coveringTests)
+    {
+        if (_diffResult.ChangedTestFiles is null)
+        {
+            return;
+        }
+
+        foreach (var changedTestFile in _diffResult.ChangedTestFiles)
+        {
+            if (coveringTests.Any(coveringTest => coveringTest.TestFilePath == changedTestFile)
+                && _loggedRelevantTestFiles.Add(changedTestFile))
+            {
+                _logger.LogInformation("Changed test file {ChangedTestFile} covers mutants of the project under test", changedTestFile);
+            }
+        }
     }
 }
