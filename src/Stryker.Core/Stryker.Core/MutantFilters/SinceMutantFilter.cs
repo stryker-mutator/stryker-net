@@ -18,7 +18,7 @@ public class SinceMutantFilter : IMutantFilter
     private readonly DiffResult _diffResult;
     private readonly ITestSet _tests;
     private readonly ILogger<SinceMutantFilter> _logger;
-    private readonly HashSet<string> _loggedRelevantTestFiles = new();
+    private readonly HashSet<string> _loggedRelevantTestFiles = new(StringComparer.OrdinalIgnoreCase);
 
     public MutantFilter Type => MutantFilter.Since;
     public string DisplayName => "since filter";
@@ -155,9 +155,20 @@ public class SinceMutantFilter : IMutantFilter
             return;
         }
 
+        var notYetLoggedCoveringTestFiles = new HashSet<string>(
+            coveringTests.Select(coveringTest => coveringTest.TestFilePath).Where(testFilePath => !string.IsNullOrEmpty(testFilePath)),
+            StringComparer.OrdinalIgnoreCase);
+        notYetLoggedCoveringTestFiles.ExceptWith(_loggedRelevantTestFiles);
+
+        // Early exit when every covering test file has already been logged.
+        if (notYetLoggedCoveringTestFiles.Count == 0)
+        {
+            return;
+        }
+
         foreach (var changedTestFile in _diffResult.ChangedTestFiles)
         {
-            if (coveringTests.Any(coveringTest => coveringTest.TestFilePath == changedTestFile)
+            if (notYetLoggedCoveringTestFiles.Contains(changedTestFile)
                 && _loggedRelevantTestFiles.Add(changedTestFile))
             {
                 _logger.LogInformation("Changed test file {ChangedTestFile} covers mutants of the project under test", changedTestFile);
