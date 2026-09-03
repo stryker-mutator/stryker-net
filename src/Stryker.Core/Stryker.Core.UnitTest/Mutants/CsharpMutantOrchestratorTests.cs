@@ -660,12 +660,11 @@ public static class Consumer
         compileResult.Success.ShouldBeFalse();
         var compilerWrapper = new CompilerWrapper(compilation);
 
-        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
 
         var rollbackedResult = compilerWrapper.Emit(ms);
 
         rollbackedResult.Success.ShouldBeTrue();
-
     }
 
     [TestMethod]
