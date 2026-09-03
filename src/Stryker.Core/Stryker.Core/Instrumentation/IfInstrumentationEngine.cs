@@ -11,6 +11,7 @@ namespace Stryker.Core.Instrumentation;
 /// </summary>
 internal class IfInstrumentationEngine : BaseEngine<IfStatementSyntax>
 {
+    private readonly SyntaxAnnotation Blockmarker = new SyntaxAnnotation("Blocked");
     /// <summary>
     /// Injects an if statement with the original code or the mutated one, depending on condition's result.
     /// </summary>
@@ -20,13 +21,36 @@ internal class IfInstrumentationEngine : BaseEngine<IfStatementSyntax>
     /// <returns>A statement containing the expected construct.</returns>
     /// <remarks>This method works with statement and block.</remarks>
     public IfStatementSyntax InjectIf(ExpressionSyntax condition, StatementSyntax originalNode, StatementSyntax mutatedNode)
-        =>  SyntaxFactory.IfStatement(condition,
-            AsBlock(mutatedNode),
-            SyntaxFactory.ElseClause(AsBlock(originalNode.WithoutTrivia()))).
-            WithTriviaFrom(originalNode).
-            WithAdditionalAnnotations(Marker);
+    {
+        var block = AsBlock(originalNode);
+        return SyntaxFactory.IfStatement(condition,
+                AsBlock(mutatedNode),
+                SyntaxFactory.ElseClause(block.WithoutTrivia()))
+            .WithTriviaFrom(block)
+            .WithAdditionalAnnotations(Marker);
+    }
 
-    private static BlockSyntax AsBlock(StatementSyntax code) => code as BlockSyntax ?? SyntaxFactory.Block(code);
+    private BlockSyntax AsBlock(StatementSyntax code)
+    {
+        if (code is not BlockSyntax block)
+        {
+            // we create a single statement block and surface the trivia to the block
+            return SyntaxFactory.Block(code.WithoutTrivia()).WithTriviaFrom(code).WithAdditionalAnnotations(Blockmarker);
+        }
+
+        return block.HasSignificantTrivia() ?
+            // we need to wrap the block if it has a single statement with trivia
+            SyntaxFactory.Block(block).WithAdditionalAnnotations(Blockmarker) : block;
+    }
+
+    private StatementSyntax RemoveBlockIfNeeded(StatementSyntax code)
+    {
+        if (code.HasAnnotation(Blockmarker) && code is BlockSyntax { Statements.Count: 1 } block)
+        {
+            return block.Statements[0].WithTriviaFrom(code);
+        }
+        return code;
+    }
 
     /// <summary>
     /// Returns the original code.
@@ -38,7 +62,7 @@ internal class IfInstrumentationEngine : BaseEngine<IfStatementSyntax>
     {
         if (ifNode.Else?.Statement is BlockSyntax block)
         {
-            return (block.Statements.Count == 1 ? block.Statements[0] : block).WithTriviaFrom(ifNode);
+            return RemoveBlockIfNeeded(block).WithTriviaFrom(ifNode);
         }
 
         throw new InvalidOperationException(
