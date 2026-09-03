@@ -95,8 +95,14 @@ public sealed class VsTestRunner : IDisposable
         var timeOutMs = timeoutCalc?.DefaultTimeout;
         if (timeoutCalc != null && testCases != null)
         {
-            // compute time out
-            timeOutMs = timeoutCalc.CalculateTimeoutValue((int)testCases.Sum(id => _context.VsTests[Guid.Parse(id)].InitialRunTime.TotalMilliseconds));
+            // The timeout is based only on the tests covering the mutant(s) in this session, not on
+            // the full test run. Mutants are grouped so their covering tests are disjoint, so summing
+            // the distinct covering tests gives the estimated run time for exactly what this session
+            // executes. Deduplicate defensively in case a test ends up covering more than one mutant.
+            var estimatedTime = (int)testCases
+                .Distinct()
+                .Sum(id => _context.VsTests[Guid.Parse(id)].InitialRunTime.TotalMilliseconds);
+            timeOutMs = timeoutCalc.CalculateTimeoutValue(estimatedTime);
         }
 
         if (timeOutMs.HasValue)

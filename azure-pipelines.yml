@@ -72,9 +72,14 @@ stages:
       inputs:
         command: 'build'
         projects: 'src/Stryker.slnx'
-    - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage collect "dotnet test Stryker.vstest.slnf" -f xml -o "$(Agent.BuildDirectory)\TestResults\coverage.xml"'
+    - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage collect "dotnet test Stryker.vstest.slnf" -f coverage -o "$(Agent.BuildDirectory)\TestResults\coverage.coverage"'
       displayName: 'Run unit tests'
       workingDirectory: 'src'
+    - pwsh: 'dotnet test ../Stryker.mtp.slnf -- --coverage --coverage-output-format coverage --coverage-output "$(Agent.BuildDirectory)\TestResults\coverage.mtp.coverage"'
+      displayName: 'Run MTP unit tests'
+      workingDirectory: 'src/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest'
+    - pwsh: '$(Agent.BuildDirectory)/tools/dotnet-coverage merge "$(Agent.BuildDirectory)\TestResults\coverage.coverage" "$(Agent.BuildDirectory)\TestResults\coverage.mtp.coverage" -f xml -o "$(Agent.BuildDirectory)\TestResults\coverage.xml"'
+      displayName: 'Merge coverage results'
     - task: SonarCloudAnalyze@4
     - task: SonarCloudPublish@4
       inputs:
