@@ -1,4 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.IO.MemoryMappedFiles;
 using System.Linq;
+using System.Reflection;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -7,7 +14,9 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Configuration;
 using Stryker.Configuration.Options;
+using Stryker.Core.Compiling;
 using Stryker.Core.Mutants;
+using Stryker.Core.UnitTest.Compiling;
 
 namespace Stryker.Core.UnitTest.Mutants;
 
