@@ -31,6 +31,7 @@ public interface IStrykerBuildOptions
 public interface IStrykerOptions : IStrykerBuildOptions
 {
     int AdditionalTimeout { get; init; }
+    double TimeoutRatio { get; init; }
     string AzureFileStorageSas { get; init; }
     string AzureFileStorageUrl { get; init; }
     string S3BucketName { get; init; }
