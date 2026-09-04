@@ -632,7 +632,7 @@ public static class Consumer
 
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
         Type[] typeToLoad = [typeof(object), typeof(List<>), typeof(Enumerable), typeof(Nullable<>), typeof(MemoryMappedFile),
-            typeof(ExperimentalAttribute)];
+            typeof(ExperimentalAttribute), typeof(MemoryMappedViewAccessor)];
         var syntaxTrees = new List<SyntaxTree> { syntaxTree };
         syntaxTrees.AddRange(Injector.GetHelpersSyntaxTreesToInject(new CSharpParseOptions(LanguageVersion.CSharp14)));
         var mutator = new CsharpMutantOrchestrator(new MutantPlacer(Injector), options: new StrykerOptions
@@ -642,7 +642,7 @@ public static class Consumer
 
         List<MetadataReference> metadataReferences = [.. typeToLoad.Select(t => t.Assembly.Location).Distinct().
             Select(l => MetadataReference.CreateFromFile(l))];
-        Assembly.GetEntryAssembly().GetReferencedAssemblies().Select(Assembly.Load).Select(a => a.Location).
+        Assembly.GetAssembly(typeof(MemoryMappedViewAccessor)).GetReferencedAssemblies().Select(Assembly.Load).Select(a => a.Location).
             Distinct().Select(l => MetadataReference.CreateFromFile(l)).ToList().ForEach(metadataReferences.Add);
         var compilation = CSharpCompilation.Create("TestCompilation",
             syntaxTrees: syntaxTrees,
@@ -664,7 +664,7 @@ public static class Consumer
 
         var rollbackedResult = compilerWrapper.Emit(ms);
 
-        rollbackedResult.Success.ShouldBeTrue();
+        rollbackedResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
     }
 
     [TestMethod]
