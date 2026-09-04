@@ -3,6 +3,8 @@ using System.Collections.Immutable;
 using System.IO;
 using Buildalyzer;
 using Moq;
+using Stryker.Abstractions;
+using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.UnitTest;
 
@@ -32,6 +34,8 @@ public static class TestHelper
             analyzerResultMock.Setup(x => x.Properties).Returns(properties);
         }
 
+        properties.TryAdd("Language", "C#");
+        projectFilePath ??= "testproject.csproj";
         if (projectFilePath != null)
         {
             analyzerResultMock.Setup(x => x.ProjectFilePath).Returns(projectFilePath);

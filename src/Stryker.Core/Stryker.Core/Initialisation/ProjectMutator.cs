@@ -107,7 +107,7 @@ public class ProjectMutator : IProjectMutator
         var sourceName = isGuid ? unitTest.Name : unitTest.FullyQualifiedName;
 
         var (methodName, className, namespaceName) = ParseMethodComponents(sourceName);
-        if (string.IsNullOrEmpty(methodName))
+        if (string.IsNullOrEmpty(methodName) || testFiles == null)
         {
             return (null, null);
         }
