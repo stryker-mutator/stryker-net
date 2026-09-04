@@ -18,6 +18,8 @@
     <File Path="../docs/technical-reference/testing-framework.md" />
     <File Path="../docs/technical-reference/VsTest internal.md" />
     <File Path="../docs/technical-reference/_category_.yml" />
+    <File Path="..\AGENTS.md" />
+    <File Path="..\CONTRIBUTING.md" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Build.targets" />
     <File Path="Directory.Packages.props" />
