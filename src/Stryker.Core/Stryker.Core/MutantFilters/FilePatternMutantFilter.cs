@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis.Text;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
@@ -44,9 +45,14 @@ public class FilePatternMutantFilter : IMutantFilter
                 {
                     return false;
                 }
+
+                // Convert the node's location to a line-based span to match the :<startLine>:<startCol>:<endLine>:<endCol> pattern format.
+                var lineSpan = mutant.Mutation.OriginalNode.GetLocation().GetLineSpan();
+                var mutantLineSpan = TextSpan.FromBounds(lineSpan.StartLinePosition.Line, lineSpan.EndLinePosition.Line);
+
                 // We check both the full and the relative path to allow for relative paths.
-                return pattern.IsMatch(file.FullPath, mutant.Mutation.OriginalNode.Span) ||
-                       pattern.IsMatch(file.RelativePath, mutant.Mutation.OriginalNode.Span);
+                return pattern.IsMatch(file.FullPath, mutantLineSpan) ||
+                       pattern.IsMatch(file.RelativePath, mutantLineSpan);
             }
         }
     }
