@@ -117,7 +117,9 @@ public sealed class TestingPlatformClient : ITestingPlatformClient
     {
         if (gracefully)
         {
-            using CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromMinutes(3));
+            // NotifyWithParameterObjectAsync has no CancellationToken overload, so this can't be bounded
+            // here; callers that need a timeout (a stuck/backpressured send should not hang forever) must
+            // wrap this call themselves, e.g. via WaitAsync(timeout).
             await CheckedInvokeAsync(async () => await JsonRpcClient.NotifyWithParameterObjectAsync("exit", new object()));
         }
         else
@@ -130,20 +132,18 @@ public sealed class TestingPlatformClient : ITestingPlatformClient
         => await CheckedInvokeAsync(
             async () =>
             {
-                using CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromMinutes(3));
                 var discoveryListener = new TestNodeUpdatesResponseListener(requestId, action);
                 _targetHandler.RegisterResponseListener(discoveryListener);
-                await JsonRpcClient.InvokeWithParameterObjectAsync("testing/discoverTests", new DiscoveryRequest(RunId: requestId), cancellationToken: cancellationTokenSource.Token);
+                await JsonRpcClient.InvokeWithParameterObjectAsync("testing/discoverTests", new DiscoveryRequest(RunId: requestId), cancellationToken: default);
                 return discoveryListener;
             }, @checked);
 
     public async Task<ResponseListener> RunTestsAsync(Guid requestId, Func<TestNodeUpdate[], Task> action, TestNode[]? testNodes = null)
         => await CheckedInvokeAsync(async () =>
         {
-            using CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromMinutes(3));
             var runListener = new TestNodeUpdatesResponseListener(requestId, action);
             _targetHandler.RegisterResponseListener(runListener);
-            await JsonRpcClient.InvokeWithParameterObjectAsync("testing/runTests", new RunTestsRequest(RunId: requestId, TestCases: testNodes), cancellationToken: cancellationTokenSource.Token);
+            await JsonRpcClient.InvokeWithParameterObjectAsync("testing/runTests", new RunTestsRequest(RunId: requestId, TestCases: testNodes), cancellationToken: default);
             return runListener;
         });
 

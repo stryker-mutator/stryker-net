@@ -86,7 +86,6 @@ public class CoverageAnalyser : ICoverageAnalyser
             }
         }
 
-
         var allTest = TestIdentifierList.EveryTest();
         var allTestsExceptTrusted = trustedTests.Count == 0 && failedTests.Count == 0
             ? TestIdentifierList.EveryTest()

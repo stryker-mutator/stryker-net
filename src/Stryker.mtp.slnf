@@ -1,0 +1,12 @@
+{
+  "solution": {
+    "path": "Stryker.slnx",
+    "projects": [
+      "Stryker.Abstractions/Stryker.Abstractions.csproj",
+      "Stryker.TestRunner.MicrosoftTestPlatform.UnitTest/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest.csproj",
+      "Stryker.TestRunner.MicrosoftTestPlatform/Stryker.TestRunner.MicrosoftTestPlatform.csproj",
+      "Stryker.TestRunner/Stryker.TestRunner.csproj",
+      "Stryker.Utilities/Stryker.Utilities.csproj"
+    ]
+  }
+}

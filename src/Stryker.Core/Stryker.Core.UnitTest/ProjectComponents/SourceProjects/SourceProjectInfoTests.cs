@@ -13,15 +13,14 @@ public class SourceProjectInfoTests : TestBase
     [TestMethod]
     public void ShouldGenerateProperDefaultCompilationOptions()
     {
-        var target = new SourceProjectInfo()
-        {
-            AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                properties: new Dictionary<string, string>() {
+        var target = new SourceProjectInfo(
+            TestHelper.SetupProjectAnalyzerResult(
+                properties: new Dictionary<string, string>()
+                {
                     { "TargetDir", "/test/bin/Debug/" },
                     { "TargetFileName", "TestName.dll" },
                     { "AssemblyName", "AssemblyName" }
-                }).Object
-        };
+                }).Object, null);
 
         var options = target.AnalyzerResult.GetCompilationOptions();
 
@@ -35,17 +34,16 @@ public class SourceProjectInfoTests : TestBase
     [DataRow("AppContainerExe", OutputKind.WindowsRuntimeApplication)]
     public void ShouldGenerateProperCompilationOptions(string kindParam, OutputKind output)
     {
-        var target = new SourceProjectInfo()
-        {
-            AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                properties: new Dictionary<string, string>() {
-                    { "AssemblyTitle", "TargetFileName"},
+        var target = new SourceProjectInfo(
+            TestHelper.SetupProjectAnalyzerResult(
+                properties: new Dictionary<string, string>()
+                {
+                    { "AssemblyTitle", "TargetFileName" },
                     { "TargetDir", "/test/bin/Debug/" },
-                    { "TargetFileName", "TargetFileName.dll"},
+                    { "TargetFileName", "TargetFileName.dll" },
                     { "OutputType", kindParam },
                     { "AssemblyName", "AssemblyName" }
-                }).Object
-        };
+                }).Object, null);
 
         var options = target.AnalyzerResult.GetCompilationOptions();
 
@@ -60,18 +58,17 @@ public class SourceProjectInfoTests : TestBase
     [DataRow(true, true)]
     public void ShouldGenerateProperSigningCompilationOptions(bool signAssembly, bool delaySign)
     {
-        var target = new SourceProjectInfo()
-        {
-            AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                properties: new Dictionary<string, string>() {
+        var target = new SourceProjectInfo(
+            TestHelper.SetupProjectAnalyzerResult(
+                properties: new Dictionary<string, string>()
+                {
                     { "TargetDir", "/test/bin/Debug/" },
                     { "TargetFileName", "TestName.dll" },
                     { "AssemblyName", "AssemblyName" },
                     { "SignAssembly", signAssembly.ToString() },
                     { "DelaySign", delaySign.ToString() },
                     { "AssemblyOriginatorKeyFile", "test/keyfile.snk" }
-                }).Object
-        };
+                }).Object, null);
 
         var options = target.AnalyzerResult.GetCompilationOptions();
 
@@ -118,10 +115,7 @@ public class SourceProjectInfoTests : TestBase
             properties.Add(nullableTuple.Value.Key, nullableTuple.Value.Value);
         }
 
-        var target = new SourceProjectInfo()
-        {
-            AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: properties).Object
-        };
+        var target = new SourceProjectInfo(TestHelper.SetupProjectAnalyzerResult(properties: properties).Object, null);
 
         var options = target.AnalyzerResult.GetCompilationOptions();
         options.NullableContextOptions.ShouldBe(expectedNullable);

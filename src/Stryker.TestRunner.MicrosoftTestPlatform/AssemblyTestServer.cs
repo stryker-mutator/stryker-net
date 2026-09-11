@@ -213,9 +213,12 @@ internal sealed class AssemblyTestServer : IDisposable
         {
             try
             {
-                await _client.ExitAsync().ConfigureAwait(false);
-                // Coverage data must be flushed before disposing resources
+                // ExitAsync sends a JSON-RPC notification, which StreamJsonRpc has no
+                // CancellationToken overload for; a stuck/backpressured send would otherwise block this
+                // forever, so it gets the same bound as the exit wait below rather than none at all.
                 var timeout = TimeSpan.FromSeconds(30);
+                await _client.ExitAsync().WaitAsync(timeout).ConfigureAwait(false);
+                // Coverage data must be flushed before disposing resources
                 await _client.WaitServerProcessExitAsync().WaitAsync(timeout).ConfigureAwait(false);
             }
             catch (TimeoutException exception)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -90,7 +91,11 @@ public abstract class Input<TInput> : IInput<TInput>
                 return optionsString.ToString();
             }
             optionsString.Append('\'');
-            optionsString.Append(Default.ToString());
+            // Format with the invariant culture so fractional defaults (e.g. 1.5) render the same
+            // regardless of the machine's locale, keeping the help text and docs consistent.
+            optionsString.Append(Default is IFormattable formattable
+                ? formattable.ToString(null, CultureInfo.InvariantCulture)
+                : Default.ToString());
             optionsString.Append('\'');
             return optionsString.ToString();
         }

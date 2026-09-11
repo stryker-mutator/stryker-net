@@ -9,4 +9,12 @@
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Stryker.Utilities\Stryker.Utilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Stryker.Core.UnitTest" />
+    <InternalsVisibleTo Include="Stryker.Solutions.UnitTest" />
+  </ItemGroup>
 </Project>
