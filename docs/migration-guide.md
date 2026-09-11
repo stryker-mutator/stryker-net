@@ -18,6 +18,9 @@ Please [download and install the dotnet 10 runtime](https://dotnet.microsoft.com
 
 _Note it is not neccesary to target dotnet 10 in your projects. Dotnet 10 is a runtime requirement for stryker, we will still compile your project to your existing target frameworks._
 
+### Disk baseline output path
+
+Stryker now strictly follows the provided output path with `--output-path` when the disk baseline provider is enabled. This means in some cases your existing baseline will not be recognized on the first run with the updated Stryker v5. After a full run the baseline feature should work like expected again.
 
 ## V3.x --> V4.x
 
