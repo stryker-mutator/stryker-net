@@ -520,6 +520,134 @@ public class Calculator
         projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.Pending).ShouldBe(3);
     }
 
+    [TestMethod]
+    public void ShouldCompileAndRollbackErrorWhenMutationErasesTerminalThrow()
+    {
+        // issue #3783: erasing the terminal throw of a non-void method causes CS0161 at the method
+        // declaration. Only the mutations erasing the throw should be rolled back; the others must survive.
+        var sourceFile = """
+            using System;
+            using System.Collections.Generic;
+
+            namespace ExampleProject;
+
+            public static class MethodResolver
+            {
+                private static readonly List<string> _log = new();
+
+                public static int FailForMissingKey(string key)
+                {
+                    _log.Add(key);
+                    throw new KeyNotFoundException($"No handler matched {key}.");
+                }
+            }
+            """;
+        var projectContentsMutants = MutateAndCompileSource(sourceFile).ToList();
+        // those results can change if mutators are added.
+        // the block mutation on the method body and the statement mutation on the throw are genuine compile errors
+        projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.CompileError).ShouldBe(2);
+        // the statement mutation on _log.Add and the string mutation must survive
+        projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.Pending).ShouldBe(2);
+        projectContentsMutants.Where(t => t.Mutation.Type == Mutator.String)
+            .ShouldAllBe(t => t.ResultStatus == MutantStatus.Pending);
+    }
+
+    [TestMethod]
+    public void ShouldCompileAndRollbackErrorWhenMutationErasesThrowInCatchClause()
+    {
+        // issue #3783: erasing the throw of a catch clause lets the catch complete normally, breaking
+        // definite assignment (CS0165) at a use site after the try/catch. Only the mutations erasing
+        // the assignment or the throw should be rolled back; the others must survive.
+        var sourceFile = """
+            using System;
+            using System.Collections.Generic;
+
+            namespace ExampleProject;
+
+            public static class Transformer
+            {
+                public static int Transform(string[] upperInputs)
+                {
+                    string[] transformed;
+                    try
+                    {
+                        transformed = (string[])upperInputs.Clone();
+                    }
+                    catch (Exception e)
+                    {
+                        throw new InvalidOperationException("Failed to transform", e);
+                    }
+                    if (transformed.Length != upperInputs.Length)
+                    {
+                        return -1;
+                    }
+                    return transformed.Length;
+                }
+            }
+            """;
+        var projectContentsMutants = MutateAndCompileSource(sourceFile).ToList();
+        // those results can change if mutators are added.
+        // block mutations on the method body, try block and catch block plus the statement mutation
+        // on the throw are genuine compile errors
+        projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.CompileError).ShouldBe(4);
+        // the string, equality, unary and 'return -1' block mutations must survive
+        projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.Pending).ShouldBe(4);
+        projectContentsMutants.Where(t => t.Mutation.Type == Mutator.String || t.Mutation.Type == Mutator.Equality)
+            .ShouldAllBe(t => t.ResultStatus == MutantStatus.Pending);
+    }
+
+    [TestMethod]
+    public void ShouldCompileAndRollbackErrorWhenCollectionExpressionAssignmentsAreErased()
+    {
+        // issue #3783: block mutations erasing collection expression assignments across if/else chains
+        // break definite assignment (CS0165) at the use site. They must be attributed and rolled back
+        // individually, without safe mode discarding the collection expression mutations.
+        var sourceFile = """
+            using System;
+
+            namespace ExampleProject;
+
+            public enum AccessArea { ViewAlpha, EditAlpha, ViewBeta, EditBeta }
+
+            public static class AccessExtensions
+            {
+                public static (AccessArea[][], AccessArea[][]) ResolveRights(int kind, bool canEdit)
+                {
+                    AccessArea[][] primaryRights;
+                    AccessArea[][] secondaryRights;
+                    if (kind == 1)
+                    {
+                        if (canEdit)
+                        {
+                            primaryRights = [[AccessArea.ViewAlpha, AccessArea.EditAlpha]];
+                            secondaryRights = [[AccessArea.ViewBeta, AccessArea.EditBeta]];
+                        }
+                        else
+                        {
+                            primaryRights = [[AccessArea.ViewAlpha]];
+                            secondaryRights = [[AccessArea.ViewBeta]];
+                        }
+                    }
+                    else
+                    {
+                        primaryRights = [[AccessArea.ViewAlpha]];
+                        secondaryRights = [[AccessArea.ViewBeta]];
+                    }
+                    return (primaryRights, secondaryRights);
+                }
+            }
+            """;
+        var projectContentsMutants = MutateAndCompileSource(sourceFile).ToList();
+        // those results can change if mutators are added.
+        // only the block mutations erasing branch assignments are genuine compile errors
+        projectContentsMutants.Where(t => t.ResultStatus == MutantStatus.CompileError)
+            .ShouldAllBe(t => t.Mutation.Type == Mutator.Block);
+        projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.CompileError).ShouldBe(4);
+        // collection expression mutations compile and must survive
+        projectContentsMutants.Where(t => t.Mutation.Type == Mutator.CollectionExpression)
+            .ShouldAllBe(t => t.ResultStatus == MutantStatus.Pending);
+    }
+
     private static IEnumerable<IMutant> MutateAndCompileSource(string sourceFile)
     {
         var filesystemRoot = Path.GetPathRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
