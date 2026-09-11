@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
@@ -15,6 +16,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.VsTest;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.UnitTest.MutantFilters;
 
@@ -334,6 +336,159 @@ public class SinceMutantFilterTests : TestBase
 
         // Assert
         result.ShouldBe(mutants);
+    }
+
+    [TestMethod]
+    public void Should_LogCsharpChangedFilesAtDebug_AndNonCsharpChangedFilesAtInformation()
+    {
+        // Arrange
+        var captureProvider = new CapturingLoggerProvider();
+        ApplicationLogging.LoggerFactory = new LoggerFactory(new[] { captureProvider });
+
+        var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+        diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
+        {
+            ChangedSourceFiles = new Collection<string> { "C:/src/myfile.cs", "C:/docs/readme.md" },
+            ChangedTestFiles = new Collection<string> { "C:/tests/mytest.cs" }
+        });
+
+        // Act
+        _ = new SinceMutantFilter(diffProvider.Object);
+
+        // Assert
+        captureProvider.Entries.ShouldContain(e => e.Level == LogLevel.Information && e.Message.Contains("readme.md"));
+        captureProvider.Entries.ShouldNotContain(e => e.Level == LogLevel.Information && e.Message.Contains("myfile.cs"));
+        captureProvider.Entries.ShouldNotContain(e => e.Level == LogLevel.Information && e.Message.Contains("mytest.cs"));
+        captureProvider.Entries.ShouldContain(e => e.Level == LogLevel.Debug && e.Message.Contains("myfile.cs"));
+        captureProvider.Entries.ShouldContain(e => e.Level == LogLevel.Debug && e.Message.Contains("mytest.cs"));
+        captureProvider.Entries.ShouldNotContain(e => e.Level == LogLevel.Debug && e.Message.Contains("readme.md"));
+    }
+
+    [TestMethod]
+    public void Should_LogRelevantChangedSourceFile_WhenFilteringMutants()
+    {
+        // Arrange
+        var captureProvider = new CapturingLoggerProvider();
+        ApplicationLogging.LoggerFactory = new LoggerFactory(new[] { captureProvider });
+
+        var options = new StrykerOptions() { Since = false };
+        var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+
+        var myFile = Path.Combine("C:/test/", "myfile.cs");
+
+        diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
+        {
+            ChangedSourceFiles = new Collection<string>()
+            {
+                myFile
+            },
+            ChangedTestFiles = new Collection<string>()
+        });
+
+        var target = new SinceMutantFilter(diffProvider.Object);
+        var file = new CsharpFileLeaf { FullPath = myFile };
+
+        // Act
+        target.FilterMutants(new List<Mutant> { new Mutant() }, file, options);
+
+        // Assert
+        captureProvider.Entries.ShouldContain(e => e.Level == LogLevel.Information && e.Message.Contains(myFile));
+    }
+
+    [TestMethod]
+    public void Should_LogRelevantChangedTestFile_WhenCoveringTestsChanged()
+    {
+        // Arrange
+        var captureProvider = new CapturingLoggerProvider();
+        ApplicationLogging.LoggerFactory = new LoggerFactory(new[] { captureProvider });
+
+        var options = new StrykerOptions()
+        {
+            WithBaseline = false,
+            ProjectVersion = "version"
+        };
+
+        var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+
+        var tests = new TestSet();
+        var test1 = new TestDescription("id1", "name1", "C:/testfile1.cs");
+        var test2 = new TestDescription("id2", "name2", "C:/testfile2.cs");
+        tests.RegisterTests(new[] { test1, test2 });
+        diffProvider.SetupGet(x => x.Tests).Returns(tests);
+        diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
+        {
+            ChangedSourceFiles = new List<string>(),
+            ChangedTestFiles = new List<string> { "C:/testfile1.cs" }
+        });
+
+        var target = new SinceMutantFilter(diffProvider.Object);
+        var mutant = new Mutant { CoveringTests = new TestIdentifierList(new[] { test1 }) };
+
+        // Act
+        target.FilterMutants(new List<Mutant> { mutant }, new CsharpFileLeaf(), options);
+
+        // Assert
+        captureProvider.Entries.ShouldContain(e => e.Level == LogLevel.Information && e.Message.Contains("C:/testfile1.cs"));
+        captureProvider.Entries.ShouldNotContain(e => e.Message.Contains("C:/testfile2.cs"));
+    }
+
+    [TestMethod]
+    public void Should_LogRelevantChangedTestFile_OnlyOnce()
+    {
+        // Arrange
+        var captureProvider = new CapturingLoggerProvider();
+        ApplicationLogging.LoggerFactory = new LoggerFactory(new[] { captureProvider });
+
+        var options = new StrykerOptions()
+        {
+            WithBaseline = false,
+            ProjectVersion = "version"
+        };
+
+        var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+
+        var tests = new TestSet();
+        var test1 = new TestDescription("id1", "name1", "C:/testfile1.cs");
+        tests.RegisterTests(new[] { test1 });
+        diffProvider.SetupGet(x => x.Tests).Returns(tests);
+        diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
+        {
+            ChangedSourceFiles = new List<string>(),
+            ChangedTestFiles = new List<string> { "C:/testfile1.cs" }
+        });
+
+        var target = new SinceMutantFilter(diffProvider.Object);
+        var mutants = new List<Mutant> { new Mutant { CoveringTests = new TestIdentifierList(new[] { test1 }) } };
+
+        // Act
+        target.FilterMutants(mutants, new CsharpFileLeaf() { FullPath = "C:/src/file1.cs" }, options);
+        target.FilterMutants(mutants, new CsharpFileLeaf() { FullPath = "C:/src/file2.cs" }, options);
+
+        // Assert
+        captureProvider.Entries.Count(e => e.Level == LogLevel.Information && e.Message.Contains("C:/testfile1.cs")).ShouldBe(1);
+    }
+
+    private sealed class CapturingLoggerProvider : ILoggerProvider
+    {
+        public List<(LogLevel Level, string Message)> Entries { get; } = new List<(LogLevel Level, string Message)>();
+
+        public ILogger CreateLogger(string categoryName) => new CapturingLogger(Entries);
+
+        public void Dispose() { }
+
+        private sealed class CapturingLogger : ILogger
+        {
+            private readonly List<(LogLevel Level, string Message)> _entries;
+
+            public CapturingLogger(List<(LogLevel Level, string Message)> entries) => _entries = entries;
+
+            public IDisposable BeginScope<TState>(TState state) => null;
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) =>
+                _entries.Add((logLevel, formatter(state, exception)));
+        }
     }
 }
 
