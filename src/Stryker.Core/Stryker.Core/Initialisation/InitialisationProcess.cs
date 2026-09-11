@@ -213,7 +213,7 @@ public class InitialisationProcess : IInitialisationProcess
                 _logger.LogWarning(message);
             }
 
-            if (!causeFound && testProject.References.Any(r => r.Contains("Microsoft.Testing.Platform")))
+            if (!causeFound && testProject.IsMTPTestProject())
             {
                 causeFound = true;
                 var message = $"Project '{testProject.ProjectFilePath}' is using Microsoft.Testing.Platform which is not yet supported by Stryker, " +

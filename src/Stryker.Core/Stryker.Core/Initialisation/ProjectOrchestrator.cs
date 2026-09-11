@@ -16,6 +16,7 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.TestRunner.VsTest;
 using Stryker.TestRunner.MicrosoftTestPlatform;
+using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.Initialisation;
 
@@ -103,7 +104,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         {
             foreach (var testProject in projectInfo.TestProjectsInfo.TestProjects)
             {
-                if (testProject.AnalyzerResult.References.Any(r => r.Contains("Microsoft.Testing.Platform")))
+                if (testProject.AnalyzerResult.IsMTPTestProject())
                 {
                     return true;
                 }
