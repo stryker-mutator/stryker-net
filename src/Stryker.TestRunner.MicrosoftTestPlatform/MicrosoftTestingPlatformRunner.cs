@@ -49,6 +49,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
     private string RunnerId => $"MtpRunner-{_id}";
 
+    /// <summary>
+    /// Path of the mutant-id control file this runner shares with its test hosts. Exposed for unit testing.
+    /// </summary>
+    internal string MutantFilePath => _mutantFilePath;
+
     public MicrosoftTestingPlatformRunner(
         int id,
         Dictionary<string, List<TestNode>> testsByAssembly,
@@ -72,10 +77,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         // left behind by a crashed earlier run (same runner id, same assembly), and concurrent
         // Stryker processes could clobber each other's files. The nonce covers what the process id
         // alone does not (pid reuse, several runner instances with the same id in one process).
-        // Shared by the whole-run coverage files and by the per-test ones, which are read, rewritten
-        // and deleted while a run is in flight and so must name one run and no other.
+        // Shared by the mutant-id control file and all coverage files. Runner ids are pool-local,
+        // so the control file also needs the full identity to prevent another runner's construction,
+        // writes or disposal from changing this runner's active mutant.
         _runIdentity = $"{Environment.ProcessId}-{_id}-{Guid.NewGuid().ToString("N")[..8]}";
-        _mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-{_id}.txt");
+        _mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-{_runIdentity}.txt");
         _coverageFilePathBase = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{_runIdentity}");
 
         // Initialize with no active mutation
