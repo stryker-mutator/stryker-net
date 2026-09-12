@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 using Stryker.TestRunner.Results;
@@ -108,31 +109,45 @@ public class MicrosoftTestingPlatformRunnerIsolationTests
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task TestMultipleMutantsAsync_BatchContainingStaticMutant_RunsEachMutantAloneAndActivated()
+    [DataRow(false, false, false)]
+    [DataRow(true, true, false)]
+    [DataRow(false, true, false)]
+    [DataRow(true, false, false)]
+    [DataRow(false, false, true)]
+    public async Task TestMultipleMutantsAsync_Batch_ThrowsBeforeChangingRunnerState(
+        bool firstIsStatic, bool secondIsStatic, bool requiresIsolation)
     {
         using var runner = CreateRunner();
+        await runner.TestMultipleMutantsAsync(CreateProject("/test.dll"), null, [CreateMutant(42)], null);
+        runner.Events.Clear();
+        runner.ActiveMutantIds.Clear();
+        var project = CreateProject("/test.dll");
+        var updateCount = 0;
+        bool Update(IReadOnlyList<IMutant> testedMutants, ITestIdentifiers failed, ITestIdentifiers ran, ITestIdentifiers timedOut)
+        {
+            updateCount++;
+            return true;
+        }
 
-        var result = await runner.TestMultipleMutantsAsync(
-            CreateProject("/test.dll"), null, [CreateMutant(1), CreateMutant(2, isStaticValue: true)], null);
+        var exception = await Should.ThrowAsync<GeneralStrykerException>(() => runner.TestMultipleMutantsAsync(
+            project, null, [CreateMutant(1, firstIsStatic, requiresIsolation), CreateMutant(2, secondIsStatic)], Update));
 
-        // The control file activates a single id, so a batched session would run with no
-        // mutation active (-1). Isolated batches are split: every mutant runs alone with
-        // its own mutation live.
-        runner.Events.ShouldBe(["reset", "run:/test.dll", "reset", "reset", "run:/test.dll", "reset"]);
-        runner.ActiveMutantIds.ShouldBe([1, 2]);
-        result.FailingTests.GetIdentifiers().ShouldBe(["failing-test"]);
+        exception.Message.ShouldContain("only supports one mutant per test run");
+        Mock.Get(project).Verify(x => x.GetTestAssemblies(), Times.Never);
+        runner.Events.ShouldBeEmpty();
+        runner.ActiveMutantIds.ShouldBeEmpty();
+        runner.ReadMutantFile().ShouldBe(42);
+        updateCount.ShouldBe(0);
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task TestMultipleMutantsAsync_RegularBatch_CurrentlyRunsUnmutated()
+    public async Task TestMultipleMutantsAsync_EmptyMutantList_RunsWithoutMutation()
     {
         using var runner = CreateRunner();
 
         await runner.TestMultipleMutantsAsync(
-            CreateProject("/test.dll"), null, [CreateMutant(1), CreateMutant(2)], null);
+            CreateProject("/test.dll"), null, [], null);
 
-        // The single-id control channel cannot activate a regular batch. MutationTestProcess
-        // disables MTP batching, so production calls arrive one mutant at a time.
         runner.Events.ShouldBe(["run:/test.dll"]);
         runner.ActiveMutantIds.ShouldBe([-1]);
     }
@@ -143,20 +158,21 @@ public class MicrosoftTestingPlatformRunnerIsolationTests
         using var runner = CreateRunner();
         runner.CrashOnRuns.Add(1);
 
-        await runner.TestMultipleMutantsAsync(
+        var result = await runner.TestMultipleMutantsAsync(
             CreateProject("/test.dll"), null, [CreateMutant(1, isStaticValue: true)], null);
 
         // Even when the session fails, the trailing cleanup must run so the next
         // session cannot observe state from the isolated one.
         runner.Events.ShouldBe(["reset", "run:/test.dll", "reset"]);
         runner.ReadMutantFile().ShouldBe(-1);
+        result.SessionHadRuntimeIssue.ShouldBeTrue();
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task TestMultipleMutantsAsync_BatchWithCrashedIsolatedMutant_ReturnsInconclusiveFlaggedResult()
+    public async Task TestMultipleMutantsAsync_CrashedIsolatedMutant_ReportsRuntimeIssue()
     {
         using var runner = CreateRunner();
-        runner.CrashOnRuns.Add(2);
+        runner.CrashOnRuns.Add(1);
 
         var updates = new List<(int[] MutantIds, string[] FailedTests)>();
         bool Update(IReadOnlyList<IMutant> testedMutants, ITestIdentifiers failed, ITestIdentifiers ran, ITestIdentifiers timedOut)
@@ -167,19 +183,12 @@ public class MicrosoftTestingPlatformRunnerIsolationTests
 
         var result = await runner.TestMultipleMutantsAsync(
             CreateProject("/test.dll"), null,
-            [CreateMutant(1, isStaticValue: true), CreateMutant(2, isStaticValue: true)], Update);
+            [CreateMutant(1, isStaticValue: true)], Update);
 
-        // Attribution stays per-session: each mutant's update carries only its own outcome.
-        updates.Count.ShouldBe(2);
+        updates.Count.ShouldBe(1);
         updates[0].MutantIds.ShouldBe([1]);
-        updates[0].FailedTests.ShouldBe(["failing-test"]);
-        updates[1].MutantIds.ShouldBe([2]);
-        updates[1].FailedTests.ShouldBeEmpty();
+        updates[0].FailedTests.ShouldBeEmpty();
 
-        // The merged batch result must signal the crash but stay inconclusive (empty lists):
-        // the executor re-analyzes a flagged multi-mutant batch with the flags dropped, so a
-        // union of the siblings' results would kill or survive the crashed mutant with evidence
-        // that is not its own. Empty lists leave it Pending for the single-mutant retry path.
         result.SessionHadRuntimeIssue.ShouldBeTrue();
         result.SessionTimedOut.ShouldBeFalse();
         result.FailingTests.GetIdentifiers().ShouldBeEmpty();
@@ -190,10 +199,10 @@ public class MicrosoftTestingPlatformRunnerIsolationTests
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task TestMultipleMutantsAsync_BatchWithTimedOutIsolatedMutant_ReturnsInconclusiveFlaggedResult()
+    public async Task TestMultipleMutantsAsync_TimedOutIsolatedMutant_ReportsTimeoutAndResetsServer()
     {
         using var runner = CreateRunner();
-        runner.TimeoutOnRuns.Add(2);
+        runner.TimeoutOnRuns.Add(1);
 
         var updates = new List<(int[] MutantIds, string[] FailedTests, string[] TimedOutTests)>();
         bool Update(IReadOnlyList<IMutant> testedMutants, ITestIdentifiers failed, ITestIdentifiers ran, ITestIdentifiers timedOut)
@@ -206,25 +215,19 @@ public class MicrosoftTestingPlatformRunnerIsolationTests
 
         var result = await runner.TestMultipleMutantsAsync(
             CreateProject("/test.dll"), null,
-            [CreateMutant(1, isStaticValue: true), CreateMutant(2, isStaticValue: true)], Update);
+            [CreateMutant(1, isStaticValue: true)], Update);
 
-        updates.Count.ShouldBe(2);
+        updates.Count.ShouldBe(1);
         updates[0].MutantIds.ShouldBe([1]);
-        updates[0].FailedTests.ShouldBe(["failing-test"]);
-        updates[0].TimedOutTests.ShouldBeEmpty();
-        updates[1].MutantIds.ShouldBe([2]);
-        updates[1].FailedTests.ShouldBeEmpty();
-        updates[1].TimedOutTests.ShouldBe(["uid-t1"]);
+        updates[0].FailedTests.ShouldBeEmpty();
+        updates[0].TimedOutTests.ShouldBe(["uid-t1"]);
 
-        // Timeout twin of the crash case above - same inconclusive-but-flagged contract:
-        // keep the session flag, empty the lists, so the executor's single-mutant retry
-        // path classifies the timed-out mutant instead of its siblings' results.
         result.SessionTimedOut.ShouldBeTrue();
         result.SessionHadRuntimeIssue.ShouldBeFalse();
         result.FailingTests.GetIdentifiers().ShouldBeEmpty();
-        result.ExecutedTests.IsEveryTest.ShouldBeFalse();
-        result.ExecutedTests.GetIdentifiers().ShouldBeEmpty();
-        result.TimedOutTests.GetIdentifiers().ShouldBeEmpty();
+        result.TimedOutTests.GetIdentifiers().ShouldBe(["uid-t1"]);
+        runner.Events.ShouldBe(["reset", "run:/test.dll", "reset"]);
+        runner.ReadMutantFile().ShouldBe(-1);
     }
 
     [TestMethod, Timeout(1000)]
