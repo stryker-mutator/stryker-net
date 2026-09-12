@@ -57,7 +57,7 @@ public sealed class ProjectOrchestrator(
         _initializationProcess.BuildProjects(options, projectInfos);
 
         // create a test runner based on the selected option
-        _runner = runner ?? CreateTestRunner(options, projectInfos);
+        _runner = runner ?? CreateTestRunner(options, projectInfos.SourceProjectInfos);
         _mutationTestExecutor.TestRunner = _runner;
         InitializeDashboardProjectInformation(options, projectInfos.SourceProjectInfos.First());
         var inputs = await _initializationProcess.GetMutationTestInputsAsync(options, projectInfos, _runner);
@@ -102,6 +102,7 @@ public sealed class ProjectOrchestrator(
             }
         }
         return false;
+    }
 
     private void InitializeDashboardProjectInformation(IStrykerOptions options, SourceProjectInfo projectInfo)
     {
