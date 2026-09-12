@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
@@ -19,6 +20,8 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 /// environment variables. Used by MicrosoftTestPlatformRunnerPool.
 /// Maintains persistent test server connections per assembly to reduce process startup overhead.
 /// Uses file-based mutant control to allow changing the active mutant without restarting processes.
+/// Mutants that need process isolation (static initializer mutations) are the exception: they get a
+/// dedicated server process per session, see <see cref="RequiresProcessIsolation"/>.
 /// </summary>
 public class MicrosoftTestingPlatformRunner : IDisposable
 {
@@ -99,10 +102,19 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         IReadOnlyList<IMutant> mutants,
         TestUpdateHandler? update)
     {
+        // The file-based control channel can activate only one mutant per test run.
+        if (mutants.Count > 1)
+        {
+            throw new GeneralStrykerException("Internal error: the MTP runner only supports one mutant per test run.");
+        }
+
         var assemblies = project.GetTestAssemblies();
 
-        // Determine which mutant to activate
-        // When testing a single mutant, activate it; otherwise use -1 (no mutation)
+        if (RequiresProcessIsolation(mutants))
+        {
+            return TestMutantInIsolationAsync(assemblies, mutants[0], update, timeoutCalc);
+        }
+
         var mutantId = mutants.Count == 1 ? mutants[0].Id : -1;
 
         _logger.LogDebug("{RunnerId}: Testing mutant(s) [{Mutants}] with active mutation ID: {MutantId}",
@@ -111,7 +123,43 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         return RunAllTestsAsync(assemblies, mutantId, mutants, update, timeoutCalc);
     }
 
-    public async Task ResetServerAsync()
+    /// <summary>
+    /// A mutation inside a static initializer (or one flagged by coverage analysis as needing early
+    /// activation) only takes effect while the type initializes, which happens once per test-host
+    /// process. Testing it on a reused host is wrong in both directions: the mutation cannot activate
+    /// on a host whose types are already initialized (false Survived), and if it is active when a
+    /// fresh host initializes them, the mutated state is baked in for the process lifetime, so its
+    /// test failures repeat in every later session and kill unrelated mutants (false Killed).
+    /// </summary>
+    private static bool RequiresProcessIsolation(IReadOnlyList<IMutant> mutants) =>
+        mutants.Any(m => m.IsStaticValue || m.MustBeTestedInIsolation);
+
+    /// <summary>
+    /// Resets servers before the run so static initialization sees the active mutant, then clears
+    /// the control file and resets servers afterward so later runs cannot inherit mutated state.
+    /// </summary>
+    private async Task<ITestRunResult> TestMutantInIsolationAsync(
+        IReadOnlyList<string> assemblies,
+        IMutant mutant,
+        TestUpdateHandler? update,
+        ITimeoutValueCalculator? timeoutCalc)
+    {
+        _logger.LogDebug("{RunnerId}: Testing mutant {MutantId} in an isolated test-server process",
+            RunnerId, mutant.Id);
+
+        await ResetServerAsync().ConfigureAwait(false);
+        try
+        {
+            return await RunAllTestsAsync(assemblies, mutant.Id, [mutant], update, timeoutCalc).ConfigureAwait(false);
+        }
+        finally
+        {
+            WriteMutantIdToFile(-1);
+            await ResetServerAsync().ConfigureAwait(false);
+        }
+    }
+
+    public virtual async Task ResetServerAsync()
     {
         _logger.LogDebug("{RunnerId}: Resetting test servers to reload assemblies", RunnerId);
         
