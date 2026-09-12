@@ -49,6 +49,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new DoNotMutateOrchestrator<FieldDeclarationSyntax>(
             t => t.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword))),
         new DoNotMutateOrchestrator<LocalDeclarationStatementSyntax>(t => t.IsConst),
+        new ConstructorInitializerOrchestrator(),
         // ensure pre-/post-increment/decrement mutations are mutated at statement level
         new MutateAtStatementLevelOrchestrator<PostfixUnaryExpressionSyntax>(t =>
             t.Parent is ExpressionStatementSyntax or ForStatementSyntax),
