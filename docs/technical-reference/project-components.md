@@ -22,6 +22,8 @@ With the abstract class they both implement:
 ### New Design
 When implementing F# the old structure showed it's disadvantages since F# uses a different type to indicate syntax trees.
 
+> **Note:** The rest of this page describes a historical design. F# support has since been abandoned (see [#1216](https://github.com/stryker-mutator/stryker-net/issues/1216)) and the generic split it motivated was collapsed again in [#3611](https://github.com/stryker-mutator/stryker-net/pull/3611).
+
 To solve this ```ProjectComponent``` was made generic ```ProjectComponent<T>```.
 
 However many parts of stryker use ```FolderComposite``` and ```FileLeaf``` without needing access to the syntax trees or to know what language is used.
