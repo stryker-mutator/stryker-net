@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TargetProject.Constructs;
 using TargetProject.StrykerFeatures;
 using Xunit;
 using Xunit.Abstractions;
@@ -13,6 +14,14 @@ namespace ExampleProject.XUnit
         public Constructs(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
+        }
+
+        // The implicit-array mutator empties `new[]{1,2,3}` into `new int[]{}`;
+        // asserting the inferred elements kills that mutant.
+        [Fact]
+        public void ImplicitArrayCreation_ShouldContainInferredElements()
+        {
+            Assert.Equal(new[] { 1, 2, 3 }, CSharp3.ImplicitArrayCreation());
         }
 
         // explore the various ways to have test cases
