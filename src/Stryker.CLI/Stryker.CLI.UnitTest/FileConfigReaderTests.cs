@@ -76,6 +76,7 @@ public class FileConfigReaderTests
         mock.VerifyAll();
 
         actualInputs.AdditionalTimeoutInput.SuppliedInput.ShouldBe(9999);
+        actualInputs.TimeoutRatioInput.SuppliedInput.ShouldBe(2.5);
         actualInputs.VerbosityInput.SuppliedInput.ShouldBe("trace");
         actualInputs.SourceProjectNameInput.SuppliedInput.ShouldBe("ExampleProject.csproj");
         actualInputs.ReportersInput.SuppliedInput.ShouldHaveSingleItem();
@@ -126,6 +127,7 @@ public class FileConfigReaderTests
         mock.VerifyAll();
 
         actualInputs.AdditionalTimeoutInput.SuppliedInput.ShouldBe(9999);
+        actualInputs.TimeoutRatioInput.SuppliedInput.ShouldBe(2.5);
         actualInputs.VerbosityInput.SuppliedInput.ShouldBe("trace");
         actualInputs.SourceProjectNameInput.SuppliedInput.ShouldBe("ExampleProject.csproj");
         actualInputs.ReportersInput.SuppliedInput.ShouldHaveSingleItem();

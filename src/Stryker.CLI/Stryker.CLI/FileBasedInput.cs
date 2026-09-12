@@ -34,6 +34,9 @@ public class FileBasedInput : IExtraData
     [JsonPropertyName("additional-timeout")]
     public int? AdditionalTimeout { get; init; }
 
+    [JsonPropertyName("timeout-ratio")]
+    public double? TimeoutRatio { get; init; }
+
     [JsonPropertyName("mutate")]
     public string[] Mutate { get; init; }
 

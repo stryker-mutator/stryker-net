@@ -41,6 +41,7 @@ public class StrykerCLIInitCommandTests
         var config = JsonSerializer.Deserialize<FileBasedInputOuter>(configFile).Input;
 
         config.AdditionalTimeout.ShouldBe(new AdditionalTimeoutInput().Default);
+        config.TimeoutRatio.ShouldBe(new TimeoutRatioInput().Default);
         config.Verbosity.ShouldBe(new VerbosityInput().Default);
         config.Project.ShouldBe(new ProjectNameInput().Default);
         config.Reporters.ShouldBe(new ReportersInput().Default);
