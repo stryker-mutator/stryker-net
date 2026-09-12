@@ -188,6 +188,7 @@ public class StrykerInputs : IStrykerInputs
             ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate()),
             BreakOnInitialTestFailure = BreakOnInitialTestFailureInput.Validate(),
             TestRunner = testRunner,
+            IsTestRunnerExplicitlyConfigured = TestRunnerInput.SuppliedInput is not null,
             MutantIdProvider = new BasicIdProvider()
         };
         return _strykerOptionsCache;

@@ -201,6 +201,16 @@ public static class IAnalyzerResultExtensions
 
     public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
 
+    public static bool IsMTPTestProject(this IAnalyzerResult analyzerResult)
+    {
+        if (bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestingPlatformApplication"), out var isMTPTestProject) && isMTPTestProject)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     private static bool IsTestProject(this IAnalyzerResult analyzerResult)
     {
         // if 'IsTestingPlatformApplication' is defined and true, this is a test project
