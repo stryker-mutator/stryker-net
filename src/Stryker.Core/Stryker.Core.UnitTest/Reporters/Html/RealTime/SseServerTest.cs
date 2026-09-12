@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
@@ -34,10 +35,10 @@ public class SseServerTest : TestBase
 
     private bool WaitForConnection(int timeout)
     {
-        var watch = new Stopwatch();
-        watch.Start();
         lock (_lock)
         {
+            var watch = new Stopwatch();
+            watch.Start();
             while (!_connected && watch.ElapsedMilliseconds < timeout)
             {
                 Monitor.Wait(_lock, Math.Max(timeout - (int)watch.ElapsedMilliseconds, 1));
@@ -49,10 +50,10 @@ public class SseServerTest : TestBase
 
     private bool WaitForDisConnection(int timeout)
     {
-        var watch = new Stopwatch();
-        watch.Start();
         lock (_lock)
         {
+            var watch = new Stopwatch();
+            watch.Start();
             while (_sut.HasConnectedClients && watch.ElapsedMilliseconds < timeout)
             {
                 Monitor.Wait(_lock,  Math.Max(Math.Min( timeout - (int)watch.ElapsedMilliseconds, 100), 1));
@@ -129,7 +130,7 @@ public class SseServerTest : TestBase
 
         var @object = new { Id = "1", Status = "Survived" };
         var sseClient = new EventSource(new Uri($"http://localhost:{_sut.Port}/"));
-        
+
         Task.Run(() => sseClient.StartAsync());
         WaitForConnection(500).ShouldBeTrue();
         Task.Run( ()=> {sseClient.Close(); sseClient.Dispose();}).Wait();
@@ -153,12 +154,138 @@ public class SseServerTest : TestBase
     public void ShouldIndicateWhenAtLeastOneClientIsConnected()
     {
         _sut.OpenSseEndpoint();
-        var sseClient = new EventSource(new Uri($"http://localhost:{_sut.Port}/"));
+        using var sseClient = new EventSource(new Uri($"http://localhost:{_sut.Port}/"));
 
         Task.Run(() => sseClient.StartAsync());
         WaitForConnection(500).ShouldBeTrue();
 
         _sut.HasConnectedClients.ShouldBeTrue();
         _sut.CloseSseEndpoint();
+        _sut.HasConnectedClients.ShouldBeFalse();
+        _sut.CloseSseEndpoint();
+    }
+
+    [TestMethod]
+    public void ShouldCloseEndpointFromClientConnectedHandler()
+    {
+        _sut.ClientConnected += (_, _) => _sut.CloseSseEndpoint();
+        _sut.OpenSseEndpoint();
+        using var sseClient = new EventSource(new Uri($"http://localhost:{_sut.Port}/"));
+
+        Task.Run(() => sseClient.StartAsync());
+
+        WaitForConnection(500).ShouldBeTrue();
+        SpinWait.SpinUntil(() => !_sut.HasConnectedClients, 500).ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void ShouldContinueDisposingWritersAfterAnIoFailure()
+    {
+        _sut.OpenSseEndpoint();
+        var failingWriter = new StreamWriter(new FailingWriteStream());
+        failingWriter.Write("buffered");
+        var trackingStream = new TrackingStream();
+        var trackingWriter = new StreamWriter(trackingStream);
+        _sut._writers.Add(failingWriter);
+        _sut._writers.Add(trackingWriter);
+
+        Should.NotThrow(_sut.CloseSseEndpoint);
+
+        _sut.ConnectedClients.ShouldBe(0);
+        trackingStream.IsDisposed.ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void ShouldWaitForConcurrentDisposalToComplete()
+    {
+        ThreadPool.SetMinThreads(3,1);
+
+        _sut.OpenSseEndpoint();
+        var blockingStream = new BlockingDisposeStream();
+        _sut._writers.Add(new StreamWriter(blockingStream));
+
+        var firstClose = Task.Run(_sut.CloseSseEndpoint);
+        blockingStream.DisposeStarted.Wait(2000).ShouldBeTrue();
+        try
+        {
+            var secondStarted = new ManualResetEventSlim();
+            var secondClose = Task.Run(() =>
+            {
+                secondStarted.Set();
+                _sut.CloseSseEndpoint();
+            });
+            secondStarted.Wait(10000).ShouldBeTrue();
+
+            secondClose.Wait(10000).ShouldBeFalse();
+            blockingStream.AllowDispose.Set();
+            Task.WaitAll(firstClose, secondClose);
+        }
+        finally
+        {
+            blockingStream.AllowDispose.Set();
+        }
+
+        blockingStream.IsDisposed.ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void ShouldCloseWhileClientConnectedHandlerIsBlocked()
+    {
+        using var handlerEntered = new ManualResetEventSlim();
+        using var releaseHandler = new ManualResetEventSlim();
+        _sut.ClientConnected += (_, _) =>
+        {
+            handlerEntered.Set();
+            releaseHandler.Wait();
+        };
+        _sut.OpenSseEndpoint();
+        using var sseClient = new EventSource(new Uri($"http://localhost:{_sut.Port}/"));
+        Task.Run(() => sseClient.StartAsync());
+        handlerEntered.Wait(2000).ShouldBeTrue();
+
+        var close = Task.Run(_sut.CloseSseEndpoint);
+        try
+        {
+            close.Wait(2000).ShouldBeTrue();
+        }
+        finally
+        {
+            releaseHandler.Set();
+        }
+    }
+
+    private sealed class FailingWriteStream : MemoryStream
+    {
+        public override void Write(byte[] buffer, int offset, int count) =>
+            throw new IOException("The client disconnected.");
+
+        public override void Write(ReadOnlySpan<byte> buffer) =>
+            throw new IOException("The client disconnected.");
+    }
+
+    private sealed class TrackingStream : MemoryStream
+    {
+        public bool IsDisposed { get; private set; }
+
+        protected override void Dispose(bool disposing)
+        {
+            IsDisposed = disposing;
+            base.Dispose(disposing);
+        }
+    }
+
+    private sealed class BlockingDisposeStream : MemoryStream
+    {
+        public ManualResetEventSlim DisposeStarted { get; } = new();
+        public ManualResetEventSlim AllowDispose { get; } = new();
+        public bool IsDisposed { get; private set; }
+
+        protected override void Dispose(bool disposing)
+        {
+            DisposeStarted.Set();
+            AllowDispose.Wait();
+            IsDisposed = disposing;
+            base.Dispose(disposing);
+        }
     }
 }

@@ -25,31 +25,22 @@ public interface IProjectOrchestrator : IDisposable
     Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(IStrykerOptions options, IReporter reporters, ITestRunner runner = null);
 }
 
-public sealed class ProjectOrchestrator : IProjectOrchestrator
+public sealed class ProjectOrchestrator(
+    IProjectMutator projectMutator,
+    IInitialisationProcess initializationProcess,
+    IInputFileResolver fileResolver,
+    IServiceProvider serviceProvider,
+    IMutationTestExecutor mutationTestExecutor,
+    ILogger<ProjectOrchestrator> logger)
+    : IProjectOrchestrator
 {
-    private IInitialisationProcess _initializationProcess;
-    private readonly ILogger _logger;
-    private readonly IProjectMutator _projectMutator;
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IMutationTestExecutor _mutationTestExecutor;
-    private readonly IInputFileResolver _fileResolver;
+    private IInitialisationProcess _initializationProcess = initializationProcess ?? throw new ArgumentNullException(nameof(initializationProcess));
+    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IProjectMutator _projectMutator = projectMutator ?? throw new ArgumentNullException(nameof(projectMutator));
+    private readonly IServiceProvider _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+    private readonly IMutationTestExecutor _mutationTestExecutor = mutationTestExecutor ?? throw new ArgumentNullException(nameof(mutationTestExecutor));
+    private readonly IInputFileResolver _fileResolver = fileResolver ?? throw new ArgumentNullException(nameof(fileResolver));
     private ITestRunner _runner;
-
-    public ProjectOrchestrator(
-        IProjectMutator projectMutator,
-        IInitialisationProcess initializationProcess,
-        IInputFileResolver fileResolver,
-        IServiceProvider serviceProvider,
-        IMutationTestExecutor mutationTestExecutor,
-        ILogger<ProjectOrchestrator> logger)
-    {
-        _projectMutator = projectMutator ?? throw new ArgumentNullException(nameof(projectMutator));
-        _initializationProcess = initializationProcess ?? throw new ArgumentNullException(nameof(initializationProcess));
-        _fileResolver = fileResolver ?? throw new ArgumentNullException(nameof(fileResolver));
-        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        _mutationTestExecutor = mutationTestExecutor ?? throw new ArgumentNullException(nameof(mutationTestExecutor));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
 
     public async Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(IStrykerOptions options, IReporter reporters,
         ITestRunner runner = null)
@@ -57,7 +48,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         _initializationProcess ??= _serviceProvider.GetRequiredService<IInitialisationProcess>();
         var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
 
-        if (projectInfos.Count == 0)
+        if (projectInfos.SourceProjectInfos.Count == 0)
         {
             _logger.LogWarning("No project to mutate. Stryker will exit prematurely.");
             return [];
@@ -68,7 +59,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         // create a test runner based on the selected option
         _runner = runner ?? CreateTestRunner(options, projectInfos);
         _mutationTestExecutor.TestRunner = _runner;
-        InitializeDashboardProjectInformation(options, projectInfos.First());
+        InitializeDashboardProjectInformation(options, projectInfos.SourceProjectInfos.First());
         var inputs = await _initializationProcess.GetMutationTestInputsAsync(options, projectInfos, _runner);
 
         var mutationTestProcesses = new ConcurrentBag<IMutationTestProcess>();
@@ -111,7 +102,6 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
             }
         }
         return false;
-    }
 
     private void InitializeDashboardProjectInformation(IStrykerOptions options, SourceProjectInfo projectInfo)
     {
@@ -120,7 +110,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         var requiresProjectInformation = dashboardReporterEnabled || dashboardBaselineEnabled;
         var missingProjectName = string.IsNullOrEmpty(options.ProjectName);
         var missingProjectVersion = string.IsNullOrEmpty(options.ProjectVersion);
-        if (!requiresProjectInformation || !missingProjectVersion && !missingProjectName)
+        if (!requiresProjectInformation || (!missingProjectVersion && !missingProjectName))
         {
             return;
         }

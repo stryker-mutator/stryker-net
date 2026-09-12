@@ -4,6 +4,8 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Threading.Tasks;
 using Buildalyzer;
+using Buildalyzer.Environment;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -151,13 +153,13 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         };
 
         var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
-        var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, [csPathName]).Object;
-        var testProjectAnalyzerMock = TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object;
+        var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, [csPathName]);
+        var testProjectAnalyzerMock = TestProjectAnalyzerMock(testCsprojPathName, csprojPathName);
         // The analyzer finds two projects
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
-            { "MyProject", sourceProjectAnalyzerMock },
-            { "MyProject.UnitTests", testProjectAnalyzerMock }
+            { "MyProject", sourceProjectAnalyzerMock.Object },
+            { "MyProject.UnitTests", testProjectAnalyzerMock.Object }
         };
         var target = BuildProjectOrchestrator(analyzerResults, out var mockRunner, out var buildalyzerAnalyzerManagerMock);
 
@@ -165,7 +167,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object);
 
         // assert
-        buildalyzerAnalyzerManagerMock.Verify(x => x.SetGlobalProperty("Configuration", "Release"), Times.AtLeastOnce);
+        sourceProjectAnalyzerMock.Verify(x => x.Build(It.Is<EnvironmentOptions>(env => env.GlobalProperties["Configuration"]=="Release")), Times.AtLeastOnce);
     }
 
     [TestMethodWithIgnoreIfSupport]

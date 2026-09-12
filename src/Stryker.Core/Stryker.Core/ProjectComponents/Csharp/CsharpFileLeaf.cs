@@ -7,23 +7,24 @@ namespace Stryker.Core.ProjectComponents.Csharp;
 
 public class CsharpFileLeaf : ProjectComponent, IFileLeaf
 {
-    public string SourceCode { get; set; }
+    public string? SourceCode { get; set; }
 
     /// <summary>
     /// The original unmutated syntax tree
     /// </summary>
-    public SyntaxTree SyntaxTree { get; set; }
+    public SyntaxTree? SyntaxTree { get; set; }
 
     /// <summary>
     /// The mutated syntax tree
     /// </summary>
-    public SyntaxTree MutatedSyntaxTree { get; set; }
+    public SyntaxTree? MutatedSyntaxTree { get; set; }
 
     public override IEnumerable<IMutant> Mutants { get; set; }
 
     public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => MutatedSyntaxTrees;
 
-    public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => [MutatedSyntaxTree ?? SyntaxTree ];
+    public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => [MutatedSyntaxTree ?? SyntaxTree];
+    public override IEnumerable<SyntaxTree> UnmutatedSyntaxTrees => [SyntaxTree];
 
     public override string ToString() => SourceCode ?? "<empty>";
 

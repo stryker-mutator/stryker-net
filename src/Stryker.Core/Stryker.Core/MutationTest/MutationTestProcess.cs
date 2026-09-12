@@ -57,7 +57,7 @@ public class MutationTestProcess : IMutationTestProcess
         _options = options;
         _reporter = reporter;
         _projectContents = input.SourceProjectInfo.ProjectContents;
-        Input.TestProjectsInfo.BackupOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
+        Input.SourceProjectInfo.BackupOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
     }
 
     public void Mutate()
@@ -79,7 +79,7 @@ public class MutationTestProcess : IMutationTestProcess
         return new StrykerRunResult(_options, _projectContents.GetMutationScore());
     }
 
-    public void Restore() => Input.TestProjectsInfo.RestoreOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
+    public void Restore() => Input.SourceProjectInfo.RestoreOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
 
     private async Task TestMutantsAsync(IEnumerable<IMutant> mutantsToTest)
     {
@@ -172,7 +172,11 @@ public class MutationTestProcess : IMutationTestProcess
     private IEnumerable<List<IMutant>> BuildMutantGroupsForTest(IReadOnlyCollection<IMutant> mutantsNotRun)
     {
         if (_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants) ||
-            !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+            !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) ||
+            // The MTP runner can only activate a single mutant per test run (one memory-mapped id
+            // shared by the whole run), so grouping mutants together would test them with no
+            // mutation active at all and falsely report them as survived.
+            _options.TestRunner == Stryker.Abstractions.Options.TestRunner.MicrosoftTestPlatform)
         {
             return mutantsNotRun.Select(x => new List<IMutant> { x });
         }

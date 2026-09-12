@@ -8,12 +8,14 @@ namespace Stryker.Configuration.Options;
 public interface IStrykerInputs
 {
     AdditionalTimeoutInput AdditionalTimeoutInput { get; init; }
+    TimeoutRatioInput TimeoutRatioInput { get; init; }
     AzureFileStorageSasInput AzureFileStorageSasInput { get; init; }
     S3BucketNameInput S3BucketNameInput { get; init; }
     S3EndpointInput S3EndpointInput { get; init; }
     S3RegionInput S3RegionInput { get; init; }
     AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; }
     BaselineProviderInput BaselineProviderInput { get; init; }
+    BaselineOutputInput BaselineOutputInput { get; init; }
     BasePathInput BasePathInput { get; init; }
     ConcurrencyInput ConcurrencyInput { get; init; }
     ConfigurationInput ConfigurationInput { get; init; }
@@ -82,6 +84,7 @@ public class StrykerInputs : IStrykerInputs
     public ThresholdHighInput ThresholdHighInput { get; init; } = new();
     public ThresholdLowInput ThresholdLowInput { get; init; } = new();
     public AdditionalTimeoutInput AdditionalTimeoutInput { get; init; } = new();
+    public TimeoutRatioInput TimeoutRatioInput { get; init; } = new();
     public LanguageVersionInput LanguageVersionInput { get; init; } = new();
     public ConcurrencyInput ConcurrencyInput { get; init; } = new();
     public SourceProjectNameInput SourceProjectNameInput { get; init; } = new();
@@ -90,6 +93,7 @@ public class StrykerInputs : IStrykerInputs
     public WithBaselineInput WithBaselineInput { get; init; } = new();
     public ReportersInput ReportersInput { get; init; } = new();
     public BaselineProviderInput BaselineProviderInput { get; init; } = new();
+    public BaselineOutputInput BaselineOutputInput { get; init; } = new();
     public AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; } = new();
     public AzureFileStorageSasInput AzureFileStorageSasInput { get; init; } = new();
     public S3BucketNameInput S3BucketNameInput { get; init; } = new();
@@ -127,6 +131,7 @@ public class StrykerInputs : IStrykerInputs
         var sinceEnabled = SinceInput.Validate(WithBaselineInput.SuppliedInput);
         var sinceTarget = SinceTargetInput.Validate(sinceEnabled);
         var projectVersion = ProjectVersionInput.Validate(reporters, withBaseline);
+        var testRunner = TestRunnerInput.Validate();
 
         _strykerOptionsCache ??= new StrykerOptions()
         {
@@ -154,12 +159,13 @@ public class StrykerInputs : IStrykerInputs
             },
             SourceProjectName = SourceProjectNameInput.Validate(),
             AdditionalTimeout = AdditionalTimeoutInput.Validate(),
+            TimeoutRatio = TimeoutRatioInput.Validate(),
             ExcludedMutations = IgnoreMutationsInput.Validate<Mutator>(),
             ExcludedLinqExpressions = IgnoreMutationsInput.ValidateLinqExpressions(),
             IgnoredMethods = IgnoredMethodsInput.Validate(),
             Mutate = MutateInput.Validate(),
             LanguageVersion = LanguageVersionInput.Validate(),
-            OptimizationMode = CoverageAnalysisInput.Validate() | DisableBailInput.Validate() | DisableMixMutantsInput.Validate(),
+            OptimizationMode = CoverageAnalysisInput.Validate(testRunner) | DisableBailInput.Validate() | DisableMixMutantsInput.Validate(),
             TestProjects = TestProjectsInput.Validate(),
             TestCaseFilter = TestCaseFilterInput.Validate(),
             DashboardUrl = DashboardUrlInput.Validate(),
@@ -175,12 +181,13 @@ public class StrykerInputs : IStrykerInputs
             S3Region = S3RegionInput.Validate(baselineProvider, withBaseline),
             WithBaseline = withBaseline,
             BaselineProvider = baselineProvider,
+            BaselineOutputPath = BaselineOutputInput.Validate(baselineProvider, withBaseline),
             FallbackVersion = FallbackVersionInput.Validate(withBaseline, projectVersion, sinceTarget),
             Since = sinceEnabled,
             SinceTarget = sinceTarget,
             ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate()),
             BreakOnInitialTestFailure = BreakOnInitialTestFailureInput.Validate(),
-            TestRunner = TestRunnerInput.Validate(),
+            TestRunner = testRunner,
             IsTestRunnerExplicitlyConfigured = TestRunnerInput.SuppliedInput is not null,
             MutantIdProvider = new BasicIdProvider()
         };

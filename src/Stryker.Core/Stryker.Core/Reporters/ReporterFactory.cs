@@ -34,7 +34,8 @@ public class ReporterFactory : IReporterFactory
             { Reporter.Dashboard, new DashboardReporter(options) },
             { Reporter.RealTimeDashboard, new DashboardReporter(options) },
             { Reporter.Markdown, new MarkdownSummaryReporter(options) },
-            { Reporter.Baseline, new BaselineReporter(options) }
+            { Reporter.Baseline, new BaselineReporter(options) },
+            { Reporter.Gitlab, new GitlabQualityReporter(options) },
         };
     }
 

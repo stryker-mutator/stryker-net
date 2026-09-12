@@ -27,6 +27,7 @@ public class FolderComposite : ProjectComponent, IFolderComposite
     public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => _compilationSyntaxTrees.Union(ChildCompilationSyntaxTree);
     private IEnumerable<SyntaxTree> ChildCompilationSyntaxTree => _children.SelectMany(c => c.CompilationSyntaxTrees);
     public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => _children.SelectMany(c => c.MutatedSyntaxTrees);
+    public override IEnumerable<SyntaxTree> UnmutatedSyntaxTrees => _children.SelectMany(c => c.UnmutatedSyntaxTrees).Union(_compilationSyntaxTrees);
 
     public void Add(IProjectComponent child)
     {

@@ -119,6 +119,11 @@ public class StrykerOptions : IStrykerOptions
     public int AdditionalTimeout { get; init; }
 
     /// <summary>
+    /// The ratio the estimated test time is multiplied by when calculating the timeout for a mutant.
+    /// </summary>
+    public double TimeoutRatio { get; init; } = 1.5;
+
+    /// <summary>
     /// The C# language version
     /// </summary>
     public LanguageVersion LanguageVersion { get; init; }
@@ -157,6 +162,13 @@ public class StrykerOptions : IStrykerOptions
     /// When the baseline feature is enabled, this selects the source of the baseline.
     /// </summary>
     public BaselineProvider BaselineProvider { get; init; }
+
+    /// <summary>
+    /// The directory the disk baseline provider stores and loads the baseline report from.
+    /// A relative path is resolved against <see cref="ProjectPath"/>. Defaults to the stable
+    /// StrykerOutput folder so baselines persist across runs.
+    /// </summary>
+    public string BaselineOutputPath { get; init; }
 
     /// <summary>
     /// The url to connect to the Azure File Storage API

@@ -14,6 +14,19 @@
             "problemMatcher": "$msCompile"
         },
         {
+            "label": "build-cli-release",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj",
+                "/property:GenerateFullPaths=true",
+                "/property:Configuration=Release",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
             "label": "build-solution",
             "command": "dotnet",
             "type": "process",
