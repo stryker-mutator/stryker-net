@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
@@ -412,6 +413,45 @@ public class AnalyzerResultExtensionsTests
 
         // Assert
         parseOptions.Features.ShouldNotContain(f => f.Key == "InterceptorsNamespaces");
+    }
+
+     [TestMethod]
+    public void GetAnalyzerConfigOptionsProvider_ShouldParseAnalyzerConfigFiles_WhenProvided()
+    {
+        var fileSystem = new MockFileSystem();
+        var testFolder = fileSystem.Path.GetFullPath("stryker-config");
+        var sentinelMetadataPath = "metadata.json";
+        var additionalFilePath = fileSystem.Path.Combine(testFolder, "NativeMethods.txt");
+        fileSystem.AddDirectory(testFolder);
+        fileSystem.AddFile(fileSystem.Path.Combine(testFolder, "global.editorconfig"),
+            new MockFileData($@"is_global = true
+build_property.CsWin32InputMetadataPaths = {sentinelMetadataPath}
+
+[{additionalFilePath.Replace('\\', '/')}]
+build_metadata.AdditionalFiles.SourceItemGroup = AdditionalFiles"));
+        fileSystem.AddFile(fileSystem.Path.Combine(testFolder, "NativeMethods.txt"), new MockFileData("content"));
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>(), projectFilePath: fileSystem.Path.Combine(testFolder, "test.csproj")).Object;
+        Mock.Get(analyzerResult)
+            .SetupGet(x => x.AdditionalFiles)
+            .Returns([additionalFilePath]);
+        // Use a PROJECT-RELATIVE analyzer config path (as MSBuild emits for the generated
+        // editorconfig) to prove it is resolved against the project directory, not the CWD.
+        Mock.Get(analyzerResult)
+            .SetupGet(x => x.CompilerArguments)
+            .Returns([$"/analyzerconfig:global.editorconfig"]);
+
+        var provider = analyzerResult.GetAnalyzerConfigOptionsProvider(fileSystem);
+        provider.GlobalOptions.TryGetValue("build_property.CsWin32InputMetadataPaths", out var globalValue).ShouldBe(true);
+        globalValue.ShouldBe(sentinelMetadataPath);
+
+        var additionalText = analyzerResult.GetAdditionalTexts().Single(x => x.Path == additionalFilePath);
+        provider.GetOptions(additionalText).TryGetValue("build_metadata.AdditionalFiles.SourceItemGroup", out var additionalValue).ShouldBe(true);
+        additionalValue.ShouldBe("AdditionalFiles");
+
+        var fallbackResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string> { { "Foo", "Bar" } }).Object;
+        var fallbackProvider = fallbackResult.GetAnalyzerConfigOptionsProvider(fileSystem);
+        fallbackProvider.GlobalOptions.TryGetValue("build_property.Foo", out var fallbackValue).ShouldBe(true);
+        fallbackValue.ShouldBe("Bar");
     }
 
     private static IAnalyzerResult CreateAnalyzerResultWithProperties(Dictionary<string, string> properties, string[] preprocessorSymbols = null)
