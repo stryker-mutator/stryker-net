@@ -20,7 +20,7 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
 /// baked-in state nor a stale mutant id can leak forward.
 /// </summary>
 [TestClass]
-public class SingleMicrosoftTestPlatformRunnerIsolationTests
+public class MicrosoftTestingPlatformRunnerIsolationTests
 {
     private Dictionary<string, List<TestNode>> _testsByAssembly = null!;
     private Dictionary<string, MtpTestDescription> _testDescriptions = null!;
@@ -131,15 +131,8 @@ public class SingleMicrosoftTestPlatformRunnerIsolationTests
         await runner.TestMultipleMutantsAsync(
             CreateProject("/test.dll"), null, [CreateMutant(1), CreateMutant(2)], null);
 
-        // Canary for a pre-existing limitation, not an endorsement of it: the single-id control
-        // channel cannot activate more than one mutant, so a batch of regular mutants runs with
-        // no mutation active (-1). Unreachable today because MTP's aggregate coverage gives every
-        // mutant overlapping assessing tests, so the executor never batches. The moment per-test
-        // coverage lands (#3516/#3689) batching becomes real, and this behavior would report
-        // every batched mutant as falsely Survived (original code runs, all tests pass). If this
-        // test starts failing because multi-mutant activation was implemented, delete it; if
-        // batching becomes reachable while it still passes, batches must be split or activation
-        // extended first.
+        // The single-id control channel cannot activate a regular batch. MutationTestProcess
+        // disables MTP batching, so production calls arrive one mutant at a time.
         runner.Events.ShouldBe(["run:/test.dll"]);
         runner.ActiveMutantIds.ShouldBe([-1]);
     }
@@ -263,7 +256,7 @@ public class SingleMicrosoftTestPlatformRunnerIsolationTests
     /// real test servers. Uses a runner id no other test class shares so the control file cannot
     /// be touched by concurrent tests.
     /// </summary>
-    private sealed class SessionTrackingRunner : SingleMicrosoftTestPlatformRunner
+    private sealed class SessionTrackingRunner : MicrosoftTestingPlatformRunner
     {
         private const int RunnerId = 970;
 
@@ -294,7 +287,8 @@ public class SingleMicrosoftTestPlatformRunnerIsolationTests
         }
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc)
+            string assembly, ITimeoutValueCalculator? timeoutCalc,
+            IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null)
         {
             Events.Add($"run:{assembly}");
             ActiveMutantIds.Add(ReadMutantFile());

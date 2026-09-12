@@ -16,5 +16,17 @@ public class SampleTests
 
         Assert.True(expired == result);
     }
+
+    [Fact]
+    public void TestExtraProjectLessons()
+    {
+        var sut = new global::ExtraProject.Teacher();
+
+        Assert.Equal(0, sut.Lessons);
+
+        sut.AddLesson();
+
+        Assert.Equal(1, sut.Lessons);
+    }
 }
 

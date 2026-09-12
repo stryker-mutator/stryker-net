@@ -50,5 +50,7 @@ public class Solution : ProjectComponent, IFolderComposite
 
     public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => _children.SelectMany(c => c.MutatedSyntaxTrees);
 
+    public override IEnumerable<SyntaxTree> UnmutatedSyntaxTrees => _children.SelectMany(c => c.UnmutatedSyntaxTrees);
+
     public override IEnumerable<IFileLeaf> GetAllFiles() => Children.SelectMany(x => x.GetAllFiles());
 }

@@ -44,7 +44,7 @@ public class InitialBuildProcessTests : TestBase
 
         var target = new InitialBuildProcess(processMock.Object, _mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
-        Should.Throw<InputException>(() => target.InitialBuild(true, null, _cProjectsExampleCsproj, null, targetFramework: null,
+        Should.Throw<InputException>(() => target.InitialBuild(true, null, _cProjectsExampleCsproj, targetFramework: null,
                 msbuildPath: @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
             .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
                               @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" " + Path.GetFileName(_cProjectsExampleCsproj) + "\"");
@@ -60,7 +60,7 @@ public class InitialBuildProcessTests : TestBase
 
         var target = new InitialBuildProcess(processMock.Object, _mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
-        Should.Throw<InputException>(() => target.InitialBuild(false, null, _cProjectsExampleCsproj, null, targetFramework: null, msbuildPath: @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
+        Should.Throw<InputException>(() => target.InitialBuild(false, null, _cProjectsExampleCsproj, targetFramework: null, msbuildPath: @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
             .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
                               @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" " + _mockFileSystem.Path.GetFileName(_cProjectsExampleCsproj) + "\"");
 
@@ -124,7 +124,7 @@ public class InitialBuildProcessTests : TestBase
 
         var target = new InitialBuildProcess(processMock.Object, mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
-        target.InitialBuild(true, "/", "./ExampleProject.sln", null, targetFramework: null, msbuildPath: CustomMsBuildPath);
+        target.InitialBuild(true, "/", "./ExampleProject.sln", targetFramework: null, msbuildPath: CustomMsBuildPath);
         processMock.Verify(x => x.Start(It.IsAny<string>(),
                 It.Is<string>(applicationParam => applicationParam == CustomMsBuildPath),
                 It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),

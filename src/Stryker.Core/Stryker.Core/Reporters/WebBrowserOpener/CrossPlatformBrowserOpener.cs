@@ -27,7 +27,7 @@ public class CrossPlatformBrowserOpener : IWebbrowserOpener
 
             };
 
-            var wslPathProcess = new Process { StartInfo = wslPathProcessInfo };
+            using var wslPathProcess = new Process { StartInfo = wslPathProcessInfo };
             if (wslPathProcess.Start())
             {
                 var windowsPath = wslPathProcess.StandardOutput.ReadToEnd();

@@ -27,6 +27,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Stryker.Core.UnitTest</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="InjectedHelpers\MutantControl.cs" />
     <EmbeddedResource Include="InjectedHelpers\Coverage\MutantContext.cs" />
     <EmbeddedResource Include="Reporters\Html\Files\dist\mutation-test-elements.js" />

@@ -8,11 +8,11 @@ namespace Stryker.Utilities.Buildalyzer;
 /// </summary>
 public interface IBuildalyzerProvider
 {
-    IAnalyzerManager Provide(AnalyzerManagerOptions options = null);
+    IAnalyzerManager Provide(AnalyzerManagerOptions options);
 }
 
 [ExcludeFromCodeCoverage]
 public class BuildalyzerProvider : IBuildalyzerProvider
 {
-    public IAnalyzerManager Provide(AnalyzerManagerOptions options = null) => new AnalyzerManager(options);
+    public IAnalyzerManager Provide(AnalyzerManagerOptions options) => new AnalyzerManager(options);
 }
