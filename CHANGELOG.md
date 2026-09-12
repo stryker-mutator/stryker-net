@@ -9,6 +9,24 @@ For historical release notes prior to the consolidated changelog, see the packag
 
 <!-- changelog -->
 
+# [5.0.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.16.0...dotnet-stryker@5.0.0) (2026-09-11)
+
+
+### Bug Fixes
+
+* MsTest not properly configured ([#3760](https://github.com/stryker-mutator/stryker-net/issues/3760)) ([18d0356](https://github.com/stryker-mutator/stryker-net/commit/18d03562cd6da321518bb8f5536921cb56b6188a))
+* **MTP:** Flaky coverage results with MTP test runner ([#3696](https://github.com/stryker-mutator/stryker-net/issues/3696)) ([0f11451](https://github.com/stryker-mutator/stryker-net/commit/0f11451594681bd5426c57495e60b520bd9a68a3))
+* **MTP:** MTP coverage per mutated assembly ([#3769](https://github.com/stryker-mutator/stryker-net/issues/3769)) ([eb94878](https://github.com/stryker-mutator/stryker-net/commit/eb94878a9763a7315b891d1d0bcf11f225b32e28)), closes [#3760](https://github.com/stryker-mutator/stryker-net/issues/3760) [#3760](https://github.com/stryker-mutator/stryker-net/issues/3760) [#3724](https://github.com/stryker-mutator/stryker-net/issues/3724)
+* **reporters:** dispose reporter resources ([#3721](https://github.com/stryker-mutator/stryker-net/issues/3721)) ([45c74e5](https://github.com/stryker-mutator/stryker-net/commit/45c74e5fc39dcf996f29078d3c6f01b5b504b742))
+
+
+### Features
+
+* Add test information to html/json report for MTP test runner ([#3541](https://github.com/stryker-mutator/stryker-net/issues/3541)) ([5d497fa](https://github.com/stryker-mutator/stryker-net/commit/5d497fa1bd4e3da34661f505282c3017b3900eb8))
+* **MTP:** Support `perTest` and `perTestInIsolation` coverage analysis ([#3752](https://github.com/stryker-mutator/stryker-net/issues/3752)) ([0705367](https://github.com/stryker-mutator/stryker-net/commit/070536793db9746fb9f922460993424ab29ecefb))
+* Support solution configuration ([#3751](https://github.com/stryker-mutator/stryker-net/issues/3751)) ([b8bc307](https://github.com/stryker-mutator/stryker-net/commit/b8bc30719b640abe481d6b59393744a8edd44ac8))
+* **timeouts:** Calculate timeout values based on actual mutant runtimes ([#3731](https://github.com/stryker-mutator/stryker-net/issues/3731)) ([4fa9ee7](https://github.com/stryker-mutator/stryker-net/commit/4fa9ee790e40d7bb4684c2b055d8c9b713642a48))
+
 # [4.16.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.15.0...dotnet-stryker@4.16.0) (2026-07-03)
 
 
