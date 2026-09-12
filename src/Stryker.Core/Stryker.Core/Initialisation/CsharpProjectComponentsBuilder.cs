@@ -232,9 +232,9 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
 
     private void InjectMutantHelpers(FolderComposite rootFolderComposite, CSharpParseOptions cSharpParseOptions)
     {
-        foreach (var (name, code) in _projectInfo.CodeInjector.MutantHelpers)
+        foreach (var tree in _projectInfo.CodeInjector.GetHelpersSyntaxTreesToInject(cSharpParseOptions))
         {
-            rootFolderComposite.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32, options: cSharpParseOptions));
+            rootFolderComposite.AddCompilationSyntaxTree(tree);
         }
     }
 

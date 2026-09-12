@@ -89,6 +89,11 @@ internal abstract class BaseFunctionOrchestrator<T> : MemberDefinitionOrchestrat
             throw new InvalidOperationException($"Expected a {typeof(T)}, found:\n{node.ToFullString()}.");
         }
         var (block, _) = GetBodies(typedNode);
+        // unwrap the block
+        while (block?.Statements is [BlockSyntax innerBlock])
+        {
+            block = innerBlock;
+        }
         var expression = block?.Statements[0] switch
         {
             ReturnStatementSyntax returnStatement => returnStatement.Expression!,
