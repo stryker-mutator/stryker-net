@@ -98,7 +98,7 @@ When you have multiple test projects covering one project under test you may spe
 ### `test-case-filter` &lt;`string`&gt;
 
 Default: `""`  
-Command line: `N/A`  
+Command line: `--test-case-filter "(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1"`\
 Config file: `"test-case-filter": "(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1"`
 
 Filter expression to run selective tests. Uses `dotnet test --filter` option syntax, [detailed here](https://docs.microsoft.com/en-us/dotnet/core/testing/selective-unit-tests). Use this option if you wish to run stryker only on a selective subset of tests from your test suite.

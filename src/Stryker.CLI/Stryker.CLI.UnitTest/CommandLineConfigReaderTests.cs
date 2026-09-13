@@ -40,6 +40,16 @@ public class CommandLineConfigReaderTests
     }
 
     [TestMethod]
+    public void ShouldHandleTestCaseFilterValue()
+    {
+        const string filter = "(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1";
+
+        _target.ReadCommandLineConfig(["--test-case-filter", filter], _app, _inputs);
+
+        _inputs.TestCaseFilterInput.SuppliedInput.ShouldBe(filter);
+    }
+
+    [TestMethod]
     public void ShouldHandleSingleOrNoValueWithNoValue()
     {
         _target.ReadCommandLineConfig(["--since"], _app, _inputs);
