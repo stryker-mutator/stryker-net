@@ -16,6 +16,7 @@ public class StrykerInputsTests : TestBase
     {
 
         AdditionalTimeoutInput = new AdditionalTimeoutInput(),
+        TimeoutRatioInput = new TimeoutRatioInput(),
         AzureFileStorageSasInput = new AzureFileStorageSasInput(),
         AzureFileStorageUrlInput = new AzureFileStorageUrlInput(),
         BaselineProviderInput = new BaselineProviderInput(),

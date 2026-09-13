@@ -203,9 +203,10 @@ internal sealed class AssemblyTestServer : IDisposable
         {
             try
             {
-                await _client.ExitAsync().ConfigureAwait(false);
-                // Coverage data must be flushed before disposing resources
+                // Bound both the exit notification and process shutdown so cleanup cannot hang indefinitely.
                 var timeout = TimeSpan.FromSeconds(30);
+                await _client.ExitAsync().WaitAsync(timeout).ConfigureAwait(false);
+                // Coverage data must be flushed before disposing resources
                 await _client.WaitServerProcessExitAsync().WaitAsync(timeout).ConfigureAwait(false);
             }
             catch (TimeoutException exception)

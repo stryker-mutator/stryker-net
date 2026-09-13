@@ -44,9 +44,7 @@ public class Calculator
 }");
         var input = new MutationTestInput()
         {
-            SourceProjectInfo = new SourceProjectInfo
-            {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            SourceProjectInfo = new SourceProjectInfo(TestHelper.SetupProjectAnalyzerResult(
                     projectFilePath: "/c/project.csproj",
                     properties: new Dictionary<string, string>()
                     {
@@ -56,8 +54,7 @@ public class Calculator
                     },
                     // add a reference to system so the example code can compile
                     references: [typeof(object).Assembly.Location]
-                ).Object
-            }
+                ).Object, null)
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
@@ -91,74 +88,65 @@ public class Calculator
         var immutableArray = ImmutableArray.Create("TheAlias");
         alias[typeof(object).Assembly.Location]=immutableArray;
 
-        var input = new MutationTestInput
-        {
-            SourceProjectInfo = new SourceProjectInfo
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            projectFilePath: "/c/project.csproj",
+            properties: new Dictionary<string, string>()
             {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectFilePath: "/c/project.csproj",
-                    properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "" },
-                        { "AssemblyName", "AssemblyName" },
-                        { "TargetFileName", "TargetFileName.dll" },
-                    },
-                    // add a reference to system so the example code can compile
-                    references: [typeof(object).Assembly.Location],
-                    aliases: alias.ToImmutableDictionary()
-                ).Object
-            }
+                { "TargetDir", "" },
+                { "AssemblyName", "AssemblyName" },
+                { "TargetFileName", "TargetFileName.dll" },
+            },
+            // add a reference to system so the example code can compile
+            references: [typeof(object).Assembly.Location],
+            aliases: alias.ToImmutableDictionary()
+        ).Object;
+        var input = new MutationTestInput()
+        {
+            SourceProjectInfo = new SourceProjectInfo(analyzerResult, null)
         };
+
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees: [syntaxTree]);
 
-        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees:[syntaxTree]);
-
-        using (var ms = new MemoryStream())
-        {
-            var result = target.Compile(ms, null);
-            result.Success.ShouldBe(true);
-            ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
-        }
+        using var ms = new MemoryStream();
+        var result = target.Compile(ms, null);
+        result.Success.ShouldBe(true);
+        ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
     }
 
     [TestMethod]
     public void ShouldReportWhenProjectCantBeBuilt()
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(GetExampleCode(false));
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            projectFilePath: "/c/project.csproj",
+            properties: new Dictionary<string, string>()
+            {
+                { "TargetDir", "" },
+                { "AssemblyName", "AssemblyName"},
+                { "TargetFileName", "TargetFileName.dll"},
+            },
+            // add a reference to system so the example code can compile
+            references: [typeof(object).Assembly.Location]
+        ).Object;
+
         var input = new MutationTestInput()
         {
-            SourceProjectInfo = new SourceProjectInfo
-            {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectFilePath: "/c/project.csproj",
-                    properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "" },
-                        { "AssemblyName", "AssemblyName"},
-                        { "TargetFileName", "TargetFileName.dll"},
-                    },
-                    // add a reference to system so the example code can compile
-                    references: [typeof(object).Assembly.Location]
-                ).Object,
-                ProjectContents = new CsharpFileLeaf{SyntaxTree = syntaxTree, MutatedSyntaxTree = syntaxTree, SourceCode = GetExampleCode(false)}
-            }
+            SourceProjectInfo = new SourceProjectInfo(analyzerResult, null)
+                {ProjectContents = new CsharpFileLeaf{SyntaxTree = syntaxTree, MutatedSyntaxTree = syntaxTree, SourceCode = GetExampleCode(false)}}
         };
+
+
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
+
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees: [syntaxTree]);
         rollbackProcessMock.Setup(x => x.RollbackMutationsInError(It.IsAny<ICompilationContent>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<ICSharpRollbackProcess.Mode>(), false))
-                        .Returns((ICompilationContent _, ImmutableArray<Diagnostic> _, ICSharpRollbackProcess.Mode _, bool _) =>
-                            []);
+                        .Returns((ICompilationContent _, ImmutableArray<Diagnostic> _, ICSharpRollbackProcess.Mode _, bool _) => []);
 
-        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, new StrykerOptions(
-        ), [syntaxTree]);
-
-        using (var ms = new MemoryStream())
-        {
-            Should.Throw<CompilationException>(() => target.Compile(ms, null)).Message.ShouldBe("Failed to build mutated version.");
-        }
-        rollbackProcessMock.Verify(x =>
-                x.RollbackMutationsInError(It.IsAny<ICompilationContent>(),
-                It.IsAny<ImmutableArray<Diagnostic>>(), ICSharpRollbackProcess.Mode.Normal, false),
+        using var ms = new MemoryStream();
+        Should.Throw<CompilationException>(() => target.Compile(ms, null)).Message.ShouldBe("Failed to build mutated version.");;
+        rollbackProcessMock.Verify(x => x.RollbackMutationsInError(It.IsAny<ICompilationContent>(), It.IsAny<ImmutableArray<Diagnostic>>(), ICSharpRollbackProcess.Mode.Normal, false),
             Times.AtLeast(2));
     }
 
@@ -168,9 +156,8 @@ public class Calculator
         var syntaxTree = CSharpSyntaxTree.ParseText(GetExampleCode(false));
         var input = new MutationTestInput()
         {
-            SourceProjectInfo = new SourceProjectInfo
-            {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            SourceProjectInfo = new SourceProjectInfo(
+            TestHelper.SetupProjectAnalyzerResult(
                     projectFilePath: "/c/project.csproj",
                     properties: new Dictionary<string, string>()
                     {
@@ -180,8 +167,8 @@ public class Calculator
                     },
                     // add a reference to system so the example code can compile
                     references: [typeof(object).Assembly.Location]
-                ).Object,
-                ProjectContents = new CsharpFileLeaf{SyntaxTree = syntaxTree, MutatedSyntaxTree = syntaxTree, SourceCode = GetExampleCode(false)}
+                ).Object, null)
+                {ProjectContents = new CsharpFileLeaf{SyntaxTree = syntaxTree, MutatedSyntaxTree = syntaxTree, SourceCode = GetExampleCode(false)}
             }
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
@@ -208,9 +195,8 @@ public class Calculator
         var original = CSharpSyntaxTree.ParseText(GetExampleCode(true));
         var input = new MutationTestInput()
         {
-            SourceProjectInfo = new SourceProjectInfo
-            {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            SourceProjectInfo = new SourceProjectInfo(
+                     TestHelper.SetupProjectAnalyzerResult(
                     projectFilePath: "/c/project.csproj",
                     properties: new Dictionary<string, string>()
                     {
@@ -220,10 +206,11 @@ public class Calculator
                     },
                     // add a reference to system so the example code can compile
                     references: [typeof(object).Assembly.Location]
-                ).Object,
-                ProjectContents = new CsharpFileLeaf{SyntaxTree = original, MutatedSyntaxTree = mutated, SourceCode = GetExampleCode(true)}
-            }
-        };
+                ).Object, null)
+        {
+            ProjectContents = new CsharpFileLeaf{ SyntaxTree = original, MutatedSyntaxTree = mutated, SourceCode = GetExampleCode(true) }
+        }};
+
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
         rollbackProcessMock.Setup(x => x.RollbackMutationsInError(It.IsAny<ICompilationContent>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<ICSharpRollbackProcess.Mode>(), true))
                         .Returns((ICompilationContent _, ImmutableArray<Diagnostic> _, ICSharpRollbackProcess.Mode _, bool _) =>
@@ -268,26 +255,26 @@ public class Calculator
     }
 }
 }");
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            projectFilePath: "/c/project.csproj",
+            properties: new Dictionary<string, string>()
+            {
+                { "TargetDir", "" },
+                { "AssemblyName", "AssemblyName"},
+                { "TargetFileName", "TargetFileName.dll"},
+            },
+            // add a reference to system so the example code can compile
+            references: [typeof(object).Assembly.Location]
+        ).Object;
+
         var input = new MutationTestInput()
         {
-            SourceProjectInfo = new SourceProjectInfo
-            {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectFilePath: "/c/project.csproj",
-                    properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "" },
-                        { "AssemblyName", "AssemblyName"},
-                        { "TargetFileName", "TargetFileName.dll"},
-                    },
-                    // add a reference to system so the example code can compile
-                    references: [typeof(object).Assembly.Location]
-                ).Object
-            }
+            SourceProjectInfo = new SourceProjectInfo(analyzerResult, null)
         };
+
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
-        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees:[syntaxTree]);
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees: [syntaxTree]);
 
         using var ms = new MemoryStream();
         target.Compile(ms, null);
@@ -310,27 +297,28 @@ public class Calculator
     }
 }
 }");
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            properties: new Dictionary<string, string>()
+            {
+                { "TargetDir", "" },
+                { "AssemblyName", "AssemblyName" },
+                { "TargetFileName", "TargetFileName.dll" },
+                { "SignAssembly", "true" },
+                { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
+            },
+            // add a reference to system so the example code can compile
+            references: [typeof(object).Assembly.Location],
+            projectFilePath: "TestResources"
+        ).Object;
+
         var input = new MutationTestInput()
         {
-            SourceProjectInfo = new SourceProjectInfo
-            {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "" },
-                        { "AssemblyName", "AssemblyName" },
-                        { "TargetFileName", "TargetFileName.dll" },
-                        { "SignAssembly", "true" },
-                        { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
-                    },
-                    // add a reference to system so the example code can compile
-                    references: [typeof(object).Assembly.Location],
-                    projectFilePath: "TestResources"
-                ).Object
-            }
+            SourceProjectInfo = new SourceProjectInfo(analyzerResult, null)
         };
+
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
-        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees:[syntaxTree]);
+
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees: [syntaxTree]);
 
         using var ms = new MemoryStream();
         var result = target.Compile(ms, null);
@@ -358,9 +346,8 @@ public class Calculator
 }");
         var input = new MutationTestInput
         {
-            SourceProjectInfo = new SourceProjectInfo
-            {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            SourceProjectInfo = new SourceProjectInfo(
+                TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>()
                     {
                         { "TargetDir", "" },
@@ -371,10 +358,8 @@ public class Calculator
                     // add a reference to system so the example code can compile
                     references: [typeof(object).Assembly.Location],
                     projectFilePath: "TestResources"
-                ).Object
-            }
+                ).Object, new TestProjectsInfo(new MockFileSystem(), TestLoggerFactory.CreateLogger<TestProjectsInfo>()))};
 
-        };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
         var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees: [syntaxTree]);
@@ -403,25 +388,23 @@ public class Calculator
     }
 }
 }");
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+            {
+                { "TargetDir", "" },
+                { "TargetFileName", "TargetFileName.dll"},
+                { "AssemblyName", "AssemblyName"},
+                { "SignAssembly", "true" },
+                { "AssemblyOriginatorKeyFile", "DoesNotExist.snk" }
+            },
+            projectFilePath: "project.csproj",
+            // add a reference to system so the example code can compile
+            references: [typeof(object).Assembly.Location]
+        ).Object;
         var input = new MutationTestInput()
         {
-            SourceProjectInfo = new SourceProjectInfo
-            {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "" },
-                        { "TargetFileName", "TargetFileName.dll"},
-                        { "AssemblyName", "AssemblyName"},
-                        { "SignAssembly", "true" },
-                        { "AssemblyOriginatorKeyFile", "DoesNotExist.snk" }
-                    },
-                    projectFilePath: "project.csproj",
-                    // add a reference to system so the example code can compile
-                    references: [typeof(object).Assembly.Location]
-                ).Object
-            }
-
+            SourceProjectInfo = new SourceProjectInfo(analyzerResult, null)
         };
+
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
         var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees: [syntaxTree]);
@@ -445,34 +428,33 @@ public class Calculator
     }
 }
 }");
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            projectFilePath: "/c/project.csproj",
+            properties: new Dictionary<string, string>()
+            {
+                { "TargetDir", "" },
+                { "TargetFileName", "TargetFileName.dll" },
+                { "AssemblyName", "AssemblyName"},
+            },
+            // add a reference to system so the example code can compile
+            references: [typeof(object).Assembly.Location]
+        ).Object;
+
         var input = new MutationTestInput()
         {
-            SourceProjectInfo = new SourceProjectInfo
-            {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectFilePath: "/c/project.csproj",
-                    properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "" },
-                        { "TargetFileName", "TargetFileName.dll" },
-                        { "AssemblyName", "AssemblyName"},
-                    },
-                    // add a reference to system so the example code can compile
-                    references: [typeof(object).Assembly.Location]
-                ).Object
-            }
+            SourceProjectInfo = new SourceProjectInfo(analyzerResult, null)
+
         };
+
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
-        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees:[syntaxTree]);
+        var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, syntaxTrees: [syntaxTree]);
 
-        using (var ms = new MemoryStream())
-        {
-            var result = target.Compile(ms, null);
-            result.Success.ShouldBe(true);
+        using var ms = new MemoryStream();
+        var result = target.Compile(ms, null);
+        result.Success.ShouldBe(true);
 
-            Assembly.Load(ms.ToArray()).GetName().Version.ToString().ShouldBe("0.0.0.0");
-        }
+        Assembly.Load(ms.ToArray()).GetName().Version.ToString().ShouldBe("0.0.0.0");
     }
 
     [TestMethod]
@@ -568,8 +550,8 @@ public class Calculator
         var input = new MutationTestInput
         {
             SourceProjectInfo = new SourceProjectInfo
-            {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            (
+                TestHelper.SetupProjectAnalyzerResult(
                     projectFilePath: "/c/project.csproj",
                     properties: new Dictionary<string, string>
                     {
@@ -590,7 +572,7 @@ public class Calculator
                         Assembly.Load("System.Runtime.InteropServices").Location
                     ]
                 ).Object,
-                TestProjectsInfo = new TestProjectsInfo(fileSystem)
+                new TestProjectsInfo(fileSystem)
                 {
                     TestProjects = new List<TestProject> {
                         new TestProject(fileSystem, TestHelper.SetupProjectAnalyzerResult(
@@ -606,7 +588,7 @@ public class Calculator
                         ).Object),
                     }
                 }
-            },
+            ),
 
             TestRunner = new Mock<ITestRunner>(MockBehavior.Default).Object
         };

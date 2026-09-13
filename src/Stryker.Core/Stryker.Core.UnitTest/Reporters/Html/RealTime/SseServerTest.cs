@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
@@ -37,10 +35,10 @@ public class SseServerTest : TestBase
 
     private bool WaitForConnection(int timeout)
     {
-        var watch = new Stopwatch();
-        watch.Start();
         lock (_lock)
         {
+            var watch = new Stopwatch();
+            watch.Start();
             while (!_connected && watch.ElapsedMilliseconds < timeout)
             {
                 Monitor.Wait(_lock, Math.Max(timeout - (int)watch.ElapsedMilliseconds, 1));
@@ -52,10 +50,10 @@ public class SseServerTest : TestBase
 
     private bool WaitForDisConnection(int timeout)
     {
-        var watch = new Stopwatch();
-        watch.Start();
         lock (_lock)
         {
+            var watch = new Stopwatch();
+            watch.Start();
             while (_sut.HasConnectedClients && watch.ElapsedMilliseconds < timeout)
             {
                 Monitor.Wait(_lock,  Math.Max(Math.Min( timeout - (int)watch.ElapsedMilliseconds, 100), 1));
@@ -132,7 +130,7 @@ public class SseServerTest : TestBase
 
         var @object = new { Id = "1", Status = "Survived" };
         var sseClient = new EventSource(new Uri($"http://localhost:{_sut.Port}/"));
-        
+
         Task.Run(() => sseClient.StartAsync());
         WaitForConnection(500).ShouldBeTrue();
         Task.Run( ()=> {sseClient.Close(); sseClient.Dispose();}).Wait();
@@ -188,12 +186,8 @@ public class SseServerTest : TestBase
         failingWriter.Write("buffered");
         var trackingStream = new TrackingStream();
         var trackingWriter = new StreamWriter(trackingStream);
-        var writersField = typeof(SseServer).GetField("_writers", BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new MissingFieldException(typeof(SseServer).FullName, "_writers");
-        var writers = (List<StreamWriter>)(writersField.GetValue(_sut)
-            ?? throw new InvalidOperationException("The writer collection was null."));
-        writers.Add(failingWriter);
-        writers.Add(trackingWriter);
+        _sut._writers.Add(failingWriter);
+        _sut._writers.Add(trackingWriter);
 
         Should.NotThrow(_sut.CloseSseEndpoint);
 
@@ -208,11 +202,7 @@ public class SseServerTest : TestBase
 
         _sut.OpenSseEndpoint();
         var blockingStream = new BlockingDisposeStream();
-        var writersField = typeof(SseServer).GetField("_writers", BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new MissingFieldException(typeof(SseServer).FullName, "_writers");
-        var writers = (List<StreamWriter>)(writersField.GetValue(_sut)
-            ?? throw new InvalidOperationException("The writer collection was null."));
-        writers.Add(new StreamWriter(blockingStream));
+        _sut._writers.Add(new StreamWriter(blockingStream));
 
         var firstClose = Task.Run(_sut.CloseSseEndpoint);
         blockingStream.DisposeStarted.Wait(2000).ShouldBeTrue();

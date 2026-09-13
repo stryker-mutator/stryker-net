@@ -51,9 +51,9 @@ function Run-Stryker {
   Push-Location $WorkingDirectory
   try {
     if ($effectiveArguments.Count -gt 0) {
-      & $stryker @effectiveArguments
+      & $stryker @effectiveArguments --diag
     } else {
-      & $stryker
+      & $stryker --diag
     }
   } finally {
     Pop-Location
