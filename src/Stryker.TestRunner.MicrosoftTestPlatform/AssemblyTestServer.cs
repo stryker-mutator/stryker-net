@@ -79,7 +79,15 @@ internal sealed class AssemblyTestServer : IDisposable
             }
 
             var tcpClient = await acceptTask.ConfigureAwait(false);
-            _client = _connectionFactory.CreateClient(tcpClient, _process.ProcessHandle, _logger);
+            try
+            {
+                _client = _connectionFactory.CreateClient(tcpClient, _process.ProcessHandle, _logger);
+            }
+            catch
+            {
+                tcpClient.Dispose();
+                throw;
+            }
 
             await _client.InitializeAsync(cancellationToken).ConfigureAwait(false);
             _isInitialized = true;

@@ -115,6 +115,22 @@ public class AssemblyTestServerTests
     }
 
     [TestMethod]
+    public async Task StartAsync_WhenClientCreationThrows_DisposesAcceptedConnection()
+    {
+        using var tcpClient = new TcpClient();
+        _listener.Setup(listener => listener.AcceptConnectionAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(tcpClient);
+        _factory.Setup(factory => factory.CreateClient(tcpClient, _processHandle.Object, It.IsAny<ILogger>()))
+            .Throws(new InvalidOperationException("boom"));
+
+        using var server = CreateServer();
+        var started = await server.StartAsync();
+
+        started.ShouldBeFalse();
+        tcpClient.Client.ShouldBeNull();
+    }
+
+    [TestMethod]
     public async Task IsAlive_WhenProcessExitsAfterStart_ReturnsFalse()
     {
         using var server = CreateServer();
