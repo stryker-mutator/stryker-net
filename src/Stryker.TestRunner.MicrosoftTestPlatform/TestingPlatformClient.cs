@@ -54,10 +54,7 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
     }
 
     public Task DiscoverTestsAsync(Func<TestNodeUpdate[], Task> action, CancellationToken cancellationToken = default)
-    {
-        var timeout = CreateRequestTimeout(cancellationToken);
-        return CollectUpdatesWithTimeoutAsync(action, token => _client.DiscoverTestsAsync(token), timeout);
-    }
+        => CollectUpdatesAsync(action, token => _client.DiscoverTestsAsync(token), cancellationToken);
 
     public Task RunTestsAsync(Func<TestNodeUpdate[], Task> action, TestNode[]? testNodes = null, CancellationToken cancellationToken = default)
         => CollectUpdatesAsync(
@@ -105,17 +102,6 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
         finally
         {
             _requestGate.Release();
-        }
-    }
-
-    private async Task CollectUpdatesWithTimeoutAsync(
-        Func<TestNodeUpdate[], Task> action,
-        Func<CancellationToken, Task> request,
-        CancellationTokenSource timeout)
-    {
-        using (timeout)
-        {
-            await CollectUpdatesAsync(action, request, timeout.Token).ConfigureAwait(false);
         }
     }
 
