@@ -172,6 +172,7 @@ public static class IAnalyzerResultExtensions
         };
 
     private static readonly string[] KnownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit", "nunit"];
+    private static readonly string[] UnityTestAssemblyReferences = ["nunit.framework", "UnityEngine.TestRunner"];
 
     /// <summary>
     /// checks if an analyzer result is valid
@@ -218,6 +219,13 @@ public static class IAnalyzerResultExtensions
         }
 
         if (Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n)))
+        {
+            return true;
+        }
+
+        if (UnityTestAssemblyReferences.All(reference =>
+                analyzerResult.References?.Any(path =>
+                    string.Equals(Path.GetFileNameWithoutExtension(path), reference, StringComparison.OrdinalIgnoreCase)) == true))
         {
             return true;
         }
