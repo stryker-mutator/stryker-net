@@ -13,6 +13,7 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
     private readonly IMtpServerClient _client;
     private readonly IProcessHandle _processHandler;
     private readonly ILogger _logger;
+    private readonly SemaphoreSlim _requestGate = new(1, 1);
     private bool _disposed;
 
     public TestingPlatformClient(IMtpServerClient client, IProcessHandle processHandler, ILogger logger)
@@ -34,7 +35,9 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         using var timeout = CreateRequestTimeout(cancellationToken);
-        _ = await _client.InitializeAsync(timeout.Token).ConfigureAwait(false);
+        await ExecuteRequestAsync(
+            async token => _ = await _client.InitializeAsync(token).ConfigureAwait(false),
+            timeout.Token).ConfigureAwait(false);
     }
 
     public async Task ExitAsync(bool gracefully = true)
@@ -42,7 +45,7 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
         if (gracefully)
         {
             using var timeout = CreateRequestTimeout(CancellationToken.None);
-            await _client.ExitAsync(timeout.Token).ConfigureAwait(false);
+            await ExecuteRequestAsync(_client.ExitAsync, timeout.Token).ConfigureAwait(false);
         }
         else
         {
@@ -69,6 +72,7 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
         Func<CancellationToken, Task> request,
         CancellationToken cancellationToken)
     {
+        await _requestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         var callbacks = new List<Task>();
         void OnTestNodesUpdated(object? _, MtpTestNodeUpdateEventArgs eventArgs)
         {
@@ -87,6 +91,20 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
         finally
         {
             _client.TestNodesUpdated -= OnTestNodesUpdated;
+            _requestGate.Release();
+        }
+    }
+
+    private async Task ExecuteRequestAsync(Func<CancellationToken, Task> request, CancellationToken cancellationToken)
+    {
+        await _requestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await request(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            _requestGate.Release();
         }
     }
 
@@ -157,6 +175,7 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
 
         _client.LogReceived -= OnLogReceived;
         _client.Dispose();
+        _requestGate.Dispose();
         _disposed = true;
     }
 }

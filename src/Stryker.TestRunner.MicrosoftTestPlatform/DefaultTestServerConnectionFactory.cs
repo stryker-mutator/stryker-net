@@ -88,6 +88,7 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
         {
             ClientName = "Stryker.NET",
             ClientVersion = typeof(TestingPlatformClient).Assembly.GetName().Version?.ToString() ?? "0.0.0",
+            IsStateful = true,
             Logger = clientLogger
         });
 

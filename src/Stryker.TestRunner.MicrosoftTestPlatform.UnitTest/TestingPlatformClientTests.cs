@@ -135,6 +135,38 @@ public class TestingPlatformClientTests
     }
 
     [TestMethod]
+    public async Task RunTestsAsync_SerializesRequests()
+    {
+        var firstRequestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseFirstRequest = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var invocationCount = 0;
+
+        _mtpClient.Setup(client => client.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                if (Interlocked.Increment(ref invocationCount) == 1)
+                {
+                    firstRequestStarted.SetResult();
+                    await releaseFirstRequest.Task;
+                }
+
+                return new MtpRunResult([]);
+            });
+
+        using var client = CreateClient();
+        var firstRequest = client.RunTestsAsync(_ => Task.CompletedTask);
+        await firstRequestStarted.Task;
+        var secondRequest = client.RunTestsAsync(_ => Task.CompletedTask);
+
+        _mtpClient.Verify(sourceClient => sourceClient.RunTestsAsync(It.IsAny<CancellationToken>()), Times.Once);
+
+        releaseFirstRequest.SetResult();
+        await Task.WhenAll(firstRequest, secondRequest);
+
+        _mtpClient.Verify(sourceClient => sourceClient.RunTestsAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    [TestMethod]
     public async Task ExitAsync_Gracefully_SendsExit()
     {
         _mtpClient.Setup(client => client.ExitAsync(It.IsAny<CancellationToken>()))
