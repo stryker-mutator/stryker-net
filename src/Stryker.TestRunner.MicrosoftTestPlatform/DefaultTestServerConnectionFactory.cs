@@ -3,10 +3,9 @@ using System.Net;
 using System.Net.Sockets;
 using CliWrap;
 using Microsoft.Extensions.Logging;
-using StreamJsonRpc;
+using Microsoft.Testing.Platform.ServerMode.Client;
 using Stryker.Abstractions.Options;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
-using Stryker.TestRunner.MicrosoftTestPlatform.RPC;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform;
 
@@ -57,7 +56,7 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
 
         var cliProcess = Cli.Wrap("dotnet")
             .WithWorkingDirectory(Path.GetDirectoryName(assembly) ?? string.Empty)
-            .WithArguments([assembly, "--server", "--client-port", port.ToString()])
+            .WithArguments([assembly, .. MtpServerConnector.BuildInProcessServerArguments(port)])
             .WithEnvironmentVariables(environmentVariables)
             .WithStandardOutputPipe(outputPipe)
             .WithStandardErrorPipe(outputPipe)
@@ -66,24 +65,39 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
         return new CliTestServerProcess(cliProcess, outputStream);
     }
 
-    public ITestingPlatformClient CreateClient(Stream stream, IProcessHandle processHandle, ILogger logger, string? rpcLogFilePath)
+    public ITestingPlatformClient CreateClient(TcpClient tcpClient, IProcessHandle processHandle, ILogger logger)
     {
-        var rpc = new JsonRpc(new HeaderDelimitedMessageHandler(stream, stream, new SystemTextJsonFormatter
+        var clientLogger = new DelegateMtpClientLogger((level, message) =>
         {
-            JsonSerializerOptions = RpcJsonSerializerOptions.Default
-        }));
+            var logLevel = level switch
+            {
+                MtpClientLogLevel.Trace => Microsoft.Extensions.Logging.LogLevel.Trace,
+                MtpClientLogLevel.Debug => Microsoft.Extensions.Logging.LogLevel.Debug,
+                MtpClientLogLevel.Information => Microsoft.Extensions.Logging.LogLevel.Information,
+                MtpClientLogLevel.Warning => Microsoft.Extensions.Logging.LogLevel.Warning,
+                MtpClientLogLevel.Error => Microsoft.Extensions.Logging.LogLevel.Error,
+                _ => Microsoft.Extensions.Logging.LogLevel.Debug
+            };
 
-        var tcpClient = new TcpClient();
-        return new TestingPlatformClient(rpc, tcpClient, processHandle, logger, rpcLogFilePath);
+            logger.Log(logLevel, "{MtpClientMessage}", message);
+        });
+
+        var formatter = MtpServerConnector.CreateFormatter();
+        var connection = MtpServerConnector.CreateConnection(tcpClient, formatter, clientLogger);
+        var client = new MtpServerClient(connection, new MtpServerClientOptions
+        {
+            ClientName = "Stryker.NET",
+            ClientVersion = typeof(TestingPlatformClient).Assembly.GetName().Version?.ToString() ?? "0.0.0",
+            Logger = clientLogger
+        });
+
+        return new TestingPlatformClient(client, processHandle, logger);
     }
 
     private sealed class TcpTestServerListener(TcpListener listener) : ITestServerListener
     {
-        public async Task<(Stream Stream, IDisposable Connection)> AcceptConnectionAsync(CancellationToken cancellationToken)
-        {
-            var tcpClient = await listener.AcceptTcpClientAsync(cancellationToken).ConfigureAwait(false);
-            return (tcpClient.GetStream(), tcpClient);
-        }
+        public Task<TcpClient> AcceptConnectionAsync(CancellationToken cancellationToken)
+            => listener.AcceptTcpClientAsync(cancellationToken).AsTask();
 
         public void Stop() => listener.Stop();
 

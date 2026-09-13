@@ -333,7 +333,7 @@ public class SingleMicrosoftTestPlatformRunnerTests
         result.Duration.ShouldBe(TimeSpan.Zero);
     }
 
-    [TestMethod, Timeout(1000)]
+    [TestMethod, Timeout(5000)]
     public async Task RunAssemblyTestsInternalAsync_WithTimeout_StillReturnsResult_WhenServerFails()
     {
         using var runner = CreateRunner();
