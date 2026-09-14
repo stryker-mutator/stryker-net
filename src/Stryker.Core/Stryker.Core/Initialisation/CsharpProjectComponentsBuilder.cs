@@ -22,14 +22,12 @@ namespace Stryker.Core.Initialisation;
 public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
 {
     private readonly SourceProjectInfo _projectInfo;
-    private readonly IStrykerOptions _options;
     private readonly string[] _foldersToExclude;
     private readonly ILogger _logger;
 
     public CsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, IStrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
     {
         _projectInfo = projectInfo;
-        _options = options;
         _foldersToExclude = foldersToExclude;
         _logger = logger;
     }
@@ -39,7 +37,7 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
         FolderComposite inputFiles;
         if (_projectInfo.AnalyzerResult.SourceFiles!=null && _projectInfo.AnalyzerResult.SourceFiles.Length != 0)
         {
-            inputFiles = FindProjectFilesUsingBuildalyzer(_projectInfo.AnalyzerResult, _options);
+            inputFiles = FindProjectFilesUsingBuildalyzer(_projectInfo.AnalyzerResult);
         }
         else
         {
@@ -55,7 +53,7 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
         var inputFiles = new FolderComposite();
         var sourceProjectDir = FileSystem.Path.GetDirectoryName(analyzerResult.ProjectFilePath);
         var directoryName = FileSystem.Path.GetDirectoryName(sourceProjectDir) ?? "";
-        var cSharpParseOptions = analyzerResult.GetParseOptions(_options);
+        var cSharpParseOptions = analyzerResult.GetParseOptions();
         foreach (var dir in ExtractProjectFolders(analyzerResult))
         {
             var folder = FileSystem.Path.Combine(directoryName, dir);
@@ -67,9 +65,9 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
     }
 
     public override void InjectHelpers(IReadOnlyProjectComponent inputFiles)
-        => InjectMutantHelpers((FolderComposite)inputFiles, _projectInfo.AnalyzerResult.GetParseOptions(_options));
+        => InjectMutantHelpers((FolderComposite)inputFiles, _projectInfo.AnalyzerResult.GetParseOptions());
 
-    private FolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, IStrykerOptions options)
+    private FolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult)
     {
         var generatedAssemblyInfo = analyzerResult.AssemblyAttributeFileName();
         var sourceProjectDir = FileSystem.Path.GetDirectoryName(analyzerResult.ProjectFilePath) ?? "";
@@ -97,7 +95,7 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
             };
 
             // Get the syntax tree for the source file
-            var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode, analyzerResult.GetParseOptions(options), file.FullPath, encoding: Encoding.UTF32);
+            var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode, analyzerResult.GetParseOptions(), file.FullPath, encoding: Encoding.UTF32);
 
             if (!syntaxTree.IsGenerated())
             {
@@ -135,7 +133,7 @@ public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
         folder = FileSystem.Path.Combine(sourceProjectDir, folder);
         if (FileSystem.Directory.Exists(folder))
         {
-            projectUnderTestFolderComposite.Add(FindInputFiles(folder, sourceProjectDir, analyzerResult.GetParseOptions(_options), false));
+            projectUnderTestFolderComposite.Add(FindInputFiles(folder, sourceProjectDir, analyzerResult.GetParseOptions(), false));
         }
     }
 

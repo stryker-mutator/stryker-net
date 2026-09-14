@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
@@ -87,5 +88,25 @@ public class TestProjectTests
         // Assert
         var nodes = testProject.TestFiles.First().SyntaxTree.GetRoot().DescendantNodes();
         testProject.TestFiles.First().SyntaxTree.GetRoot().DescendantNodes().Where(n => n is MethodDeclarationSyntax).Count().ShouldBe(4);
+    }
+
+    [TestMethod]
+    public void TestProject_UsesProjectLanguageVersion()
+    {
+        var fileSystem = new MockFileSystem();
+        var rootPath = Path.Combine("c", "TestProject");
+        var filePath = Path.Combine(rootPath, "ExampleTestFileA.cs");
+        fileSystem.AddDirectory(rootPath);
+        fileSystem.AddFile(filePath, new MockFileData(File.ReadAllText(Path.Combine(".", "TestResources", "ExampleTestFileA.cs"))));
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            properties: new() { ["LangVersion"] = "7.3" },
+            references: [],
+            sourceFiles: [filePath]);
+        analyzerResult.Setup(x => x.GetProperty("LangVersion")).Returns("7.3");
+
+        var testProject = new TestProject(fileSystem, analyzerResult.Object);
+
+        var parseOptions = testProject.TestFiles.Single().SyntaxTree.Options.ShouldBeOfType<CSharpParseOptions>();
+        parseOptions.SpecifiedLanguageVersion.ShouldBe(LanguageVersion.CSharp7_3);
     }
 }
