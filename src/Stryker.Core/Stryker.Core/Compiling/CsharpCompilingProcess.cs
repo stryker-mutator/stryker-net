@@ -194,7 +194,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         // create the driver for source generators
         _generatorDriver = CSharpGeneratorDriver
             .Create(analyzerResult.GetSourceGenerators(_logger),
-                parseOptions: analyzerResult.GetParseOptions(_options),
+                parseOptions: analyzerResult.GetParseOptions(),
                 additionalTexts:[..analyzerResult.GetAdditionalTexts()],
                 optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult));
         // run the generators
@@ -416,4 +416,3 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         }
     }
 }
-

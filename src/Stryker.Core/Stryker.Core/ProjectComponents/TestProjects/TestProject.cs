@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.MutantFilters;
+using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.ProjectComponents.TestProjects;
 
@@ -34,7 +35,7 @@ public sealed class TestProject : IEquatable<ITestProject>, ITestProject
             var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode,
                 path: file,
                 encoding: Encoding.UTF32,
-                options: new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.None, preprocessorSymbols: testProjectAnalyzerResult.PreprocessorSymbols));
+                options: testProjectAnalyzerResult.GetParseOptions());
 
             if (!syntaxTree.IsGenerated())
             {

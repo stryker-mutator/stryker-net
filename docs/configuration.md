@@ -134,34 +134,19 @@ dotnet stryker -m "MyFolder/MyService.cs{10..100}"
 
 ### `language-version` &lt;`string`&gt;
 
-Default: `latest`  
-Command line: `N/A`  
-Config file: `"language-version": 'CSharp7_3'`
+Default: project setting
 
-Stryker compiles using the project language settings (latest by default); but note that since Stryker embeds the Roslyn compiler, `preview` and `latest` are relative to this compiler 
-and may be different from your set up. If you do have compilation errors regarding language features you can explicitly set the language version.
-Note that there is always a delay between C# SDK beta releases and Roslyn and Stryker supporting them, some new features may not be supported immediately.
+Command line: `N/A`
 
-Valid language versions:
-- Default (Latest)
-- Latest (Default)
-- Csharp2
-- Csharp3
-- Csharp4
-- Csharp5
-- Csharp6
-- Csharp7
-- Csharp7_1
-- Csharp7_2
-- Csharp7_3
-- Csharp8
-- Csharp9
-- Csharp10
-- Csharp11
-- Csharp12
-- Preview (next language version)
+Config file (deprecated): `"language-version": 'CSharp7_3'`
 
-*\* Csharp version 1 is not allowed because stryker injects helper code that uses csharp 2 language features.*
+This option is deprecated and ignored. Configure `LangVersion` in the project
+file instead. Stryker uses the language version reported by the project build;
+when the project does not report one, Stryker leaves language-version resolution
+to Roslyn.
+
+Existing configuration values remain accepted for compatibility and produce a
+deprecation warning.
 
 ### `configuration` &lt;`string`&gt;
 Default: default for SDK, usually `Debug`
