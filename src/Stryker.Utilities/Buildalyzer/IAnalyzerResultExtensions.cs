@@ -202,6 +202,20 @@ public static class IAnalyzerResultExtensions
 
     public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
 
+    /// <summary>
+    /// Checks whether any analysis result references the assemblies that identify a Unity test assembly.
+    /// </summary>
+    public static bool IsUnityTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) =>
+        analyzerResults.Any(x => x.IsUnityTestProject());
+
+    /// <summary>
+    /// Checks whether an analysis result references the assemblies that identify a Unity test assembly.
+    /// </summary>
+    public static bool IsUnityTestProject(this IAnalyzerResult analyzerResult) =>
+        UnityTestAssemblyReferences.All(reference =>
+            analyzerResult.References?.Any(path =>
+                string.Equals(Path.GetFileNameWithoutExtension(path), reference, StringComparison.OrdinalIgnoreCase)) == true);
+
     private static bool IsTestProject(this IAnalyzerResult analyzerResult)
     {
         // if 'IsTestingPlatformApplication' is defined and true, this is a test project
@@ -223,9 +237,7 @@ public static class IAnalyzerResultExtensions
             return true;
         }
 
-        if (UnityTestAssemblyReferences.All(reference =>
-                analyzerResult.References?.Any(path =>
-                    string.Equals(Path.GetFileNameWithoutExtension(path), reference, StringComparison.OrdinalIgnoreCase)) == true))
+        if (analyzerResult.IsUnityTestProject())
         {
             return true;
         }

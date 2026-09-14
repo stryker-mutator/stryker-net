@@ -38,7 +38,9 @@ function Run-Stryker {
   param(
     [string]$WorkingDirectory,
     [string[]]$Arguments = @(),
-    [bool]$ContinueOnError = $false
+    [bool]$ContinueOnError = $false,
+    [string]$ExpectedFailureMessage,
+    [string]$OutputFile
   )
 
   $effectiveArguments = @(
@@ -48,22 +50,54 @@ function Run-Stryker {
 
   $argumentText = ($effectiveArguments | ForEach-Object { $_ }) -join ' '
   Write-Info "Running dotnet-stryker in '$WorkingDirectory' with args: $argumentText"
+  $captureOutput = $ExpectedFailureMessage -or $OutputFile
+  $runOutput = @()
   Push-Location $WorkingDirectory
   try {
-    if ($effectiveArguments.Count -gt 0) {
-      & $stryker @effectiveArguments --diag
+    if ($captureOutput) {
+      if ($effectiveArguments.Count -gt 0) {
+        $runOutput = @(& $stryker @effectiveArguments --diag 2>&1)
+      } else {
+        $runOutput = @(& $stryker --diag 2>&1)
+      }
     } else {
-      & $stryker --diag
+      if ($effectiveArguments.Count -gt 0) {
+        & $stryker @effectiveArguments --diag
+      } else {
+        & $stryker --diag
+      }
     }
+    $exitCode = $LASTEXITCODE
   } finally {
     Pop-Location
   }
 
-  if ($LASTEXITCODE -ne 0) {
+  if ($captureOutput) {
+    $runOutput | ForEach-Object { Write-Host $_ }
+  }
+  if ($OutputFile) {
+    $outputDirectory = Split-Path -Parent $OutputFile
+    New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
+    $runOutput | Set-Content -Path $OutputFile
+  }
+
+  if ($ExpectedFailureMessage) {
+    if ($exitCode -eq 0) {
+      throw "dotnet-stryker succeeded in $WorkingDirectory but failure containing '$ExpectedFailureMessage' was expected"
+    }
+    $normalizedOutput = (($runOutput -join ' ') -replace '\s+', ' ').Trim()
+    $normalizedExpectedFailureMessage = ($ExpectedFailureMessage -replace '\s+', ' ').Trim()
+    if ($normalizedOutput -notlike "*$normalizedExpectedFailureMessage*") {
+      throw "dotnet-stryker failed in $WorkingDirectory without expected message '$ExpectedFailureMessage'"
+    }
+    return
+  }
+
+  if ($exitCode -ne 0) {
     if ($ContinueOnError) {
-      Write-Warn "dotnet-stryker failed in $WorkingDirectory with exit code $LASTEXITCODE (continuing)"
+      Write-Warn "dotnet-stryker failed in $WorkingDirectory with exit code $exitCode (continuing)"
     } else {
-      throw "dotnet-stryker failed in $WorkingDirectory with exit code $LASTEXITCODE"
+      throw "dotnet-stryker failed in $WorkingDirectory with exit code $exitCode"
     }
   }
 }
@@ -155,6 +189,18 @@ function Run-Category {
       if ($Runtime -ne 'netcore') { throw "WebApiWithOpenApi only supports runtime 'netcore'." }
       $webApiWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore\WebApiWithOpenApi'
       if (Test-Path $webApiWd) { Run-Stryker -WorkingDirectory $webApiWd } else { Write-Warn "WebApiWithOpenApi folder not found at $webApiWd" }
+      break
+    }
+    'UnityUnsupported' {
+      if ($Runtime -ne 'netcore') { throw "UnityUnsupported only supports runtime 'netcore'." }
+      $unityWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\Unity'
+      $outputFile = Join-Path $unityWd 'TestResults\stryker-output.txt'
+      Run-Stryker -WorkingDirectory $unityWd -Arguments @(
+        '--test-project'
+        'UnityProject.Tests.csproj'
+        '--project'
+        'UnityProject.csproj'
+      ) -ExpectedFailureMessage 'was detected, but running Unity tests is not supported yet.' -OutputFile $outputFile
       break
     }
     'Solution' {

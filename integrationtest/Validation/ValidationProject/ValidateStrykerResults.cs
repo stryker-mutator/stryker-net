@@ -273,6 +273,19 @@ public class ValidateStrykerResults
         CheckReportMutants(report, total: 29, ignored: 7, survived: 3, killed: 7, timeout: 0, nocoverage: 11);
     }
 
+    [Fact]
+    [Trait("Category", "UnityUnsupported")]
+    [Trait("Runtime", "netcore")]
+    public void UnityTestProjectFailsWithActionableMessage()
+    {
+        var output = File.ReadAllText("../../../../../TargetProjects/Unity/TestResults/stryker-output.txt");
+
+        output.ShouldContain("detected, but running Unity tests is not supported yet.");
+        output.ShouldContain("cannot execute Unity tests through VsTest");
+        output.ShouldContain("Track Unity runner support");
+        output.ShouldNotContain("missing an appropriate VsTest adapter");
+    }
+
     private void CheckMutationKindsValidity(IJsonReport report)
     {
         foreach (var file in report.Files)

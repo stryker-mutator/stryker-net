@@ -203,6 +203,19 @@ public class AnalyzerResultExtensionsTests
     }
 
     [TestMethod]
+    [DataRow("/Unity/nunit.framework.dll;/Unity/UnityEngine.TestRunner.dll", true)]
+    [DataRow("/Unity/nunit.framework.dll;/Unity/UnityEditor.TestRunner.dll", false)]
+    public void IsUnityTestProjectRequiresUnityEngineTestRunner(string references, bool expected)
+    {
+        var analyzerResult = Mock.Of<IAnalyzerResult>();
+        Mock.Get(analyzerResult)
+            .SetupGet(result => result.References)
+            .Returns(references.Split(';'));
+
+        analyzerResult.IsUnityTestProject().ShouldBe(expected);
+    }
+
+    [TestMethod]
     [DataRow("8.0", LanguageVersion.CSharp8)]
     [DataRow("7.1", LanguageVersion.CSharp7_1)]
     [DataRow("latest", LanguageVersion.CSharp14)]
