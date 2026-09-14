@@ -124,7 +124,7 @@ public class StrykerOptions : IStrykerOptions
     public double TimeoutRatio { get; init; } = 1.5;
 
     /// <summary>
-    /// The C# language version
+    /// Deprecated compatibility value. Stryker uses the language version reported by the project.
     /// </summary>
     public LanguageVersion LanguageVersion { get; init; }
 
