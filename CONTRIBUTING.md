@@ -3,16 +3,15 @@ This is the contribution guide for Stryker.NET. Great to have you here! Here are
 
 ## Creating issues
 Do you have an idea for a feature or have you found a bug? Please create an issue so we can talk about it!
-When you face an issue you can try using the `--diag` option (```dotnet stryker --diag```) this help you pinpoint the
+When you face an issue, you can try using the `--diag` option (`dotnet stryker --diag`). This helps you pinpoint the
 cause of your problem.
 ### Diagnosis related options
-- L: write all logs in a tex file
-- diag: performs supplemental checks and logs additional information to help diagnose issues
-- verbosity: controls the amount of detail in the output. The default is `info`, but you can set it to `debug` or
-`trace`for more detailed information.
+- `-L`/`--log-to-file`: writes logs to a text file
+- `--diag`: performs supplemental checks and logs additional information to help diagnose issues
+- `-V`/`--verbosity`: controls the amount of detail in the output. The default is `info`; use `debug` or `trace` for more detailed information.
 
 ## Pull requests
-Please open an issue or a discussion first. PR without a supporting issue or discussion are treated as low priority.
+Please open an issue or a discussion first. PRs without a supporting issue or discussion are treated as low priority.
 Focus your PR on the problem you are trying to solve.
 
 ### Proposing a fix
@@ -22,7 +21,7 @@ Focus your PR on the problem you are trying to solve.
 ### Adding new features
 New features are welcome! Either as requests or proposals.
 
-**Create an issue first, so we know what to expect from you.** And please wait for feedback and oor guidance regarding
+**Create an issue first, so we know what to expect from you.** And please wait for feedback and our guidance regarding
 how to move forward.
 
 ### Operational steps
@@ -42,7 +41,7 @@ how to move forward.
    3. There is no blocking SONAR issues
 4. We can help you if you have trouble dealing with test or Sonar issues, please add a comment to the PR and we will help you out.
 5. Once the pipeline is green, we will review your PR and provide feedback. 
-6. We recommand you try to keep your PR up to date with the main branch, so we can merge it as soon as possible.
+6. We recommend you try to keep your PR up to date with the main branch, so we can merge it as soon as possible.
 Please be patient, we are a small team and have limited time to review PRs.
 
 ### Review policy
@@ -60,18 +59,17 @@ standards.
 - they are triaged and reviewed according to their perceived priority. We use labels to track our decisions
 - PRs and issues with no activity for a while will be considered abandoned and may be closed. We usually warn and grant
 a grace period before closing one, but this is not guaranteed.
-- PRs must be up to date with the main branch before being merged, but it may be done after a PR have been validated by
-a maintainer.
+- PRs must be up to date with the main branch before being merged, but this may be done after a maintainer has validated the PR.
 
 #### General considerations regarding LLMs & agents (AI code)
-- This project is solely driven by humans. As of today, no agent is involved in maintaining Stryker.Net
+- This project is solely driven by humans. As of today, no agent is involved in maintaining Stryker.NET
 - We do not have a strict policy regarding the use of LLMs or agents to generate code
 - We hold AI generated/assisted contributions to the same standards as human contributions.
 - AI generated/assisted contributions should be labelled as such, for statistical purposes
-- Please ensure your AI contributions remain terse and not too verbose. This will slow down integration
+- Please keep AI contributions concise; excessive verbosity slows down review and integration.
 - Please take the time to **discuss** with maintainers during review and refrain from using AI for fast turn around on 
 feedback. We want to ensure the quality of the codebase and that you understand the code you are contributing.
-- AI can act as a multiplier force for abusive behavior, such as pressuring maintainers to address issues/merge PR.
+- AI can act as a force multiplier for abusive behavior, such as pressuring maintainers to address issues or merge PRs.
 
 
 
@@ -82,7 +80,7 @@ While developing on Stryker.NET we advise to work in [the latest Visual Studio](
 - Ensure you have .NET 10 SDK or later installed
 
 ### Visual Studio Setup
-Note that you can use alternative IDEs, such as Rider or Visual Studio Code, but we recommand Visual Studio for the time
+Note that you can use alternative IDEs, such as Rider or Visual Studio Code, but we recommend Visual Studio for the time
 being.
 *	Clone the repository `https://github.com/stryker-mutator/stryker-net.git`
 *	Open `Stryker.slnx`
