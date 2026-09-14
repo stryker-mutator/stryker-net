@@ -761,9 +761,19 @@ if(StrykerNamespace.MutantControl.IsActive(2)){for (var i = Method(true); ; i--)
     }
 
     [TestMethod]
+    public void ShouldConstructorInvokingOutVar()
+    {
+        var source = @"public TestClass(string value): base(int.TryParse(value, out var parsed) && parsed == 1){}";
+        var expected =
+            @"public TestClass(string value): base(int.TryParse(value, out var parsed) && (StrykerNamespace.MutantControl.IsActive(1)?parsed != 1:parsed == 1)){}";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
     public void ShouldMutateExpressionBodiedStaticConstructor()
     {
-        var source = @"static Test()  => (true && SomeOtherMethod(out var x)) ? x : 5;";
+        var source = "static Test()  => (true && SomeOtherMethod(out var x)) ? x : 5;";
         var expected =
             @"static Test()  {using(new StrykerNamespace.MutantContext()){if(StrykerNamespace.MutantControl.IsActive(1)){(false?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(0)){(true?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(2)){(true || SomeOtherMethod(out var x)) ? x : 5;}else{((StrykerNamespace.MutantControl.IsActive(3)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}}}}";
 
