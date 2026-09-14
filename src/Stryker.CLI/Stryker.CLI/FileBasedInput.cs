@@ -29,6 +29,7 @@ public class FileBasedInput : IExtraData
     public string MutationLevel { get; init; }
 
     [JsonPropertyName("language-version")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string LanguageVersion { get; init; }
 
     [JsonPropertyName("additional-timeout")]

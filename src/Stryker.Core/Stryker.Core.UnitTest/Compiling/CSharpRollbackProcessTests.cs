@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.IO.Abstractions.TestingHelpers;
-using System.IO.Pipes;
+using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -18,12 +17,10 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Configuration.Options;
 using Stryker.Core.Compiling;
-using Stryker.Core.Initialisation;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.SourceProjects;
-using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.UnitTest.Compiling;
 
@@ -149,11 +146,10 @@ public class CSharpRollbackProcessTests : TestBase
             typeof(object).Assembly.Location,
             typeof(List<string>).Assembly.Location,
             typeof(Enumerable).Assembly.Location,
-            typeof(PipeStream).Assembly.Location,
+            typeof(MemoryMappedFile).Assembly.Location,
             // MutantControl maps the mutant-id file via MemoryMappedFile (MTP runner). ReadInt32 comes from
             // UnmanagedMemoryAccessor, whose reference identity is System.Runtime.InteropServices (loaded by
             // name because the runtime type is forwarded to CoreLib).
-            typeof(System.IO.MemoryMappedFiles.MemoryMappedFile).Assembly.Location,
             Assembly.Load("System.Runtime.InteropServices").Location,
         };
         Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
@@ -238,7 +234,6 @@ public class CSharpRollbackProcessTests : TestBase
             typeof(object).Assembly.Location,
             typeof(List<string>).Assembly.Location,
             typeof(Enumerable).Assembly.Location,
-            typeof(PipeStream).Assembly.Location,
             // MutantControl maps the mutant-id file via MemoryMappedFile (MTP runner). ReadInt32 comes from
             // UnmanagedMemoryAccessor, whose reference identity is System.Runtime.InteropServices (loaded by
             // name because the runtime type is forwarded to CoreLib).
