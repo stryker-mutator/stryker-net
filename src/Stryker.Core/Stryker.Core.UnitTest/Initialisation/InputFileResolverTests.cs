@@ -1497,7 +1497,7 @@ using System.Reflection;
     }
 
     [TestMethod]
-    public void ShouldPassProfileToBuildalyzer()
+    public void ShouldDisableDesignTimeAccordingToProperty()
     {
         // Arrange
         var solutionPath = Path.Combine(_filesystemRoot, "solution.sln");
@@ -1531,7 +1531,7 @@ using System.Reflection;
             ProjectPath = _sourcePath,
             SolutionPath = solutionPath,
             WorkingDirectory = _filesystemRoot,
-            Profile = AnalysisProfile.Regular
+            BuildProperties = new Dictionary<string, string> { { "DesignTimeBuild", "false" } }
         };
 
         // Act

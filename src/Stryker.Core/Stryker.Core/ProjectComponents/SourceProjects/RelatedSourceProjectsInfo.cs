@@ -24,9 +24,9 @@ public class RelatedSourceProjectsInfo(
         if (!string.IsNullOrEmpty(Tracker.SolutionFilePath))
         {
             Tracker.BuildSolution(buildProcess, SourceProjectInfos.Select(p => p.AnalyzerResult));
-
             return true;
         }
+
         var testProjects = SourceProjectInfos.SelectMany(p => p.TestProjectsInfo.AnalyzerResults)
             .Distinct().GroupBy(p => p.ProjectFilePath).Select(g => g.First()).ToList();
         for (var i = 0; i < testProjects.Count; i++)
@@ -40,6 +40,7 @@ public class RelatedSourceProjectsInfo(
                 testProjects[i].TargetsDesktop(),
                 testProjects[i].ProjectFilePath,
                 null,
+                new Dictionary<string, string>(),
                 testProjects[i].GetProperty("Configuration"),
                 testProjects[i].GetProperty("Platform"),
                 msbuildPath: testProjects[i].MsBuildPath());

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
@@ -14,6 +15,7 @@ public interface IInitialBuildProcess
     void InitialBuild(bool fullFramework,
         string projectPath,
         string solutionPath,
+        Dictionary<string, string> properties = null,
         string configuration = null,
         string platform = null,
         string targetFramework = null,
@@ -36,7 +38,8 @@ public class InitialBuildProcess : IInitialBuildProcess
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration = null,
+    public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, Dictionary<string, string> properties = null,
+        string configuration = null,
         string platform = null, string targetFramework = null,
         string msbuildPath = null)
     {
@@ -60,12 +63,19 @@ public class InitialBuildProcess : IInitialBuildProcess
         var target = !string.IsNullOrEmpty(solutionPath) ? solutionPath : projectPath;
         var buildPath = _fileSystem.Path.GetFileName(target);
         var directoryName = _fileSystem.Path.GetDirectoryName(target);
+        var localProperties = new Dictionary<string, string>(properties ?? new Dictionary<string, string>());
+        if (configuration is not null)
+        {
+            localProperties["Configuration"] = configuration;
+        }
+        if (platform is not null)
+        {
+            localProperties["Platform"] = platform;
+        }
         var (result, exe, args) = msBuildHelper.BuildProject(directoryName,
             buildPath,
             fullFramework,
-            configuration: configuration,
-            platform: platform,
-            forcedFramework: targetFramework);
+            localProperties);
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && result.ExitCode != ExitCodes.Success && !string.IsNullOrEmpty(solutionPath))
         {
@@ -75,10 +85,8 @@ public class InitialBuildProcess : IInitialBuildProcess
             (result, _, _) = msBuildHelper.BuildProject(directoryName,
                 buildPath,
                 true,
-                configuration,
-                platform: platform,
-                options: "-t:restore -p:RestorePackagesConfig=true",
-                forcedFramework: targetFramework);
+                localProperties,
+                options: "-t:restore -p:RestorePackagesConfig=true");
 
             if (result.ExitCode != ExitCodes.Success)
             {
@@ -88,8 +96,7 @@ public class InitialBuildProcess : IInitialBuildProcess
             (result, exe, args) = msBuildHelper.BuildProject(directoryName,
                 buildPath,
                 true,
-                configuration,
-                forcedFramework: targetFramework);
+                localProperties);
         }
 
         CheckBuildResult(result, target, exe, args);

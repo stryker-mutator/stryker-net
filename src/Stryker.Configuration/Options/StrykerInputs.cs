@@ -56,19 +56,15 @@ public interface IStrykerInputs
     OpenReportEnabledInput OpenReportEnabledInput { get; init; }
     BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; }
     TestRunnerInput TestRunnerInput { get; init; }
+    BuildPropertiesInput BuildPropertiesInput { get; init; }
 
     IStrykerOptions ValidateAll();
 }
 
-public class StrykerInputs : IStrykerInputs
+public class StrykerInputs(IFileSystem? fileSystem = null) : IStrykerInputs
 {
     private IStrykerOptions? _strykerOptionsCache;
-    private readonly IFileSystem _fileSystem;
-
-    public StrykerInputs(IFileSystem fileSystem = null)
-    {
-        _fileSystem = fileSystem ?? new FileSystem();
-    }
+    private readonly IFileSystem _fileSystem = fileSystem ?? new FileSystem();
 
     public DiagModeInput DiagModeInput { get; init; } = new();
     public BasePathInput BasePathInput { get; init; } = new();
@@ -115,6 +111,7 @@ public class StrykerInputs : IStrykerInputs
     public DisableBailInput DisableBailInput { get; set; } = new();
     public DisableMixMutantsInput DisableMixMutantsInput { get; set; } = new();
     public MsBuildPathInput MsBuildPathInput { get; init; } = new();
+    public BuildPropertiesInput BuildPropertiesInput { get; init; } = new();
     public OpenReportInput OpenReportInput { get; init; } = new();
     public OpenReportEnabledInput OpenReportEnabledInput { get; init; } = new();
     public BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; } = new();
@@ -145,6 +142,7 @@ public class StrykerInputs : IStrykerInputs
             SolutionPath = SolutionInput.Validate(basePath, _fileSystem),
             Configuration = ConfigurationInput.Validate(),
             TargetFramework = TargetFrameworkInput.Validate(),
+            BuildProperties = BuildPropertiesInput.Validate(),
             Thresholds = new Thresholds
             {
                 High = ThresholdHighInput.Validate(ThresholdLowInput.SuppliedInput),

@@ -20,7 +20,7 @@ public class ProjectSimulatedBuildWrapper
     private readonly IProjectAnalyzer _analyzer;
     private readonly ProjectsTracker _projectsTracker;
     private readonly string _msBuildPath;
-    private readonly AnalysisProfile _profile;
+    private readonly Dictionary<string, string> _properties;
     private readonly string _configuration;
     private readonly string _platform;
     private readonly string? _framework;
@@ -31,7 +31,7 @@ public class ProjectSimulatedBuildWrapper
     public ProjectSimulatedBuildWrapper(IBuildalyzerProvider buildalyzerProvider,
         string projectFile,
         string msBuildPath,
-        AnalysisProfile profile,
+        Dictionary<string, string> properties,
         (string configuration, string platform, string? framework) target,
         ILogger logger,
         ProjectsTracker projectsTracker)
@@ -44,7 +44,7 @@ public class ProjectSimulatedBuildWrapper
         ProjectFileName = projectFile;
         _projectsTracker = projectsTracker;
         _msBuildPath = msBuildPath;
-        _profile = profile;
+        _properties = properties;
         _configuration = target.configuration;
         _platform = target.platform;
         _framework = target.framework;
@@ -60,7 +60,11 @@ public class ProjectSimulatedBuildWrapper
     private EnvironmentOptions GetBuildalyzerEnvironmentOptions(bool withRestore = false)
     {
         var env = new EnvironmentOptions();
-
+        // import properties
+        foreach (var property in _properties)
+        {
+            env.GlobalProperties[property.Key] = property.Value;
+        }
         if (!string.IsNullOrEmpty(_msBuildPath))
         {
             // we need to forward this path to buildalyzer
@@ -75,8 +79,9 @@ public class ProjectSimulatedBuildWrapper
             env.GlobalProperties["Platform"] = _platform;
         }
 
+        env.DesignTime = !_properties.TryGetValue("DesignTimeBuild", out var designTime) ||
+                         designTime.Equals("true", StringComparison.OrdinalIgnoreCase);
         env.Restore = withRestore;
-        env.DesignTime = _profile == AnalysisProfile.DesignTime;
         return env;
     }
 
@@ -165,6 +170,30 @@ public class ProjectSimulatedBuildWrapper
         {
             log.AppendLine("**** End Buildalyzer result ****");
             _logger.LogDebug(log.ToString());
+        }
+    }
+
+
+    private static string PropertyOption(string propertyName, string value) => $"-P {propertyName}={value}";
+
+    // use analysis results to identify potential problems with this project
+    public IEnumerable<string> IdentifiedProblems()
+    {
+        if (AnalyzerLastResults.Any(r => r.Properties.ContainsKey("UseWPF") || r.Properties.ContainsKey("UseWindowsForms")))
+        {
+            if (Environment.OSVersion.Platform!=PlatformID.Win32NT
+                && !AnalyzerLastResults.Any(r => r.Properties.TryGetValue("EnableWindowsTargeting", out var enable) && enable.Equals("true", StringComparison.OrdinalIgnoreCase)))
+            {
+                // SDK will refuse to build WPF or Windows Forms projects on non-Windows platforms,
+                yield return $"Project {ProjectFileName} is a WPF or Windows Forms project. please add {PropertyOption("EnableWindowsTargeting", "true")} to the command line to build it on non-Windows platforms.";
+            }
+            // look for net10+wpf issues
+            if (AnalyzerLastResults.Any(r => r.Properties.TryGetValue("TargetFramework", out var tf) && tf.StartsWith("net10.0", StringComparison.OrdinalIgnoreCase)
+                    && (!r.Properties.TryGetValue("DesignTimeBuild", out var design) || design.Equals("true", StringComparison.OrdinalIgnoreCase)))
+               )
+            {
+                yield return $"Project {ProjectFileName} does not support design time build (WPF or Windows Forms project with targeting net 10). Please add {PropertyOption("DesignTimeBuild", "false")} to the command line.";
+            }
         }
     }
 

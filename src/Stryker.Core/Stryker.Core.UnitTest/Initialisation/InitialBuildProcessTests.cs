@@ -99,7 +99,7 @@ public class InitialBuildProcessTests : TestBase
 
         var target = new InitialBuildProcess(processMock.Object, mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
-        target.InitialBuild(true, "./ExampleProject.sln", "./ExampleProject.sln", "Debug");
+        target.InitialBuild(true, "./ExampleProject.sln", "./ExampleProject.sln", new Dictionary<string, string>(),"Debug");
 
         processMock.Verify(x => x.Start(It.IsAny<string>(),
                 It.Is<string>(applicationParam => applicationParam.Contains("msbuild.exe", StringComparison.InvariantCultureIgnoreCase)),
@@ -143,7 +143,7 @@ public class InitialBuildProcessTests : TestBase
 
         var target = new InitialBuildProcess(processMock.Object, mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
-        target.InitialBuild(false, "/", "./ExampleProject.sln", "TheDebug");
+        target.InitialBuild(false, "/", "./ExampleProject.sln", new Dictionary<string, string>(),"TheDebug");
         processMock.Verify(x => x.Start(It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.Is<string>(argumentsParam => argumentsParam.Contains("-c TheDebug")),
@@ -162,7 +162,7 @@ public class InitialBuildProcessTests : TestBase
 
         var target = new InitialBuildProcess(processMock.Object, mockFileSystem, TestLoggerFactory.CreateLogger<InitialBuildProcess>());
 
-        target.InitialBuild(false, "/", "./ExampleProject.sln", "TheDebug", "AnyCPU");
+        target.InitialBuild(false, "/", "./ExampleProject.sln", new Dictionary<string, string>(),"TheDebug", "AnyCPU");
         processMock.Verify(x => x.Start(It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.Is<string>(argumentsParam => argumentsParam.Contains("-c TheDebug")

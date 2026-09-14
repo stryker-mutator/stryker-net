@@ -71,28 +71,37 @@ public class MsBuildHelper
         return _msBuildPath;
     }
 
-    public (ProcessResult result, string exe, string command) BuildProject(string path, string projectFile, bool usingMsBuild
-        , string configuration = null, string platform = null, string options = null, string forcedFramework = null)
+    public (ProcessResult result, string exe, string command) BuildProject(string path, string projectFile, bool usingMsBuild,
+        Dictionary<string, string> properties = null, string options = null)
     {
         var (exe, command) = usingMsBuild ? GetMsBuildExeAndCommand() : ("dotnet", "build");
 
-        List<string> fullOptions = string.IsNullOrEmpty(command) ? [QuotesIfNeeded(projectFile)] : [command, QuotesIfNeeded(projectFile)];
-        if (!string.IsNullOrEmpty(configuration))
+        List<string> argumentList = string.IsNullOrEmpty(command) ? [QuotesIfNeeded(projectFile)] : [command, QuotesIfNeeded(projectFile)];
+        foreach (var (property, value) in properties ?? [])
         {
-            fullOptions.Add($"{(usingMsBuild ? "/property:Configuration=" : "-c ") + QuotesIfNeeded(configuration)}");
+            if (usingMsBuild)
+            {
+                argumentList.Add($"/property:{property}={QuotesIfNeeded(value)}");
+            }
+            else
+            {
+                if (string.CompareOrdinal(property, "Configuration") == 0)
+                {
+                    argumentList.Add("-c " + QuotesIfNeeded(value));
+                }
+                else
+                {
+                    argumentList.Add($"--property:{property}={QuotesIfNeeded(value)}");
+                }
+            }
         }
-
-        if (!string.IsNullOrEmpty(platform))
-        {
-            fullOptions.Add($"{(usingMsBuild ? "/" : "--")}property:Platform={QuotesIfNeeded(platform)}");
-        }
-
+        // extra args
         if (options is not null)
         {
-            fullOptions.Add(options);
+            argumentList.Add(options);
         }
 
-        var arguments = string.Join(' ', fullOptions);
+        var arguments = string.Join(' ', argumentList);
         _logger.LogInformation("Building project {project} using {MsBuildPath} {Options} (directory {path}.)", projectFile, exe, arguments, path);
         return (_executor.Start(path, exe, arguments), exe, arguments);
     }

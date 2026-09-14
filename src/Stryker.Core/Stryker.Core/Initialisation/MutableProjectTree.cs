@@ -71,11 +71,25 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
         Targets.Add(targetToKeep);
     }
 
+    public IEnumerable<string> KnownProblems()
+    {
+        foreach (var problem in project.IdentifiedProblems())
+        {
+            yield return problem;
+        }
+    }
+
     public void LogAllAnalysisSummaries()
     {
         logger.LogInformation("Project {ProjectPath} overall analysis {Result}.",
             Path.GetFileName(project.ProjectFileName),
             IsValidTarget ? "succeeded" : "failed hence can't be mutated");
+
+        foreach (var logKnownProblem in KnownProblems())
+        {
+            logger.LogWarning(logKnownProblem);
+        }
+
         foreach (var target in Targets)
         {
             target.LogAnalysisSummary();

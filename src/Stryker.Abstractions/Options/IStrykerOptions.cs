@@ -6,12 +6,6 @@ using Stryker.Abstractions.ProjectComponents;
 
 namespace Stryker.Abstractions.Options;
 
-public enum AnalysisProfile
-{
-    DesignTime,
-    Regular
-}
-
 /// <summary>
 /// Isolate build related options
 /// </summary>
@@ -25,7 +19,7 @@ public interface IStrykerBuildOptions
     LanguageVersion LanguageVersion { get; init; }
     string WorkingDirectory { get; init; }
     string? SolutionPath { get; init; }
-    AnalysisProfile  Profile { get; init; }
+    Dictionary<string, string> BuildProperties { get; init; }
 }
 
 public interface IStrykerOptions : IStrykerBuildOptions

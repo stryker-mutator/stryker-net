@@ -135,7 +135,7 @@ public class ProjectsTracker
             buildProcess.InitialBuild(
                 framework,
                 _fileSystem.Path.GetDirectoryName(SolutionFilePath),
-                SolutionFilePath, Configuration, Platform,
+                SolutionFilePath, _options.BuildProperties, Configuration, Platform,
                 TargetFramework, MsBuildPath(results));
             _solutionBuilt = true;
         }
@@ -160,7 +160,7 @@ public class ProjectsTracker
         {
             (configuration, platform) = (Configuration, Platform);
         }
-        return new ProjectSimulatedBuildWrapper(_buildalyzerProvider, projectFile, _options.MsBuildPath, _options.Profile,
+        return new ProjectSimulatedBuildWrapper(_buildalyzerProvider, projectFile, _options.MsBuildPath, _options.BuildProperties,
             (configuration, platform, _options.TargetFramework), _logger, this);
     }
 }
