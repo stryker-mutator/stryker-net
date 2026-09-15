@@ -179,6 +179,43 @@ public class AnalyzerResultExtensionsTests
     }
 
     [TestMethod]
+    [DataRow("/Unity/nunit.framework.dll;/Unity/UnityEngine.TestRunner.dll", true)]
+    [DataRow("/Unity/NUNIT.FRAMEWORK.DLL;/Unity/UNITYENGINE.TESTRUNNER.DLL", true)]
+    [DataRow("nunit.framework.dll;UnityEditor.TestRunner.dll", false)]
+    [DataRow("UnityEngine.TestRunner.dll", false)]
+    [DataRow("nunit.framework.dll", false)]
+    public void IsTestProjectRecognizesUnityTestAssemblies(string references, bool expected)
+    {
+        var analyzerResult = Mock.Of<IAnalyzerResult>();
+        Mock.Get(analyzerResult)
+            .SetupGet(result => result.Properties)
+            .Returns(new Dictionary<string, string>());
+        Mock.Get(analyzerResult)
+            .SetupGet(result => result.PackageReferences)
+            .Returns(new Dictionary<string, IReadOnlyDictionary<string, string>>());
+        Mock.Get(analyzerResult)
+            .SetupGet(result => result.References)
+            .Returns(references.Split(';'));
+
+        var isTestProject = IAnalyzerResultExtensions.IsTestProject([analyzerResult]);
+
+        isTestProject.ShouldBe(expected);
+    }
+
+    [TestMethod]
+    [DataRow("/Unity/nunit.framework.dll;/Unity/UnityEngine.TestRunner.dll", true)]
+    [DataRow("/Unity/nunit.framework.dll;/Unity/UnityEditor.TestRunner.dll", false)]
+    public void IsUnityTestProjectRequiresUnityEngineTestRunner(string references, bool expected)
+    {
+        var analyzerResult = Mock.Of<IAnalyzerResult>();
+        Mock.Get(analyzerResult)
+            .SetupGet(result => result.References)
+            .Returns(references.Split(';'));
+
+        analyzerResult.IsUnityTestProject().ShouldBe(expected);
+    }
+
+    [TestMethod]
     [DataRow("8.0", LanguageVersion.CSharp8)]
     [DataRow("7.1", LanguageVersion.CSharp7_1)]
     [DataRow("latest", LanguageVersion.Latest)]
