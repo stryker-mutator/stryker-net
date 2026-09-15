@@ -60,6 +60,22 @@ public class DefaultTestServerConnectionFactoryTests
         DefaultTestServerConnectionFactory.HelpListsTestCaseFilter(helpOutput).ShouldBeFalse();
     }
 
+    [TestMethod]
+    public void CreateTestCaseFilterSupportProbe_ShouldExecuteProbeOnce_WhenReadConcurrently()
+    {
+        var probeCalls = 0;
+        var probe = DefaultTestServerConnectionFactory.CreateTestCaseFilterSupportProbe("tests.dll", _ =>
+        {
+            Interlocked.Increment(ref probeCalls);
+            Thread.Sleep(50);
+            return true;
+        });
+
+        Parallel.For(0, 20, _ => probe.Value.ShouldBeTrue());
+
+        probeCalls.ShouldBe(1);
+    }
+
     private static DefaultTestServerConnectionFactory CreateFactory(
         string testCaseFilter,
         Func<string, bool> supportsTestCaseFilter)

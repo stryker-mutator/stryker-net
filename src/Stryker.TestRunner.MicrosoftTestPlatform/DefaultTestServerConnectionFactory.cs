@@ -18,7 +18,7 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 /// </summary>
 internal sealed class DefaultTestServerConnectionFactory : ITestServerConnectionFactory
 {
-    private static readonly ConcurrentDictionary<string, bool> TestCaseFilterSupport =
+    private static readonly ConcurrentDictionary<string, Lazy<bool>> TestCaseFilterSupport =
         new(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
 
     private readonly string? _outputPath;
@@ -114,8 +114,13 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
     private static bool SupportsTestCaseFilter(string assembly)
     {
         var fullAssemblyPath = Path.GetFullPath(assembly);
-        return TestCaseFilterSupport.GetOrAdd(fullAssemblyPath, ProbeTestCaseFilterSupport);
+        return TestCaseFilterSupport
+            .GetOrAdd(fullAssemblyPath, static path => CreateTestCaseFilterSupportProbe(path, ProbeTestCaseFilterSupport))
+            .Value;
     }
+
+    internal static Lazy<bool> CreateTestCaseFilterSupportProbe(string assembly, Func<string, bool> probe) =>
+        new(() => probe(assembly), LazyThreadSafetyMode.ExecutionAndPublication);
 
     private static bool ProbeTestCaseFilterSupport(string assembly)
     {
