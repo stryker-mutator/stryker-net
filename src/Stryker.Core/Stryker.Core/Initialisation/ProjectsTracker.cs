@@ -70,7 +70,8 @@ public class ProjectsTracker
             }
             else
             {
-                _logger.LogInformation("Using solution configuration/platform '{Configuration}|{Platform}'.", Configuration, Platform);
+                // log at debug level if no configuration or platform was specified, otherwise log at information level
+                _logger.Log(string.IsNullOrEmpty(configuration??platform) ? LogLevel.Debug : LogLevel.Information, "Using solution configuration/platform '{Configuration}|{Platform}'.", Configuration, Platform);
             }
         }
         else
@@ -87,7 +88,7 @@ public class ProjectsTracker
     }
 
     /// <summary>
-    /// Select all projects from solution
+    /// Select all projects from solution for mutation
     /// </summary>
     public void SelectAllProjects() => _selectedProjects = Solution?.GetProjects(Configuration, Platform).ToList() ?? [];
 

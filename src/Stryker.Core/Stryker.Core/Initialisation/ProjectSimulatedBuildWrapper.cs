@@ -6,7 +6,6 @@ using System.Text;
 using Buildalyzer;
 using Buildalyzer.Environment;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Options;
 using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.Initialisation;
@@ -26,7 +25,7 @@ public class ProjectSimulatedBuildWrapper
     private readonly string? _framework;
     private readonly ILogger _logger;
     private readonly StringWriter _buildLogger;
-    private string[] _targetFrameworks=[];
+    private string[] _targetFrameworks;
 
     public ProjectSimulatedBuildWrapper(IBuildalyzerProvider buildalyzerProvider,
         string projectFile,
@@ -38,9 +37,9 @@ public class ProjectSimulatedBuildWrapper
     {
         _buildLogger = new StringWriter();
         var manager = buildalyzerProvider.Provide(new AnalyzerManagerOptions{LogWriter = _buildLogger});
-        var analyzer = manager.GetProject(projectFile);
 
-        _analyzer = analyzer;
+        _analyzer = manager.GetProject(projectFile);
+        _targetFrameworks = _analyzer.ProjectFile.TargetFrameworks;
         ProjectFileName = projectFile;
         _projectsTracker = projectsTracker;
         _msBuildPath = msBuildPath;
@@ -98,15 +97,13 @@ public class ProjectSimulatedBuildWrapper
             withRestore = false;
         }
         _buildLogger.GetStringBuilder().Clear();
+
         var env = GetBuildalyzerEnvironmentOptions(withRestore);
-
-
         AnalyzerLastResults = forceFramework ? _analyzer.Build(_framework, env) : _analyzer.Build(env);
-        InitializeTargetFrameworks();
         return AnalyzerLastResults;
     }
 
-    private void InitializeTargetFrameworks()
+    public void InitializeTargetFrameworks()
     {
         var projectFileTargetFrameworks = _analyzer.ProjectFile.TargetFrameworks;
         if (projectFileTargetFrameworks.Length > 0)
@@ -118,12 +115,12 @@ public class ProjectSimulatedBuildWrapper
             if (!string.IsNullOrEmpty(_framework))
             {
                 projectFileTargetFrameworks=[_framework];
-                _logger.LogWarning("Failed to identify target frameworks for project {ProjectFilePath}. Assuming selected framework ({Framework}) is present.", ProjectFileName, _framework);
+                _logger.LogWarning("Failed to retrieve target framework(s) from {ProjectFilePath}. Assuming selected framework ({Framework}) is present.", ProjectFileName, _framework);
             }
             else
             {
                 projectFileTargetFrameworks = AnalyzerLastResults.Select(br => br.TargetFramework).ToArray();
-                _logger.LogWarning("Failed to identify target frameworks for project {ProjectFilePath}. Using analysis results: {Frameworks}", ProjectFileName, string.Join(',', projectFileTargetFrameworks));
+                _logger.LogWarning("Failed to retrieve target framework(s) from {ProjectFilePath}. Using analysis results: {Frameworks}", ProjectFileName, string.Join(',', projectFileTargetFrameworks));
             }
         }
 
@@ -137,7 +134,8 @@ public class ProjectSimulatedBuildWrapper
 
     public bool IsTest => AnalyzerLastResults.IsTestProject();
 
-    public bool HasValidResults() => AnalyzerLastResults.IsValidFor(_targetFrameworks);
+    public bool HasValidResults() => _targetFrameworks.Length == 0 ? AnalyzerLastResults.All(r => r.IsValid())
+        : AnalyzerLastResults.IsValidFor(_targetFrameworks);
 
     public bool IsTestProject() => AnalyzerLastResults.IsTestProject();
 
@@ -169,7 +167,7 @@ public class ProjectSimulatedBuildWrapper
         finally
         {
             log.AppendLine("**** End Buildalyzer result ****");
-            _logger.LogDebug(log.ToString());
+            _logger.LogTrace(log.ToString());
         }
     }
 

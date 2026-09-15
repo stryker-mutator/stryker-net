@@ -102,7 +102,7 @@ public class MsBuildHelper
         }
 
         var arguments = string.Join(' ', argumentList);
-        _logger.LogInformation("Building project {project} using {MsBuildPath} {Options} (directory {path}.)", projectFile, exe, arguments, path);
+        _logger.LogDebug("Building project {project} using {MsBuildPath} {Options} (directory {path}.)", projectFile, exe, arguments, path);
         return (_executor.Start(path, exe, arguments), exe, arguments);
     }
 

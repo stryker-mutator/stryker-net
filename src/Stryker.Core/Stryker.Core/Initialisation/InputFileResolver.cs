@@ -385,13 +385,18 @@ public class InputFileResolver(
                 buildResultOverallSuccess = project.HasValidResults();
             }
         }
+
+        project.InitializeTargetFrameworks();
+
         if (!buildResult.OverallSuccess && !options.DiagMode)
         {
-            _logger.LogWarning("Project {ProjectFilePath} simulated build failed. Use '--diag' option to have the build log.", projectLogName);
+            _logger.LogWarning("Project {ProjectFilePath} simulated build still failed. Use '--diag' option to have the build log.", projectLogName);
         }
 
         if (options.DiagMode)
         {
+            _logger.Log(buildResult.OverallSuccess ? LogLevel.Debug : LogLevel.Information,
+                "{ProjectFilePath}'s build log is:{Eol}{Log}", projectLogName, Environment.NewLine, project.LastBuildLog);
             project.LogAnalyzerResult();
         }
 
@@ -410,7 +415,8 @@ public class InputFileResolver(
 
         if (options.DiagMode)
         {
-            _logger.LogWarning("{ProjectFilePath}'s build log is: {Log}", projectLogName, project.LastBuildLog);
+            _logger.LogWarning(
+                "{ProjectFilePath}'s build log is:{Eol}{Log}", projectLogName, Environment.NewLine, project.LastBuildLog);
         }
 
         return buildResult;

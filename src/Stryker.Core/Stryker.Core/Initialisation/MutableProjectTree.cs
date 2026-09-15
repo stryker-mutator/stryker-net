@@ -57,7 +57,8 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
             logger.LogWarning("Failed to find a valid {Framework} target for project {Project}. ", optionsTargetFramework, project.ProjectFileName);
         }
 
-        var mutableProjectTargets = Targets.Where(t => t.IsValidTarget);
+        var mutableProjectTargets = Targets.Where(t => t.IsValidTarget).ToList();
+        var countOfValidTargets = mutableProjectTargets.Count;
         // keep the first non netframework target otherwise pick the first one when running on Windows OS
         targetToKeep = mutableProjectTargets.FirstOrDefault( t => !t.ProjectTarget.TargetsDesktop()) ??
                        mutableProjectTargets.FirstOrDefault(_ => OperatingSystem.IsWindows());
@@ -67,7 +68,7 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
             logger.LogWarning("Failed to find a valid target for project {Project}. ", project.ProjectFileName);
             return;
         }
-        logger.LogInformation("Picking {Framework} for project {Project}. ", targetToKeep.ProjectTarget.TargetFramework, project.ProjectFileName);
+        logger.Log(countOfValidTargets>1 ? LogLevel.Information : LogLevel.Debug, "Picking {Framework} for project {Project}. ", targetToKeep.ProjectTarget.TargetFramework, project.ProjectFileName);
         Targets.Add(targetToKeep);
     }
 
