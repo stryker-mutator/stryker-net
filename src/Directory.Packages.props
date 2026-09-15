@@ -32,10 +32,10 @@
     <PackageVersion Include="System.Net.Http.Json" Version="10.0.12" />
     <!-- Explicit reference to override the vulnerable version that Microsoft.Build.Tasks.Core brings in transitively -->
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.12" />
-    <PackageVersion Include="Microsoft.TestPlatform" Version="18.10.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.10.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="18.10.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="18.10.0" />
+    <PackageVersion Include="Microsoft.TestPlatform" Version="18.10.1" />
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.10.1" />
+    <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="18.10.1" />
+    <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="18.10.1" />
     <PackageVersion Include="Microsoft.Testing.Platform" Version="1.5.2" />
     <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.2.0" />
     <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52"/>
@@ -46,7 +46,7 @@
   <ItemGroup>
     <PackageVersion Include="MSTest" Version="4.1.0" />
     <PackageVersion Include="MSTest.TestFramework" Version="4.1.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.57.2" />
