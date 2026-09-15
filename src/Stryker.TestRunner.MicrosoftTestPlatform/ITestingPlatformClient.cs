@@ -8,6 +8,8 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 public interface ITestingPlatformClient : IDisposable
 {
     Task<InitializeResponse> InitializeAsync();
+    Task<InitializeResponse> InitializeAsync(CancellationToken cancellationToken)
+        => InitializeAsync();
     Task ExitAsync(bool gracefully = true);
     Task<int> WaitServerProcessExitAsync();
     Task<ResponseListener> DiscoverTestsAsync(Guid requestId, Func<TestNodeUpdate[], Task> action, bool @checked = true);

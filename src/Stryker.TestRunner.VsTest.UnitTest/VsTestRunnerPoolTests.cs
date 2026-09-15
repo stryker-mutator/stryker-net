@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Moq;
@@ -31,6 +32,21 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     {
         _ = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
         runner.GetTests(SourceProjectInfo).Count.ShouldBe(2);
+    }
+
+    [TestMethod]
+    public async Task CancelledMutationTestShouldNotStartAVsTestSession()
+    {
+        _ = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+        using var cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.Cancel();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => runner.TestMultipleMutantsAsync(
+            SourceProjectInfo,
+            null,
+            [Mutant],
+            null,
+            cancellationTokenSource.Token));
     }
 
     [TestMethod]
@@ -723,5 +739,4 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         OtherMutant.CoveringTests.Count.ShouldBe(1);
     }
 }
-
 

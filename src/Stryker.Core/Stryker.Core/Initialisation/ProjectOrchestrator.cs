@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,11 @@ namespace Stryker.Core.Initialisation;
 public interface IProjectOrchestrator : IDisposable
 {
     Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(IStrykerOptions options, IReporter reporters, ITestRunner runner = null);
+    Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(
+        IStrykerOptions options,
+        IReporter reporters,
+        ITestRunner runner,
+        CancellationToken cancellationToken);
 }
 
 public sealed class ProjectOrchestrator : IProjectOrchestrator
@@ -52,7 +58,15 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
 
     public async Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(IStrykerOptions options, IReporter reporters,
         ITestRunner runner = null)
+        => await MutateProjectsAsync(options, reporters, runner, CancellationToken.None);
+
+    public async Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(
+        IStrykerOptions options,
+        IReporter reporters,
+        ITestRunner runner,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         _initializationProcess ??= _serviceProvider.GetRequiredService<IInitialisationProcess>();
         var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
 
@@ -63,15 +77,22 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         }
 
         _initializationProcess.BuildProjects(options, projectInfos);
+        cancellationToken.ThrowIfCancellationRequested();
 
         // create a test runner based on the selected option
         _runner = runner ?? CreateTestRunner(options);
         _mutationTestExecutor.TestRunner = _runner;
         InitializeDashboardProjectInformation(options, projectInfos.First());
-        var inputs = await _initializationProcess.GetMutationTestInputsAsync(options, projectInfos, _runner);
+        var inputs = cancellationToken.CanBeCanceled
+            ? await _initializationProcess.GetMutationTestInputsAsync(
+                options,
+                projectInfos,
+                _runner,
+                cancellationToken)
+            : await _initializationProcess.GetMutationTestInputsAsync(options, projectInfos, _runner);
 
         var mutationTestProcesses = new ConcurrentBag<IMutationTestProcess>();
-        Parallel.ForEach(inputs, mutationTestInput =>
+        Parallel.ForEach(inputs, new ParallelOptions { CancellationToken = cancellationToken }, mutationTestInput =>
         {
             mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
         });

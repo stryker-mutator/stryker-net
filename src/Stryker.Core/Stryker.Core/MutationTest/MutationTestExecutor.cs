@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
@@ -19,6 +20,12 @@ public interface IMutationTestExecutor
 
     Task TestAsync(IProjectAndTests project, IList<IMutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
         TestUpdateHandler updateHandler);
+    Task TestAsync(
+        IProjectAndTests project,
+        IList<IMutant> mutantsToTest,
+        ITimeoutValueCalculator timeoutMs,
+        TestUpdateHandler updateHandler,
+        CancellationToken cancellationToken);
 }
 
 public class MutationTestExecutor : IMutationTestExecutor
@@ -34,11 +41,26 @@ public class MutationTestExecutor : IMutationTestExecutor
 
     public async Task TestAsync(IProjectAndTests project, IList<IMutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
         TestUpdateHandler updateHandler)
+        => await TestAsync(project, mutantsToTest, timeoutMs, updateHandler, CancellationToken.None);
+
+    public async Task TestAsync(
+        IProjectAndTests project,
+        IList<IMutant> mutantsToTest,
+        ITimeoutValueCalculator timeoutMs,
+        TestUpdateHandler updateHandler,
+        CancellationToken cancellationToken)
     {
         var forceSingle = false;
         while (mutantsToTest.Any())
         {
-            var result = await RunTestSessionAsync(project, mutantsToTest, timeoutMs, updateHandler, forceSingle).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            var result = await RunTestSessionAsync(
+                project,
+                mutantsToTest,
+                timeoutMs,
+                updateHandler,
+                forceSingle,
+                cancellationToken).ConfigureAwait(false);
 
             Logger.LogDebug(
                 "Test run for {Mutants} is {Result} ",
@@ -84,15 +106,22 @@ public class MutationTestExecutor : IMutationTestExecutor
 
     private async Task<ITestRunResult> RunTestSessionAsync(IProjectAndTests projectAndTests, ICollection<IMutant> mutantsToTest,
         ITimeoutValueCalculator timeoutMs,
-        TestUpdateHandler updateHandler, bool forceSingle)
+        TestUpdateHandler updateHandler,
+        bool forceSingle,
+        CancellationToken cancellationToken)
     {
         Logger.LogTrace("Testing {MutantsToTest}.", string.Join(" ,", mutantsToTest.Select(x => x.DisplayName)));
         if (forceSingle)
         {
             foreach (var mutant in mutantsToTest)
             {
-                var localResult =
-                    await TestRunner.TestMultipleMutantsAsync(projectAndTests, timeoutMs, new[] { mutant }, updateHandler).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+                var localResult = await RunMutantsAsync(
+                    projectAndTests,
+                    timeoutMs,
+                    [mutant],
+                    updateHandler,
+                    cancellationToken).ConfigureAwait(false);
                 if (updateHandler == null || localResult.SessionTimedOut || localResult.SessionHadRuntimeIssue)
                 {
                     mutant.AnalyzeTestRun(localResult.FailingTests,
@@ -106,7 +135,12 @@ public class MutationTestExecutor : IMutationTestExecutor
             return new TestRunResult(true);
         }
 
-        var result = await TestRunner.TestMultipleMutantsAsync(projectAndTests, timeoutMs, mutantsToTest.ToList(), updateHandler).ConfigureAwait(false);
+        var result = await RunMutantsAsync(
+            projectAndTests,
+            timeoutMs,
+            mutantsToTest.ToList(),
+            updateHandler,
+            cancellationToken).ConfigureAwait(false);
         if (updateHandler != null && !result.SessionTimedOut && !result.SessionHadRuntimeIssue)
         {
             return result;
@@ -123,4 +157,19 @@ public class MutationTestExecutor : IMutationTestExecutor
 
         return result;
     }
+
+    private Task<ITestRunResult> RunMutantsAsync(
+        IProjectAndTests project,
+        ITimeoutValueCalculator timeoutMs,
+        IReadOnlyList<IMutant> mutants,
+        TestUpdateHandler updateHandler,
+        CancellationToken cancellationToken)
+        => cancellationToken.CanBeCanceled
+            ? TestRunner.TestMultipleMutantsAsync(
+                project,
+                timeoutMs,
+                mutants,
+                updateHandler,
+                cancellationToken)
+            : TestRunner.TestMultipleMutantsAsync(project, timeoutMs, mutants, updateHandler);
 }

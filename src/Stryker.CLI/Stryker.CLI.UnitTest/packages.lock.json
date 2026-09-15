@@ -609,6 +609,7 @@
           "McMaster.Extensions.CommandLineUtils": "[5.1.0, )",
           "Microsoft.Extensions.DependencyInjection": "[10.0.10, )",
           "NuGet.Protocol": "[7.6.0, )",
+          "StreamJsonRpc": "[2.25.29, )",
           "YamlDotNet": "[18.1.0, )",
           "stryker": "[4.16.0, )"
         }

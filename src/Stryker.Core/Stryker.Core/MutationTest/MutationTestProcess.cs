@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
@@ -22,6 +23,7 @@ public interface IMutationTestProcess
     void Initialize(MutationTestInput input, IStrykerOptions options, IReporter reporter);
     void Mutate();
     Task<StrykerRunResult> TestAsync(IEnumerable<IMutant> mutantsToTest);
+    Task<StrykerRunResult> TestAsync(IEnumerable<IMutant> mutantsToTest, CancellationToken cancellationToken);
     void Restore();
     void GetCoverage();
     void FilterMutants();
@@ -68,33 +70,60 @@ public class MutationTestProcess : IMutationTestProcess
     public void FilterMutants() => _mutationProcess.FilterMutants(Input);
 
     public async Task<StrykerRunResult> TestAsync(IEnumerable<IMutant> mutantsToTest)
+        => await TestAsync(mutantsToTest, CancellationToken.None);
+
+    public async Task<StrykerRunResult> TestAsync(
+        IEnumerable<IMutant> mutantsToTest,
+        CancellationToken cancellationToken)
     {
         if (!MutantsToTest(mutantsToTest))
         {
             return new StrykerRunResult(_options, double.NaN);
         }
 
-        await TestMutantsAsync(mutantsToTest).ConfigureAwait(false);
+        await TestMutantsAsync(mutantsToTest, cancellationToken).ConfigureAwait(false);
 
         return new StrykerRunResult(_options, _projectContents.GetMutationScore());
     }
 
     public void Restore() => Input.TestProjectsInfo.RestoreOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
 
-    private async Task TestMutantsAsync(IEnumerable<IMutant> mutantsToTest)
+    private async Task TestMutantsAsync(
+        IEnumerable<IMutant> mutantsToTest,
+        CancellationToken cancellationToken)
     {
         var mutantGroups = BuildMutantGroupsForTest(mutantsToTest.ToList());
 
-        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.Concurrency };
+        var parallelOptions = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = _options.Concurrency,
+            CancellationToken = cancellationToken
+        };
 
-        await Parallel.ForEachAsync(mutantGroups, parallelOptions, async (mutants, cancellationToken) =>
+        await Parallel.ForEachAsync(mutantGroups, parallelOptions, async (mutants, _) =>
         {
             var reportedMutants = new HashSet<IMutant>();
 
-            await _mutationTestExecutor.TestAsync(Input.SourceProjectInfo, mutants,
-                Input.InitialTestRun.TimeoutValueCalculator,
+            var updateHandler = new ITestRunner.TestUpdateHandler(
                 (testedMutants, tests, ranTests, outTests) =>
-                    TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants)).ConfigureAwait(false);
+                    TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
+            if (cancellationToken.CanBeCanceled)
+            {
+                await _mutationTestExecutor.TestAsync(
+                    Input.SourceProjectInfo,
+                    mutants,
+                    Input.InitialTestRun.TimeoutValueCalculator,
+                    updateHandler,
+                    cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                await _mutationTestExecutor.TestAsync(
+                    Input.SourceProjectInfo,
+                    mutants,
+                    Input.InitialTestRun.TimeoutValueCalculator,
+                    updateHandler).ConfigureAwait(false);
+            }
 
             OnMutantsTested(mutants, reportedMutants);
         }).ConfigureAwait(false);

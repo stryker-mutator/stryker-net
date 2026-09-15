@@ -12,6 +12,10 @@ namespace Stryker.CLI.Logging;
 public interface ILoggingInitializer
 {
     void SetupLogOptions(IStrykerInputs inputs, IFileSystem fileSystem = null);
+    string InitializeOutputPath(
+        IStrykerInputs inputs,
+        IFileSystem fileSystem = null,
+        Action<string> writeWarning = null);
 }
 
 public class LoggingInitializer : ILoggingInitializer
@@ -24,8 +28,7 @@ public class LoggingInitializer : ILoggingInitializer
     {
         fileSystem ??= new FileSystem();
 
-        var outputPath = CreateOutputPath(inputs, fileSystem);
-        inputs.OutputPathInput.SuppliedInput = outputPath;
+        var outputPath = InitializeOutputPath(inputs, fileSystem);
 
         var diagnoseMode = inputs.DiagModeInput.Validate();
         var logLevel = diagnoseMode ? LogEventLevel.Verbose : inputs.VerbosityInput.Validate();
@@ -34,8 +37,14 @@ public class LoggingInitializer : ILoggingInitializer
         ApplicationLogging.ConfigureLogger(logLevel, logToFile, diagnoseMode, outputPath);
     }
 
-    private string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)
+    public string InitializeOutputPath(
+        IStrykerInputs inputs,
+        IFileSystem fileSystem = null,
+        Action<string> writeWarning = null)
     {
+        fileSystem ??= new FileSystem();
+        writeWarning ??= AnsiConsole.WriteLine;
+
         // The stable output root. When no output path is supplied the per-run output lives in a
         // timestamped subfolder of this root; an explicitly supplied output path is the root itself.
         // The root is where the disk baseline is stored (so it can be found on the next run) and
@@ -55,6 +64,7 @@ public class LoggingInitializer : ILoggingInitializer
 
         // outputpath should always be created
         fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
+        inputs.OutputPathInput.SuppliedInput = outputPath;
 
         // store the baseline under the stable output root so it follows --output and persists across runs
         inputs.BaselineOutputInput.SuppliedInput = outputRoot;
@@ -69,8 +79,8 @@ public class LoggingInitializer : ILoggingInitializer
             }
             catch (IOException e)
             {
-                AnsiConsole.WriteLine($"Could't create gitignore file because of error {e.Message}. \n" +
-                    "If you use any diff compare features this may mean that stryker logs show up as changes.");
+                writeWarning($"Could't create gitignore file because of error {e.Message}. \n" +
+                             "If you use any diff compare features this may mean that stryker logs show up as changes.");
             }
         }
 

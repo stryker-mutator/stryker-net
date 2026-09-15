@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
@@ -15,6 +16,7 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
+using Stryker.CLI.MutationServer;
 using Stryker.Configuration;
 using Stryker.Configuration.Options;
 using Stryker.Core;
@@ -66,6 +68,35 @@ Usage: Stryker [command] [options]
 
 Options:";
         console.Output.ShouldContain(expected);
+        console.Output.ShouldContain("serve");
+    }
+
+    [TestMethod]
+    public async Task ServeShouldStartMutationServerAndForwardArguments()
+    {
+        var mutationServer = new Mock<IMutationServer>(MockBehavior.Strict);
+        mutationServer
+            .Setup(server => server.RunAsync(
+                "stdio",
+                null,
+                "localhost",
+                It.Is<IReadOnlyCollection<string>>(arguments =>
+                    arguments.SequenceEqual(new[] { "--concurrency", "1" })),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var target = new StrykerCli(
+            Mock.Of<IStrykerRunner>(),
+            new ConfigBuilder(),
+            Mock.Of<ILoggingInitializer>(),
+            Mock.Of<IStrykerNugetFeedClient>(),
+            new TestConsole(),
+            Mock.Of<IFileSystem>(),
+            mutationServer.Object);
+
+        var result = await target.RunAsync(["serve", "stdio", "--", "--concurrency", "1"]);
+
+        result.ShouldBe(ExitCodes.Success);
+        mutationServer.VerifyAll();
     }
 
     [TestMethod]
