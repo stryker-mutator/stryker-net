@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -135,5 +136,46 @@ public class MutationTestExecutorTests : TestBase
         mutant1.ResultStatus.ShouldBe(MutantStatus.Timeout);
         mutant2.ResultStatus.ShouldBe(MutantStatus.Timeout);
         testRunnerMock.Verify(x => x.TestMultipleMutantsAsync(It.IsAny<IProjectAndTests>(), timeoutValueCalculator, It.IsAny<IReadOnlyList<IMutant>>(), null), Times.Exactly(3));
+    }
+
+    [TestMethod]
+    public async Task MutationTestExecutor_ShouldCancelAnActiveTestSession()
+    {
+        var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
+        var mutant = new Mutant { Id = 1 };
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var testSessionStarted = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        testRunnerMock
+            .Setup(runner => runner.TestMultipleMutantsAsync(
+                It.IsAny<IProjectAndTests>(),
+                It.IsAny<ITimeoutValueCalculator>(),
+                It.IsAny<IReadOnlyList<IMutant>>(),
+                null,
+                cancellationTokenSource.Token))
+            .Returns<IProjectAndTests, ITimeoutValueCalculator, IReadOnlyList<IMutant>,
+                ITestRunner.TestUpdateHandler, CancellationToken>(
+                async (_, _, _, _, cancellationToken) =>
+                {
+                    testSessionStarted.SetResult();
+                    await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                    return null;
+                });
+        var target = new MutationTestExecutor(Mock.Of<ILogger<MutationTestExecutor>>())
+        {
+            TestRunner = testRunnerMock.Object
+        };
+
+        var run = target.TestAsync(
+            null,
+            [mutant],
+            null,
+            null,
+            cancellationTokenSource.Token);
+        await testSessionStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        cancellationTokenSource.Cancel();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => run.WaitAsync(TimeSpan.FromSeconds(1)));
+        testRunnerMock.VerifyAll();
     }
 }

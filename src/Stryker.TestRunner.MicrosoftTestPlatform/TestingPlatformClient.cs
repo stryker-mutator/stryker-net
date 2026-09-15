@@ -105,12 +105,19 @@ public sealed class TestingPlatformClient : ITestingPlatformClient
         => _targetHandler.RegisterTelemetryListener(listener);
 
     public async Task<InitializeResponse> InitializeAsync()
+        => await InitializeAsync(CancellationToken.None);
+
+    public async Task<InitializeResponse> InitializeAsync(CancellationToken cancellationToken)
     {
-        using CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromMinutes(3));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+        using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+            timeout.Token,
+            cancellationToken);
         return await CheckedInvokeAsync(async () => await JsonRpcClient.InvokeWithParameterObjectAsync<InitializeResponse>(
             "initialize",
             new InitializeRequest(Environment.ProcessId, new ClientInfo("test-client"),
-                new ClientCapabilities(new ClientTestingCapabilities(DebuggerProvider: false))), cancellationToken: cancellationTokenSource.Token));
+                new ClientCapabilities(new ClientTestingCapabilities(DebuggerProvider: false))),
+            cancellationToken: linkedCancellation.Token));
     }
 
     public async Task ExitAsync(bool gracefully = true)

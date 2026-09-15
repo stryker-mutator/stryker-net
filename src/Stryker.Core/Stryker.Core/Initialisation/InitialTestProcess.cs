@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
@@ -11,6 +12,11 @@ namespace Stryker.Core.Initialisation;
 public interface IInitialTestProcess
 {
     Task<InitialTestRun> InitialTestAsync(IStrykerOptions options, IProjectAndTests project, ITestRunner testRunner);
+    Task<InitialTestRun> InitialTestAsync(
+        IStrykerOptions options,
+        IProjectAndTests project,
+        ITestRunner testRunner,
+        CancellationToken cancellationToken);
 }
 
 public class InitialTestProcess : IInitialTestProcess
@@ -32,12 +38,21 @@ public class InitialTestProcess : IInitialTestProcess
     /// <param name="options">Stryker options</param>
     /// <returns>The duration of the initial test run</returns>
     public async Task<InitialTestRun> InitialTestAsync(IStrykerOptions options, IProjectAndTests project, ITestRunner testRunner)
+        => await InitialTestAsync(options, project, testRunner, CancellationToken.None);
+
+    public async Task<InitialTestRun> InitialTestAsync(
+        IStrykerOptions options,
+        IProjectAndTests project,
+        ITestRunner testRunner,
+        CancellationToken cancellationToken)
     {
         // Setup a stopwatch to record the initial test duration
         var stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        var initTestRunResult = await testRunner.InitialTestAsync(project);
+        var initTestRunResult = cancellationToken.CanBeCanceled
+            ? await testRunner.InitialTestAsync(project, cancellationToken)
+            : await testRunner.InitialTestAsync(project);
         // Stop stopwatch immediately after test run
         stopwatch.Stop();
 

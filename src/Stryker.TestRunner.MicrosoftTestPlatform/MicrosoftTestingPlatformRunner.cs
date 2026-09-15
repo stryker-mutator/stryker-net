@@ -89,14 +89,27 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     }
 
     public Task<bool> DiscoverTestsAsync(string assembly)
-    {
-        return DiscoverTestsInternalAsync(assembly);
-    }
+        => DiscoverTestsAsync(assembly, CancellationToken.None);
+
+    public Task<bool> DiscoverTestsAsync(
+        string assembly,
+        CancellationToken cancellationToken)
+        => DiscoverTestsInternalAsync(assembly, cancellationToken);
 
     public Task<ITestRunResult> InitialTestAsync(IProjectAndTests project)
+        => InitialTestAsync(project, CancellationToken.None);
+
+    public Task<ITestRunResult> InitialTestAsync(
+        IProjectAndTests project,
+        CancellationToken cancellationToken)
     {
         var assemblies = project.GetTestAssemblies();
-        return RunAllTestsAsync(assemblies, mutantId: -1, mutants: null, update: null);
+        return RunAllTestsAsync(
+            assemblies,
+            mutantId: -1,
+            mutants: null,
+            update: null,
+            cancellationToken: cancellationToken);
     }
 
     public Task<ITestRunResult> TestMultipleMutantsAsync(
@@ -104,6 +117,19 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         ITimeoutValueCalculator? timeoutCalc,
         IReadOnlyList<IMutant> mutants,
         TestUpdateHandler? update)
+        => TestMultipleMutantsAsync(
+            project,
+            timeoutCalc,
+            mutants,
+            update,
+            CancellationToken.None);
+
+    public virtual Task<ITestRunResult> TestMultipleMutantsAsync(
+        IProjectAndTests project,
+        ITimeoutValueCalculator? timeoutCalc,
+        IReadOnlyList<IMutant> mutants,
+        TestUpdateHandler? update,
+        CancellationToken cancellationToken)
     {
         var assemblies = project.GetTestAssemblies();
 
@@ -114,13 +140,19 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         _logger.LogDebug("{RunnerId}: Testing mutant(s) [{Mutants}] with active mutation ID: {MutantId}",
             RunnerId, string.Join(",", mutants.Select(m => m.Id)), mutantId);
 
-        return RunAllTestsAsync(assemblies, mutantId, mutants, update, timeoutCalc);
+        return RunAllTestsAsync(
+            assemblies,
+            mutantId,
+            mutants,
+            update,
+            timeoutCalc,
+            cancellationToken);
     }
 
-    public async Task ResetServerAsync()
+    public virtual async Task ResetServerAsync()
     {
         _logger.LogDebug("{RunnerId}: Resetting test servers to reload assemblies", RunnerId);
-        
+
         lock (_serverLock)
         {
             foreach (var server in _assemblyServers.Values)
@@ -129,7 +161,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             }
             _assemblyServers.Clear();
         }
-        
+
         _logger.LogDebug("{RunnerId}: Test servers reset complete", RunnerId);
         await Task.CompletedTask;
     }
@@ -776,7 +808,9 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         }
     }
 
-    private async Task<AssemblyTestServer> GetOrCreateServerAsync(string assembly)
+    private async Task<AssemblyTestServer> GetOrCreateServerAsync(
+        string assembly,
+        CancellationToken cancellationToken = default)
     {
         AssemblyTestServer? deadServer = null;
         lock (_serverLock)
@@ -805,15 +839,24 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         var environmentVariables = BuildEnvironmentVariables(assembly);
         var server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options);
 
-        var started = await server.StartAsync().ConfigureAwait(false);
-        if (!started)
+        try
         {
-            throw new InvalidOperationException($"Failed to start test server for {assembly}");
-        }
+            var started = await server.StartAsync(cancellationToken).ConfigureAwait(false);
+            if (!started)
+            {
+                throw new InvalidOperationException($"Failed to start test server for {assembly}");
+            }
 
-        lock (_serverLock)
+            cancellationToken.ThrowIfCancellationRequested();
+            lock (_serverLock)
+            {
+                _assemblyServers[assembly] = server;
+            }
+        }
+        catch
         {
-            _assemblyServers[assembly] = server;
+            await server.StopAsync(force: true).ConfigureAwait(false);
+            throw;
         }
 
         return server;
@@ -838,12 +881,16 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         }
     }
 
-    private async Task<bool> DiscoverTestsInternalAsync(string assembly)
+    private async Task<bool> DiscoverTestsInternalAsync(
+        string assembly,
+        CancellationToken cancellationToken)
     {
         try
         {
-            var server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
-            var tests = await server.DiscoverTestsAsync().ConfigureAwait(false);
+            var server = await GetOrCreateServerAsync(assembly, cancellationToken).ConfigureAwait(false);
+            var tests = await server.DiscoverTestsAsync()
+                .WaitAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             lock (_discoveryLock)
             {
@@ -859,6 +906,10 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
             _logger.LogDebug("{RunnerId}: Discovered {TestCount} tests in {Assembly}", RunnerId, tests.Count, assembly);
             return tests.Count > 0;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -936,13 +987,13 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         _logger.LogDebug("{RunnerId}: Test run timed out for {Assembly}", RunnerId, Path.GetFileName(assembly));
 
         allTimedOutTests.AddRange(discoveredTests.Select(t => t.Uid));
-        
+
         AssemblyTestServer? server;
         lock (_serverLock)
         {
             _assemblyServers.TryGetValue(assembly, out server);
         }
-        
+
         if (server is not null)
         {
             _logger.LogDebug("{RunnerId}: Restarting test server for {Assembly} after timeout", RunnerId, Path.GetFileName(assembly));
@@ -1065,7 +1116,8 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         int mutantId,
         IReadOnlyList<IMutant>? mutants,
         TestUpdateHandler? update,
-        ITimeoutValueCalculator? timeoutCalc = null)
+        ITimeoutValueCalculator? timeoutCalc = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -1076,7 +1128,19 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
             foreach (var assembly in assemblies)
             {
-                var (result, timedOut, discoveredTests) = await RunAssemblyTestsAsync(assembly, timeoutCalc, mutants, testUidFilter).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+                var (result, timedOut, discoveredTests) = cancellationToken.CanBeCanceled
+                    ? await RunAssemblyTestsAsync(
+                        assembly,
+                        timeoutCalc,
+                        mutants,
+                        testUidFilter,
+                        cancellationToken).ConfigureAwait(false)
+                    : await RunAssemblyTestsAsync(
+                        assembly,
+                        timeoutCalc,
+                        mutants,
+                        testUidFilter).ConfigureAwait(false);
 
                 if (discoveredTests is not null)
                 {
@@ -1147,6 +1211,10 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                 accumulator.Messages,
                 accumulator.TotalDuration);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "{RunnerId}: Failed to run tests for mutant ID {MutantId}", RunnerId, mutantId);
@@ -1159,6 +1227,19 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         ITimeoutValueCalculator? timeoutCalc,
         IReadOnlyList<IMutant>? mutants = null,
         Func<TestNode, bool>? testUidFilter = null)
+        => await RunAssemblyTestsAsync(
+            assembly,
+            timeoutCalc,
+            mutants,
+            testUidFilter,
+            CancellationToken.None);
+
+    private async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
+        string assembly,
+        ITimeoutValueCalculator? timeoutCalc,
+        IReadOnlyList<IMutant>? mutants,
+        Func<TestNode, bool>? testUidFilter,
+        CancellationToken cancellationToken)
     {
         if (!File.Exists(assembly))
         {
@@ -1182,7 +1263,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             timeout = CalculateAssemblyTimeout(discoveredTests, timeoutCalc, assembly, mutants);
         }
 
-        var (testResults, timedOut) = await RunAssemblyTestsInternalAsync(assembly, testUidFilter, timeout).ConfigureAwait(false);
+        var (testResults, timedOut) = await RunAssemblyTestsInternalAsync(
+            assembly,
+            testUidFilter,
+            timeout,
+            cancellationToken).ConfigureAwait(false);
 
         return (testResults as TestRunResult, timedOut, discoveredTests);
     }
@@ -1190,7 +1275,8 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     internal async Task<(ITestRunResult Result, bool TimedOut)> RunAssemblyTestsInternalAsync(
         string assembly,
         Func<TestNode, bool>? testUidFilter,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        CancellationToken cancellationToken = default)
     {
         // A crashed test host tears down the RPC connection, so the run throws (rather than timing out).
         // Retry once on a freshly started server: a crash caused by a *previous* mutant then self-heals
@@ -1200,14 +1286,16 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
         for (var attempt = 1; attempt <= maxRunAttempts; attempt++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             AssemblyTestServer server;
             try
             {
                 // Get or create the server for this assembly (reuses an existing, live server)
-                server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
+                server = await GetOrCreateServerAsync(assembly, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 // The server could not be started at all; retrying immediately would not help.
                 return (new TestRunResult(false, ex.Message), false);
             }
@@ -1215,6 +1303,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             var startTime = DateTime.UtcNow;
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 List<TestNode>? tests = null;
                 lock (_discoveryLock)
                 {
@@ -1377,5 +1466,3 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         _disposed = true;
     }
 }
-
-

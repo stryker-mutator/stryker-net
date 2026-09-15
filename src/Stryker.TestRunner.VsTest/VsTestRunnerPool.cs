@@ -54,14 +54,41 @@ public sealed class VsTestRunnerPool : ITestRunner
     }
 
     public Task<bool> DiscoverTestsAsync(string assembly) => Task.FromResult(Context.AddTestSource(assembly));
+    public Task<bool> DiscoverTestsAsync(string assembly, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return DiscoverTestsAsync(assembly);
+    }
 
     public ITestSet GetTests(IProjectAndTests project) => Context.GetTestsForSources(project.GetTestAssemblies());
 
     public Task<ITestRunResult> TestMultipleMutantsAsync(IProjectAndTests project, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler? update)
         => Task.FromResult(RunThis(runner => runner.TestMultipleMutants(project, timeoutCalc, mutants, update)));
 
+    public async Task<ITestRunResult> TestMultipleMutantsAsync(
+        IProjectAndTests project,
+        ITimeoutValueCalculator? timeoutCalc,
+        IReadOnlyList<IMutant> mutants,
+        TestUpdateHandler? update,
+        CancellationToken cancellationToken)
+        => await RunThisAsync(
+            runner => runner.TestMultipleMutants(
+                project,
+                timeoutCalc,
+                mutants,
+                update,
+                cancellationToken),
+            cancellationToken).ConfigureAwait(false);
+
     public Task<ITestRunResult> InitialTestAsync(IProjectAndTests project)
         => Task.FromResult(RunThis(runner => runner.InitialTest(project)));
+
+    public async Task<ITestRunResult> InitialTestAsync(
+        IProjectAndTests project,
+        CancellationToken cancellationToken)
+        => await RunThisAsync(
+            runner => runner.InitialTest(project),
+            cancellationToken).ConfigureAwait(false);
 
     public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project) => Context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest) ? CaptureCoverageTestByTest(project) : CaptureCoverageInOneGo(project);
 
@@ -103,6 +130,47 @@ public sealed class VsTestRunnerPool : ITestRunner
         try
         {
             return task(runner);
+        }
+        finally
+        {
+            _availableRunners.Add(runner);
+            _runnerAvailableHandler.Set();
+        }
+    }
+
+    private async Task<T> RunThisAsync<T>(
+        Func<VsTestRunner, T> task,
+        CancellationToken cancellationToken)
+    {
+        VsTestRunner runner;
+        while (!_availableRunners.TryTake(out runner))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _runnerAvailableHandler.WaitOne(TimeSpan.FromMilliseconds(100));
+        }
+
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var execution = Task.Run(() => task(runner));
+            try
+            {
+                return await execution.WaitAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                runner.CancelCurrentRun();
+                try
+                {
+                    await execution.ConfigureAwait(false);
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogDebug(exception, "VsTest execution ended after cancellation.");
+                }
+
+                throw;
+            }
         }
         finally
         {
