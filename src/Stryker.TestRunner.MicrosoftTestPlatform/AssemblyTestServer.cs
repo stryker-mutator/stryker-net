@@ -100,6 +100,11 @@ internal sealed class AssemblyTestServer : IDisposable
             _logger.LogDebug("{RunnerId}: Test server started successfully for {Assembly}", _runnerId, _assembly);
             return true;
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            await StopAsync().ConfigureAwait(false);
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "{RunnerId}: Failed to start test server for {Assembly}", _runnerId, _assembly);

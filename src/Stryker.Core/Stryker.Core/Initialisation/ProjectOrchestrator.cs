@@ -83,10 +83,23 @@ public sealed class ProjectOrchestrator(
             : await _initializationProcess.GetMutationTestInputsAsync(options, projectInfos, _runner);
 
         var mutationTestProcesses = new ConcurrentBag<IMutationTestProcess>();
-        Parallel.ForEach(inputs, new ParallelOptions { CancellationToken = cancellationToken }, mutationTestInput =>
+        try
         {
-            mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
-        });
+            Parallel.ForEach(inputs, new ParallelOptions { CancellationToken = cancellationToken }, mutationTestInput =>
+            {
+                mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            foreach (var mutationTestProcess in mutationTestProcesses)
+            {
+                mutationTestProcess.Restore();
+            }
+
+            throw;
+        }
+
         return mutationTestProcesses;
     }
 

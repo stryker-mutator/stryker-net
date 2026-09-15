@@ -907,6 +907,10 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             _logger.LogDebug("{RunnerId}: Discovered {TestCount} tests in {Assembly}", RunnerId, tests.Count, assembly);
             return tests.Count > 0;
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "{RunnerId}: Failed to discover tests in {Assembly}", RunnerId, assembly);
@@ -1462,4 +1466,3 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         _disposed = true;
     }
 }
-
