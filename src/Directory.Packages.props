@@ -30,6 +30,8 @@
     <PackageVersion Include="Spectre.Console" Version="0.57.2" />
     <PackageVersion Include="Spectre.Console.Analyzer" Version="1.0.0" />
     <PackageVersion Include="System.Net.Http.Json" Version="10.0.12" />
+    <!-- Explicit reference to override the vulnerable version that Microsoft.Build.Tasks.Core brings in transitively -->
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.12" />
     <PackageVersion Include="Microsoft.TestPlatform" Version="18.10.0" />
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.10.0" />
     <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="18.10.0" />
