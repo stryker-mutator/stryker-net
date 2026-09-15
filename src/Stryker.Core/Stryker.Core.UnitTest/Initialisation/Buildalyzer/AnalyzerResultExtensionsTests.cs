@@ -218,23 +218,26 @@ public class AnalyzerResultExtensionsTests
     [TestMethod]
     [DataRow("8.0", LanguageVersion.CSharp8)]
     [DataRow("7.1", LanguageVersion.CSharp7_1)]
-    [DataRow("latest", LanguageVersion.CSharp14)]
-    [DataRow("dontCare", LanguageVersion.CSharp14)] // it will return the latest version
-    public void GetParseOptions_ShouldReturnActualCSharpVersion(string actualLangVersion, LanguageVersion expected)
+    [DataRow("latest", LanguageVersion.Latest)]
+    [DataRow("dontCare", LanguageVersion.Default)]
+    [DataRow(null, LanguageVersion.Default)]
+    public void GetParseOptions_ShouldReturnProjectCSharpVersion(string actualLangVersion, LanguageVersion expected)
     {
         // Arrange
         var properties = new Dictionary<string, string>();
         var preprocessorSymbols = new[] { "DEBUG" };
-        properties["LangVersion"] = actualLangVersion;
+        if (actualLangVersion is not null)
+        {
+            properties["LangVersion"] = actualLangVersion;
+        }
         var analyzerResult = CreateAnalyzerResultWithProperties(properties, preprocessorSymbols);
-        var options = CreateStrykerOptions(LanguageVersion.Default);
 
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(options);
+        var parseOptions = analyzerResult.GetParseOptions();
 
         // Assert
-        parseOptions.LanguageVersion.ShouldBe(expected);
-        }
+        parseOptions.SpecifiedLanguageVersion.ShouldBe(expected);
+    }
 
     [TestMethod]
     public void GetParseOptions_ShouldReturnBasicOptions_WhenNoFeaturesAreUsed()
@@ -243,17 +246,28 @@ public class AnalyzerResultExtensionsTests
         var properties = new Dictionary<string, string>();
         var preprocessorSymbols = new[] { "DEBUG" };
         var analyzerResult = CreateAnalyzerResultWithProperties(properties, preprocessorSymbols);
-        var options = CreateStrykerOptions(LanguageVersion.CSharp12);
 
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(options);
+        var parseOptions = analyzerResult.GetParseOptions();
 
         // Assert
-        parseOptions.LanguageVersion.ShouldBe(LanguageVersion.CSharp12);
+        parseOptions.SpecifiedLanguageVersion.ShouldBe(LanguageVersion.Default);
         parseOptions.PreprocessorSymbolNames.ShouldContain("DEBUG");
         parseOptions.Features.ShouldBeEmpty();
     }
 
+    [TestMethod]
+    public void GetParseOptions_ShouldIgnoreStrykerLanguageVersion()
+    {
+        var analyzerResult = CreateAnalyzerResultWithProperties(
+            new Dictionary<string, string> { ["LangVersion"] = "8.0" },
+            ["DEBUG"]);
+        var options = CreateStrykerOptions(LanguageVersion.CSharp12);
+
+        var parseOptions = analyzerResult.GetParseOptions(options);
+
+        parseOptions.SpecifiedLanguageVersion.ShouldBe(LanguageVersion.CSharp8);
+    }
 
     [TestMethod]
     [DataRow("Features", "InterceptorsPreview", "InterceptorsPreview", null)]
