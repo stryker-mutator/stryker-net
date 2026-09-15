@@ -114,10 +114,40 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         _logger.LogDebug("{RunnerId}: Testing mutant(s) [{Mutants}] with active mutation ID: {MutantId}",
             RunnerId, string.Join(",", mutants.Select(m => m.Id)), mutantId);
 
+        if (_options?.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants) == true)
+        {
+            return RunInIsolatedProcessAsync(assemblies, mutantId, mutants, update, timeoutCalc);
+        }
+
         return RunAllTestsAsync(assemblies, mutantId, mutants, update, timeoutCalc);
     }
 
-    public async Task ResetServerAsync()
+    private async Task<ITestRunResult> RunInIsolatedProcessAsync(
+        IReadOnlyList<string> assemblies,
+        int mutantId,
+        IReadOnlyList<IMutant> mutants,
+        TestUpdateHandler? update,
+        ITimeoutValueCalculator? timeoutCalc)
+    {
+        await ResetServerAsync().ConfigureAwait(false);
+        try
+        {
+            return await RunAllTestsAsync(assemblies, mutantId, mutants, update, timeoutCalc).ConfigureAwait(false);
+        }
+        finally
+        {
+            try
+            {
+                await ResetServerAsync().ConfigureAwait(false);
+            }
+            finally
+            {
+                WriteMutantIdToFile(-1);
+            }
+        }
+    }
+
+    public virtual async Task ResetServerAsync()
     {
         _logger.LogDebug("{RunnerId}: Resetting test servers to reload assemblies", RunnerId);
         
@@ -1377,5 +1407,4 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         _disposed = true;
     }
 }
-
 

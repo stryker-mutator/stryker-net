@@ -466,6 +466,11 @@ Config file: `"disable-mix-mutants": true`
 
 Stryker combines multiple mutants in the same testrun when the mutants are not covered by the same unit tests. This reduces the total runtime. You can disable this behavior and run every mutation in an isolated testrun. This can be useful when mixed mutants have unintended side effects.
 
+With the Microsoft Testing Platform runner, enabling this option also starts a
+fresh test-host process for every mutation. This prevents process-global state
+and test-node state from leaking between mutations, at the cost of additional
+process startup time.
+
 ### `since` &lt;`flag`&gt; [`:committish`]
 
 Default: `false`  
