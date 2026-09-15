@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -49,7 +50,7 @@ public class CodeInjection
 
     private static string GetRandomNamespace()
     {
-        // Create a string of characters and numbers allowed in the namespace  
+        // Create a string of characters and numbers allowed in the namespace
         const string ValidChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         var random = new Random();
 
@@ -62,6 +63,19 @@ public class CodeInjection
     }
 
     public IDictionary<string, string> MutantHelpers { get; } = new Dictionary<string, string>();
+
+    /// <summary>
+    /// Returns all helpers syntax tree needed to be injected in the mutated assembly
+    /// </summary>
+    /// <param name="cSharpParseOptions">parse options</param>
+    /// <returns>an enumeration of <see cref="SyntaxTree"/></returns>
+    public IEnumerable<SyntaxTree> GetHelpersSyntaxTreesToInject(CSharpParseOptions cSharpParseOptions)
+    {
+        foreach (var (name, code) in MutantHelpers)
+        {
+            yield return CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32, options: cSharpParseOptions);
+        }
+    }
 
     /// <summary>
     /// Get a SyntaxNode describing the creation of static tracking object

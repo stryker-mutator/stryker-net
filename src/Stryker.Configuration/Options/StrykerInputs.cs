@@ -1,5 +1,7 @@
 using System.IO.Abstractions;
+using System.Linq;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Configuration.Options.Inputs;
 
@@ -61,7 +63,8 @@ public interface IStrykerInputs
     IStrykerOptions ValidateAll();
 }
 
-public class StrykerInputs(IFileSystem? fileSystem = null) : IStrykerInputs
+public class StrykerInputs(IFileSystem? fileSystem = null)
+    : IStrykerInputs
 {
     private IStrykerOptions? _strykerOptionsCache;
     private readonly IFileSystem _fileSystem = fileSystem ?? new FileSystem();
@@ -188,6 +191,39 @@ public class StrykerInputs(IFileSystem? fileSystem = null) : IStrykerInputs
             TestRunner = testRunner,
             MutantIdProvider = new BasicIdProvider()
         };
+        CheckConsistency();
         return _strykerOptionsCache;
+    }
+
+    // check that the configuration has no blocking error and is consistent (no conflicting options)
+    private void CheckConsistency()
+    {
+        if (_strykerOptionsCache.IsSolutionContext)
+        {
+            if (_strykerOptionsCache.TestProjects.Any())
+            {
+                throw new InputException("Test projects cannot be specified when running Stryker in solution context.");
+            }
+
+            if (!string.IsNullOrEmpty(_strykerOptionsCache.ProjectName))
+            {
+                throw new InputException("Project name cannot be specified when running Stryker in solution context.");
+            }
+        }
+
+        foreach (var testProject in _strykerOptionsCache.TestProjects)
+        {
+            CheckFile( "TestProject", testProject);
+        }
+    }
+
+    private void CheckFile(string label, string filePath)
+    {
+        if (_fileSystem.File.Exists(filePath))
+        {
+            return;
+        }
+
+        throw new InputException($"{label} not found: {filePath}");
     }
 }

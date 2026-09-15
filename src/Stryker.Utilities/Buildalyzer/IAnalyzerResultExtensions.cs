@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -326,7 +327,7 @@ public static class IAnalyzerResultExtensions
     {
         public static readonly IAnalyzerAssemblyLoader Instance = new AnalyzerAssemblyLoader();
 
-        private readonly Dictionary<string, Assembly> _cache = [];
+        private readonly ConcurrentDictionary<string, Assembly> _cache = [];
 
         private AnalyzerAssemblyLoader() { }
 

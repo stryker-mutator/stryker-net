@@ -95,7 +95,7 @@
       "extraproject": {
         "type": "Project",
         "dependencies": {
-          "ExtraLibrary": "[4.16.0, )"
+          "ExtraLibrary": "[5.0.0, )"
         }
       }
     }

@@ -4,7 +4,6 @@ using System.Linq;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Abstractions.Options;
 
 namespace Stryker.Utilities.Buildalyzer;
 
@@ -36,18 +35,14 @@ public static class IAnalyzerResultCSharpExtensions
             return compilationOptions;
         }
 
-        public CSharpParseOptions GetParseOptions(IStrykerBuildOptions options) =>
-            new CSharpParseOptions(analyzerResult.GetLanguageVersion(options),
+        public CSharpParseOptions GetParseOptions() =>
+            new CSharpParseOptions(analyzerResult.GetLanguageVersion(),
                 DocumentationMode.None,
                 preprocessorSymbols: analyzerResult.PreprocessorSymbols
             ).WithFeatures(ExtractCSharpFeatures(analyzerResult));
 
-        private LanguageVersion GetLanguageVersion(IStrykerBuildOptions options)
+        private LanguageVersion GetLanguageVersion()
         {
-            if (options.LanguageVersion != LanguageVersion.Default)
-            {
-                return options.LanguageVersion;
-            }
             var version = analyzerResult.GetProperty("LangVersion");
             return !string.IsNullOrWhiteSpace(version) && LanguageVersionFacts.TryParse(version, out var parsedVersion)
                 ? parsedVersion

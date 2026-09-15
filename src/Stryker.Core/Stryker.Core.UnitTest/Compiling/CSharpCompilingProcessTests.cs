@@ -21,6 +21,7 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.UnitTest.Compiling;
 
@@ -65,6 +66,36 @@ public class Calculator
         var result = target.Compile(ms, symbol);
         result.Success.ShouldBe(true);
         ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
+    }
+
+    [TestMethod]
+    public void CompilingProcessTests_ShouldUseProjectLanguageVersion()
+    {
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            projectFilePath: "/c/project.csproj",
+            properties: new Dictionary<string, string>
+            {
+                ["TargetDir"] = "",
+                ["AssemblyName"] = "AssemblyName",
+                ["TargetFileName"] = "TargetFileName.dll",
+                ["LangVersion"] = "8.0",
+            },
+            references: [typeof(object).Assembly.Location]);
+        analyzerResult.Setup(x => x.GetProperty("LangVersion")).Returns("8.0");
+        var options = new StrykerOptions { LanguageVersion = LanguageVersion.CSharp7_3 };
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            "public class Calculator { public int GetValue(int value) => value switch { _ => value }; }",
+            analyzerResult.Object.GetParseOptions());
+        var input = new MutationTestInput
+        {
+            SourceProjectInfo = new SourceProjectInfo(analyzerResult.Object, null)
+        };
+        var target = new CsharpCompilingProcess(input, Mock.Of<ICSharpRollbackProcess>(), options, [syntaxTree]);
+
+        using var ms = new MemoryStream();
+        var result = target.Compile(ms, null);
+
+        result.Success.ShouldBeTrue();
     }
 
     [TestMethod]
