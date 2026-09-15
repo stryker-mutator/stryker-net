@@ -174,8 +174,8 @@ public class InputFileResolver(
         }
 
         throw new InputException(
-            $"Unity Test Framework project '{unityTestProject.ProjectFilePath}' was detected, but running Unity tests is not supported yet.",
-            "Stryker.NET cannot execute Unity tests through VsTest or Microsoft Testing Platform. Track Unity runner support at https://github.com/stryker-mutator/stryker-net/issues/2381.");
+            $"Unity Test Framework project '{unityTestProject.ProjectFilePath}' was detected. Running Unity tests is not supported yet.",
+            "A dedicated Unity test runner is required because VsTest and Microsoft Testing Platform cannot execute Unity tests. Track Unity support at https://github.com/stryker-mutator/stryker-net/issues/2381.");
     }
 
     private List<SourceProjectInfo> SelectSingleProject(string normalizedProjectUnderTestNameFilter, List<SourceProjectInfo> result, bool targetProjectMode,

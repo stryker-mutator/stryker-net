@@ -200,8 +200,8 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 
         var exception = Should.Throw<InputException>(() => BuildTestResolver(fileSystem).ResolveSourceProjectInfos(_options));
 
-        exception.Message.ShouldContain("was detected, but running Unity tests is not supported yet.");
-        exception.Details.ShouldContain("cannot execute Unity tests through VsTest or Microsoft Testing Platform");
+        exception.Message.ShouldContain("was detected. Running Unity tests is not supported yet.");
+        exception.Details.ShouldContain("A dedicated Unity test runner is required");
     }
 
     // build a default set of mocks simulating a test project called "MyProject.UnitTests" referring

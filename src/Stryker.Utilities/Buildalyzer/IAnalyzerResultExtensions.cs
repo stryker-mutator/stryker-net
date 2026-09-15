@@ -203,12 +203,6 @@ public static class IAnalyzerResultExtensions
     public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
 
     /// <summary>
-    /// Checks whether any analysis result references the assemblies that identify a Unity test assembly.
-    /// </summary>
-    public static bool IsUnityTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) =>
-        analyzerResults.Any(x => x.IsUnityTestProject());
-
-    /// <summary>
     /// Checks whether an analysis result references the assemblies that identify a Unity test assembly.
     /// </summary>
     public static bool IsUnityTestProject(this IAnalyzerResult analyzerResult) =>

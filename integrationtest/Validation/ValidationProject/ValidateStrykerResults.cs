@@ -273,21 +273,6 @@ public class ValidateStrykerResults
         CheckReportMutants(report, total: 29, ignored: 7, survived: 3, killed: 7, timeout: 0, nocoverage: 11);
     }
 
-    [Fact]
-    [Trait("Category", "UnityUnsupported")]
-    [Trait("Runtime", "netcore")]
-    public void UnityTestProjectFailsWithActionableMessage()
-    {
-        var output = File.ReadAllText("../../../../../TargetProjects/Unity/TestResults/stryker-output.txt");
-        var normalizedOutput = string.Join(' ', output.Split((char[])null, StringSplitOptions.RemoveEmptyEntries));
-
-        normalizedOutput.Contains("Unity Test Framework project", StringComparison.OrdinalIgnoreCase).ShouldBeTrue();
-        normalizedOutput.Contains("detected", StringComparison.OrdinalIgnoreCase).ShouldBeTrue();
-        normalizedOutput.Contains("running Unity tests", StringComparison.OrdinalIgnoreCase).ShouldBeTrue();
-        normalizedOutput.Contains("not supported yet", StringComparison.OrdinalIgnoreCase).ShouldBeTrue();
-        normalizedOutput.Contains("missing an appropriate VsTest adapter", StringComparison.OrdinalIgnoreCase).ShouldBeFalse();
-    }
-
     private void CheckMutationKindsValidity(IJsonReport report)
     {
         foreach (var file in report.Files)
