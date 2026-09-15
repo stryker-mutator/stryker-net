@@ -69,6 +69,8 @@ Usage: Stryker [command] [options]
 Options:";
         console.Output.ShouldContain(expected);
         console.Output.ShouldContain("serve");
+        console.Output.ShouldContain("--test-case-filter <expression>");
+        console.Output.ShouldContain("Filters out tests");
     }
 
     [TestMethod]
@@ -557,6 +559,17 @@ Options:";
         _strykerRunnerMock.VerifyAll();
 
         _inputs.TestRunnerInput.SuppliedInput.ShouldBe("mtp");
+    }
+
+    [TestMethod]
+    [DataRow("--test-case-filter", "(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1")]
+    public async Task ShouldSupplyTestCaseFilterWhenPassed(params string[] args)
+    {
+        await _target.RunAsync(args);
+
+        _strykerRunnerMock.VerifyAll();
+
+        _inputs.TestCaseFilterInput.SuppliedInput.ShouldBe(args[1]);
     }
 
     [TestMethod]

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -272,8 +273,11 @@ public class StrykerRunner : IStrykerRunner
 
         var rootComponent = AddRootFolderIfMultiProject(
             _mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
-        var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo)
-            .Aggregate((a, b) => (TestProjectsInfo)a + (TestProjectsInfo)b);
+        var combinedTestProjectsInfo = _mutationTestProcesses
+            .Select(mtp => mtp.Input.SourceProjectInfo.TestProjectsInfo)
+            .Aggregate(
+                new TestProjectsInfo(new FileSystem(), _logger),
+                (testProjects, current) => testProjects + current);
 
         _logger.LogInformation("{MutantsCount} mutants created", rootComponent.Mutants.Count());
 

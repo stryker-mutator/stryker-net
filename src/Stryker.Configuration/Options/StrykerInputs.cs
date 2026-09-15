@@ -1,5 +1,7 @@
 using System.IO.Abstractions;
+using System.Linq;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Configuration.Options.Inputs;
 
@@ -8,6 +10,7 @@ namespace Stryker.Configuration.Options;
 public interface IStrykerInputs
 {
     AdditionalTimeoutInput AdditionalTimeoutInput { get; init; }
+    TimeoutRatioInput TimeoutRatioInput { get; init; }
     AzureFileStorageSasInput AzureFileStorageSasInput { get; init; }
     S3BucketNameInput S3BucketNameInput { get; init; }
     S3EndpointInput S3EndpointInput { get; init; }
@@ -59,15 +62,11 @@ public interface IStrykerInputs
     IStrykerOptions ValidateAll();
 }
 
-public class StrykerInputs : IStrykerInputs
+public class StrykerInputs(IFileSystem? fileSystem = null)
+    : IStrykerInputs
 {
-    private IStrykerOptions _strykerOptionsCache;
-    private readonly IFileSystem _fileSystem;
-
-    public StrykerInputs(IFileSystem fileSystem = null)
-    {
-        _fileSystem = fileSystem ?? new FileSystem();
-    }
+    private IStrykerOptions? _strykerOptionsCache;
+    private readonly IFileSystem _fileSystem = fileSystem ?? new FileSystem();
 
     public DiagModeInput DiagModeInput { get; init; } = new();
     public BasePathInput BasePathInput { get; init; } = new();
@@ -83,6 +82,7 @@ public class StrykerInputs : IStrykerInputs
     public ThresholdHighInput ThresholdHighInput { get; init; } = new();
     public ThresholdLowInput ThresholdLowInput { get; init; } = new();
     public AdditionalTimeoutInput AdditionalTimeoutInput { get; init; } = new();
+    public TimeoutRatioInput TimeoutRatioInput { get; init; } = new();
     public LanguageVersionInput LanguageVersionInput { get; init; } = new();
     public ConcurrencyInput ConcurrencyInput { get; init; } = new();
     public SourceProjectNameInput SourceProjectNameInput { get; init; } = new();
@@ -129,6 +129,7 @@ public class StrykerInputs : IStrykerInputs
         var sinceEnabled = SinceInput.Validate(WithBaselineInput.SuppliedInput);
         var sinceTarget = SinceTargetInput.Validate(sinceEnabled);
         var projectVersion = ProjectVersionInput.Validate(reporters, withBaseline);
+        var testRunner = TestRunnerInput.Validate();
 
         _strykerOptionsCache ??= new StrykerOptions()
         {
@@ -156,12 +157,13 @@ public class StrykerInputs : IStrykerInputs
             },
             SourceProjectName = SourceProjectNameInput.Validate(),
             AdditionalTimeout = AdditionalTimeoutInput.Validate(),
+            TimeoutRatio = TimeoutRatioInput.Validate(),
             ExcludedMutations = IgnoreMutationsInput.Validate<Mutator>(),
             ExcludedLinqExpressions = IgnoreMutationsInput.ValidateLinqExpressions(),
             IgnoredMethods = IgnoredMethodsInput.Validate(),
             Mutate = MutateInput.Validate(),
             LanguageVersion = LanguageVersionInput.Validate(),
-            OptimizationMode = CoverageAnalysisInput.Validate() | DisableBailInput.Validate() | DisableMixMutantsInput.Validate(),
+            OptimizationMode = CoverageAnalysisInput.Validate(testRunner) | DisableBailInput.Validate() | DisableMixMutantsInput.Validate(),
             TestProjects = TestProjectsInput.Validate(),
             TestCaseFilter = TestCaseFilterInput.Validate(),
             DashboardUrl = DashboardUrlInput.Validate(),
@@ -183,9 +185,42 @@ public class StrykerInputs : IStrykerInputs
             SinceTarget = sinceTarget,
             ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate()),
             BreakOnInitialTestFailure = BreakOnInitialTestFailureInput.Validate(),
-            TestRunner = TestRunnerInput.Validate(),
+            TestRunner = testRunner,
             MutantIdProvider = new BasicIdProvider()
         };
+        CheckConsistency();
         return _strykerOptionsCache;
+    }
+
+    // check that the configuration has no blocking error and is consistent (no conflicting options)
+    private void CheckConsistency()
+    {
+        if (_strykerOptionsCache.IsSolutionContext)
+        {
+            if (_strykerOptionsCache.TestProjects.Any())
+            {
+                throw new InputException("Test projects cannot be specified when running Stryker in solution context.");
+            }
+
+            if (!string.IsNullOrEmpty(_strykerOptionsCache.ProjectName))
+            {
+                throw new InputException("Project name cannot be specified when running Stryker in solution context.");
+            }
+        }
+
+        foreach (var testProject in _strykerOptionsCache.TestProjects)
+        {
+            CheckFile( "TestProject", testProject);
+        }
+    }
+
+    private void CheckFile(string label, string filePath)
+    {
+        if (_fileSystem.File.Exists(filePath))
+        {
+            return;
+        }
+
+        throw new InputException($"{label} not found: {filePath}");
     }
 }

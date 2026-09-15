@@ -11,7 +11,7 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
 public class DefaultRunnerFactoryTests
 {
     [TestMethod]
-    public void CreateRunner_ShouldReturnSingleMicrosoftTestPlatformRunner()
+    public void CreateRunner_ShouldReturnMicrosoftTestingPlatformRunner()
     {
         var factory = new DefaultRunnerFactory();
         var testsByAssembly = new Dictionary<string, List<TestNode>>();
@@ -23,7 +23,7 @@ public class DefaultRunnerFactoryTests
         var runner = factory.CreateRunner(1, testsByAssembly, testDescriptions, testSet, discoveryLock, logger);
 
         runner.ShouldNotBeNull();
-        runner.ShouldBeOfType<SingleMicrosoftTestPlatformRunner>();
+        runner.ShouldBeOfType<MicrosoftTestingPlatformRunner>();
     }
 
     [TestMethod]

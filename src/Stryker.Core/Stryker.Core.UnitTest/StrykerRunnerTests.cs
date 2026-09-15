@@ -45,12 +45,14 @@ public class StrykerRunnerTests : TestBase
             Mutants = new List<IMutant> { new Mutant { Id = 1 } }
         });
 
-        var projectInfo = Mock.Of<SourceProjectInfo>();
-        projectInfo.ProjectContents = folder;
+        var info = new SourceProjectInfo(TestHelper.SetupProjectAnalyzerResult(references: []).Object, new TestProjectsInfo(null))
+        {
+            ProjectContents = folder
+        };
 
         var mutationTestInput = new MutationTestInput()
         {
-            SourceProjectInfo = projectInfo
+            SourceProjectInfo = info
         };
 
         inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
@@ -113,9 +115,9 @@ public class StrykerRunnerTests : TestBase
             Mutants = new Collection<IMutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
         });
 
-        var mutationTestInput = new MutationTestInput()
+        var mutationTestInput = new MutationTestInput
         {
-            SourceProjectInfo = new SourceProjectInfo()
+            SourceProjectInfo = new SourceProjectInfo(TestHelper.SetupProjectAnalyzerResult(references: []).Object, null)
             {
                 ProjectContents = folder
             },
@@ -174,7 +176,12 @@ public class StrykerRunnerTests : TestBase
         folder.Add(file);
         var mutationTestInput = new MutationTestInput
         {
-            SourceProjectInfo = new SourceProjectInfo { ProjectContents = folder }
+            SourceProjectInfo = new SourceProjectInfo(
+                TestHelper.SetupProjectAnalyzerResult(references: []).Object,
+                new TestProjectsInfo(null))
+            {
+                ProjectContents = folder
+            }
         };
         inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
         {
@@ -227,7 +234,12 @@ public class StrykerRunnerTests : TestBase
         folder.Add(file);
         var mutationTestInput = new MutationTestInput
         {
-            SourceProjectInfo = new SourceProjectInfo { ProjectContents = folder }
+            SourceProjectInfo = new SourceProjectInfo(
+                TestHelper.SetupProjectAnalyzerResult(references: []).Object,
+                new TestProjectsInfo(null))
+            {
+                ProjectContents = folder
+            }
         };
         inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
         {
@@ -332,15 +344,6 @@ public class StrykerRunnerTests : TestBase
         {
             Mutants = new Collection<IMutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
         });
-        var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-
-        var mutationTestInput = new MutationTestInput()
-        {
-            SourceProjectInfo = new SourceProjectInfo()
-            {
-                ProjectContents = folder
-            }
-        };
 
         inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
         {

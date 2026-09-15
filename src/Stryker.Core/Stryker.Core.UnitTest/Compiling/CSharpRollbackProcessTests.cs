@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.IO.Pipes;
+using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -146,36 +146,33 @@ public class CSharpRollbackProcessTests : TestBase
             typeof(object).Assembly.Location,
             typeof(List<string>).Assembly.Location,
             typeof(Enumerable).Assembly.Location,
-            typeof(PipeStream).Assembly.Location,
+            typeof(MemoryMappedFile).Assembly.Location,
             // MutantControl maps the mutant-id file via MemoryMappedFile (MTP runner). ReadInt32 comes from
             // UnmanagedMemoryAccessor, whose reference identity is System.Runtime.InteropServices (loaded by
             // name because the runtime type is forwarded to CoreLib).
-            typeof(System.IO.MemoryMappedFiles.MemoryMappedFile).Assembly.Location,
             Assembly.Load("System.Runtime.InteropServices").Location,
         };
         Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
 
-        var input = new MutationTestInput()
-        {
-            SourceProjectInfo = new SourceProjectInfo
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            properties: new Dictionary<string, string>
             {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "" },
-                        { "AssemblyName", "AssemblyName"},
-                        { "TargetFileName", "TargetFileName.dll"},
-                        { "SignAssembly", "true" },
-                        { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
-                    },
-                    projectFilePath: "TestResources",
-                    // add a reference to system so the example code can compile
-                    references: references.ToArray()
-                ).Object
-            }
-        };
+                { "TargetDir", "" },
+                { "AssemblyName", "AssemblyName"},
+                { "TargetFileName", "TargetFileName.dll"},
+                { "SignAssembly", "true" },
+                { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
+            },
+            projectFilePath: "TestResources",
+            // add a reference to system so the example code can compile
+            references: references.ToArray()
+        ).Object;
 
         var rollbackProcess = new CSharpRollbackProcess();
+        var input = new MutationTestInput()
+        {
+            SourceProjectInfo = new SourceProjectInfo(analyzerResult, null)
+        };
 
         var target = new CsharpCompilingProcess(input, rollbackProcess, options, syntaxTrees: helpers);
 
@@ -237,7 +234,6 @@ public class CSharpRollbackProcessTests : TestBase
             typeof(object).Assembly.Location,
             typeof(List<string>).Assembly.Location,
             typeof(Enumerable).Assembly.Location,
-            typeof(PipeStream).Assembly.Location,
             // MutantControl maps the mutant-id file via MemoryMappedFile (MTP runner). ReadInt32 comes from
             // UnmanagedMemoryAccessor, whose reference identity is System.Runtime.InteropServices (loaded by
             // name because the runtime type is forwarded to CoreLib).
@@ -246,27 +242,25 @@ public class CSharpRollbackProcessTests : TestBase
         };
         Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
 
-        var input = new MutationTestInput()
-        {
-            SourceProjectInfo = new SourceProjectInfo
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            properties: new Dictionary<string, string>()
             {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "" },
-                        { "AssemblyName", "AssemblyName"},
-                        { "TargetFileName", "TargetFileName.dll"},
-                        { "SignAssembly", "true" },
-                        { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
-                    },
-                    projectFilePath: "TestResources",
-                    // add a reference to system so the example code can compile
-                    references: references.ToArray()
-                ).Object
-            }
-        };
+                { "TargetDir", "" },
+                { "AssemblyName", "AssemblyName"},
+                { "TargetFileName", "TargetFileName.dll"},
+                { "SignAssembly", "true" },
+                { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
+            },
+            projectFilePath: "TestResources",
+            // add a reference to system so the example code can compile
+            references: references.ToArray()
+        ).Object;
 
         var rollbackProcess = new CSharpRollbackProcess();
+        var input = new MutationTestInput()
+        {
+            SourceProjectInfo = new SourceProjectInfo(analyzerResult, null)
+        };
 
         var target = new CsharpCompilingProcess(input, rollbackProcess, options, helpers);
 
@@ -558,7 +552,7 @@ public class CSharpRollbackProcessTests : TestBase
 
         var ids = new CSharpRollbackProcess().RollbackMutationsInError(
             compilerWrapper,
-            ImmutableArray.Create(CreateErrorDiagnostic("TEST0001", brokenStatement)),
+            [CreateErrorDiagnostic("TEST0001", brokenStatement)],
             ICSharpRollbackProcess.Mode.Normal,
             false);
 
@@ -1022,7 +1016,7 @@ public class CSharpRollbackProcessTests : TestBase
     }
 
     [TestMethod]
-    public void RollbackProcess_ShouldRollbackMutationsErasingReturn()
+    public void RollbackProcess_ShouldRollbackEveryMutationsErasingAssignmentInAggressiveMode()
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(
         """
@@ -1033,7 +1027,7 @@ public class CSharpRollbackProcessTests : TestBase
             {
                 public int ActiveMutation = 1;
 
-                public string AddTwoStrings()
+                public string AddTwoStrings(out string third)
                 {
                     string first = string.Empty;
                     string second = string.Empty;
@@ -1045,9 +1039,8 @@ public class CSharpRollbackProcessTests : TestBase
                         }
                         while (first.Length < 2)
                         {
-                            dummy =  second - first;
+                            dummy =  second + first;
                         }
-                        return dummy;
                     }else{if(ActiveMutation == 7){
                     while (first.Length > 2)
                         {
@@ -1058,6 +1051,7 @@ public class CSharpRollbackProcessTests : TestBase
                             dummy =  second + first;
                         }
                     }else{if(ActiveMutation == 6){
+                        third = "good";
                         while (first.Length == 2)
                         {
                             dummy =  first + second;
@@ -1066,8 +1060,8 @@ public class CSharpRollbackProcessTests : TestBase
                         {
                             dummy =  second + first;
                         }
-                        return dummy;
                     }else{
+                        third = "good";
                         while (first.Length == 2)
                         {
                             dummy =  first + second;
@@ -1076,12 +1070,116 @@ public class CSharpRollbackProcessTests : TestBase
                         {
                             dummy =  second + first;
                         }
-                        return dummy;
                     }}}
+                    return dummy;
                 }
             }
         }
         """);
+        var root = syntaxTree.GetRoot();
+
+        var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(
+            mutantIf1,
+            mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(8), _ifEngineMarker)
+        );
+        var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
+        root = root.ReplaceNode(
+            mutantIf2,
+            mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(7), _ifEngineMarker)
+        );
+        var mutantIf3 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[2];
+        root = root.ReplaceNode(
+            mutantIf3,
+            mutantIf3.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
+        );
+        var annotatedSyntaxTree = root.SyntaxTree;
+
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            });
+
+        var target = new CSharpRollbackProcess();
+
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
+
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Aggressive, false);
+        var rollbackResult = compilerWrapper.Emit(ms);
+
+        rollbackResult.Success.ShouldBeTrue();
+        // validate that mutations 8 was rolled back in normal mode
+        ids.ShouldBe(new Collection<int> { 8 , 7});
+    }
+
+    [TestMethod]
+    [DataRow("return dummy")]
+    [DataRow("throw new Exception()")]
+    public void RollbackProcess_ShouldRollbackMutationsErasingEarlyReturn(string statement)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            $$$$"""
+                using System;
+                namespace ExampleProject
+                {
+                    public class StringMagic
+                    {
+                        public int ActiveMutation = 1;
+
+                        public string AddTwoStrings()
+                        {
+                            string first = string.Empty;
+                            string second = string.Empty;
+                            var dummy = "";
+                            if(ActiveMutation == 8){
+                                while (first.Length > 2)
+                                {
+                                    dummy = first + second;
+                                }
+                                while (first.Length < 2)
+                                {
+                                    dummy =  second - first;
+                                }
+                                {{{{statement}}}};
+                            }else{if(ActiveMutation == 7){
+                            while (first.Length > 2)
+                                {
+                                    dummy =  first + second;
+                                }
+                                while (first.Length < 2)
+                                {
+                                    dummy =  second + first;
+                                }
+                            }else{if(ActiveMutation == 6){
+                                while (first.Length == 2)
+                                {
+                                    dummy =  first + second;
+                                }
+                                while (first.Length < 2)
+                                {
+                                    dummy =  second + first;
+                                }
+                                {{{{statement}}}};
+                            }else{
+                                while (first.Length == 2)
+                                {
+                                    dummy =  first + second;
+                                }
+                                while (first.Length < 2)
+                                {
+                                    dummy =  second + first;
+                                }
+                                {{{{statement}}}};
+                            }}}
+                        }
+                    }
+                }
+                """);
         var root = syntaxTree.GetRoot();
 
         var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
@@ -1122,6 +1220,76 @@ public class CSharpRollbackProcessTests : TestBase
         // validate that mutations 8 and 7 were rolled back
         ids.ShouldBe(new Collection<int> { 8, 7 });
     }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbackMutationErasingThrowInCatchClause()
+    {
+        // a mutation erasing the throw of a catch clause lets the catch complete normally, which breaks
+        // definite assignment (CS0165) at the use site; the rollback process must attribute it instead of
+        // entering safe mode (issue #3783)
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+        """
+        using System;
+        namespace ExampleProject
+        {
+            public class Transformer
+            {
+                public int ActiveMutation = 1;
+
+                public string Translate(string input)
+                {
+                    var dummy = 0;
+                    if(ActiveMutation == 3){dummy = 2;}else{dummy = 1;}
+                    string result;
+                    try
+                    {
+                        result = input.ToUpperInvariant();
+                    }
+                    catch (Exception e)
+                    {
+                        if(ActiveMutation == 6){;}else{throw new InvalidOperationException("failed", e);}
+                    }
+                    return result + dummy;
+                }
+            }
+        }
+        """);
+        var root = syntaxTree.GetRoot();
+
+        var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(
+            mutantIf1,
+            mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(3), GetMutationTypeMarker(Mutator.Statement), _ifEngineMarker)
+        );
+        var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
+        root = root.ReplaceNode(
+            mutantIf2,
+            mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(6), GetMutationTypeMarker(Mutator.Statement), _ifEngineMarker)
+        );
+        var annotatedSyntaxTree = root.SyntaxTree;
+
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            });
+
+        var target = new CSharpRollbackProcess();
+
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
+        var compilerWrapper = new CompilerWrapper(compiler);
+
+        var ids = target.RollbackMutationsInError(compilerWrapper, compileResult.Diagnostics, ICSharpRollbackProcess.Mode.Normal, false);
+        var rollbackResult = compilerWrapper.Emit(ms);
+
+        rollbackResult.Success.ShouldBeTrue();
+        // only the throw erasing mutation should be rolled back, the other mutation must survive
+        ids.ShouldBe(new Collection<int> { 6 });
+    }
+
 
     [TestMethod]
     public void RollbackProcess_ShouldRollbackError_RolledBackCompilationShouldCompileWhenUriIsEmpty()

@@ -31,7 +31,11 @@ public class LoggingInitializer : ILoggingInitializer
         var outputPath = InitializeOutputPath(inputs, fileSystem);
 
         var diagnoseMode = inputs.DiagModeInput.Validate();
-        var logLevel = diagnoseMode ? LogEventLevel.Verbose : inputs.VerbosityInput.Validate();
+        var logLevel = inputs.VerbosityInput.Validate();
+        if (diagnoseMode && logLevel < LogEventLevel.Debug)
+        {
+            logLevel = LogEventLevel.Debug;
+        }
         var logToFile = inputs.LogToFileInput.Validate(outputPath) || diagnoseMode;
 
         ApplicationLogging.ConfigureLogger(logLevel, logToFile, diagnoseMode, outputPath);

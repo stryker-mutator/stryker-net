@@ -3,6 +3,7 @@
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>Stryker.Solutions.Test</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
