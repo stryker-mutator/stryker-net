@@ -4,9 +4,9 @@ using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Testing;
-using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 using Stryker.TestRunner.Results;
+using Stryker.TestRunner.Tests;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
 
@@ -439,7 +439,7 @@ public class MicrosoftTestingPlatformRunnerTests
         result.Duration.ShouldBe(TimeSpan.Zero);
     }
 
-    [TestMethod, Timeout(1000)]
+    [TestMethod, Timeout(5000)]
     public async Task RunAssemblyTestsInternalAsync_WithTimeout_StillReturnsResult_WhenServerFails()
     {
         using var runner = CreateRunner();

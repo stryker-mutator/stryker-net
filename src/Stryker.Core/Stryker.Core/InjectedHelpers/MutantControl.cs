@@ -66,6 +66,7 @@ namespace Stryker
         public static bool CaptureCoverage;
         public static int ActiveMutant = -2;
         public const int ActiveMutantNotInitValue = -2;
+        public const string BlockingCoverageConsumerMarker = "BlockingCoverageConsumer.v1";
 
         static MutantControl()
         {
@@ -318,10 +319,49 @@ namespace Stryker
                     ResetCoverage();
                 }
             }
+
             catch (System.Exception ex)
             {
                 // Do not fail tests due to coverage write issues; log for diagnostics instead.
                 System.Diagnostics.Debug.WriteLine(string.Format("[Stryker] Failed to flush coverage to file '{0}': {1}", _cachedCoverageFilePath, ex));
+            }
+        }
+
+        public static void FlushCoverageToFileForBlockingConsumer()
+        {
+            if (!_coverageFilePathCached)
+            {
+                string coverageFileName = System.Environment.GetEnvironmentVariable("STRYKER_COVERAGE_FILE") ?? string.Empty;
+                if (!string.IsNullOrEmpty(coverageFileName))
+                {
+                    _cachedCoverageFilePath = BuildCoverageFilePath(coverageFileName);
+                    _coverageFilePathCached = true;
+                }
+            }
+
+            if (string.IsNullOrEmpty(_cachedCoverageFilePath))
+            {
+                return;
+            }
+
+            try
+            {
+                lock (_coverageLock)
+                {
+                    string covered = string.Join(",", _coveredMutants);
+                    string staticMutants = string.Join(",", _coveredStaticMutants);
+                    System.IO.File.AppendAllText(
+                        _cachedCoverageFilePath,
+                        covered + ";" + staticMutants + System.Environment.NewLine);
+                    ResetCoverage();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(string.Format(
+                    "[Stryker] Failed to flush blocking-consumer coverage to file '{0}': {1}",
+                    _cachedCoverageFilePath,
+                    ex));
             }
         }
 
