@@ -121,8 +121,12 @@ function Run-Category {
       break
     }
     'MSTestMTP' {
-      if ($Runtime -ne 'netcore') { throw "MSTestMTP only supports runtime 'netcore'." }
-      $mtpWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\MicrosoftTestPlatform\UnitTests.MSTest'
+      $mtpProject = switch ($Runtime) {
+        'netcore' { 'UnitTests.MSTest' }
+        'netframework' { 'MSTest.NetFx' }
+        Default { throw "Unknown runtime: $Runtime" }
+      }
+      $mtpWd = Join-Path $RepoRoot "integrationtest\TargetProjects\MicrosoftTestPlatform\$mtpProject"
       if (Test-Path $mtpWd) { Run-Stryker -WorkingDirectory $mtpWd } else { Write-Warn "MTP test project not found at $mtpWd" }
       break
     }
