@@ -194,6 +194,12 @@
           "Stryker.Abstractions": "[5.0.0, )"
         }
       },
+      "stryker.testrunner.microsofttestplatform.extension": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Testing.Platform": "[2.4.0, )"
+        }
+      },
       "stryker.utilities": {
         "type": "Project",
         "dependencies": {
@@ -293,6 +299,12 @@
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12"
         }
+      },
+      "Microsoft.Testing.Platform": {
+        "type": "CentralTransitive",
+        "requested": "[2.4.0, )",
+        "resolved": "2.4.0",
+        "contentHash": "dp1N3P1ujb0ztwFgqz2o/ItEvq+pm19/AiA+Xq7Zpcy7oPMcxDBZLYGtf0LlU1MveEBJuKVjZhI+LnkfcH/0jQ=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "CentralTransitive",

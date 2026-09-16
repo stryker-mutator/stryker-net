@@ -35,7 +35,7 @@
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.10.1" />
     <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="18.10.1" />
     <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="18.10.1" />
-    <PackageVersion Include="Microsoft.Testing.Platform" Version="1.9.1" />
+    <PackageVersion Include="Microsoft.Testing.Platform" Version="2.4.0" />
     <PackageVersion Include="Microsoft.Testing.Platform.ServerMode.Client.Sources" Version="2.5.1" />
     <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.3.0" />
     <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52"/>

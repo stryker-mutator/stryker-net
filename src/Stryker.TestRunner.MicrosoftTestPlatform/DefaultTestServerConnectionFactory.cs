@@ -35,6 +35,7 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
     {
         Stream outputStream;
         PipeTarget outputPipe;
+        DynamicExtensionManifest? dynamicExtensionManifest = null;
 
         if (_logToFile && !string.IsNullOrEmpty(_outputPath))
         {
@@ -54,15 +55,31 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
             outputPipe = PipeTarget.Null;
         }
 
-        var cliProcess = Cli.Wrap("dotnet")
-            .WithWorkingDirectory(Path.GetDirectoryName(assembly) ?? string.Empty)
-            .WithArguments([assembly, .. MtpServerConnector.BuildInProcessServerArguments(port)])
-            .WithEnvironmentVariables(environmentVariables)
-            .WithStandardOutputPipe(outputPipe)
-            .WithStandardErrorPipe(outputPipe)
-            .ExecuteAsync();
+        var arguments = new List<string> { assembly, .. MtpServerConnector.BuildInProcessServerArguments(port) };
+        if (environmentVariables.ContainsKey(MtpCompatibility.BlockingCoverageEnvironmentVariable))
+        {
+            dynamicExtensionManifest = DynamicExtensionManifest.Acquire(assembly);
+            arguments.Add("--enable-dynamic-extensions");
+        }
 
-        return new CliTestServerProcess(cliProcess, outputStream);
+        try
+        {
+            var cliProcess = Cli.Wrap("dotnet")
+                .WithWorkingDirectory(Path.GetDirectoryName(assembly) ?? string.Empty)
+                .WithArguments(arguments)
+                .WithEnvironmentVariables(environmentVariables)
+                .WithStandardOutputPipe(outputPipe)
+                .WithStandardErrorPipe(outputPipe)
+                .ExecuteAsync();
+
+            return new CliTestServerProcess(cliProcess, outputStream, dynamicExtensionManifest);
+        }
+        catch
+        {
+            dynamicExtensionManifest?.Dispose();
+            outputStream.Dispose();
+            throw;
+        }
     }
 
     public ITestingPlatformClient CreateClient(TcpClient tcpClient, IProcessHandle processHandle, ILogger logger)
@@ -105,7 +122,10 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
         public void Dispose() => listener.Stop();
     }
 
-    private sealed class CliTestServerProcess(CommandTask<CommandResult> commandTask, Stream outputStream) : ITestServerProcess
+    private sealed class CliTestServerProcess(
+        CommandTask<CommandResult> commandTask,
+        Stream outputStream,
+        DynamicExtensionManifest? dynamicExtensionManifest) : ITestServerProcess
     {
         private readonly ProcessHandle _processHandle = new(commandTask, outputStream);
 
@@ -117,6 +137,8 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
         {
             _processHandle.Dispose();
             outputStream.Dispose();
+            dynamicExtensionManifest?.Dispose();
         }
     }
+
 }
