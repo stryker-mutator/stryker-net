@@ -14,9 +14,9 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Stryker.Abstractions\Stryker.Abstractions.csproj" />
+        <ProjectReference Include="..\Stryker.TestRunner.MicrosoftTestPlatform.Extension\Stryker.TestRunner.MicrosoftTestPlatform.Extension.csproj" />
         <ProjectReference Include="..\Stryker.TestRunner.MicrosoftTestPlatform\Stryker.TestRunner.MicrosoftTestPlatform.csproj" />
         <ProjectReference Include="..\Stryker.Utilities\Stryker.Utilities.csproj" />
     </ItemGroup>
 
 </Project>
-

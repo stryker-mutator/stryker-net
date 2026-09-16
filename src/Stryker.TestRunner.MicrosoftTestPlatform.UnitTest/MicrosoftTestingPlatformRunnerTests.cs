@@ -6,9 +6,9 @@ using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Testing;
-using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 using Stryker.TestRunner.Results;
+using Stryker.TestRunner.Tests;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
 

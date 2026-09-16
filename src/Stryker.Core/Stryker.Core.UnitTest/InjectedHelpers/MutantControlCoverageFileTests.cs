@@ -186,6 +186,41 @@ public class MutantControlCoverageFileTests : TestBase
             writtenFileName.ShouldEndWith(Path.GetExtension(coverageFileName));
             ParseCoveredMutants(File.ReadAllText(writtenFiles[0])).ShouldContain(7);
         }
+
+        finally
+        {
+            Environment.SetEnvironmentVariable(CoverageFileEnvironmentVariable, previousEnvironmentValue);
+            DisableLoadedHelpers();
+            foreach (var file in FindCoverageFiles(coverageFileName))
+            {
+                File.Delete(file);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void BlockingConsumerFlush_ShouldAppendCoverageFromMultipleTerminalUpdates()
+    {
+        var coverageFileName = $"stryker-coverage-test-{Guid.NewGuid():N}.txt";
+        var previousEnvironmentValue = Environment.GetEnvironmentVariable(CoverageFileEnvironmentVariable);
+
+        try
+        {
+            Environment.SetEnvironmentVariable(CoverageFileEnvironmentVariable, coverageFileName);
+
+            var assembly = CompileMutantControl("BlockingConsumerAssembly");
+            RegisterCoverage(assembly, 7);
+            FlushBlockingCoverage(assembly);
+            RegisterCoverage(assembly, 8);
+            FlushBlockingCoverage(assembly);
+
+            var writtenFile = FindCoverageFiles(coverageFileName).ShouldHaveSingleItem();
+            var entries = File.ReadAllLines(writtenFile);
+
+            entries.Length.ShouldBe(2);
+            ParseCoveredMutants(entries[0]).ShouldContain(7);
+            ParseCoveredMutants(entries[1]).ShouldContain(8);
+        }
         finally
         {
             Environment.SetEnvironmentVariable(CoverageFileEnvironmentVariable, previousEnvironmentValue);
@@ -347,6 +382,9 @@ public class MutantControlCoverageFileTests : TestBase
 
     private static void FlushCoverage(Assembly assembly) =>
         GetMutantControl(assembly).GetMethod("FlushCoverageToFile")!.Invoke(null, null);
+
+    private static void FlushBlockingCoverage(Assembly assembly) =>
+        GetMutantControl(assembly).GetMethod("FlushCoverageToFileForBlockingConsumer")!.Invoke(null, null);
 
     private static Type GetMutantControl(Assembly assembly) =>
         assembly.GetTypes().Single(type => type.Name == "MutantControl");

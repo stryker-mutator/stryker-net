@@ -40,6 +40,7 @@
   <Project Path="Stryker.Solutions.UnitTest/Stryker.Solutions.UnitTest.csproj" />
   <Project Path="Stryker.Solutions/Stryker.Solutions.csproj" />
   <Project Path="Stryker.TestRunner.MicrosoftTestPlatform.UnitTest/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest.csproj" />
+  <Project Path="Stryker.TestRunner.MicrosoftTestPlatform.Extension/Stryker.TestRunner.MicrosoftTestPlatform.Extension.csproj" />
   <Project Path="Stryker.TestRunner.MicrosoftTestPlatform/Stryker.TestRunner.MicrosoftTestPlatform.csproj" />
   <Project Path="Stryker.TestRunner.VsTest.UnitTest/Stryker.TestRunner.VsTest.UnitTest.csproj" />
   <Project Path="Stryker.TestRunner.VsTest/Stryker.TestRunner.VsTest.csproj" />
