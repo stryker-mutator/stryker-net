@@ -87,26 +87,8 @@ public class StrykerCli
         ILoggingInitializer loggingInitializer,
         IStrykerNugetFeedClient nugetClient,
         IAnsiConsole console,
-        IFileSystem fileSystem)
-        : this(
-            stryker,
-            configReader,
-            loggingInitializer,
-            nugetClient,
-            console,
-            fileSystem,
-            new UnavailableMutationServer())
-    {
-    }
-
-    public StrykerCli(
-        IStrykerRunner stryker,
-        IConfigBuilder configReader,
-        ILoggingInitializer loggingInitializer,
-        IStrykerNugetFeedClient nugetClient,
-        IAnsiConsole console,
         IFileSystem fileSystem,
-        IMutationServer mutationServer)
+        IMutationServer mutationServer = null)
     {
         _stryker = stryker ?? throw new ArgumentNullException(nameof(stryker));
         _configReader = configReader ?? throw new ArgumentNullException(nameof(configReader));
@@ -114,7 +96,7 @@ public class StrykerCli
         _nugetClient = nugetClient ?? throw new ArgumentNullException(nameof(nugetClient));
         _console = console ?? throw new ArgumentNullException(nameof(console));
         _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-        _mutationServer = mutationServer ?? throw new ArgumentNullException(nameof(mutationServer));
+        _mutationServer = mutationServer ?? new UnavailableMutationServer();
     }
 
     /// <summary>

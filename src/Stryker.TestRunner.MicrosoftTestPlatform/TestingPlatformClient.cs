@@ -104,10 +104,7 @@ public sealed class TestingPlatformClient : ITestingPlatformClient
     public void RegisterTelemetryListener(TelemetryCollector listener)
         => _targetHandler.RegisterTelemetryListener(listener);
 
-    public async Task<InitializeResponse> InitializeAsync()
-        => await InitializeAsync(CancellationToken.None);
-
-    public async Task<InitializeResponse> InitializeAsync(CancellationToken cancellationToken)
+    public async Task<InitializeResponse> InitializeAsync(CancellationToken cancellationToken = default)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
         using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(

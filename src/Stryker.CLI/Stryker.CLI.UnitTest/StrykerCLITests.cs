@@ -14,6 +14,8 @@ using Spectre.Console;
 using Spectre.Console.Testing;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
 using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
 using Stryker.CLI.MutationServer;
@@ -41,7 +43,8 @@ public class StrykerCLITests
         _options = new StrykerOptions() { Thresholds = new Thresholds { Break = 0 } };
         _runResults = new StrykerRunResult(_options, 0.3);
         _strykerRunnerMock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
-            .Callback<IStrykerInputs>(c => _inputs = c)
+            .Callback<IStrykerInputs, IReporter, Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool>, CancellationToken>(
+                (inputs, _, _, _) => _inputs = inputs)
             .Returns(Task.FromResult(_runResults))
             .Verifiable();
         _nugetClientMock.Setup(x => x.GetLatestVersionAsync()).Returns(Task.FromResult(new SemanticVersion(10, 0, 0)));

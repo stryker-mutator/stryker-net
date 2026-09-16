@@ -77,15 +77,12 @@ public sealed class VsTestRunner : IDisposable
         return BuildTestRunResult(testResults, totalCountOfTests, totalCountOfTests, false);
     }
 
-    public ITestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler? update)
-        => TestMultipleMutants(project, timeoutCalc, mutants, update, CancellationToken.None);
-
-    internal ITestRunResult TestMultipleMutants(
+    public ITestRunResult TestMultipleMutants(
         IProjectAndTests project,
         ITimeoutValueCalculator? timeoutCalc,
         IReadOnlyList<IMutant> mutants,
         TestUpdateHandler? update,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var mutantTestsMap = new Dictionary<int, ITestIdentifiers>();

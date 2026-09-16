@@ -1,5 +1,7 @@
+using System;
 using System.IO;
 using System.IO.Abstractions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -8,6 +10,8 @@ using Shouldly;
 using Spectre.Console;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
 using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
 using Stryker.Configuration;
@@ -65,7 +69,8 @@ public class FileConfigReaderTests
 
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
         mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
-            .Callback<IStrykerInputs>(c => actualInputs = c)
+            .Callback<IStrykerInputs, IReporter, Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool>, CancellationToken>(
+                (inputs, _, _, _) => actualInputs = inputs)
             .Returns(Task.FromResult(runResults))
             .Verifiable();
 
@@ -116,7 +121,8 @@ public class FileConfigReaderTests
 
         var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
         mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
-            .Callback<IStrykerInputs>(c => actualInputs = c)
+            .Callback<IStrykerInputs, IReporter, Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool>, CancellationToken>(
+                (inputs, _, _, _) => actualInputs = inputs)
             .Returns(Task.FromResult(runResults))
             .Verifiable();
 

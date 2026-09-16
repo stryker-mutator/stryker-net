@@ -18,14 +18,12 @@ public interface IMutationTestExecutor
 {
     ITestRunner TestRunner { get; set; }
 
-    Task TestAsync(IProjectAndTests project, IList<IMutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
-        TestUpdateHandler updateHandler);
     Task TestAsync(
         IProjectAndTests project,
         IList<IMutant> mutantsToTest,
         ITimeoutValueCalculator timeoutMs,
         TestUpdateHandler updateHandler,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken = default);
 }
 
 public class MutationTestExecutor : IMutationTestExecutor
@@ -39,16 +37,12 @@ public class MutationTestExecutor : IMutationTestExecutor
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task TestAsync(IProjectAndTests project, IList<IMutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
-        TestUpdateHandler updateHandler)
-        => await TestAsync(project, mutantsToTest, timeoutMs, updateHandler, CancellationToken.None);
-
     public async Task TestAsync(
         IProjectAndTests project,
         IList<IMutant> mutantsToTest,
         ITimeoutValueCalculator timeoutMs,
         TestUpdateHandler updateHandler,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var forceSingle = false;
         while (mutantsToTest.Any())
@@ -164,12 +158,10 @@ public class MutationTestExecutor : IMutationTestExecutor
         IReadOnlyList<IMutant> mutants,
         TestUpdateHandler updateHandler,
         CancellationToken cancellationToken)
-        => cancellationToken.CanBeCanceled
-            ? TestRunner.TestMultipleMutantsAsync(
-                project,
-                timeoutMs,
-                mutants,
-                updateHandler,
-                cancellationToken)
-            : TestRunner.TestMultipleMutantsAsync(project, timeoutMs, mutants, updateHandler);
+        => TestRunner.TestMultipleMutantsAsync(
+            project,
+            timeoutMs,
+            mutants,
+            updateHandler,
+            cancellationToken);
 }

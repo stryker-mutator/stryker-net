@@ -22,25 +22,16 @@ namespace Stryker.Core;
 
 public interface IStrykerRunner
 {
-    Task<StrykerRunResult> RunMutationTestAsync(IStrykerInputs inputs);
     Task<StrykerRunResult> RunMutationTestAsync(
         IStrykerInputs inputs,
-        IReporter reporter,
-        Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool> mutantSelection);
-    Task<StrykerRunResult> RunMutationTestAsync(
-        IStrykerInputs inputs,
-        IReporter reporter,
-        Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool> mutantSelection,
-        CancellationToken cancellationToken);
+        IReporter reporter = null,
+        Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool> mutantSelection = null,
+        CancellationToken cancellationToken = default);
     Task DiscoverMutantsAsync(
         IStrykerInputs inputs,
-        IReporter reporter,
-        Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool> mutantSelection);
-    Task DiscoverMutantsAsync(
-        IStrykerInputs inputs,
-        IReporter reporter,
-        Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool> mutantSelection,
-        CancellationToken cancellationToken);
+        IReporter reporter = null,
+        Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool> mutantSelection = null,
+        CancellationToken cancellationToken = default);
 }
 
 public class StrykerRunner : IStrykerRunner
@@ -66,9 +57,6 @@ public class StrykerRunner : IStrykerRunner
     /// </summary>
     /// <param name="inputs">user options</param>
     /// <exception cref="InputException">For managed exceptions</exception>
-    public async Task<StrykerRunResult> RunMutationTestAsync(IStrykerInputs inputs)
-        => await RunMutationTestAsync(inputs, null, null);
-
     /// <summary>
     /// Starts a mutation test run with a custom reporter and optional mutant selection.
     /// </summary>
@@ -78,15 +66,9 @@ public class StrykerRunner : IStrykerRunner
     /// <returns>The mutation test result.</returns>
     public async Task<StrykerRunResult> RunMutationTestAsync(
         IStrykerInputs inputs,
-        IReporter reporter,
-        Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool> mutantSelection)
-        => await RunMutationTestAsync(inputs, reporter, mutantSelection, CancellationToken.None);
-
-    public async Task<StrykerRunResult> RunMutationTestAsync(
-        IStrykerInputs inputs,
-        IReporter reporter,
-        Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool> mutantSelection,
-        CancellationToken cancellationToken)
+        IReporter reporter = null,
+        Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool> mutantSelection = null,
+        CancellationToken cancellationToken = default)
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
@@ -152,14 +134,7 @@ public class StrykerRunner : IStrykerRunner
                 var mutants = project.Input.SourceProjectInfo.ProjectContents.Mutants
                     .Where(x => x.ResultStatus == MutantStatus.Pending)
                     .ToList();
-                if (cancellationToken.CanBeCanceled)
-                {
-                    await project.TestAsync(mutants, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    await project.TestAsync(mutants).ConfigureAwait(false);
-                }
+                await project.TestAsync(mutants, cancellationToken).ConfigureAwait(false);
             }
 
             // dispose and stop runners
@@ -217,15 +192,9 @@ public class StrykerRunner : IStrykerRunner
     /// <param name="mutantSelection">Optional request-specific mutant selection.</param>
     public async Task DiscoverMutantsAsync(
         IStrykerInputs inputs,
-        IReporter reporter,
-        Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool> mutantSelection)
-        => await DiscoverMutantsAsync(inputs, reporter, mutantSelection, CancellationToken.None);
-
-    public async Task DiscoverMutantsAsync(
-        IStrykerInputs inputs,
-        IReporter reporter,
-        Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool> mutantSelection,
-        CancellationToken cancellationToken)
+        IReporter reporter = null,
+        Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool> mutantSelection = null,
+        CancellationToken cancellationToken = default)
     {
         var stopwatch = Stopwatch.StartNew();
         cancellationToken.ThrowIfCancellationRequested();
@@ -254,7 +223,7 @@ public class StrykerRunner : IStrykerRunner
         }
     }
 
-    private async Task<PreparedMutationTest> PrepareMutationTestAsync(
+    private async Task<(IReadOnlyProjectComponent RootComponent, ITestProjectsInfo TestProjectsInfo)> PrepareMutationTestAsync(
         IStrykerOptions options,
         IReporter reporter,
         Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool> mutantSelection,
@@ -262,13 +231,10 @@ public class StrykerRunner : IStrykerRunner
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        _mutationTestProcesses = (cancellationToken.CanBeCanceled
-            ? await _projectOrchestrator.MutateProjectsAsync(
-                options,
-                reporter,
-                null,
-                cancellationToken)
-            : await _projectOrchestrator.MutateProjectsAsync(options, reporter)).ToList();
+        _mutationTestProcesses = (await _projectOrchestrator.MutateProjectsAsync(
+            options,
+            reporter,
+            cancellationToken: cancellationToken)).ToList();
         cancellationToken.ThrowIfCancellationRequested();
 
         var rootComponent = AddRootFolderIfMultiProject(
@@ -295,7 +261,7 @@ public class StrykerRunner : IStrykerRunner
         ApplyMutantSelection(rootComponent, mutantSelection);
         reporter.OnMutantsCreated(rootComponent, combinedTestProjectsInfo);
 
-        return new PreparedMutationTest(rootComponent, combinedTestProjectsInfo);
+        return (rootComponent, combinedTestProjectsInfo);
     }
 
     private static void ApplyMutantSelection(
@@ -361,17 +327,4 @@ public class StrykerRunner : IStrykerRunner
         return projectComponents.First();
     }
 
-    private sealed class PreparedMutationTest
-    {
-        public PreparedMutationTest(
-            IReadOnlyProjectComponent rootComponent,
-            ITestProjectsInfo testProjectsInfo)
-        {
-            RootComponent = rootComponent;
-            TestProjectsInfo = testProjectsInfo;
-        }
-
-        public IReadOnlyProjectComponent RootComponent { get; }
-        public ITestProjectsInfo TestProjectsInfo { get; }
-    }
 }

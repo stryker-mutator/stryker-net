@@ -88,20 +88,14 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         WriteMutantIdToFile(-1);
     }
 
-    public Task<bool> DiscoverTestsAsync(string assembly)
-        => DiscoverTestsAsync(assembly, CancellationToken.None);
-
     public Task<bool> DiscoverTestsAsync(
         string assembly,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
         => DiscoverTestsInternalAsync(assembly, cancellationToken);
-
-    public Task<ITestRunResult> InitialTestAsync(IProjectAndTests project)
-        => InitialTestAsync(project, CancellationToken.None);
 
     public Task<ITestRunResult> InitialTestAsync(
         IProjectAndTests project,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var assemblies = project.GetTestAssemblies();
         return RunAllTestsAsync(
@@ -112,24 +106,12 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             cancellationToken: cancellationToken);
     }
 
-    public Task<ITestRunResult> TestMultipleMutantsAsync(
-        IProjectAndTests project,
-        ITimeoutValueCalculator? timeoutCalc,
-        IReadOnlyList<IMutant> mutants,
-        TestUpdateHandler? update)
-        => TestMultipleMutantsAsync(
-            project,
-            timeoutCalc,
-            mutants,
-            update,
-            CancellationToken.None);
-
     public virtual Task<ITestRunResult> TestMultipleMutantsAsync(
         IProjectAndTests project,
         ITimeoutValueCalculator? timeoutCalc,
         IReadOnlyList<IMutant> mutants,
         TestUpdateHandler? update,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var assemblies = project.GetTestAssemblies();
 
@@ -1129,18 +1111,12 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             foreach (var assembly in assemblies)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var (result, timedOut, discoveredTests) = cancellationToken.CanBeCanceled
-                    ? await RunAssemblyTestsAsync(
-                        assembly,
-                        timeoutCalc,
-                        mutants,
-                        testUidFilter,
-                        cancellationToken).ConfigureAwait(false)
-                    : await RunAssemblyTestsAsync(
-                        assembly,
-                        timeoutCalc,
-                        mutants,
-                        testUidFilter).ConfigureAwait(false);
+                var (result, timedOut, discoveredTests) = await RunAssemblyTestsAsync(
+                    assembly,
+                    timeoutCalc,
+                    mutants,
+                    testUidFilter,
+                    cancellationToken).ConfigureAwait(false);
 
                 if (discoveredTests is not null)
                 {
@@ -1226,20 +1202,8 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         string assembly,
         ITimeoutValueCalculator? timeoutCalc,
         IReadOnlyList<IMutant>? mutants = null,
-        Func<TestNode, bool>? testUidFilter = null)
-        => await RunAssemblyTestsAsync(
-            assembly,
-            timeoutCalc,
-            mutants,
-            testUidFilter,
-            CancellationToken.None);
-
-    private async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-        string assembly,
-        ITimeoutValueCalculator? timeoutCalc,
-        IReadOnlyList<IMutant>? mutants,
-        Func<TestNode, bool>? testUidFilter,
-        CancellationToken cancellationToken)
+        Func<TestNode, bool>? testUidFilter = null,
+        CancellationToken cancellationToken = default)
     {
         if (!File.Exists(assembly))
         {

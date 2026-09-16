@@ -22,12 +22,11 @@ namespace Stryker.Core.Initialisation;
 
 public interface IProjectOrchestrator : IDisposable
 {
-    Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(IStrykerOptions options, IReporter reporters, ITestRunner runner = null);
     Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(
         IStrykerOptions options,
         IReporter reporters,
-        ITestRunner runner,
-        CancellationToken cancellationToken);
+        ITestRunner runner = null,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed class ProjectOrchestrator(
@@ -47,15 +46,11 @@ public sealed class ProjectOrchestrator(
     private readonly IInputFileResolver _fileResolver = fileResolver ?? throw new ArgumentNullException(nameof(fileResolver));
     private ITestRunner _runner;
 
-    public async Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(IStrykerOptions options, IReporter reporters,
-        ITestRunner runner = null)
-        => await MutateProjectsAsync(options, reporters, runner, CancellationToken.None);
-
     public async Task<IEnumerable<IMutationTestProcess>> MutateProjectsAsync(
         IStrykerOptions options,
         IReporter reporters,
-        ITestRunner runner,
-        CancellationToken cancellationToken)
+        ITestRunner runner = null,
+        CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         _initializationProcess ??= _serviceProvider.GetRequiredService<IInitialisationProcess>();
@@ -74,13 +69,11 @@ public sealed class ProjectOrchestrator(
         _runner = runner ?? CreateTestRunner(options);
         _mutationTestExecutor.TestRunner = _runner;
         InitializeDashboardProjectInformation(options, projectInfos.SourceProjectInfos.First());
-        var inputs = cancellationToken.CanBeCanceled
-            ? await _initializationProcess.GetMutationTestInputsAsync(
-                options,
-                projectInfos,
-                _runner,
-                cancellationToken)
-            : await _initializationProcess.GetMutationTestInputsAsync(options, projectInfos, _runner);
+        var inputs = await _initializationProcess.GetMutationTestInputsAsync(
+            options,
+            projectInfos,
+            _runner,
+            cancellationToken);
 
         var mutationTestProcesses = new ConcurrentBag<IMutationTestProcess>();
         try

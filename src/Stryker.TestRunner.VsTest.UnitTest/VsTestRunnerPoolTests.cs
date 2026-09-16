@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
@@ -49,6 +50,63 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
             cancellationTokenSource.Token));
     }
 
+    [TestMethod, Timeout(5000)]
+    public async Task ExplicitNoneTokenShouldReturnBeforeVsTestSessionCompletes()
+    {
+        var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        mockVsTest.Setup(x =>
+                x.RunTestsWithCustomTestHost(
+                    It.IsAny<IEnumerable<string>>(),
+                    It.IsAny<string>(),
+                    It.IsAny<TestPlatformOptions>(),
+                    It.IsAny<ITestRunEventsHandler>(),
+                    It.IsAny<ITestHostLauncher>()))
+            .Callback((
+                IEnumerable<string> _,
+                string _,
+                TestPlatformOptions _,
+                ITestRunEventsHandler testRunEvents,
+                ITestHostLauncher _) =>
+            {
+                started.SetResult();
+                release.Task.GetAwaiter().GetResult();
+                var result = new VsTestObjModel.TestResult(TestCases[0])
+                {
+                    Outcome = VsTestObjModel.TestOutcome.Passed,
+                    ComputerName = "."
+                };
+                testRunEvents.HandleTestRunStatsChange(new TestRunChangedEventArgs(
+                    new TestRunStatistics(1, null),
+                    [result],
+                    null));
+                testRunEvents.HandleTestRunComplete(
+                    new TestRunCompleteEventArgs(
+                        new TestRunStatistics(1, null),
+                        false,
+                        false,
+                        null,
+                        null,
+                        TimeSpan.Zero),
+                    null,
+                    null,
+                    null);
+            });
+
+        var run = runner.TestMultipleMutantsAsync(
+            SourceProjectInfo,
+            null,
+            [Mutant],
+            null,
+            CancellationToken.None);
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(1));
+
+        run.IsCompleted.ShouldBeFalse();
+        release.SetResult();
+        await run;
+    }
+
     [TestMethod]
     public void RunInitialTestsWithOneFailingTest()
     {
@@ -74,7 +132,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     }
 
     [TestMethod]
-    public void ShouldComputeTimeoutProperly()
+    public async Task ShouldComputeTimeoutProperly()
     {
         var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
         var now = DateTimeOffset.Now;
@@ -88,12 +146,12 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
             Duration = duration
         };
         SetupMockTestRun(mockVsTest, new[] { testResult });
-        _ = runner.InitialTestAsync(SourceProjectInfo);
+        await runner.InitialTestAsync(SourceProjectInfo);
         runner.Context.VsTests[TestCases[0].Id].InitialRunTime.ShouldBe(duration);
     }
 
     [TestMethod]
-    public void ShouldComputeTimeoutProperlyForMultipleResults()
+    public async Task ShouldComputeTimeoutProperlyForMultipleResults()
     {
         var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
         var now = DateTimeOffset.Now;
@@ -114,7 +172,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
             Duration = duration
         };
         SetupMockTestRun(mockVsTest, new[] { testResult, otherTestResult });
-        _ = runner.InitialTestAsync(SourceProjectInfo);
+        await runner.InitialTestAsync(SourceProjectInfo);
         runner.Context.VsTests[TestCases[0].Id].InitialRunTime.ShouldBe(duration);
     }
 
@@ -164,11 +222,11 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     }
 
     [TestMethod]
-    public void RecycleRunnerOnError()
+    public async Task RecycleRunnerOnError()
     {
         var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
         SetupFailingTestRun(mockVsTest);
-        _ = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null);
+        await runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null);
         // the test will always end in a crash, VsTestRunner should retry at least a few times
         mockVsTest.Verify(m => m.RunTestsWithCustomTestHost(It.IsAny<IEnumerable<string>>(),
             It.IsAny<string>(), It.IsAny<TestPlatformOptions>(),
@@ -207,14 +265,18 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     }
 
     [TestMethod]
-    public void ShouldRetryFrozenSession()
+    public async Task ShouldRetryFrozenSession()
     {
         var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
         var defaultTimeOut = VsTestRunner.VsTestExtraTimeOutInMs;
         VsTestRunner.VsTestExtraTimeOutInMs = 100;
         // the test session will freeze twice
         SetupFrozenTestRun(mockVsTest, 2);
-        _ = runner.TestMultipleMutantsAsync(SourceProjectInfo, new TimeoutValueCalculator(0, 10, 9), new[] { Mutant }, null);
+        await runner.TestMultipleMutantsAsync(
+            SourceProjectInfo,
+            new TimeoutValueCalculator(0, 10, 9),
+            [Mutant],
+            null);
         VsTestRunner.VsTestExtraTimeOutInMs = defaultTimeOut;
         mockVsTest.Verify(m => m.RunTestsWithCustomTestHost(It.IsAny<IEnumerable<string>>(),
             It.IsAny<string>(), It.IsAny<TestPlatformOptions>(),
@@ -223,7 +285,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     }
 
     [TestMethod]
-    public void ShouldNotRetryFrozenVsTest()
+    public async Task ShouldNotRetryFrozenVsTest()
     {
         var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
         var defaultTimeOut = VsTestRunner.VsTestExtraTimeOutInMs;
@@ -231,7 +293,11 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         // it will be recycled
         SetupFrozenVsTest(mockVsTest, 3);
         VsTestRunner.VsTestExtraTimeOutInMs = 100;
-        _ = runner.TestMultipleMutantsAsync(SourceProjectInfo, new TimeoutValueCalculator(0, 10, 9), new[] { Mutant }, null);
+        await runner.TestMultipleMutantsAsync(
+            SourceProjectInfo,
+            new TimeoutValueCalculator(0, 10, 9),
+            [Mutant],
+            null);
         VsTestRunner.VsTestExtraTimeOutInMs = defaultTimeOut;
         mockVsTest.Verify(m => m.EndSession(), Times.Exactly(2));
     }
@@ -526,13 +592,13 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     }
 
     [TestMethod]
-    public void HandleUnexpectedTestCase()
+    public async Task HandleUnexpectedTestCase()
     {
         var options = new StrykerOptions();
         var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
         // assume 2 results for T0
         SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T1", true), ("T2", true) });
-        _ = runner.InitialTestAsync(SourceProjectInfo);
+        await runner.InitialTestAsync(SourceProjectInfo);
         runner.Context.Tests.Count.ShouldBe(3);
     }
 
@@ -578,7 +644,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     // this verifies that mutant that are covered outside any tests are
     // flagged as to be tested against all tests (except failed ones)
     [TestMethod]
-    public void MarkSuspiciousCoverageInPresenceOfFailedTests()
+    public async Task MarkSuspiciousCoverageInPresenceOfFailedTests()
     {
         var options = new StrykerOptions
         {
@@ -587,7 +653,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
 
         var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
         SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T1", false), ("T2", true) });
-        _ = runner.InitialTestAsync(SourceProjectInfo);
+        await runner.InitialTestAsync(SourceProjectInfo);
 
         SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;|1", ["T1"] = ";" });
 
@@ -739,4 +805,3 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         OtherMutant.CoveringTests.Count.ShouldBe(1);
     }
 }
-

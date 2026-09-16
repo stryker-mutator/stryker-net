@@ -24,13 +24,11 @@ public interface IInitialisationProcess
 
     void BuildProjects(IStrykerOptions options, RelatedSourceProjectsInfo projects);
 
-    Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
-        RelatedSourceProjectsInfo projects, ITestRunner runner);
     Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(
         IStrykerOptions options,
         RelatedSourceProjectsInfo projects,
         ITestRunner runner,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken = default);
 }
 
 public class InitialisationProcess(
@@ -72,16 +70,11 @@ public class InitialisationProcess(
         }
     }
 
-    public async Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
-        RelatedSourceProjectsInfo projects,
-        ITestRunner runner)
-        => await GetMutationTestInputsAsync(options, projects, runner, CancellationToken.None);
-
     public async Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(
         IStrykerOptions options,
         RelatedSourceProjectsInfo projects,
         ITestRunner runner,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var getInputs = projects.SourceProjectInfos.Select(async info => new MutationTestInput
         {
@@ -108,13 +101,11 @@ public class InitialisationProcess(
         testRunner.GetTests(projectInfo).Count,
         projectInfo.AnalyzerResult.ProjectFilePath);
 
-        var result = cancellationToken.CanBeCanceled
-            ? await _initialTestProcess.InitialTestAsync(
-                options,
-                projectInfo,
-                testRunner,
-                cancellationToken)
-            : await _initialTestProcess.InitialTestAsync(options, projectInfo, testRunner);
+        var result = await _initialTestProcess.InitialTestAsync(
+            options,
+            projectInfo,
+            testRunner,
+            cancellationToken);
 
         if (!result.Result.FailingTests.IsEmpty)
         {
@@ -160,11 +151,9 @@ public class InitialisationProcess(
         foreach (var testProject in projectInfo.TestProjectsInfo.AnalyzerResults)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var discovered = cancellationToken.CanBeCanceled
-                ? await testRunner.DiscoverTestsAsync(
-                    testProject.GetAssemblyPath(),
-                    cancellationToken)
-                : await testRunner.DiscoverTestsAsync(testProject.GetAssemblyPath());
+            var discovered = await testRunner.DiscoverTestsAsync(
+                testProject.GetAssemblyPath(),
+                cancellationToken);
             if (discovered)
             {
                 continue;

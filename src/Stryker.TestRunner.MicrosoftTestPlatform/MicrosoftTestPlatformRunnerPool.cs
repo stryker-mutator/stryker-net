@@ -70,19 +70,9 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         });
     }
 
-    public async Task<bool> DiscoverTestsAsync(string assembly)
-    {
-        if (string.IsNullOrEmpty(assembly) || !File.Exists(assembly))
-        {
-            return false;
-        }
-
-        return await RunThisAsync(runner => runner.DiscoverTestsAsync(assembly)).ConfigureAwait(false);
-    }
-
     public async Task<bool> DiscoverTestsAsync(
         string assembly,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(assembly) || !File.Exists(assembly))
         {
@@ -96,25 +86,9 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
     public ITestSet GetTests(IProjectAndTests project) => _testSet;
 
-    public async Task<ITestRunResult> InitialTestAsync(IProjectAndTests project)
-    {
-        var assemblies = project.GetTestAssemblies();
-        if (!assemblies.Any())
-        {
-            return new TestRunResult(false, "No test assemblies found");
-        }
-
-        var results = await RunThisAsync(runner => runner.InitialTestAsync(project)).ConfigureAwait(false);
-
-        // reset all test processes after the initial test run
-        ResetTestProcesses();
-
-        return results;
-    }
-
     public async Task<ITestRunResult> InitialTestAsync(
         IProjectAndTests project,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var assemblies = project.GetTestAssemblies();
         if (!assemblies.Any())
@@ -333,23 +307,8 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         IProjectAndTests project,
         ITimeoutValueCalculator? timeoutCalc,
         IReadOnlyList<IMutant> mutants,
-        TestUpdateHandler? update)
-    {
-        var assemblies = project.GetTestAssemblies();
-        if (!assemblies.Any())
-        {
-            return new TestRunResult(false, "No test assemblies found");
-        }
-
-        return await RunThisAsync(runner => runner.TestMultipleMutantsAsync(project, timeoutCalc, mutants, update)).ConfigureAwait(false);
-    }
-
-    public async Task<ITestRunResult> TestMultipleMutantsAsync(
-        IProjectAndTests project,
-        ITimeoutValueCalculator? timeoutCalc,
-        IReadOnlyList<IMutant> mutants,
         TestUpdateHandler? update,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var assemblies = project.GetTestAssemblies();
         if (!assemblies.Any())

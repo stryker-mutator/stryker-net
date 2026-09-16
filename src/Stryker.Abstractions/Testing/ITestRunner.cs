@@ -12,27 +12,22 @@ public interface ITestRunner : IDisposable
        ITestIdentifiers ranTests,
        ITestIdentifiers timedOutTests);
 
-    Task<bool> DiscoverTestsAsync(string assembly);
-    Task<bool> DiscoverTestsAsync(string assembly, CancellationToken cancellationToken)
-        => DiscoverTestsAsync(assembly);
+    Task<bool> DiscoverTestsAsync(
+        string assembly,
+        CancellationToken cancellationToken = default);
 
     ITestSet GetTests(IProjectAndTests project);
 
-    Task<ITestRunResult> InitialTestAsync(IProjectAndTests project);
     Task<ITestRunResult> InitialTestAsync(
         IProjectAndTests project,
-        CancellationToken cancellationToken)
-        => InitialTestAsync(project);
+        CancellationToken cancellationToken = default);
 
     IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project);
-
-    Task<ITestRunResult> TestMultipleMutantsAsync(IProjectAndTests project, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler? update);
 
     Task<ITestRunResult> TestMultipleMutantsAsync(
         IProjectAndTests project,
         ITimeoutValueCalculator? timeoutCalc,
         IReadOnlyList<IMutant> mutants,
         TestUpdateHandler? update,
-        CancellationToken cancellationToken)
-        => TestMultipleMutantsAsync(project, timeoutCalc, mutants, update);
+        CancellationToken cancellationToken = default);
 }

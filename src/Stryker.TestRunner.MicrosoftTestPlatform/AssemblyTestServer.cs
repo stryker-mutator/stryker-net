@@ -87,14 +87,7 @@ internal sealed class AssemblyTestServer : IDisposable
             var rpcLogFilePath = BuildRpcLogFilePath();
             _client = _connectionFactory.CreateClient(_stream, _process.ProcessHandle, _logger, rpcLogFilePath);
 
-            if (cancellationToken.CanBeCanceled)
-            {
-                await _client.InitializeAsync(cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                await _client.InitializeAsync().ConfigureAwait(false);
-            }
+            await _client.InitializeAsync(cancellationToken).ConfigureAwait(false);
             _isInitialized = true;
 
             _logger.LogDebug("{RunnerId}: Test server started successfully for {Assembly}", _runnerId, _assembly);

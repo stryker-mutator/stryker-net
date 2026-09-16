@@ -22,8 +22,9 @@ public interface IMutationTestProcess
     MutationTestInput Input { get; }
     void Initialize(MutationTestInput input, IStrykerOptions options, IReporter reporter);
     void Mutate();
-    Task<StrykerRunResult> TestAsync(IEnumerable<IMutant> mutantsToTest);
-    Task<StrykerRunResult> TestAsync(IEnumerable<IMutant> mutantsToTest, CancellationToken cancellationToken);
+    Task<StrykerRunResult> TestAsync(
+        IEnumerable<IMutant> mutantsToTest,
+        CancellationToken cancellationToken = default);
     void Restore();
     void GetCoverage();
     void FilterMutants();
@@ -69,12 +70,9 @@ public class MutationTestProcess : IMutationTestProcess
 
     public void FilterMutants() => _mutationProcess.FilterMutants(Input);
 
-    public async Task<StrykerRunResult> TestAsync(IEnumerable<IMutant> mutantsToTest)
-        => await TestAsync(mutantsToTest, CancellationToken.None);
-
     public async Task<StrykerRunResult> TestAsync(
         IEnumerable<IMutant> mutantsToTest,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         if (!MutantsToTest(mutantsToTest))
         {
@@ -107,23 +105,12 @@ public class MutationTestProcess : IMutationTestProcess
             var updateHandler = new ITestRunner.TestUpdateHandler(
                 (testedMutants, tests, ranTests, outTests) =>
                     TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
-            if (cancellationToken.CanBeCanceled)
-            {
-                await _mutationTestExecutor.TestAsync(
-                    Input.SourceProjectInfo,
-                    mutants,
-                    Input.InitialTestRun.TimeoutValueCalculator,
-                    updateHandler,
-                    cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                await _mutationTestExecutor.TestAsync(
-                    Input.SourceProjectInfo,
-                    mutants,
-                    Input.InitialTestRun.TimeoutValueCalculator,
-                    updateHandler).ConfigureAwait(false);
-            }
+            await _mutationTestExecutor.TestAsync(
+                Input.SourceProjectInfo,
+                mutants,
+                Input.InitialTestRun.TimeoutValueCalculator,
+                updateHandler,
+                cancellationToken).ConfigureAwait(false);
 
             OnMutantsTested(mutants, reportedMutants);
         }).ConfigureAwait(false);
