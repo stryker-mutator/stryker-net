@@ -1,0 +1,11 @@
+{
+  "stryker-config": {
+    "test-runner": "MTP",
+    "reporters": [
+      "Json"
+    ],
+    "solution": "../Mtp.NetFx.sln",
+    "project": "Target.NetFx.csproj",
+    "coverage-analysis": "off"
+  }
+}

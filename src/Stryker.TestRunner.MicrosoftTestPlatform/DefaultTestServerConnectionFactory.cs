@@ -55,15 +55,33 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
             outputPipe = PipeTarget.Null;
         }
 
-        var cliProcess = Cli.Wrap("dotnet")
-            .WithWorkingDirectory(Path.GetDirectoryName(assembly) ?? string.Empty)
-            .WithArguments([assembly, "--server", "--client-port", port.ToString()])
-            .WithEnvironmentVariables(environmentVariables)
-            .WithStandardOutputPipe(outputPipe)
-            .WithStandardErrorPipe(outputPipe)
-            .ExecuteAsync();
+        var (targetFilePath, arguments) = BuildCommand(assembly, port);
+        CommandTask<CommandResult> cliProcess;
+        try
+        {
+            cliProcess = Cli.Wrap(targetFilePath)
+                .WithWorkingDirectory(Path.GetDirectoryName(assembly) ?? string.Empty)
+                .WithArguments(arguments)
+                .WithEnvironmentVariables(environmentVariables)
+                .WithStandardOutputPipe(outputPipe)
+                .WithStandardErrorPipe(outputPipe)
+                .ExecuteAsync();
+        }
+        catch
+        {
+            outputStream.Dispose();
+            throw;
+        }
 
         return new CliTestServerProcess(cliProcess, outputStream);
+    }
+
+    internal static (string TargetFilePath, IReadOnlyList<string> Arguments) BuildCommand(string assembly, int port)
+    {
+        var serverArguments = new[] { "--server", "--client-port", port.ToString() };
+        return string.Equals(Path.GetExtension(assembly), ".exe", StringComparison.OrdinalIgnoreCase)
+            ? (assembly, serverArguments)
+            : ("dotnet", [assembly, .. serverArguments]);
     }
 
     public ITestingPlatformClient CreateClient(Stream stream, IProcessHandle processHandle, ILogger logger, string? rpcLogFilePath)
