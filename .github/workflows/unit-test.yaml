@@ -56,9 +56,15 @@ jobs:
     if: always()
     steps:
       - name: Check unit test results
+        env:
+          IS_DRAFT: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft }}
+          TEST_RESULT: ${{ needs.unit-test.result }}
         run: |
-          if [ "${{ needs.unit-test.result }}" != "success" ]; then
-            echo "Unit tests failed or were cancelled"
+          if [ "$TEST_RESULT" = "success" ]; then
+            echo "All unit tests passed successfully"
+          elif [ "$TEST_RESULT" = "skipped" ] && [ "$IS_DRAFT" = "true" ]; then
+            echo "Unit tests are intentionally skipped for draft pull requests"
+          else
+            echo "Unit tests failed, were cancelled, or were unexpectedly skipped"
             exit 1
           fi
-          echo "All unit tests passed successfully"
