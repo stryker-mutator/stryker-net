@@ -240,13 +240,19 @@ public class InputFileResolver(
         var suitableCandidates =
             findMutableAnalyzerResults.Where(p => p.IsValidTarget).ToList();
         var discardedCandidates = findMutableAnalyzerResults.Except(suitableCandidates).ToList();
-        // if diag mode is enabled, we log the discarded candidates and their known problems
-        if (options.DiagMode && discardedCandidates.Count>0)
+
+        if (discardedCandidates.Count>0)
         {
+            // we provide details about discarded candidate project
             _logger.LogWarning("Discarded {Count} project(s) due to failed analysis:", discardedCandidates.Count);
             foreach (var discardedCandidate in discardedCandidates)
             {
-                discardedCandidate.LogAllAnalysisSummaries();
+                discardedCandidate.LogAllAnalysisSummaries(options.DiagMode);
+            }
+
+            if (!options.DiagMode)
+            {
+                _logger.LogWarning("** You can use --diag option to get analysis's details. **");
             }
         }
 
@@ -258,13 +264,12 @@ public class InputFileResolver(
         }
 
         // we keep only one target framework per project
+        // we must select projects according to framework settings if any
         foreach (var candidate in suitableCandidates)
         {
             candidate.KeepOnlyOneTarget(options.TargetFramework);
         }
 
-        // keep only projects with one or more test projects
-        // we must select projects according to framework settings if any
         var projectInfos = suitableCandidates.Where(p => p.Targets.Count > 0)
             .Select(analyzerResult => analyzerResult.Targets[0].BuildSourceProjectInfo(options, FileSystem, analyzerResult.KnownProblems()))
             .ToList();
@@ -358,16 +363,11 @@ public class InputFileResolver(
         var buildResultOverallSuccess = project.HasValidResults();
 
         // if buildalyzer failed, we can try again with a nuget restore, as missing packages is a common cause of
-        // buildalyzer failure, especially for full framework projects
-        if (buildResult.All(ar=>!ar.Succeeded))
+        // buildalyzer failure. NetFramework project can only be retried on Windows platforms
+        if (buildResult.All(ar=>!ar.Succeeded) && (!project.IsNetFramework||Environment.OSVersion.Platform==PlatformID.Win32NT))
         {
-            if (project.IsNetFramework && Environment.OSVersion.Platform!=PlatformID.Win32NT)
-            {
-                _logger.LogWarning("Project {ProjectFilePath} simulated build failed. Retries for NetFramework projects are not available on this platform.", projectLogName);
-                return buildResult;
-            }
             shouldConfirmSuccess = true;
-            _logger.LogWarning("Project {ProjectFilePath} simulated build failed. Trying again with a Nuget restore.", projectLogName);
+            _logger.LogDebug("Project {ProjectFilePath} simulated build failed. Trying again with a Nuget restore.", projectLogName);
 
             // if this is a full framework project, we can retry after a nuget restore
             buildResult = project.Analyze(withRestore: true);
@@ -380,18 +380,13 @@ public class InputFileResolver(
                 // still failed, we can try using target framework option
                 // note that the project will be 'built' against the requested framework disregarding the
                 // framework(s) declared in the project.
-                _logger.LogWarning("Project {ProjectFilePath} simulated build failed again. Last attempt, forcing the target framework.", projectLogName);
+                _logger.LogDebug("Project {ProjectFilePath} simulated build failed again. Last attempt, forcing the target framework.", projectLogName);
                 buildResult = project.Analyze(forceFramework: true);
                 buildResultOverallSuccess = project.HasValidResults();
             }
         }
 
         project.InitializeTargetFrameworks();
-
-        if (!buildResult.OverallSuccess && !options.DiagMode)
-        {
-            _logger.LogWarning("Project {ProjectFilePath} simulated build still failed. Use '--diag' option to have the build log.", projectLogName);
-        }
 
         if (options.DiagMode)
         {
@@ -410,14 +405,8 @@ public class InputFileResolver(
 
         // log failure details
         _logger.LogWarning(
-            "Analysis of project {ProjectFilePath} failed for frameworks {FrameworkList}.",
+            "Analysis of project {ProjectFilePath} failed for all frameworks ({FrameworkList}).",
             projectLogName, string.Join(',', project.FailedFrameworks));
-
-        if (options.DiagMode)
-        {
-            _logger.LogWarning(
-                "{ProjectFilePath}'s build log is:{Eol}{Log}", projectLogName, Environment.NewLine, project.LastBuildLog);
-        }
 
         return buildResult;
     }
@@ -473,6 +462,7 @@ public class InputFileResolver(
         return ([.. mutableToTestMap.Values], unusedTestProjects);
     }
 
+    // maps test project to mutable project(s) by scanning assembly references
     private static bool ScanAssemblyReferences(Dictionary<ProjectSimulatedBuildWrapper, MutableProjectTree> mutableToTestMap,
         List<ProjectSimulatedBuildWrapper> mutableProjects, ProjectSimulatedBuildWrapper testProject)
     {
@@ -491,7 +481,6 @@ public class InputFileResolver(
                     }
                     // find the entry
                     mutableToTestMap[candidateProject][candidateTarget].AddTestProject(variant);
-
                     foundOneProject = true;
                 }
             }
@@ -499,6 +488,7 @@ public class InputFileResolver(
         return foundOneProject;
     }
 
+    // maps test project to mutable project(s) by scanning project references
     private static bool ScanProjectReferences(Dictionary<ProjectSimulatedBuildWrapper, MutableProjectTree> mutableToTestMap,
         List<ProjectSimulatedBuildWrapper> mutableProjects, ProjectSimulatedBuildWrapper testProject)
     {

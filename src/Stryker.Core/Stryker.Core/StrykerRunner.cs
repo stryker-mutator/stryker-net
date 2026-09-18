@@ -52,6 +52,10 @@ public class StrykerRunner : IStrykerRunner
         stopwatch.Start();
 
         var options = inputs.ValidateAll();
+        if (options.DiagMode)
+        {
+            _logger.LogInformation("** Diagnostic mode enabled. **");
+        }
         _logger.LogDebug("Stryker started with options: {@Options}", options);
 
         var reporters = _reporterFactory.Create(options);

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Amazon.Runtime.SharedInterfaces;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Stryker.Utilities.Buildalyzer;
@@ -80,20 +81,28 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
         }
     }
 
-    public void LogAllAnalysisSummaries()
+    public void LogAllAnalysisSummaries(bool optionsDiagMode)
     {
         logger.LogInformation("Project {ProjectPath} overall analysis {Result}.",
             Path.GetFileName(project.ProjectFileName),
             IsValidTarget ? "succeeded" : "failed hence can't be mutated");
 
-        foreach (var logKnownProblem in KnownProblems())
+        if (KnownProblems().Any())
         {
-            logger.LogWarning(logKnownProblem);
+            logger.LogWarning("  has some known issues:");
+            foreach (var logKnownProblem in KnownProblems())
+            {
+                logger.LogWarning("- {LogKnownProblem}", logKnownProblem);
+            }
+
         }
 
-        foreach (var target in Targets)
+        if (optionsDiagMode)
         {
-            target.LogAnalysisSummary();
+            foreach (var target in Targets)
+            {
+                target.LogAnalysisSummary();
+            }
         }
     }
 }

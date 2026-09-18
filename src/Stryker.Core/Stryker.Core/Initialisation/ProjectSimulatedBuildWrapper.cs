@@ -78,6 +78,7 @@ public class ProjectSimulatedBuildWrapper
             env.GlobalProperties["Platform"] = _platform;
         }
 
+        // we default to design time build unless the property is explicitly set to anything but true
         env.DesignTime = !_properties.TryGetValue("DesignTimeBuild", out var designTime) ||
                          designTime.Equals("true", StringComparison.OrdinalIgnoreCase);
         env.Restore = withRestore;
@@ -103,25 +104,36 @@ public class ProjectSimulatedBuildWrapper
         return AnalyzerLastResults;
     }
 
+    /// <summary>
+    /// Identifies the target frameworks for this project, using the project file, the analysis results, or the user-specified framework.
+    /// </summary>
     public void InitializeTargetFrameworks()
     {
         var projectFileTargetFrameworks = _analyzer.ProjectFile.TargetFrameworks;
         if (projectFileTargetFrameworks.Length > 0)
         {
+            // we got the TFM from the project file
             _logger.LogDebug("Project {ProjectFilePath} supported frameworks: {FrameworkList}.", ProjectFileName, string.Join(',', projectFileTargetFrameworks));
+        }
+        else if (!string.IsNullOrEmpty(_framework))
+        {
+            projectFileTargetFrameworks = [_framework];
+            _logger.LogWarning(
+                "Failed to retrieve target framework(s) from {ProjectFilePath}. Assuming selected framework ({Framework}) is present.",
+                ProjectFileName, _framework);
+        }
+        else if (AnalyzerLastResults.Count > 0)
+        {
+            // we extract the frameworks from the analysis results.
+            projectFileTargetFrameworks = AnalyzerLastResults.Select(br => br.TargetFramework).ToArray();
+            _logger.LogWarning(
+                "Failed to retrieve target framework(s) from {ProjectFilePath}. Using analysis results: {Frameworks}",
+                ProjectFileName, string.Join(',', projectFileTargetFrameworks));
         }
         else
         {
-            if (!string.IsNullOrEmpty(_framework))
-            {
-                projectFileTargetFrameworks=[_framework];
-                _logger.LogWarning("Failed to retrieve target framework(s) from {ProjectFilePath}. Assuming selected framework ({Framework}) is present.", ProjectFileName, _framework);
-            }
-            else
-            {
-                projectFileTargetFrameworks = AnalyzerLastResults.Select(br => br.TargetFramework).ToArray();
-                _logger.LogWarning("Failed to retrieve target framework(s) from {ProjectFilePath}. Using analysis results: {Frameworks}", ProjectFileName, string.Join(',', projectFileTargetFrameworks));
-            }
+            // analysis failed utterly, we have no idea which frameworks are supported by this project
+//            _logger.LogWarning("Failed to retrieve target framework(s) from {ProjectFilePath} no analysis re.", ProjectFileName);
         }
 
         _targetFrameworks = projectFileTargetFrameworks;
@@ -155,7 +167,7 @@ public class ProjectSimulatedBuildWrapper
             log.AppendLine($"Project: {ProjectFileName}");
             if (AnalyzerLastResults.Count == 0)
             {
-                _logger.LogTrace("No analyzer results to log. This indicates an early failure in analysis, check build log for details.");
+                log.AppendLine("No analyzer results to log. This indicates an early failure in analysis, check build log for details.");
                 return;
             }
             // dump all properties as it can help diagnosing build issues for user project.
@@ -171,7 +183,6 @@ public class ProjectSimulatedBuildWrapper
         }
     }
 
-
     private static string PropertyOption(string propertyName, string value) => $"-P {propertyName}={value}";
 
     // use analysis results to identify potential problems with this project
@@ -183,7 +194,7 @@ public class ProjectSimulatedBuildWrapper
                 && !AnalyzerLastResults.Any(r => r.Properties.TryGetValue("EnableWindowsTargeting", out var enable) && enable.Equals("true", StringComparison.OrdinalIgnoreCase)))
             {
                 // SDK will refuse to build WPF or Windows Forms projects on non-Windows platforms,
-                yield return $"Project {ProjectFileName} is a WPF or Windows Forms project. please add {PropertyOption("EnableWindowsTargeting", "true")} to the command line to build it on non-Windows platforms.";
+                yield return $"Project {ProjectFileName} is a WPF or Windows Forms project. Please add {PropertyOption("EnableWindowsTargeting", "true")} to the command line to build it on non-Windows platforms.";
             }
             // look for net10+wpf issues
             if (AnalyzerLastResults.Any(r => r.Properties.TryGetValue("TargetFramework", out var tf) && tf.StartsWith("net10.0", StringComparison.OrdinalIgnoreCase)
@@ -197,8 +208,8 @@ public class ProjectSimulatedBuildWrapper
 
     private void DumpTestAnalyzerResult(StringBuilder log, IAnalyzerResult analyzerResult)
     {
-        log.AppendLine($"TargetFramework: {analyzerResult.TargetFramework}");
-        log.AppendLine($"Simulated build: {(analyzerResult.Succeeded ? "succeeded": "failed")}");
+        log.AppendLine($"TargetFramework : {analyzerResult.TargetFramework}");
+        log.AppendLine($"Simulated build : {(analyzerResult.Succeeded ? "succeeded": "failed")}");
         log.AppendLine($"Stryker analysis: {(analyzerResult.IsValid() ? "succeeded": "failed")}");
 
         var properties = analyzerResult.Properties;
