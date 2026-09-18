@@ -55,7 +55,7 @@ public sealed class TestProject : IEquatable<ITestProject>, ITestProject
             var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode,
                 path: filePath,
                 encoding: Encoding.UTF32,
-                options: new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.None, preprocessorSymbols: testProjectAnalyzerResult.PreprocessorSymbols));
+                options: testProjectAnalyzerResult.GetParseOptions());
 
             if (!syntaxTree.IsGenerated())
             {

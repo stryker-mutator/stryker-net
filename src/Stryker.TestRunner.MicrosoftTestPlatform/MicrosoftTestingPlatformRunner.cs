@@ -49,6 +49,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
     private string RunnerId => $"MtpRunner-{_id}";
 
+    /// <summary>
+    /// Path of the mutant-id control file this runner shares with its test hosts. Exposed for unit testing.
+    /// </summary>
+    internal string MutantFilePath => _mutantFilePath;
+
     public MicrosoftTestingPlatformRunner(
         int id,
         Dictionary<string, List<TestNode>> testsByAssembly,
@@ -72,10 +77,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         // left behind by a crashed earlier run (same runner id, same assembly), and concurrent
         // Stryker processes could clobber each other's files. The nonce covers what the process id
         // alone does not (pid reuse, several runner instances with the same id in one process).
-        // Shared by the whole-run coverage files and by the per-test ones, which are read, rewritten
-        // and deleted while a run is in flight and so must name one run and no other.
+        // Shared by the mutant-id control file and all coverage files. Runner ids are pool-local,
+        // so the control file also needs the full identity to prevent another runner's construction,
+        // writes or disposal from changing this runner's active mutant.
         _runIdentity = $"{Environment.ProcessId}-{_id}-{Guid.NewGuid().ToString("N")[..8]}";
-        _mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-{_id}.txt");
+        _mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-{_runIdentity}.txt");
         _coverageFilePathBase = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{_runIdentity}");
 
         // Initialize with no active mutation
@@ -869,24 +875,40 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         }
     }
 
-    internal TimeSpan? CalculateAssemblyTimeout(List<TestNode> discoveredTests, ITimeoutValueCalculator timeoutCalc, string assembly)
+    internal TimeSpan? CalculateAssemblyTimeout(List<TestNode> discoveredTests, ITimeoutValueCalculator timeoutCalc, string assembly, IReadOnlyList<IMutant>? mutants = null)
     {
-        var estimatedTimeMs = (int)discoveredTests
-            .Where(t => _testDescriptions.TryGetValue(t.Uid, out _))
-            .Sum(t =>
+        // Estimates the run time of a set of tests based on their initial (unmutated) run time.
+        int EstimateTime(IEnumerable<TestNode> tests) => (int)tests.Sum(t =>
+        {
+            lock (_discoveryLock)
             {
-                lock (_discoveryLock)
-                {
-                    return _testDescriptions.TryGetValue(t.Uid, out var desc)
-                        ? desc.InitialRunTime.TotalMilliseconds
-                        : 0;
-                }
-            });
-        
+                return _testDescriptions.TryGetValue(t.Uid, out var desc)
+                    ? desc.InitialRunTime.TotalMilliseconds
+                    : 0;
+            }
+        });
+
+        int estimatedTimeMs;
+        // When no mutants are known, or any mutant must be assessed by every test, base the timeout
+        // on the full test run. Otherwise base it only on the tests covering the mutant(s) in this
+        // run. Mutants are grouped so their covering tests are disjoint, so the union of those tests
+        // is exactly what this run needs to execute.
+        if (mutants is null || mutants.Count == 0 || mutants.Any(m => m.AssessingTests.IsEveryTest))
+        {
+            estimatedTimeMs = EstimateTime(discoveredTests);
+        }
+        else
+        {
+            var assessingTests = mutants
+                .SelectMany(m => m.AssessingTests.GetIdentifiers())
+                .ToHashSet();
+            estimatedTimeMs = EstimateTime(discoveredTests.Where(t => assessingTests.Contains(t.Uid)));
+        }
+
         var timeoutMs = timeoutCalc.CalculateTimeoutValue(estimatedTimeMs);
         _logger.LogDebug("{RunnerId}: Using {TimeoutMs} ms as test run timeout for {Assembly}",
             RunnerId, timeoutMs, Path.GetFileName(assembly));
-        
+
         return TimeSpan.FromMilliseconds(timeoutMs);
     }
 
@@ -1054,7 +1076,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
             foreach (var assembly in assemblies)
             {
-                var (result, timedOut, discoveredTests) = await RunAssemblyTestsAsync(assembly, timeoutCalc, testUidFilter).ConfigureAwait(false);
+                var (result, timedOut, discoveredTests) = await RunAssemblyTestsAsync(assembly, timeoutCalc, mutants, testUidFilter).ConfigureAwait(false);
 
                 if (discoveredTests is not null)
                 {
@@ -1135,6 +1157,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     internal virtual async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
         string assembly,
         ITimeoutValueCalculator? timeoutCalc,
+        IReadOnlyList<IMutant>? mutants = null,
         Func<TestNode, bool>? testUidFilter = null)
     {
         if (!File.Exists(assembly))
@@ -1156,7 +1179,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         TimeSpan? timeout = null;
         if (timeoutCalc is not null && discoveredTests is not null)
         {
-            timeout = CalculateAssemblyTimeout(discoveredTests, timeoutCalc, assembly);
+            timeout = CalculateAssemblyTimeout(discoveredTests, timeoutCalc, assembly, mutants);
         }
 
         var (testResults, timedOut) = await RunAssemblyTestsInternalAsync(assembly, testUidFilter, timeout).ConfigureAwait(false);
@@ -1340,7 +1363,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                 {
                     File.Delete(_mutantFilePath);
                 }
-                // Only has anything to do when the runner is disposed while still in per-test mode;
+                // Only has anything to do when the runner is disposed while still in per-test mode,
                 // leaving the mode deletes these files and forgets the assemblies they belong to
                 DeletePerTestFiles();
             }

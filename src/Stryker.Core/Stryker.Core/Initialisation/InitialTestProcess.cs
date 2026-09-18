@@ -46,7 +46,8 @@ public class InitialTestProcess : IInitialTestProcess
 
         TimeoutValueCalculator = new TimeoutValueCalculator(options.AdditionalTimeout,
             (int)stopwatch.ElapsedMilliseconds,
-            (int)initTestRunResult.Duration.TotalMilliseconds);
+            (int)initTestRunResult.Duration.TotalMilliseconds,
+            options.TimeoutRatio);
 
         return new InitialTestRun(initTestRunResult, TimeoutValueCalculator);
     }

@@ -17,4 +17,16 @@ public class TimeoutValueCalculatorTests : TestBase
 
         target.CalculateTimeoutValue(baseTime).ShouldBe(expected);
     }
+
+    [TestMethod]
+    [DataRow(1000, 0, 2.0, 2000)]
+    [DataRow(1000, 500, 2.0, 2500)]
+    [DataRow(1000, 0, 1.0, 1000)]
+    [DataRow(2000, 1000, 3.0, 7000)]
+    public void Calculator_ShouldUseConfiguredRatio(int baseTime, int extra, double ratio, int expected)
+    {
+        var target = new TimeoutValueCalculator(extra, ratio);
+
+        target.CalculateTimeoutValue(baseTime).ShouldBe(expected);
+    }
 }
