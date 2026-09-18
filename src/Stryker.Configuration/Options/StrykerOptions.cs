@@ -65,7 +65,7 @@ public class StrykerOptions : IStrykerOptions
     /// <summary>
     /// The configuration (in the VS sense) that should be used when building the project under test.
     /// </summary>
-    /// <remarks>it may also contain the platform in the form of <configuration>|<platform></remarks>
+    /// <remarks>It may also contain the platform in the form of "<configuration>|<platform>".</remarks>
     public string Configuration
     {
         get => _configuration;
@@ -124,7 +124,7 @@ public class StrykerOptions : IStrykerOptions
     public double TimeoutRatio { get; init; } = 1.5;
 
     /// <summary>
-    /// The C# language version
+    /// Deprecated compatibility value. Stryker uses the language version reported by the project.
     /// </summary>
     public LanguageVersion LanguageVersion { get; init; }
 
