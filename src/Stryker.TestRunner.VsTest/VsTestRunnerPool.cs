@@ -53,15 +53,37 @@ public sealed class VsTestRunnerPool : ITestRunner
         Initialize();
     }
 
-    public Task<bool> DiscoverTestsAsync(string assembly) => Task.FromResult(Context.AddTestSource(assembly));
+    public Task<bool> DiscoverTestsAsync(
+        string assembly,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(Context.AddTestSource(assembly));
+    }
 
     public ITestSet GetTests(IProjectAndTests project) => Context.GetTestsForSources(project.GetTestAssemblies());
 
-    public Task<ITestRunResult> TestMultipleMutantsAsync(IProjectAndTests project, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler? update)
-        => Task.FromResult(RunThis(runner => runner.TestMultipleMutants(project, timeoutCalc, mutants, update)));
+    public async Task<ITestRunResult> TestMultipleMutantsAsync(
+        IProjectAndTests project,
+        ITimeoutValueCalculator? timeoutCalc,
+        IReadOnlyList<IMutant> mutants,
+        TestUpdateHandler? update,
+        CancellationToken cancellationToken = default)
+        => await RunThisAsync(
+            runner => runner.TestMultipleMutants(
+                project,
+                timeoutCalc,
+                mutants,
+                update,
+                cancellationToken),
+            cancellationToken).ConfigureAwait(false);
 
-    public Task<ITestRunResult> InitialTestAsync(IProjectAndTests project)
-        => Task.FromResult(RunThis(runner => runner.InitialTest(project)));
+    public async Task<ITestRunResult> InitialTestAsync(
+        IProjectAndTests project,
+        CancellationToken cancellationToken = default)
+        => await RunThisAsync(
+            runner => runner.InitialTest(project),
+            cancellationToken).ConfigureAwait(false);
 
     public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project) => Context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest) ? CaptureCoverageTestByTest(project) : CaptureCoverageInOneGo(project);
 
@@ -76,7 +98,10 @@ public sealed class VsTestRunnerPool : ITestRunner
             }));
     }
 
-    private IEnumerable<ICoverageRunResult> CaptureCoverageInOneGo(IProjectAndTests project) => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestIdentifierList.EveryTest(), project).TestResults), false);
+    private IEnumerable<ICoverageRunResult> CaptureCoverageInOneGo(IProjectAndTests project) =>
+        ConvertCoverageResult(
+            RunThis(runner => runner.RunCoverageSession(TestIdentifierList.EveryTest(), project).TestResults),
+            false);
 
     private IEnumerable<ICoverageRunResult> CaptureCoverageTestByTest(IProjectAndTests project) => ConvertCoverageResult(CaptureCoveragePerIsolatedTests(project, Context.VsTests.Keys).TestResults, true);
 
@@ -87,27 +112,73 @@ public sealed class VsTestRunnerPool : ITestRunner
         var results = new ConcurrentBag<IRunResults>();
         Parallel.ForEach(tests, options,
             testCase =>
-                results.Add(RunThis(runner => runner.RunCoverageSession(new TestIdentifierList(testCase.ToString()), project))));
+                results.Add(RunThis(runner =>
+                    runner.RunCoverageSession(new TestIdentifierList(testCase.ToString()), project))));
 
         return results.Aggregate(result, (runResults, singleResult) => runResults.Merge(singleResult));
     }
 
     private T RunThis<T>(Func<VsTestRunner, T> task)
     {
+        using var lease = AcquireRunner(CancellationToken.None);
+        return task(lease.Runner);
+    }
+
+    private async Task<T> RunThisAsync<T>(
+        Func<VsTestRunner, T> task,
+        CancellationToken cancellationToken = default)
+    {
+        using var lease = AcquireRunner(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        var execution = Task.Run(() => task(lease.Runner));
+        try
+        {
+            return await execution.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            lease.Runner.CancelCurrentRun();
+            try
+            {
+                await execution.ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogDebug(exception, "VsTest execution ended after cancellation.");
+            }
+
+            throw;
+        }
+    }
+
+    private RunnerLease AcquireRunner(CancellationToken cancellationToken)
+    {
         VsTestRunner runner;
         while (!_availableRunners.TryTake(out runner))
         {
-            _runnerAvailableHandler.WaitOne();
+            cancellationToken.ThrowIfCancellationRequested();
+            _runnerAvailableHandler.WaitOne(TimeSpan.FromMilliseconds(100));
         }
 
-        try
+        return new RunnerLease(this, runner);
+    }
+
+    private sealed class RunnerLease : IDisposable
+    {
+        private readonly VsTestRunnerPool _pool;
+
+        public RunnerLease(VsTestRunnerPool pool, VsTestRunner runner)
         {
-            return task(runner);
+            _pool = pool;
+            Runner = runner;
         }
-        finally
+
+        public VsTestRunner Runner { get; }
+
+        public void Dispose()
         {
-            _availableRunners.Add(runner);
-            _runnerAvailableHandler.Set();
+            _pool._availableRunners.Add(Runner);
+            _pool._runnerAvailableHandler.Set();
         }
     }
 

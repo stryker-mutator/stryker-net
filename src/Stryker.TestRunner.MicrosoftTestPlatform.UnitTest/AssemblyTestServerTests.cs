@@ -225,6 +225,23 @@ public class AssemblyTestServerTests
     }
 
     [TestMethod]
+    public async Task StartAsync_ShouldPropagateCancellation_WhenClientInitializationIsCanceled()
+    {
+        SetupSuccessfulConnection();
+        using var cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.Cancel();
+        _clientMock.Setup(c => c.InitializeAsync(cancellationTokenSource.Token))
+            .Returns(Task.FromCanceled<InitializeResponse>(cancellationTokenSource.Token));
+
+        using var server = CreateServer();
+
+        await Should.ThrowAsync<OperationCanceledException>(
+            () => server.StartAsync(cancellationTokenSource.Token));
+        _listenerMock.Verify(l => l.Stop(), Times.Once);
+        _processMock.Verify(p => p.Dispose(), Times.Once);
+    }
+
+    [TestMethod]
     public async Task StartAsync_ShouldCleanUpResources_WhenProcessExitsPrematurely()
     {
         const int port = 12345;
@@ -574,4 +591,3 @@ public class AssemblyTestServerTests
         _clientMock.Verify(c => c.ExitAsync(true), Times.Once);
     }
 }
-

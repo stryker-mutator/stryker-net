@@ -32,6 +32,20 @@
           "NuGet.Packaging": "7.9.0"
         }
       },
+      "StreamJsonRpc": {
+        "type": "Direct",
+        "requested": "[2.25.29, )",
+        "resolved": "2.25.29",
+        "contentHash": "ebP0ScWRtbd1EWayLRJ6bjM7aPwYZoJIIU1DApmn/cYl2dydR9f4p6Mj3eY77qzAywy6IbZWB9sJPSWeO5hmrg==",
+        "dependencies": {
+          "MessagePack": "2.5.302",
+          "Microsoft.VisualStudio.Threading.Only": "17.14.15",
+          "Microsoft.VisualStudio.Validation": "17.13.22",
+          "Nerdbank.MessagePack": "1.2.4",
+          "Nerdbank.Streams": "2.13.16",
+          "Newtonsoft.Json": "13.0.3"
+        }
+      },
       "System.Security.Cryptography.Xml": {
         "type": "Direct",
         "requested": "[10.0.12, )",
@@ -797,20 +811,6 @@
         "contentHash": "wzsB+P9i6F9G+cFOJxRotCiQWNSzZVAMxi8YMiHlGXXU1JLMXGp7zSSqBMmROZS2bzpK5jk+Saa7Evp8HwqhKg==",
         "dependencies": {
           "Spectre.Console.Ansi": "0.57.2"
-        }
-      },
-      "StreamJsonRpc": {
-        "type": "CentralTransitive",
-        "requested": "[2.25.29, )",
-        "resolved": "2.25.29",
-        "contentHash": "ebP0ScWRtbd1EWayLRJ6bjM7aPwYZoJIIU1DApmn/cYl2dydR9f4p6Mj3eY77qzAywy6IbZWB9sJPSWeO5hmrg==",
-        "dependencies": {
-          "MessagePack": "2.5.302",
-          "Microsoft.VisualStudio.Threading.Only": "17.14.15",
-          "Microsoft.VisualStudio.Validation": "17.13.22",
-          "Nerdbank.MessagePack": "1.2.4",
-          "Nerdbank.Streams": "2.13.16",
-          "Newtonsoft.Json": "13.0.3"
         }
       },
       "Stryker.Regex.Parser": {
