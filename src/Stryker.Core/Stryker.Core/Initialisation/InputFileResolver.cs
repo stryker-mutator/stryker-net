@@ -111,7 +111,9 @@ public class InputFileResolver(
         var (findMutableAnalyzerResults, orphanedProjects) =
             ExtractMutableProjectTrees(mutableProjectsAnalyzerResults);
         // keep only suitable candidates
-        return AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphanedProjects);
+        var projectInfos = AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphanedProjects);
+        ThrowIfUnityTestProject(projectInfos);
+        return projectInfos;
     }
 
     /// <summary>
@@ -157,7 +159,24 @@ public class InputFileResolver(
         var (findMutableAnalyzerResults, orphans) = ExtractMutableProjectTrees(analyzedProjects);
 
         var result = AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphans);
-        return SelectSingleProject(normalizedProjectUnderTestNameFilter, result, targetProjectMode, testProjectFileNames);
+        result = SelectSingleProject(normalizedProjectUnderTestNameFilter, result, targetProjectMode, testProjectFileNames);
+        ThrowIfUnityTestProject(result);
+        return result;
+    }
+
+    private static void ThrowIfUnityTestProject(IEnumerable<SourceProjectInfo> projects)
+    {
+        var unityTestProject = projects
+            .SelectMany(project => project.TestProjectsInfo?.AnalyzerResults ?? [])
+            .FirstOrDefault(project => project.IsUnityTestProject());
+        if (unityTestProject is null)
+        {
+            return;
+        }
+
+        throw new InputException(
+            $"Unity Test Framework project '{unityTestProject.ProjectFilePath}' was detected. Running Unity tests is not supported yet.",
+            "A dedicated Unity test runner is required because VsTest and Microsoft Testing Platform cannot execute Unity tests. Track Unity support at https://github.com/stryker-mutator/stryker-net/issues/2381.");
     }
 
     private List<SourceProjectInfo> SelectSingleProject(string normalizedProjectUnderTestNameFilter, List<SourceProjectInfo> result, bool targetProjectMode,

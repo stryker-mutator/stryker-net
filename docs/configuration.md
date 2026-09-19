@@ -466,6 +466,8 @@ Config file: `"disable-mix-mutants": true`
 
 Stryker combines multiple mutants in the same testrun when the mutants are not covered by the same unit tests. This reduces the total runtime. You can disable this behavior and run every mutation in an isolated testrun. This can be useful when mixed mutants have unintended side effects.
 
+*\* This flag is only applicable to the vstest testrunner. When using the MTP testrunner, this flag will be ignored since our MTP implementation doesn't combine mutants.*
+
 ### `since` &lt;`flag`&gt; [`:committish`]
 
 Default: `false`  
