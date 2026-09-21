@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Stryker.Configuration;
 using Stryker.Core.Helpers.ProcessUtil;
@@ -87,6 +88,11 @@ public class MsBuildHelper
             fullOptions.Add($"{(usingMsBuild ? "/" : "--")}property:Platform={QuotesIfNeeded(platform)}");
         }
 
+        if (usingMsBuild && exe == "dotnet")
+        {
+            fullOptions.Add($"/property:DOTNET_HOST_PATH={QuotesIfNeeded(GetDotnetHostPath())}");
+        }
+
         if (options is not null)
         {
             fullOptions.Add(options);
@@ -95,6 +101,18 @@ public class MsBuildHelper
         var arguments = string.Join(' ', fullOptions);
         _logger.LogInformation("Building project {project} using {MsBuildPath} {Options} (directory {path}.)", projectFile, exe, arguments, path);
         return (_executor.Start(path, exe, arguments), exe, arguments);
+    }
+
+    private static string GetDotnetHostPath()
+    {
+        var configuredHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+        if (!string.IsNullOrWhiteSpace(configuredHostPath))
+        {
+            return configuredHostPath;
+        }
+
+        var executableName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "dotnet.exe" : "dotnet";
+        return Path.GetFullPath(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", "..", executableName));
     }
 
     private (string executable, string command) GetMsBuildExeAndCommand()
