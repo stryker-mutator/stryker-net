@@ -604,7 +604,7 @@
       "stryker.core.unittest": {
         "type": "Project",
         "dependencies": {
-          "LaunchDarkly.EventSource": "[5.3.2, )",
+          "LaunchDarkly.EventSource": "[6.0.0, )",
           "MSTest": "[4.1.0, )",
           "Microsoft.CodeAnalysis.VisualBasic": "[5.9.0, )",
           "Microsoft.NET.Test.Sdk": "[18.10.1, )",
@@ -741,9 +741,9 @@
       },
       "LaunchDarkly.EventSource": {
         "type": "CentralTransitive",
-        "requested": "[5.3.2, )",
-        "resolved": "5.3.2",
-        "contentHash": "LJhi3gK8Ojem8PXEny8suPg3O7Eo3p3fWNmOkHNjU80fhwPVodw8bUIxMB2MaCkGGRwJ6krtUCo8FPJWtxgg7g==",
+        "requested": "[6.0.0, )",
+        "resolved": "6.0.0",
+        "contentHash": "GQGSWpmcx5x0bkFQH/6KZsFXRTspNx+0uEMMHrYDdUqEqYHF/71SRIdKILjTBe7VWJTAJHABR5U7HWZJG/XWSA==",
         "dependencies": {
           "LaunchDarkly.Logging": "[2.0.0, 3.0.0)"
         }
