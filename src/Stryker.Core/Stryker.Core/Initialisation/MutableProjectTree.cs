@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Amazon.Runtime.SharedInterfaces;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Stryker.Utilities.Buildalyzer;
@@ -19,6 +18,10 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
     public List<MutableProjectTarget> Targets { get; } = [];
 
     public bool IsValidTarget => Targets.Any(t => t.IsValidTarget);
+
+    public bool HasTests => Targets.Any(t => t.TestProjects.Count > 0);
+
+    public bool HasValidAnalysis => project.AnalyzerLastResults.Any(r => r.Succeeded);
 
     public MutableProjectTarget this[IAnalyzerResult target]
     {
@@ -73,19 +76,18 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
         Targets.Add(targetToKeep);
     }
 
-    public IEnumerable<string> KnownProblems()
-    {
-        foreach (var problem in project.IdentifiedProblems())
-        {
-            yield return problem;
-        }
-    }
+    public IEnumerable<string> KnownProblems() => project.IdentifiedProblems();
 
     public void LogAllAnalysisSummaries(bool optionsDiagMode)
     {
-        logger.LogInformation("Project {ProjectPath} overall analysis {Result}.",
-            Path.GetFileName(project.ProjectFileName),
-            IsValidTarget ? "succeeded" : "failed hence can't be mutated");
+        var statusText = HasTests switch
+        {
+            true when HasValidAnalysis => "succeeded",
+            false when HasValidAnalysis => "succeeded but can't be mutated because no test project references it",
+            false => $"failed and can't be mutated because no test project references it",
+            _ => "failed hence can't be mutated"
+        };
+        logger.LogInformation("Project {ProjectPath} overall analysis {Result}.", Path.GetFileName(project.ProjectFileName), statusText);
 
         if (KnownProblems().Any())
         {
@@ -94,15 +96,24 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
             {
                 logger.LogWarning("- {LogKnownProblem}", logKnownProblem);
             }
-
         }
 
-        if (optionsDiagMode)
+        if (!optionsDiagMode)
         {
-            foreach (var target in Targets)
-            {
-                target.LogAnalysisSummary();
-            }
+            return;
+        }
+
+        if (!Targets.Any())
+        {
+            logger.LogInformation(!project.AnalyzerLastResults.Any()
+                ? "  simulated build failed early. No details are available."
+                : "  no test project seems to reference this project. If this is a test project, ensure it has the property: <IsTestProject>true</IsTestProject> in its project file.");
+
+            return;
+        }
+        foreach (var target in Targets)
+        {
+            target.LogAnalysisSummary();
         }
     }
 }

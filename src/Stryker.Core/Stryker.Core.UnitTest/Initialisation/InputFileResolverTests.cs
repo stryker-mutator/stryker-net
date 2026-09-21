@@ -10,6 +10,7 @@ using Buildalyzer.Environment;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using NuGet.Frameworks;
@@ -126,7 +127,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 
         Action lambda = () => analyzerResult.GetNuGetFramework();
 
-        lambda.ShouldThrow(typeof(InputException));
+        lambda.ShouldThrow<InputException>();
     }
 
     [TestMethod]
@@ -171,7 +172,6 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
         });
 
         var target = BuildTestResolver(fileSystem);
-
         var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
@@ -224,7 +224,9 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
             { _testProjectFilePath, new MockFileData(_defaultTestProjectFileContents)},
             { Path.Combine(_sourcePath, "bin", "Debug", "netcoreapp2.0"), new MockFileData("Bytecode") }, // bin should be excluded
             { Path.Combine(_sourcePath, "obj", "Release", "netcoreapp2.0"), new MockFileData("Bytecode") }, // obj should be excluded
-            { Path.Combine(_sourcePath, "node_modules", "Some package"), new MockFileData("bla") }};
+            { Path.Combine(_sourcePath, "node_modules", "Some package"), new MockFileData("bla") }
+        };
+
         if (files != null)
         {
             foreach (var fileName in files.Keys)
@@ -1522,6 +1524,58 @@ using System.Reflection;
 
         // Assert
         sourceProjectManagerMock.Verify(x => x.Build(It.Is<EnvironmentOptions>( env => env.GlobalProperties["Platform"] == "x64")), Times.AtLeastOnce);
+    }
+
+
+    [TestMethod]
+    public void ShouldDiscardProjectsWoTestsInSolutionMode()
+    {
+        // Arrange
+        var solutionPath = Path.Combine(_filesystemRoot, "solution.sln");
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectFilePath, new MockFileData(_defaultSourceProjectFileContents)},
+            { Path.Combine(_sourcePath, "source.cs"), new MockFileData(_sourceFile)},
+            { _testProjectFilePath, new MockFileData(_defaultTestProjectFileContents)},
+            { solutionPath, new MockFileData("") },
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath,
+            [.. fileSystem.AllFiles.Where(s => s.EndsWith(".cs"))]);
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"]);
+        var secondProjectFilePath = Path.Combine(_filesystemRoot, "SecondProject", "SecondProject.csproj");
+        var secondSourceProjectManagerMock = SourceProjectAnalyzerMock(secondProjectFilePath, []);
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object },
+            { "SecondProject", secondSourceProjectManagerMock.Object }
+        };
+        var managerMock = BuildBuildAnalyzerMock(analyzerResults);
+
+        // Build a solution that assigns x64 platform to projects
+        var solution = SolutionFile.BuildFromProjectList(solutionPath,
+            [_sourceProjectFilePath, _testProjectFilePath, secondProjectFilePath]);
+
+        var captureLogger = new CaptureLogger<InputFileResolver>();
+        ISolutionProvider solutionProvider = new CustomSolutionProvider(_ => solution);
+        var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object, solutionProvider, captureLogger);
+
+        // IsSolutionContext is true when WorkingDirectory matches solution's parent dir
+        var options = new StrykerOptions
+        {
+            SolutionPath = solutionPath,
+            WorkingDirectory = _filesystemRoot,
+            DiagMode = true
+        };
+
+        // Act
+        var result = target.ResolveSourceProjectInfos(options);
+
+        // Assert
+        result.SourceProjectInfos.ShouldHaveSingleItem();
+        captureLogger.Entries.ShouldContain(e => e.Level == LogLevel.Information
+                                                 && e.Message.Contains("Project SecondProject.csproj overall analysis succeeded but can't be mutated because no test project references it."));
     }
 
     [TestMethod]

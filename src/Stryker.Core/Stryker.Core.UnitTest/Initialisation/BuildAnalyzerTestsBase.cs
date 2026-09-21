@@ -192,6 +192,7 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
     /// <param name="frameworks">list of frameworks (multitargeting)</param>
     /// <param name="success">analysis success</param>
     /// <param name="rawReferences">assembly references</param>
+    /// <param name="dontResolveProjectReference">true to prevent automatic resolution of project references</param>
     /// <returns>a mock project analyzer</returns>
     /// <remarks>
     /// 1. project and source files will be created (empty) in the file system
