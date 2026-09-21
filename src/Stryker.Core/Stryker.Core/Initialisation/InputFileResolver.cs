@@ -263,7 +263,7 @@ public class InputFileResolver(
         if (discardedCandidates.Count>0)
         {
             // we provide details about discarded candidate project
-            _logger.LogWarning("Discarded {Count} project(s) due to failed analysis:", discardedCandidates.Count);
+            _logger.LogWarning("Discarded {Count} project(s) due to:", discardedCandidates.Count);
             foreach (var discardedCandidate in discardedCandidates)
             {
                 discardedCandidate.LogAllAnalysisSummaries(options.DiagMode);
@@ -314,6 +314,7 @@ public class InputFileResolver(
         {
             while (!list.Empty)
             {
+                #if DEBUG
                 if (Debugger.IsAttached)
                 {
                     foreach (var project in list.Consume())
@@ -322,6 +323,7 @@ public class InputFileResolver(
                     }
                 }
                 else
+                #endif
                 {
                     var parallelOptions = new ParallelOptions
                     { MaxDegreeOfParallelism = options.DiagMode ? 1 : Math.Max(options.Concurrency, 1) };
@@ -494,7 +496,7 @@ public class InputFileResolver(
             {
                 foreach (var candidateProject in mutableProjects)
                 {
-                    if (!candidateProject.FindMatchingVariant(variantReference, out var candidateTarget))
+                    if (!candidateProject.BuildThisAssembly(variantReference, out var candidateTarget))
                     {
                         continue;
                     }

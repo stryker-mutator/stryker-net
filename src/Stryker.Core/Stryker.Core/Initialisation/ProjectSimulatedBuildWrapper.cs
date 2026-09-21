@@ -130,11 +130,6 @@ public class ProjectSimulatedBuildWrapper
                 "Failed to retrieve target framework(s) from {ProjectFilePath}. Using analysis results: {Frameworks}",
                 ProjectFileName, string.Join(',', projectFileTargetFrameworks));
         }
-        else
-        {
-            // analysis failed utterly, we have no idea which frameworks are supported by this project
-//            _logger.LogWarning("Failed to retrieve target framework(s) from {ProjectFilePath} no analysis re.", ProjectFileName);
-        }
 
         _targetFrameworks = projectFileTargetFrameworks;
     }
@@ -143,8 +138,6 @@ public class ProjectSimulatedBuildWrapper
 
     public IEnumerable<string> FailedFrameworks => _targetFrameworks?.Where(tf =>
         !AnalyzerLastResults.Any( ar => ar.TargetFramework == tf && ar.IsValid())) ?? [];
-
-    public bool IsTest => AnalyzerLastResults.IsTestProject();
 
     public bool HasValidResults() => _targetFrameworks.Length == 0 ? AnalyzerLastResults.All(r => r.IsValid())
         : AnalyzerLastResults.IsValidFor(_targetFrameworks);
@@ -173,7 +166,7 @@ public class ProjectSimulatedBuildWrapper
             // dump all properties as it can help diagnosing build issues for user project.
             foreach (var analyzerResult in AnalyzerLastResults)
             {
-                DumpTestAnalyzerResult(log, analyzerResult);
+                LogAnalyzerResultInDetails(log, analyzerResult, _logger.IsEnabled(LogLevel.Trace));
             }
         }
         finally
@@ -204,9 +197,15 @@ public class ProjectSimulatedBuildWrapper
                 yield return $"Project {ProjectFileName} does not support design time build (WPF or Windows Forms project with targeting net 10). Please add {PropertyOption("DesignTimeBuild", "false")} to the command line.";
             }
         }
+        if (AnalyzerLastResults.Any(r => r.PackageReferences.Keys.Any( name =>  name.Contains("Nerdbank.GitVersioning", StringComparison.OrdinalIgnoreCase)
+                                             && (!r.Properties.TryGetValue("DesignTimeBuild", out var design) || design.Equals("true", StringComparison.OrdinalIgnoreCase))) && r.IsSignedAssembly())
+                                         && Environment.GetEnvironmentVariable("NBGV_GitEngine") != "Disabled")
+        {
+            yield return $"Project {ProjectFileName} uses GitVersioning package. Please add {PropertyOption("ContinuousIntegrationBuild", "true")} to the command line.";
+        }
     }
 
-    private void DumpTestAnalyzerResult(StringBuilder log, IAnalyzerResult analyzerResult)
+    private static void LogAnalyzerResultInDetails(StringBuilder log, IAnalyzerResult analyzerResult, bool allProperties)
     {
         log.AppendLine($"TargetFramework : {analyzerResult.TargetFramework}");
         log.AppendLine($"Simulated build : {(analyzerResult.Succeeded ? "succeeded": "failed")}");
@@ -222,7 +221,7 @@ public class ProjectSimulatedBuildWrapper
 
         log.AppendLine($"Compiler command: {analyzerResult.Command}");
 
-        if (_logger.IsEnabled(LogLevel.Trace))
+        if (allProperties)
         {
             // dumps all other properties as well, as they can be useful for diagnosing build issues
             var propertiesString = string.Join(", ", properties.
@@ -267,7 +266,7 @@ public class ProjectSimulatedBuildWrapper
         }
     }
 
-    public bool FindMatchingVariant(string assemblyPath, out IAnalyzerResult? analyzerResult)
+    public bool BuildThisAssembly(string assemblyPath, out IAnalyzerResult? analyzerResult)
     {
         analyzerResult= AnalyzerLastResults.FirstOrDefault( r=> r.BuildsAnAssembly() &&
                             (string.Compare(assemblyPath, r.GetAssemblyPath(), StringComparison.OrdinalIgnoreCase) == 0
