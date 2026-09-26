@@ -65,9 +65,15 @@ jobs:
     if: always()
     steps:
       - name: Check integration test results
+        env:
+          IS_DRAFT: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft }}
+          TEST_RESULT: ${{ needs.integration-test.result }}
         run: |
-          if [ "${{ needs.integration-test.result }}" != "success" ]; then
-            echo "Integration tests failed or were cancelled"
+          if [ "$TEST_RESULT" = "success" ]; then
+            echo "All integration tests passed successfully"
+          elif [ "$TEST_RESULT" = "skipped" ] && [ "$IS_DRAFT" = "true" ]; then
+            echo "Integration tests are intentionally skipped for draft pull requests"
+          else
+            echo "Integration tests failed, were cancelled, or were unexpectedly skipped"
             exit 1
           fi
-          echo "All integration tests passed successfully"

@@ -17,6 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Stryker.TestRunner.MicrosoftTestPlatform.Extension\Stryker.TestRunner.MicrosoftTestPlatform.Extension.csproj" />
       <ProjectReference Include="..\Stryker.TestRunner\Stryker.TestRunner.csproj" />
       <ProjectReference Include="..\Stryker.Utilities\Stryker.Utilities.csproj" />
     </ItemGroup>
@@ -28,5 +29,4 @@
     </ItemGroup>
 
 </Project>
-
 
