@@ -10,9 +10,9 @@
       },
       "LaunchDarkly.EventSource": {
         "type": "Direct",
-        "requested": "[5.3.2, )",
-        "resolved": "5.3.2",
-        "contentHash": "LJhi3gK8Ojem8PXEny8suPg3O7Eo3p3fWNmOkHNjU80fhwPVodw8bUIxMB2MaCkGGRwJ6krtUCo8FPJWtxgg7g==",
+        "requested": "[6.0.0, )",
+        "resolved": "6.0.0",
+        "contentHash": "GQGSWpmcx5x0bkFQH/6KZsFXRTspNx+0uEMMHrYDdUqEqYHF/71SRIdKILjTBe7VWJTAJHABR5U7HWZJG/XWSA==",
         "dependencies": {
           "LaunchDarkly.Logging": "[2.0.0, 3.0.0)"
         }
@@ -39,11 +39,11 @@
       },
       "Moq": {
         "type": "Direct",
-        "requested": "[4.20.72, )",
-        "resolved": "4.20.72",
-        "contentHash": "EA55cjyNn8eTNWrgrdZJH5QLFp2L43oxl1tlkoYUKIE9pRwL784OWiTXeCV5ApS+AMYEAlt7Fo03A2XfouvHmQ==",
+        "requested": "[4.21.0, )",
+        "resolved": "4.21.0",
+        "contentHash": "HUjrhhzEJ/AfbSBCnR8lPkpveVGpV/dNuOlnpfqBNTME93izly1CRV4N5zBySqz4m2yCRlHLPy/PnPzYokbwIg==",
         "dependencies": {
-          "Castle.Core": "5.1.1"
+          "Castle.Core": "5.2.1"
         }
       },
       "MSTest": {
@@ -138,8 +138,8 @@
       },
       "Castle.Core": {
         "type": "Transitive",
-        "resolved": "5.1.1",
-        "contentHash": "rpYtIczkzGpf+EkZgDr9CClTdemhsrwA/W5hMoPjLkRFnXzH44zDLoovXeKtmxb1ykXK9aJVODSpiJml8CTw2g==",
+        "resolved": "5.2.1",
+        "contentHash": "wHARzQA695jwwKreOzNsq54KiGqKP38tv8hi8e2FXDEC/sA6BtrX90tVPDkOfVu13PbEzr00TCV8coikl+D1Iw==",
         "dependencies": {
           "System.Diagnostics.EventLog": "6.0.0"
         }
@@ -607,7 +607,7 @@
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "AWSSDK.S3": "[4.0.103.3, )",
+          "AWSSDK.S3": "[4.0.103.4, )",
           "Azure.Storage.Files.Shares": "[12.27.1, )",
           "Buildalyzer": "[9.0.0, )",
           "DotNet.Glob": "[3.1.3, )",
@@ -730,9 +730,9 @@
       },
       "AWSSDK.S3": {
         "type": "CentralTransitive",
-        "requested": "[4.0.103.3, )",
-        "resolved": "4.0.103.3",
-        "contentHash": "dndlr57QVnGDPTaQx4NlYhM7WvNLmfYVEanCVgRr8cPYPRGlT+/1vLoQEqeRr3McEFW/0v/hOjMxvcxNh9yWTw==",
+        "requested": "[4.0.103.4, )",
+        "resolved": "4.0.103.4",
+        "contentHash": "qi8NkWG7s6GkNePTWSxP51O6AaTEWquin4X4L82plMte8bTFL2A1/osRfr6DBmvmSOc8y0orx25jJXg9gcbMIQ==",
         "dependencies": {
           "AWSSDK.Core": "[4.0.102.6, 5.0.0)"
         }

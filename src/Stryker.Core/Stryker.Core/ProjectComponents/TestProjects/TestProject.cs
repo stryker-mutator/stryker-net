@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Buildalyzer;
 using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.MutantFilters;
@@ -28,11 +29,30 @@ public sealed class TestProject : IEquatable<ITestProject>, ITestProject
         AnalyzerResult = testProjectAnalyzerResult;
 
         var testFiles = new List<TestFile>();
+        if (testProjectAnalyzerResult.GetLanguage() != Language.Csharp)
+        {
+            TestFiles = testFiles;
+            return;
+        }
+
+        var iPath = fileSystem.Path;
+        var directoryName = iPath.GetDirectoryName(AnalyzerResult.ProjectFilePath);
+        if (string.IsNullOrEmpty(directoryName))
+        {
+            directoryName = iPath.GetPathRoot(iPath.IsPathRooted(AnalyzerResult.ProjectFilePath) ? AnalyzerResult.ProjectFilePath
+                : fileSystem.Directory.GetCurrentDirectory());
+        }
+        var projectRoot = iPath.GetFullPath(directoryName);
         foreach (var file in testProjectAnalyzerResult.SourceFiles)
         {
-            var sourceCode = fileSystem.File.ReadAllText(file);
+            var filePath = file;
+            if (!string.IsNullOrEmpty(projectRoot) && !iPath.IsPathRooted(filePath))
+            {
+                filePath = iPath.Combine(projectRoot, file);
+            }
+            var sourceCode = fileSystem.File.ReadAllText(filePath);
             var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode,
-                path: file,
+                path: filePath,
                 encoding: Encoding.UTF32,
                 options: testProjectAnalyzerResult.GetParseOptions());
 
@@ -41,7 +61,7 @@ public sealed class TestProject : IEquatable<ITestProject>, ITestProject
                 testFiles.Add(new TestFile
                 {
                     SyntaxTree = syntaxTree,
-                    FilePath = file,
+                    FilePath = filePath,
                     Source = sourceCode
                 });
             }
