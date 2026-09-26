@@ -1,4 +1,4 @@
-using System.Net;
+using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
@@ -21,9 +21,8 @@ internal interface ITestServerConnectionFactory
 
     /// <summary>
     /// Creates an <see cref="ITestingPlatformClient"/> from an accepted TCP connection and process handle.
-    /// When <paramref name="rpcLogFilePath"/> is non-null, all JSON-RPC frames are traced to that file.
     /// </summary>
-    ITestingPlatformClient CreateClient(Stream stream, IProcessHandle processHandle, ILogger logger, string? rpcLogFilePath);
+    ITestingPlatformClient CreateClient(TcpClient tcpClient, IProcessHandle processHandle, ILogger logger);
 }
 
 /// <summary>
@@ -31,7 +30,7 @@ internal interface ITestServerConnectionFactory
 /// </summary>
 internal interface ITestServerListener : IDisposable
 {
-    Task<(Stream Stream, IDisposable Connection)> AcceptConnectionAsync(CancellationToken cancellationToken);
+    Task<TcpClient> AcceptConnectionAsync(CancellationToken cancellationToken);
     void Stop();
 }
 
