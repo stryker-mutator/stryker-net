@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Amazon.Runtime.SharedInterfaces;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Stryker.Utilities.Buildalyzer;
