@@ -16,9 +16,9 @@
       },
       "Microsoft.Testing.Platform": {
         "type": "Direct",
-        "requested": "[1.5.2, )",
-        "resolved": "1.5.2",
-        "contentHash": "IcBrO3WAs+TK622oGSuaHJAn2Ru8b7o4kWjAbaiy2v4302x5qhYphwQ3BvKMK7e7P0fcSyQwq1IfYmrlplgq0w=="
+        "requested": "[2.4.0, )",
+        "resolved": "2.4.0",
+        "contentHash": "dp1N3P1ujb0ztwFgqz2o/ItEvq+pm19/AiA+Xq7Zpcy7oPMcxDBZLYGtf0LlU1MveEBJuKVjZhI+LnkfcH/0jQ=="
       },
       "StreamJsonRpc": {
         "type": "Direct",
@@ -262,6 +262,12 @@
         "dependencies": {
           "Microsoft.TestPlatform.ObjectModel": "[18.10.1, )",
           "Stryker.Abstractions": "[5.0.0, )"
+        }
+      },
+      "stryker.testrunner.microsofttestplatform.extension": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Testing.Platform": "[2.4.0, )"
         }
       },
       "stryker.utilities": {
