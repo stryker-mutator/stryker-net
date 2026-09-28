@@ -70,12 +70,12 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[22.2.0, )",
-        "resolved": "22.2.0",
-        "contentHash": "mmsYxNRoxsimceoqImCPVf+LuqJJSd8esDQVP5uONDUZ8envfrKen8I+fRtwsoyt+GVrKvf+XiZJgKWns+t9eg==",
+        "requested": "[22.3.0, )",
+        "resolved": "22.3.0",
+        "contentHash": "kJsKJjXcjSvh0H89afGlsngJHj8n7f1q7juNiLUCbtJr+m208TG6z2RfjCVlGosfgaHBnNhgs0zFy2Z0V1XnZA==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions.Wrappers": "22.2.0",
-          "Testably.Abstractions.FileSystem.Interface": "10.3.0"
+          "TestableIO.System.IO.Abstractions.Wrappers": "22.3.0",
+          "Testably.Abstractions.FileSystem.Interface": "10.4.0"
         }
       },
       "AWSSDK.Core": {
@@ -550,8 +550,8 @@
       },
       "Testably.Abstractions.FileSystem.Interface": {
         "type": "Transitive",
-        "resolved": "10.3.0",
-        "contentHash": "5ebMaoADkzjfW7GnZYKaUebV8XmUn++C/4sKk1PTzCiddEgbSKBq3pW4EWEi70rYJAK0gA1yDWrYFeHq18FvHQ=="
+        "resolved": "10.4.0",
+        "contentHash": "7G5NzIjs7544Dit0uuvYOOAzD8E4alQS2ENPGT3HV1Ks/1r55O7X4d9g6L273n70IDkgqNdBCmrkWxJLn0xCZA=="
       },
       "dotnet-stryker": {
         "type": "Project",
@@ -964,10 +964,10 @@
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
         "requested": "[22.2.0, )",
-        "resolved": "22.2.0",
-        "contentHash": "0GW9i46ozm687WGAWsBHWMhLR7l1HmKwhiSU2hQrbFnI5m2YRfqXwqTQNjnOwT8BdbvcGqwMr97/zlnPWa1u1Q==",
+        "resolved": "22.3.0",
+        "contentHash": "9TsOEcwIGJXHjkZ/lIpg6KnoRjxpZZ/LpMvNddcXEvmcxWKZdbhSy2UWMpy3oN8klbQ3dcpxbp9AddQk0zE+Kg==",
         "dependencies": {
-          "Testably.Abstractions.FileSystem.Interface": "10.3.0"
+          "Testably.Abstractions.FileSystem.Interface": "10.4.0"
         }
       },
       "YamlDotNet": {
