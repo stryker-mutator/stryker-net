@@ -15,7 +15,7 @@ namespace Stryker.Core.Mutators;
 
 public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>
 {
-    private const string _patternArgumentName = "pattern";
+    private const string PatternArgumentName = "pattern";
     private ILogger Logger { get; } = ApplicationLogging.LoggerFactory.CreateLogger<RegexMutator>();
 
     public override MutationLevel MutationLevel => MutationLevel.Advanced;
@@ -31,7 +31,7 @@ public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>
 
         var arguments = node.ArgumentList.Arguments;
         var namedArgument = arguments.FirstOrDefault(argument =>
-            argument.NameColon?.Name.Identifier.ValueText == _patternArgumentName);
+            argument.NameColon?.Name.Identifier.ValueText == PatternArgumentName);
         var patternArgument = namedArgument ?? node.ArgumentList.Arguments.FirstOrDefault();
         var patternExpression = patternArgument?.Expression;
 
@@ -45,7 +45,7 @@ public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>
 
         // we extract the text components of the interpolated string or the literal string to mutate them separately
         IEnumerable<(SyntaxNode node, string text)> partsToMutate = isInterpolatedString ?
-            interpolatedString.Contents.OfType<InterpolatedStringTextSyntax>().Select(n => ((SyntaxNode)n, n.TextToken.Text))
+            interpolatedString.Contents.OfType<InterpolatedStringTextSyntax>().Select(n => ((SyntaxNode)n, n.TextToken.ValueText))
             : [(patternExpression, ((LiteralExpressionSyntax)patternExpression).Token.ValueText)];
 
         foreach (var (subNode, currentValue)  in partsToMutate)
