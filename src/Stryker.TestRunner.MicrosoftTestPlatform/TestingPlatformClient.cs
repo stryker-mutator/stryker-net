@@ -137,20 +137,10 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
         => properties.TryGetValue(key, out var value) ? value as string : null;
 
     private void OnLogReceived(object? sender, MtpLogEventArgs eventArgs)
-    {
-        var logLevel = eventArgs.Level.ToLowerInvariant() switch
-        {
-            "trace" => Microsoft.Extensions.Logging.LogLevel.Trace,
-            "debug" => Microsoft.Extensions.Logging.LogLevel.Debug,
-            "information" or "info" => Microsoft.Extensions.Logging.LogLevel.Information,
-            "warning" or "warn" => Microsoft.Extensions.Logging.LogLevel.Warning,
-            "error" => Microsoft.Extensions.Logging.LogLevel.Error,
-            "critical" => Microsoft.Extensions.Logging.LogLevel.Critical,
-            _ => Microsoft.Extensions.Logging.LogLevel.Debug
-        };
-
-        _logger.Log(logLevel, "{MtpServerMessage}", eventArgs.Message);
-    }
+        => _logger.LogDebug(
+            "MTP server {MtpServerLogLevel}: {MtpServerMessage}",
+            eventArgs.Level,
+            eventArgs.Message);
 
     public void Dispose()
     {

@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Testing.Platform.ServerMode.Client;
 using Moq;
 using Shouldly;
@@ -11,9 +11,10 @@ public class TestingPlatformClientTests
 {
     private readonly Mock<IMtpServerClient> _mtpClient = new();
     private readonly Mock<IProcessHandle> _processHandle = new();
+    private readonly Mock<ILogger> _logger = new();
 
     private TestingPlatformClient CreateClient()
-        => new(_mtpClient.Object, _processHandle.Object, NullLogger.Instance);
+        => new(_mtpClient.Object, _processHandle.Object, _logger.Object);
 
     [TestMethod]
     public async Task InitializeAsync_ForwardsToSourceClient()
@@ -198,6 +199,26 @@ public class TestingPlatformClientTests
         var exitCode = await client.WaitServerProcessExitAsync();
 
         exitCode.ShouldBe(42);
+    }
+
+    [TestMethod]
+    public void LogReceived_LogsServerMessageAtDebugWithOriginalLevel()
+    {
+        using var client = CreateClient();
+
+        _mtpClient.Raise(
+            sourceClient => sourceClient.LogReceived += null,
+            new MtpLogEventArgs("Warning", "Unhandled task exception"));
+
+        _logger.Verify(
+            logger => logger.Log(
+                LogLevel.Debug,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((state, _) => state!.ToString() == "MTP server Warning: Unhandled task exception"),
+                It.IsAny<Exception>(),
+                (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()),
+            Times.Once);
+        _logger.VerifyNoOtherCalls();
     }
 
     [TestMethod]
