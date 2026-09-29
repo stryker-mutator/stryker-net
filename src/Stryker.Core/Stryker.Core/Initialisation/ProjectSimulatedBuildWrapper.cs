@@ -16,6 +16,7 @@ namespace Stryker.Core.Initialisation;
 /// </summary>
 public class ProjectSimulatedBuildWrapper
 {
+    private const string DesignTimeProperty = "DesignTimeBuild";
     private readonly IProjectAnalyzer _analyzer;
     private readonly ProjectsTracker _projectsTracker;
     private readonly string _msBuildPath;
@@ -79,7 +80,7 @@ public class ProjectSimulatedBuildWrapper
         }
 
         // we default to design time build unless the property is explicitly set to anything but true
-        env.DesignTime = !_properties.TryGetValue("DesignTimeBuild", out var designTime) ||
+        env.DesignTime = !_properties.TryGetValue(DesignTimeProperty, out var designTime) ||
                          designTime.Equals("true", StringComparison.OrdinalIgnoreCase);
         env.Restore = withRestore;
         return env;
@@ -139,7 +140,7 @@ public class ProjectSimulatedBuildWrapper
     public IEnumerable<string> FailedFrameworks => _targetFrameworks?.Where(tf =>
         !AnalyzerLastResults.Any( ar => ar.TargetFramework == tf && ar.IsValid())) ?? [];
 
-    public bool HasValidResults() => _targetFrameworks.Length == 0 ? AnalyzerLastResults.All(r => r.IsValid())
+    public bool HasValidResults() => _targetFrameworks.Length == 0 ? AnalyzerLastResults.Count>0 && AnalyzerLastResults.All(r => r.IsValid())
         : AnalyzerLastResults.IsValidFor(_targetFrameworks);
 
     public bool IsTestProject() => AnalyzerLastResults.IsTestProject();
@@ -191,14 +192,14 @@ public class ProjectSimulatedBuildWrapper
             }
             // look for net10+wpf issues
             if (AnalyzerLastResults.Any(r => r.Properties.TryGetValue("TargetFramework", out var tf) && tf.StartsWith("net10.0", StringComparison.OrdinalIgnoreCase)
-                    && (!r.Properties.TryGetValue("DesignTimeBuild", out var design) || design.Equals("true", StringComparison.OrdinalIgnoreCase)))
+                    && (!r.Properties.TryGetValue(DesignTimeProperty, out var design) || design.Equals("true", StringComparison.OrdinalIgnoreCase)))
                )
             {
-                yield return $"Project {ProjectFileName} does not support design time build (WPF or Windows Forms project with targeting net 10). Please add {PropertyOption("DesignTimeBuild", "false")} to the command line.";
+                yield return $"Project {ProjectFileName} does not support design time build (WPF or Windows Forms project with targeting net 10). Please add {PropertyOption(DesignTimeProperty, "false")} to the command line.";
             }
         }
         if (AnalyzerLastResults.Any(r => r.PackageReferences.Keys.Any( name =>  name.Contains("Nerdbank.GitVersioning", StringComparison.OrdinalIgnoreCase)
-                                             && (!r.Properties.TryGetValue("DesignTimeBuild", out var design) || design.Equals("true", StringComparison.OrdinalIgnoreCase))) && r.IsSignedAssembly())
+                                             && (!r.Properties.TryGetValue(DesignTimeProperty, out var design) || design.Equals("true", StringComparison.OrdinalIgnoreCase))) && r.IsSignedAssembly())
                                          && Environment.GetEnvironmentVariable("NBGV_GitEngine") != "Disabled")
         {
             yield return $"Project {ProjectFileName} uses GitVersioning package. Please add {PropertyOption("ContinuousIntegrationBuild", "true")} to the command line.";

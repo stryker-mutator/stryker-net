@@ -308,7 +308,8 @@ public class InputFileResolver(
         IStrykerOptions options, ScanMode mode)
     {
         var mutableProjectsAnalyzerResults = new ConcurrentBag<ProjectSimulatedBuildWrapper>();
-
+        var parallelOptions = new ParallelOptions
+            { MaxDegreeOfParallelism = options.DiagMode ? 1 : Math.Max(options.Concurrency, 1) };
         var list = new DynamicEnumerableQueue<string>(solutionInfo.SelectedProjects);
         try
         {
@@ -325,8 +326,6 @@ public class InputFileResolver(
                 else
                 #endif
                 {
-                    var parallelOptions = new ParallelOptions
-                    { MaxDegreeOfParallelism = options.DiagMode ? 1 : Math.Max(options.Concurrency, 1) };
                     Parallel.ForEach(list.Consume(),
                         parallelOptions, ProcessProject
                     );
@@ -383,14 +382,14 @@ public class InputFileResolver(
         var buildResult = project.Analyze();
         var buildResultOverallSuccess = project.HasValidResults();
 
-        // if buildalyzer failed, we can try again with a nuget restore, as missing packages is a common cause of
+        // if buildalyzer failed, we can try again with a NuGet restore, as missing packages is a common cause of
         // buildalyzer failure. NetFramework project can only be retried on Windows platforms
         if (buildResult.All(ar=>!ar.Succeeded) && (!project.IsNetFramework||Environment.OSVersion.Platform==PlatformID.Win32NT))
         {
             shouldConfirmSuccess = true;
-            _logger.LogDebug("Project {ProjectFilePath} simulated build failed. Trying again with a Nuget restore.", projectLogName);
+            _logger.LogDebug("Project {ProjectFilePath} simulated build failed. Trying again with a NuGet restore.", projectLogName);
 
-            // if this is a full framework project, we can retry after a nuget restore
+            // if this is a full framework project, we can retry after a NuGet restore
             buildResult = project.Analyze(withRestore: true);
 
             // check the new status
@@ -462,7 +461,7 @@ public class InputFileResolver(
             if (testProject.AnalyzerLastResults.Count == 0)
             {
                 _logger.LogWarning("Test project {ProjectName} analysis failed, it will be ignored.", testProject.ProjectFileName);
-                break;
+                continue;
             }
 
             if (ScanAssemblyReferences(mutableToTestMap, mutableProjects, testProject))

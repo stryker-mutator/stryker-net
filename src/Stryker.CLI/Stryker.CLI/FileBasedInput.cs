@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using YamlDotNet.Serialization;
 
 namespace Stryker.CLI;
@@ -29,7 +30,7 @@ public class FileBasedInput : IExtraData
     public string MutationLevel { get; init; }
 
     [JsonPropertyName("language-version")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string LanguageVersion { get; init; }
 
     [JsonPropertyName("additional-timeout")]
@@ -101,8 +102,11 @@ public class FileBasedInput : IExtraData
     [JsonPropertyName("break-on-initial-test-failure")]
     public bool? BreakOnInitialTestFailure { get; init; }
 
-    [JsonExtensionData]
+    [System.Text.Json.Serialization.JsonExtensionData]
     public Dictionary<string, JsonElement> ExtraData { get; init; }
+
+    [JsonPropertyName("build-properties")]
+    public Dictionary<string, string> BuildProperties { get; init; }
 }
 
 public class Since : IExtraData
@@ -116,7 +120,7 @@ public class Since : IExtraData
     [JsonPropertyName("target")]
     public string Target { get; init; }
 
-    [JsonExtensionData]
+    [System.Text.Json.Serialization.JsonExtensionData]
     public Dictionary<string, JsonElement> ExtraData { get; init; }
 }
 
@@ -143,7 +147,7 @@ public class Baseline : IExtraData
     [JsonPropertyName("fallback-version")]
     public string FallbackVersion { get; init; }
 
-    [JsonExtensionData]
+    [System.Text.Json.Serialization.JsonExtensionData]
     public Dictionary<string, JsonElement> ExtraData { get; init; }
 }
 
@@ -158,7 +162,7 @@ public class ProjectInfo : IExtraData
     [JsonPropertyName("version")]
     public string Version { get; init; }
 
-    [JsonExtensionData]
+    [System.Text.Json.Serialization.JsonExtensionData]
     public Dictionary<string, JsonElement> ExtraData { get; init; }
 }
 
@@ -173,6 +177,6 @@ public class ThresholdsConfig : IExtraData
     [JsonPropertyName("break")]
     public int? Break { get; init; }
 
-    [JsonExtensionData]
+    [System.Text.Json.Serialization.JsonExtensionData]
     public Dictionary<string, JsonElement> ExtraData { get; init; }
 }

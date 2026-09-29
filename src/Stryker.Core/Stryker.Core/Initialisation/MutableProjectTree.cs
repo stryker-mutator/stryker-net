@@ -22,7 +22,7 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
 
     public bool HasTests => Targets.Any(t => t.TestProjects.Count > 0);
 
-    public bool HasValidAnalysis => project.AnalyzerLastResults.Any(r => r.Succeeded);
+    public bool HasValidAnalysis => project.AnalyzerLastResults.Any(r => r.IsValid());
 
     public MutableProjectTarget this[IAnalyzerResult target]
     {

@@ -45,7 +45,6 @@ public static class FileConfigReader
             inputs.S3RegionInput.SuppliedInput = config.Baseline.S3Region;
         }
 
-
         inputs.CoverageAnalysisInput.SuppliedInput = config.CoverageAnalysis;
         inputs.DisableBailInput.SuppliedInput = config.DisableBail;
         inputs.DisableMixMutantsInput.SuppliedInput = config.DisableMixMutants;
@@ -77,6 +76,7 @@ public static class FileConfigReader
 
         inputs.ReportFileNameInput.SuppliedInput = config.ReportFileName;
         inputs.BreakOnInitialTestFailureInput.SuppliedInput = config.BreakOnInitialTestFailure;
+        inputs.BuildPropertiesInput.SuppliedInput = [.. config.BuildProperties?.Select(kvp => $"{kvp.Key}={kvp.Value}") ?? []];
     }
 
     private static FileBasedInput LoadConfig(string configFilePath)
@@ -117,25 +117,13 @@ public static class FileConfigReader
         return input;
     }
 
-    private static FileBasedInputOuter DeserializeJson(string json)
-    {
-        FileBasedInputOuter root;
-        var serializerOptions = new JsonSerializerOptions { ReadCommentHandling = JsonCommentHandling.Skip };
-        root = JsonSerializer.Deserialize<FileBasedInputOuter>(json, serializerOptions);
-        return root;
-    }
+    private static FileBasedInputOuter DeserializeJson(string json) => JsonSerializer.Deserialize<FileBasedInputOuter>(json, new JsonSerializerOptions { ReadCommentHandling = JsonCommentHandling.Skip });
 
-    private static FileBasedInputOuter DeserializeYaml(string yaml)
-    {
-        FileBasedInputOuter root;
-        var yamldeserializer = new DeserializerBuilder()
-                                .IgnoreUnmatchedProperties()
-                                .WithNamingConvention(HyphenatedNamingConvention.Instance)
-                                .Build();
-
-        root = yamldeserializer.Deserialize<FileBasedInputOuter>(yaml);
-        return root;
-    }
+    private static FileBasedInputOuter DeserializeYaml(string yaml) =>
+        new DeserializerBuilder()
+            .IgnoreUnmatchedProperties()
+            .WithNamingConvention(HyphenatedNamingConvention.Instance)
+            .Build().Deserialize<FileBasedInputOuter>(yaml);
 
     private static void EnsureCorrectKeys(string configFilePath, IExtraData @object, string namePath)
     {
@@ -150,11 +138,13 @@ public static class FileConfigReader
         }
         var extraData = @object.ExtraData;
         IReadOnlyCollection<string> extraKeys = extraData != null ? extraData.Keys : Array.Empty<string>();
-        if (extraKeys.Any())
+        if (!extraKeys.Any())
         {
-            var allowedKeys = properties.Select(e => e.GetCustomAttribute<JsonPropertyNameAttribute>()!.Name).OrderBy(e => e);
-            var description = extraKeys.Count == 1 ? $"\"{extraKeys.First()}\" was found" : $"others were found (\"{string.Join("\", \"", extraKeys)}\")";
-            throw new InputException($"The allowed keys for the \"{namePath}\" object are {{ \"{string.Join("\", \"", allowedKeys)}\" }} but {description} in the config file at \"{configFilePath}\"");
+            return;
         }
+
+        var allowedKeys = properties.Select(e => e.GetCustomAttribute<JsonPropertyNameAttribute>()!.Name).OrderBy(e => e);
+        var description = extraKeys.Count == 1 ? $"\"{extraKeys.First()}\" was found" : $"others were found (\"{string.Join("\", \"", extraKeys)}\")";
+        throw new InputException($"The allowed keys for the \"{namePath}\" object are {{ \"{string.Join("\", \"", allowedKeys)}\" }} but {description} in the config file at \"{configFilePath}\"");
     }
 }

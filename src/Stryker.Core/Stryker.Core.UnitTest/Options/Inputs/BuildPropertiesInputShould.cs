@@ -18,9 +18,7 @@ public class BuildPropertiesInputShould : TestBase
     public void HaveEmptyDefault()
     {
         var target = new BuildPropertiesInput { SuppliedInput = [] };
-
         var result = target.Validate();
-
         result.ShouldBeEmpty();
     }
 
@@ -28,9 +26,7 @@ public class BuildPropertiesInputShould : TestBase
     public void ReturnProperty()
     {
         var target = new BuildPropertiesInput { SuppliedInput = ["DESIGNTIME=false"]};
-
         var result = target.Validate();
-
         result.ShouldHaveSingleItem().Key.ShouldBe("DESIGNTIME");
     }
 
@@ -38,9 +34,15 @@ public class BuildPropertiesInputShould : TestBase
     public void ReturnMultipleProperties()
     {
         var target = new BuildPropertiesInput { SuppliedInput = ["DESIGNTIME=false", "custom=42"]};
-
         var result = target.Validate();
+        result.Count.ShouldBe(2);
+    }
 
+    [TestMethod]
+    public void ReturnMultiplePropertiesInSingleLine()
+    {
+        var target = new BuildPropertiesInput { SuppliedInput = ["DESIGNTIME=false;custom=42"]};
+        var result = target.Validate();
         result.Count.ShouldBe(2);
     }
 
@@ -48,7 +50,6 @@ public class BuildPropertiesInputShould : TestBase
     public void HandleSpacesInValue()
     {
         var target = new BuildPropertiesInput { SuppliedInput = ["DESIGNTIME=\"fa lse\"", "custom=42"]};
-
         var result = target.Validate();
         result.ShouldContainKey("DESIGNTIME");
         result["DESIGNTIME"].ShouldBe("fa lse");

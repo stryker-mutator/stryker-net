@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Build.Logging.StructuredLogger;
 using Stryker.Abstractions.Exceptions;
@@ -13,15 +14,18 @@ public class BuildPropertiesInput: Input<IEnumerable<string>>
 
     public Dictionary<string, string> Validate()
     {
-        var result = new Dictionary<string, string>();
-        foreach (var input in SuppliedInput ?? Default)
+        var result = new Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
+        foreach (var block in SuppliedInput ?? Default)
         {
-            var parts = input.Split('=', 2);
-            if (parts.Length != 2)
+            foreach (var input in block.Split(';', StringSplitOptions.RemoveEmptyEntries|StringSplitOptions.TrimEntries))
             {
-                throw new InputException($"Invalid build property format: '{input}'. Expected format is 'key=value'.");
+                var parts = input.Split('=', 2);
+                if (parts.Length != 2)
+                {
+                    throw new InputException($"Invalid build property format: '{input}'. Expected format is 'key=value'.");
+                }
+                result[parts[0]] = parts[1].TrimQuotes();
             }
-            result[parts[0]] = parts[1].TrimQuotes();
         }
         return result;
     }

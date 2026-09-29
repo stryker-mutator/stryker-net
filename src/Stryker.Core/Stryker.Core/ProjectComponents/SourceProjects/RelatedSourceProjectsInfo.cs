@@ -19,7 +19,7 @@ public class RelatedSourceProjectsInfo(
 
     private ProjectsTracker Tracker { get; } = projectsTracker;
 
-    public bool BuildTestProjects(IInitialBuildProcess buildProcess)
+    public bool BuildTestProjects(IInitialBuildProcess buildProcess, Dictionary<string, string> optionsBuildProperties)
     {
         if (!string.IsNullOrEmpty(Tracker.SolutionFilePath))
         {
@@ -39,8 +39,7 @@ public class RelatedSourceProjectsInfo(
             buildProcess.InitialBuild(
                 testProjects[i].TargetsDesktop(),
                 testProjects[i].ProjectFilePath,
-                null,
-                new Dictionary<string, string>(),
+                optionsBuildProperties,
                 testProjects[i].GetProperty("Configuration"),
                 testProjects[i].GetProperty("Platform"),
                 msbuildPath: testProjects[i].MsBuildPath());
