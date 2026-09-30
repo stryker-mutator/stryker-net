@@ -106,7 +106,7 @@ public class FileBasedInput : IExtraData
     public Dictionary<string, JsonElement> ExtraData { get; init; }
 
     [JsonPropertyName("build-properties")]
-    public Dictionary<string, string> BuildProperties { get; init; }
+    public List<string> BuildProperties { get; init; }
 }
 
 public class Since : IExtraData

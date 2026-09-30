@@ -73,10 +73,9 @@ public static class FileConfigReader
         inputs.DashboardUrlInput.SuppliedInput = config.DashboardUrl;
         inputs.IgnoreMutationsInput.SuppliedInput = config.IgnoreMutations;
         inputs.IgnoredMethodsInput.SuppliedInput = config.IgnoreMethods;
-
         inputs.ReportFileNameInput.SuppliedInput = config.ReportFileName;
         inputs.BreakOnInitialTestFailureInput.SuppliedInput = config.BreakOnInitialTestFailure;
-        inputs.BuildPropertiesInput.SuppliedInput = [.. config.BuildProperties?.Select(kvp => $"{kvp.Key}={kvp.Value}") ?? []];
+        inputs.BuildPropertiesInput.SuppliedInput = config.BuildProperties;
     }
 
     private static FileBasedInput LoadConfig(string configFilePath)
