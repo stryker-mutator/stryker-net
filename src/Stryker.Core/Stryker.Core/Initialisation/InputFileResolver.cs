@@ -277,7 +277,7 @@ public class InputFileResolver(
 
         if (unusedTestProjects.Count > 0)
         {
-            _logger.LogInformation("Found {Count} unused test project(s):{Projects}", unusedTestProjects.Count, string.Join(", ",
+            _logger.LogInformation("Found {Count} test project(s) referencing no candidate project: {Projects}", unusedTestProjects.Count, string.Join(", ",
                 unusedTestProjects.Select(p => p.ProjectFileName)));
         }
 
