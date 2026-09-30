@@ -275,6 +275,12 @@ public class InputFileResolver(
             }
         }
 
+        if (unusedTestProjects.Count > 0)
+        {
+            _logger.LogInformation("Found {Count} unused test project(s):{Projects}", unusedTestProjects.Count, string.Join(", ",
+                unusedTestProjects.Select(p => p.ProjectFileName)));
+        }
+
         if (suitableCandidates.Count == 0)
         {
             _logger.LogWarning("No suitable candidates found.{UseDiagOptionToHaveTheAnalysisLogsInTheLogFile}",
