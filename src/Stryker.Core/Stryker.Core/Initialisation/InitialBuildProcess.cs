@@ -45,13 +45,10 @@ public class InitialBuildProcess : IInitialBuildProcess
         string targetFramework = null,
         string msbuildPath = null)
     {
-        if (fullFramework)
+        if (fullFramework && Environment.OSVersion.Platform != PlatformID.Win32NT)
         {
             // ensure prerequisites for building .NETFramework projects are met
-            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
-            {
-                throw new InputException("Stryker cannot build .NET Framework projects on non-Windows platforms.");
-            }
+            throw new InputException("Stryker cannot build .NET Framework projects on non-Windows platforms.");
         }
 
         var msBuildHelper = new MsBuildHelper(fileSystem: _fileSystem, executor: _processExecutor, msBuildPath: msbuildPath);

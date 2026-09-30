@@ -320,14 +320,14 @@ public class InputFileResolver(
                 {
                     foreach (var project in list.Consume())
                     {
-                        ProcessProject(project);
+                        ProcessProject(project, normalizedProjectUnderTestNameFilter, mutableProjectsAnalyzerResults, mode, list, solutionInfo, options);
                     }
                 }
                 else
                 #endif
                 {
                     Parallel.ForEach(list.Consume(),
-                        parallelOptions, ProcessProject
+                        parallelOptions, entry => ProcessProject(entry, normalizedProjectUnderTestNameFilter, mutableProjectsAnalyzerResults, mode, list, solutionInfo, options)
                     );
                 }
             }
@@ -339,37 +339,36 @@ public class InputFileResolver(
         }
 
         return mutableProjectsAnalyzerResults;
+    }
 
-        void ProcessProject(string entry)
+    private void ProcessProject(string entry, string projectUnderTestNameFilter, ConcurrentBag<ProjectSimulatedBuildWrapper> results, ScanMode scanMode, DynamicEnumerableQueue<string> dynamicEnumerableQueue, ProjectsTracker solutionInfo, IStrykerOptions options)
+    {
+        var projectAnalysisContext = solutionInfo.GetProjectAnalysisContext(entry);
+        IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(projectAnalysisContext, options);
+
+        // apply project name filter (except for test projects)
+        if (projectUnderTestNameFilter != null
+            && !buildResult.IsTestProject()
+            && !projectAnalysisContext.ProjectFileName.Replace('\\', '/')
+                .Contains(projectUnderTestNameFilter,
+                    StringComparison.InvariantCultureIgnoreCase))
         {
-            var projectAnalysisContext = solutionInfo.GetProjectAnalysisContext(entry);
-
-            IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(projectAnalysisContext, options);
-
-            // apply project name filter (except for test projects)
-            if (normalizedProjectUnderTestNameFilter != null
-                && !buildResult.IsTestProject()
-                && !projectAnalysisContext.ProjectFileName.Replace('\\', '/')
-                    .Contains(normalizedProjectUnderTestNameFilter,
-                        StringComparison.InvariantCultureIgnoreCase))
-            {
-                return;
-            }
-
-            mutableProjectsAnalyzerResults.Add(projectAnalysisContext);
-            // recursively scan dependencies only if enabled and current project is a test project
-            if (mode == ScanMode.NoScan
-                || (mode == ScanMode.ScanTestProjectReferences && !projectAnalysisContext.IsTestProject()))
-            {
-                return;
-            }
-
-            // scan references if recursive scan is enabled
-            // Stryker will recursively scan projects
-            // add any project reference for progressive discovery (when not using solution file)
-            list.Add(projectAnalysisContext.GetProjectReferences()
-                .Where(projectReference => FileSystem.File.Exists(projectReference)));
+            return;
         }
+
+        results.Add(projectAnalysisContext);
+        // recursively scan dependencies only if enabled and current project is a test project
+        if (scanMode == ScanMode.NoScan
+            || (scanMode == ScanMode.ScanTestProjectReferences && !projectAnalysisContext.IsTestProject()))
+        {
+            return;
+        }
+
+        // scan references if recursive scan is enabled
+        // Stryker will recursively scan projects
+        // add any project reference for progressive discovery (when not using solution file)
+        dynamicEnumerableQueue.Add(projectAnalysisContext.GetProjectReferences()
+            .Where(projectReference => FileSystem.File.Exists(projectReference)));
     }
 
     // analyze a single project with retry attempts if needed, and return the analyzer results
