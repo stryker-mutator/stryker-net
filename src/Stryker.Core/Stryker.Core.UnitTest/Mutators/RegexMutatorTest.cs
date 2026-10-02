@@ -37,6 +37,17 @@ public class RegexMutatorTest : TestBase
     }
 
     [TestMethod]
+    public void ShouldMutateInterpolatedStringInRegexConstructor()
+    {
+        var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex($\"^abc{test} [1]{42}\")") as ObjectCreationExpressionSyntax;
+        var target = new RegexMutator();
+
+        var result = target.ApplyMutations(objectCreationExpression, null);
+
+        result.Count().ShouldBe(3);
+    }
+
+    [TestMethod]
     public void ShouldMutateStringLiteralInRegexConstructorWithFullName()
     {
         var objectCreationExpression = SyntaxFactory.ParseExpression("new System.Text.RegularExpressions.Regex(@\"^abc\")") as ObjectCreationExpressionSyntax;
