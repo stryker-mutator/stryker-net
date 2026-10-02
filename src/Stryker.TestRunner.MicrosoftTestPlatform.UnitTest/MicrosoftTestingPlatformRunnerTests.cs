@@ -524,29 +524,6 @@ public class MicrosoftTestingPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task RunAssemblyTestsAsync_WithMultipleMutants_UsesNegativeOneMutantId()
-    {
-        // Arrange
-        var project = new Mock<IProjectAndTests>();
-        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { "/test.dll" });
-
-        var mutant1 = new Mock<IMutant>();
-        mutant1.Setup(x => x.Id).Returns(1);
-        var mutant2 = new Mock<IMutant>();
-        mutant2.Setup(x => x.Id).Returns(2);
-        var mutants = new List<IMutant> { mutant1.Object, mutant2.Object };
-
-        using var runner = CreateRunner(0);
-
-        // Act - With multiple mutants, mutantId should be -1 (no mutation)
-        var result = await runner.TestMultipleMutantsAsync(project.Object, null, mutants, null);
-
-        // Assert
-        result.ShouldNotBeNull();
-        result.ExecutedTests.ShouldNotBeNull();
-    }
-
-    [TestMethod, Timeout(1000)]
     public async Task RunAssemblyTestsAsync_WithSingleMutant_UsesMutantId()
     {
         // Arrange
@@ -1177,35 +1154,6 @@ public class MicrosoftTestingPlatformRunnerTests
         // Assert
         result.ShouldNotBeNull();
         mutant.Verify(x => x.Id, Times.AtLeastOnce);
-    }
-
-    [TestMethod, Timeout(1000)]
-    public async Task TestMultipleMutantsAsync_ShouldUseNoMutationId_WhenMultipleMutants()
-    {
-        // Arrange
-        var project = new Mock<IProjectAndTests>();
-        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string>());
-
-        var mutant1 = new Mock<IMutant>();
-        mutant1.Setup(x => x.Id).Returns(1);
-        var mutant2 = new Mock<IMutant>();
-        mutant2.Setup(x => x.Id).Returns(2);
-        var mutants = new List<IMutant> { mutant1.Object, mutant2.Object };
-
-        using var runner = new MicrosoftTestingPlatformRunner(
-            0,
-            _testsByAssembly,
-            _testDescriptions,
-            _testSet,
-            _discoveryLock,
-            NullLogger.Instance);
-
-        // Act
-        var result = await runner.TestMultipleMutantsAsync(project.Object, null, mutants, null);
-
-        // Assert
-        result.ShouldNotBeNull();
-        result.ExecutedTests.ShouldNotBeNull();
     }
 
     [TestMethod, Timeout(1000)]

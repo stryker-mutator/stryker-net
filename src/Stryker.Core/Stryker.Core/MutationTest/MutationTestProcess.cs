@@ -171,12 +171,17 @@ public class MutationTestProcess : IMutationTestProcess
 
     private IEnumerable<List<IMutant>> BuildMutantGroupsForTest(IReadOnlyCollection<IMutant> mutantsNotRun)
     {
+        if (_options.TestRunner == Stryker.Abstractions.Options.TestRunner.MicrosoftTestPlatform)
+        {
+            // Our MTP runner can activate only one mutant per session.
+            // Queue ordinary mutants first to reuse test hosts before isolated sessions reset them.
+            // Workers can start isolated sessions while ordinary sessions are still running.
+            return mutantsNotRun.OrderBy(m => m.IsStaticValue || m.MustBeTestedInIsolation)
+                .Select(m => new List<IMutant> { m });
+        }
+
         if (_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants) ||
-            !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) ||
-            // The MTP runner can only activate a single mutant per test run (one memory-mapped id
-            // shared by the whole run), so grouping mutants together would test them with no
-            // mutation active at all and falsely report them as survived.
-            _options.TestRunner == Stryker.Abstractions.Options.TestRunner.MicrosoftTestPlatform)
+            !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
         {
             return mutantsNotRun.Select(x => new List<IMutant> { x });
         }
