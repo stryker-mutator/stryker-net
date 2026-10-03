@@ -126,6 +126,26 @@ public class ValidateStrykerResults
     }
 
     [Fact]
+    [Trait("Category", "MSTestMTP")]
+    [Trait("Runtime", "netframework")]
+    public async Task CSharp_NetFramework_MSTestMTP()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/MicrosoftTestPlatform/MSTest.NetFx/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        CheckReportMutants(report, total: 2, ignored: 0, survived: 0, killed: 2, timeout: 0, nocoverage: 0, runtimeError: 0);
+        CheckReportTestCounts(report, total: 2);
+    }
+
+    [Fact]
     [Trait("Category", "XUnitMTP")]
     [Trait("Runtime", "netcore")]
     public async Task CSharp_NetCore_XUnitMTP()

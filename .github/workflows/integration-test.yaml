@@ -32,8 +32,6 @@ jobs:
           - runtime: netframework
             category: MultipleTestProjects
           - runtime: netframework
-            category: MSTestMTP
-          - runtime: netframework
             category: XUnitMTP
           - runtime: netframework
             category: NUnitMTP
