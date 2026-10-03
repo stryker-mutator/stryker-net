@@ -14,12 +14,9 @@ internal sealed class AssemblyTestServer : IDisposable
     private readonly Dictionary<string, string?> _environmentVariables;
     private readonly ILogger _logger;
     private readonly string _runnerId;
-    private readonly IStrykerOptions? _options;
     private readonly ITestServerConnectionFactory _connectionFactory;
     private ITestServerListener? _listener;
     private ITestServerProcess? _process;
-    private Stream? _stream;
-    private IDisposable? _connection;
     private ITestingPlatformClient? _client;
     private bool _isInitialized;
     private bool _disposed;
@@ -36,7 +33,6 @@ internal sealed class AssemblyTestServer : IDisposable
         _environmentVariables = environmentVariables;
         _logger = logger;
         _runnerId = runnerId;
-        _options = options;
         _connectionFactory = connectionFactory ?? new DefaultTestServerConnectionFactory(options);
     }
 
@@ -82,12 +78,18 @@ internal sealed class AssemblyTestServer : IDisposable
                 return false;
             }
 
-            (_stream, _connection) = await acceptTask.ConfigureAwait(false);
+            var tcpClient = await acceptTask.ConfigureAwait(false);
+            try
+            {
+                _client = _connectionFactory.CreateClient(tcpClient, _process.ProcessHandle, _logger);
+            }
+            catch
+            {
+                tcpClient.Dispose();
+                throw;
+            }
 
-            var rpcLogFilePath = BuildRpcLogFilePath();
-            _client = _connectionFactory.CreateClient(_stream, _process.ProcessHandle, _logger, rpcLogFilePath);
-
-            await _client.InitializeAsync().ConfigureAwait(false);
+            await _client.InitializeAsync(cancellationToken).ConfigureAwait(false);
             _isInitialized = true;
 
             _logger.LogDebug("{RunnerId}: Test server started successfully for {Assembly}", _runnerId, _assembly);
@@ -108,16 +110,13 @@ internal sealed class AssemblyTestServer : IDisposable
             throw new InvalidOperationException("Server not initialized. Call StartAsync first.");
         }
 
-        var discoveryId = Guid.NewGuid();
         List<TestNodeUpdate> discoveredResults = [];
 
-        var discoverTestsResponse = await _client.DiscoverTestsAsync(discoveryId, updates =>
+        await _client.DiscoverTestsAsync(updates =>
         {
             discoveredResults.AddRange(updates);
             return Task.CompletedTask;
         }).ConfigureAwait(false);
-
-        await discoverTestsResponse.WaitCompletionAsync().ConfigureAwait(false);
 
         return discoveredResults
             .Where(x => x.Node.ExecutionState is TestNodeStates.Discovered)
@@ -138,7 +137,6 @@ internal sealed class AssemblyTestServer : IDisposable
             throw new InvalidOperationException("Server not initialized. Call StartAsync first.");
         }
 
-        var runId = Guid.NewGuid();
         var testResults = new System.Collections.Concurrent.ConcurrentBag<TestNodeUpdate>();
 
         Func<TestNodeUpdate[], Task> onUpdate = updates =>
@@ -152,34 +150,34 @@ internal sealed class AssemblyTestServer : IDisposable
 
         if (timeout.HasValue)
         {
-            ResponseListener executeTestsResponse;
+            using var cancellationTokenSource = new CancellationTokenSource(timeout.Value);
             try
             {
-                // The RPC call itself can block when the server is stuck (e.g. infinite loop in mutated code)
-                executeTestsResponse = await _client.RunTestsAsync(runId, onUpdate, testsToRun)
-                    .WaitAsync(timeout.Value).ConfigureAwait(false);
+                await _client.RunTestsAsync(onUpdate, testsToRun, cancellationTokenSource.Token).ConfigureAwait(false);
+                return (testResults.ToList(), false);
             }
-            catch (TimeoutException ex)
+            catch (OperationCanceledException ex) when (cancellationTokenSource.IsCancellationRequested)
             {
                 _logger.LogDebug(ex, "{RunnerId}: Test run RPC call timed out for {Assembly}", _runnerId, _assembly);
                 return (testResults.ToList(), true);
             }
-
-            var completionTask = executeTestsResponse.WaitCompletionAsync(timeout.Value);
-            await Task.WhenAny(completionTask, _process!.WaitForExitAsync()).ConfigureAwait(false);
-            ThrowIfHostCrashed(completionTask);
-
-            var completed = await completionTask.ConfigureAwait(false);
-            return (testResults.ToList(), !completed);
+            catch
+            {
+                ThrowIfHostCrashed();
+                throw;
+            }
         }
 
-        var response = await _client.RunTestsAsync(runId, onUpdate, testsToRun).ConfigureAwait(false);
-        var responseCompletion = response.WaitCompletionAsync();
-        await Task.WhenAny(responseCompletion, _process!.WaitForExitAsync()).ConfigureAwait(false);
-        ThrowIfHostCrashed(responseCompletion);
-
-        await responseCompletion.ConfigureAwait(false);
-        return (testResults.ToList(), false);
+        try
+        {
+            await _client.RunTestsAsync(onUpdate, testsToRun).ConfigureAwait(false);
+            return (testResults.ToList(), false);
+        }
+        catch
+        {
+            ThrowIfHostCrashed();
+            throw;
+        }
     }
 
     /// <summary>
@@ -187,9 +185,9 @@ internal sealed class AssemblyTestServer : IDisposable
     /// run completed. A crashed host never sends a completion signal, so without this check the run would
     /// otherwise wait out the full timeout and be misreported as a timeout instead of a runtime error.
     /// </summary>
-    private void ThrowIfHostCrashed(Task runCompletion)
+    private void ThrowIfHostCrashed()
     {
-        if (_process is { HasExited: true } && !runCompletion.IsCompletedSuccessfully)
+        if (_process is { HasExited: true })
         {
             _logger.LogDebug("{RunnerId}: Test host for {Assembly} exited unexpectedly during the test run", _runnerId, _assembly);
             throw new Stryker.TestRunner.TestHostCrashedException($"The test host for {_assembly} exited unexpectedly during the test run.");
@@ -213,9 +211,7 @@ internal sealed class AssemblyTestServer : IDisposable
         {
             try
             {
-                // ExitAsync sends a JSON-RPC notification, which StreamJsonRpc has no
-                // CancellationToken overload for; a stuck/backpressured send would otherwise block this
-                // forever, so it gets the same bound as the exit wait below rather than none at all.
+                // Bound both the exit notification and process shutdown so cleanup cannot hang indefinitely.
                 var timeout = TimeSpan.FromSeconds(30);
                 await _client.ExitAsync().WaitAsync(timeout).ConfigureAwait(false);
                 // Coverage data must be flushed before disposing resources
@@ -237,10 +233,6 @@ internal sealed class AssemblyTestServer : IDisposable
         _listener = null;
         _client?.Dispose();
         _client = null;
-        _stream?.Dispose();
-        _stream = null;
-        _connection?.Dispose();
-        _connection = null;
         try
         {
             _process?.Dispose();
@@ -251,21 +243,6 @@ internal sealed class AssemblyTestServer : IDisposable
         }
         _process = null;
         _isInitialized = false;
-    }
-
-    /// <summary>
-    /// Returns a per-instance RPC trace log path when log-to-file is enabled, or null otherwise.
-    /// </summary>
-    private string? BuildRpcLogFilePath()
-    {
-        if (_options?.LogOptions.LogToFile != true || string.IsNullOrEmpty(_options.OutputPath))
-        {
-            return null;
-        }
-
-        var logsDirectory = Path.Combine(_options.OutputPath, "logs", "test-servers");
-        var fileName = $"rpc-{Path.GetFileNameWithoutExtension(_assembly)}-{_runnerId}-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss-fffffff}.log";
-        return Path.Combine(logsDirectory, fileName);
     }
 
     public void Dispose()
@@ -279,5 +256,3 @@ internal sealed class AssemblyTestServer : IDisposable
         StopAsync().GetAwaiter().GetResult();
     }
 }
-
-
