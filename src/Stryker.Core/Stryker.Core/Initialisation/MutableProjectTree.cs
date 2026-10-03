@@ -19,6 +19,10 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
 
     public bool IsValidTarget => Targets.Any(t => t.IsValidTarget);
 
+    private bool HasTests => Targets.Any(t => t.TestProjects.Count > 0);
+
+    private bool HasValidAnalysis => project.AnalyzerLastResults.Any(r => r.IsValid());
+
     public MutableProjectTarget this[IAnalyzerResult target]
     {
         get
@@ -57,8 +61,9 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
             logger.LogWarning("Failed to find a valid {Framework} target for project {Project}. ", optionsTargetFramework, project.ProjectFileName);
         }
 
-        var mutableProjectTargets = Targets.Where(t => t.IsValidTarget);
-        // keep the first non netframework target otherwise pick the first one when running on Windows OS
+        var mutableProjectTargets = Targets.Where(t => t.IsValidTarget).ToList();
+        var countOfValidTargets = mutableProjectTargets.Count;
+        // keep the first non netFramework target otherwise pick the first one when running on Windows OS
         targetToKeep = mutableProjectTargets.FirstOrDefault( t => !t.ProjectTarget.TargetsDesktop()) ??
                        mutableProjectTargets.FirstOrDefault(_ => OperatingSystem.IsWindows());
         Targets.Clear();
@@ -67,15 +72,45 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
             logger.LogWarning("Failed to find a valid target for project {Project}. ", project.ProjectFileName);
             return;
         }
-        logger.LogInformation("Picking {Framework} for project {Project}. ", targetToKeep.ProjectTarget.TargetFramework, project.ProjectFileName);
+        logger.Log(countOfValidTargets>1 ? LogLevel.Information : LogLevel.Debug, "Picking {Framework} for project {Project}. ", targetToKeep.ProjectTarget.TargetFramework, project.ProjectFileName);
         Targets.Add(targetToKeep);
     }
 
-    public void LogAllAnalysisSummaries()
+    public IEnumerable<string> KnownProblems() => project.IdentifiedProblems();
+
+    public void LogAllAnalysisSummaries(bool diagnosticMode)
     {
-        logger.LogInformation("Project {ProjectPath} overall analysis {Result}.",
-            Path.GetFileName(project.ProjectFileName),
-            IsValidTarget ? "succeeded" : "failed hence can't be mutated");
+        var statusText = HasTests switch
+        {
+            true when HasValidAnalysis => "succeeded",
+            false when HasValidAnalysis => "succeeded but can't be mutated because no test project references it",
+            false => $"failed and can't be mutated because no test project references it",
+            _ => "failed hence can't be mutated"
+        };
+        logger.LogInformation("Project {ProjectPath} overall analysis {Result}.", Path.GetFileName(project.ProjectFileName), statusText);
+
+        if (KnownProblems().Any())
+        {
+            logger.LogWarning("  has some known issues:");
+            foreach (var logKnownProblem in KnownProblems())
+            {
+                logger.LogWarning("- {LogKnownProblem}", logKnownProblem);
+            }
+        }
+
+        if (!diagnosticMode)
+        {
+            return;
+        }
+
+        if (!Targets.Any())
+        {
+            logger.LogInformation(!project.AnalyzerLastResults.Any()
+                ? "  simulated build failed early. No details are available."
+                : "  no test project seems to reference this project. If this is a test project, ensure it has the property: <IsTestProject>true</IsTestProject> in its project file.");
+
+            return;
+        }
         foreach (var target in Targets)
         {
             target.LogAnalysisSummary();

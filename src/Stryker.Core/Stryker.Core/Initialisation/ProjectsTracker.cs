@@ -56,38 +56,47 @@ public class ProjectsTracker
 
     private void SelectConfiguration()
     {
-        var configuration = _options.Configuration;
-        var platform = _options.Platform;
         if (Solution != null)
         {
-            // we use the solution to determine the configuration and platform to use, as the project files may not contain all configurations and platforms that are defined in the solution
-            (Configuration, Platform) = Solution.GetMatching(configuration, platform);
-            if ((!string.IsNullOrEmpty(configuration) && configuration != Configuration) ||
-                (!string.IsNullOrEmpty(platform) && platform != Platform))
-            {
-                _logger.LogWarning("Using solution configuration/platform '{ActualBuildType}|{ActualPlatform}' instead of requested '{Configuration}|{Platform}'.",
-                    Configuration, Platform, configuration, platform);
-            }
-            else
-            {
-                _logger.LogInformation("Using solution configuration/platform '{Configuration}|{Platform}'.", Configuration, Platform);
-            }
+            SelectSolutionConfiguration();
         }
         else
         {
-            Configuration = configuration;
-            // "Any CPU" is default platform at solution level, but in project files it is "AnyCPU", so we need to convert it to match the project files
-            // note that this fixes user misconfiguration. Platform should always be valid when a solution file is used.
-            Platform = platform == "Any CPU" ? "AnyCPU" : platform;
-            if (!string.IsNullOrEmpty(configuration) || !string.IsNullOrEmpty(platform))
-            {
-                _logger.LogInformation("Using project configuration/platform '{Configuration}|{Platform}'.", Configuration??"`default`", Platform ?? "`default`");
-            }
+            SelectConfigurationForSingleProject();
+        }
+    }
+
+    private void SelectSolutionConfiguration()
+    {
+        // we use the solution to determine the configuration and platform to use, as the project files may not contain all configurations and platforms that are defined in the solution
+        (Configuration, Platform) = Solution.GetMatching(_options.Configuration, _options.Platform);
+        if ((!string.IsNullOrEmpty(_options.Configuration) && _options.Configuration != Configuration) ||
+            (!string.IsNullOrEmpty(_options.Platform) && _options.Platform != Platform))
+        {
+            _logger.LogWarning("Using solution configuration/platform '{ActualBuildType}|{ActualPlatform}' instead of requested '{Configuration}|{Platform}'.",
+                Configuration, Platform, _options.Configuration, _options.Platform);
+        }
+        else
+        {
+            // log at debug level if no configuration or platform was specified, otherwise log at information level
+            _logger.Log(string.IsNullOrEmpty(_options.Configuration??_options.Platform) ? LogLevel.Debug : LogLevel.Information, "Using solution configuration/platform '{Configuration}|{Platform}'.", Configuration, Platform);
+        }
+    }
+
+    private void SelectConfigurationForSingleProject()
+    {
+        Configuration = _options.Configuration;
+        // "Any CPU" is default platform at solution level, but in project files it is "AnyCPU", so we need to convert it to match the project files
+        // note that this fixes user misconfiguration. Platform should always be valid when a solution file is used.
+        Platform = _options.Platform == "Any CPU" ? "AnyCPU" : _options.Platform;
+        if (!string.IsNullOrEmpty(_options.Configuration) || !string.IsNullOrEmpty(_options.Platform))
+        {
+            _logger.LogInformation("Using project configuration/platform '{Configuration}|{Platform}'.", Configuration??"`default`", Platform ?? "`default`");
         }
     }
 
     /// <summary>
-    /// Select all projects from solution
+    /// Select all projects from solution for mutation
     /// </summary>
     public void SelectAllProjects() => _selectedProjects = Solution?.GetProjects(Configuration, Platform).ToList() ?? [];
 
@@ -134,8 +143,7 @@ public class ProjectsTracker
 
             buildProcess.InitialBuild(
                 framework,
-                _fileSystem.Path.GetDirectoryName(SolutionFilePath),
-                SolutionFilePath, Configuration, Platform,
+                SolutionFilePath, _options.BuildProperties, Configuration, Platform,
                 TargetFramework, MsBuildPath(results));
             _solutionBuilt = true;
         }
@@ -160,7 +168,7 @@ public class ProjectsTracker
         {
             (configuration, platform) = (Configuration, Platform);
         }
-        return new ProjectSimulatedBuildWrapper(_buildalyzerProvider, projectFile, _options.MsBuildPath, (configuration,
-            platform, _options.TargetFramework), _logger, this);
+        return new ProjectSimulatedBuildWrapper(_buildalyzerProvider, projectFile, _options.MsBuildPath, _options.BuildProperties,
+            (configuration, platform, _options.TargetFramework), _logger, this);
     }
 }

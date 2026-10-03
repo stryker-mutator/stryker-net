@@ -50,14 +50,16 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
     /// </summary>
     /// <param name="options">Stryker options</param>
     /// <param name="fileSystem">filesystem</param>
+    /// <param name="knownProblems"></param>
     /// <returns></returns>
-    public SourceProjectInfo BuildSourceProjectInfo(IStrykerOptions options, IFileSystem fileSystem )
+    public SourceProjectInfo BuildSourceProjectInfo(IStrykerOptions options, IFileSystem fileSystem,
+        IEnumerable<string> knownProblems)
     {
         var testProjectInfo = new TestProjectsInfo(fileSystem)
         {
             TestProjects = TestProjects.Select(testProjectAnalyzerResult => new TestProject(fileSystem, testProjectAnalyzerResult)).ToList()
         };
-        var targetProjectInfo = new SourceProjectInfo(ProjectTarget , testProjectInfo);
+        var targetProjectInfo = new SourceProjectInfo(ProjectTarget , testProjectInfo, IsValidTarget);
 
         var language = targetProjectInfo.AnalyzerResult.GetLanguage();
 
@@ -70,6 +72,10 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
         builder.InjectHelpers(inputFiles);
         targetProjectInfo.OnProjectBuilt = builder.PostBuildAction();
         targetProjectInfo.ProjectContents = inputFiles;
+        foreach (var knownProblem in knownProblems)
+        {
+            targetProjectInfo.LogError(knownProblem);
+        }
         logger.LogInformation("Found project {ProjectFileName} to mutate.", ProjectTarget.ProjectFilePath);
         return targetProjectInfo;
     }
@@ -101,11 +107,11 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
         // provide synthetic status
         if (TestProjects.Any(r => r.IsValid()))
         {
-            logger.LogInformation(ProjectTarget.IsValid() ? "  can be mutated." : " can't be mutated because its simulated build failed.");
+            logger.LogInformation(ProjectTarget.IsValid() ? "  can be mutated." : " can't be mutated because Stryker was unable to analyze it.");
         }
         else
         {
-            logger.LogWarning("  can't be mutated because all referencing test projects' simulated build failed.");
+            logger.LogWarning("  can't be mutated because all referencing test projects' analysis failed.");
         }
     }
 }

@@ -5,7 +5,6 @@ using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Options;
 using Stryker.Configuration.Options;
 using Stryker.Configuration.Options.Inputs;
 
@@ -193,6 +192,7 @@ public class CommandLineConfigReader
         AddCliInput(inputs.TestProjectsInput, "test-project", "tp", CommandOptionType.MultipleValue, InputCategory.Build);
         AddCliInput(inputs.MsBuildPathInput, "msbuild-path", null, category: InputCategory.Build);
         AddCliInput(inputs.TargetFrameworkInput, "target-framework", null, optionType: CommandOptionType.SingleValue, category: InputCategory.Build);
+        AddCliInput(inputs.BuildPropertiesInput, "property", "P", optionType: CommandOptionType.MultipleValue, argumentHint: "<key>=<value>", category: InputCategory.Build);
         // Category: Mutation
         AddCliInput(inputs.MutateInput, "mutate", "m", optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern", category: InputCategory.Mutation);
         AddCliInput(inputs.MutationLevelInput, "mutation-level", "l", category: InputCategory.Mutation);

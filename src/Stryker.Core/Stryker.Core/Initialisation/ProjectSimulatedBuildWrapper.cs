@@ -16,33 +16,35 @@ namespace Stryker.Core.Initialisation;
 /// </summary>
 public class ProjectSimulatedBuildWrapper
 {
+    private const string DesignTimeProperty = "DesignTimeBuild";
     private readonly IProjectAnalyzer _analyzer;
     private readonly ProjectsTracker _projectsTracker;
     private readonly string _msBuildPath;
+    private readonly Dictionary<string, string> _properties;
     private readonly string _configuration;
     private readonly string _platform;
     private readonly string? _framework;
     private readonly ILogger _logger;
     private readonly StringWriter _buildLogger;
-    private string[] _targetFrameworks=[];
+    private string[] _targetFrameworks;
 
     public ProjectSimulatedBuildWrapper(IBuildalyzerProvider buildalyzerProvider,
         string projectFile,
         string msBuildPath,
-        (string configuration,
-        string platform,
-        string? framework) target,
+        Dictionary<string, string> properties,
+        (string configuration, string platform, string? framework) target,
         ILogger logger,
         ProjectsTracker projectsTracker)
     {
         _buildLogger = new StringWriter();
         var manager = buildalyzerProvider.Provide(new AnalyzerManagerOptions{LogWriter = _buildLogger});
-        var analyzer = manager.GetProject(projectFile);
 
-        _analyzer = analyzer;
+        _analyzer = manager.GetProject(projectFile);
+        _targetFrameworks = _analyzer.ProjectFile.TargetFrameworks;
         ProjectFileName = projectFile;
         _projectsTracker = projectsTracker;
         _msBuildPath = msBuildPath;
+        _properties = properties;
         _configuration = target.configuration;
         _platform = target.platform;
         _framework = target.framework;
@@ -55,23 +57,14 @@ public class ProjectSimulatedBuildWrapper
 
     public string ProjectFileName { get; }
 
-    public IAnalyzerResults Analyze(bool withRestore = false, bool forceFramework = false)
+    private EnvironmentOptions GetBuildalyzerEnvironmentOptions(bool withRestore = false)
     {
-        if (forceFramework && string.IsNullOrEmpty(_framework))
+        var env = new EnvironmentOptions();
+        // import properties
+        foreach (var property in _properties)
         {
-            throw new InvalidOperationException("Cannot force framework when no framework is specified in options.");
+            env.GlobalProperties[property.Key] = property.Value;
         }
-
-        if (withRestore && AnalyzerLastResults.Any(ar => ar.TargetsDesktop()))
-        {
-            _projectsTracker.RestoreSolution(AnalyzerLastResults);
-            withRestore = false;
-        }
-        _buildLogger.GetStringBuilder().Clear();
-        var env = new EnvironmentOptions
-        {
-            Restore = withRestore
-        };
         if (!string.IsNullOrEmpty(_msBuildPath))
         {
             // we need to forward this path to buildalyzer
@@ -86,30 +79,57 @@ public class ProjectSimulatedBuildWrapper
             env.GlobalProperties["Platform"] = _platform;
         }
 
+        // we default to design time build unless the property is explicitly set to anything but true
+        env.DesignTime = !_properties.TryGetValue(DesignTimeProperty, out var designTime) ||
+                         designTime.Equals("true", StringComparison.OrdinalIgnoreCase);
+        env.Restore = withRestore;
+        return env;
+    }
+
+    public IAnalyzerResults Analyze(bool withRestore = false, bool forceFramework = false)
+    {
+        if (forceFramework && string.IsNullOrEmpty(_framework))
+        {
+            throw new InvalidOperationException("Cannot force framework when no framework is specified in options.");
+        }
+
+        if (withRestore && AnalyzerLastResults.Any(ar => ar.TargetsDesktop()))
+        {
+            _projectsTracker.RestoreSolution(AnalyzerLastResults);
+            withRestore = false;
+        }
+        _buildLogger.GetStringBuilder().Clear();
+
+        var env = GetBuildalyzerEnvironmentOptions(withRestore);
         AnalyzerLastResults = forceFramework ? _analyzer.Build(_framework, env) : _analyzer.Build(env);
-        InitializeTargetFrameworks();
         return AnalyzerLastResults;
     }
 
-    private void InitializeTargetFrameworks()
+    /// <summary>
+    /// Identifies the target frameworks for this project, using the project file, the analysis results, or the user-specified framework.
+    /// </summary>
+    public void InitializeTargetFrameworks()
     {
         var projectFileTargetFrameworks = _analyzer.ProjectFile.TargetFrameworks;
         if (projectFileTargetFrameworks.Length > 0)
         {
+            // we got the TFM from the project file
             _logger.LogDebug("Project {ProjectFilePath} supported frameworks: {FrameworkList}.", ProjectFileName, string.Join(',', projectFileTargetFrameworks));
         }
-        else
+        else if (!string.IsNullOrEmpty(_framework))
         {
-            if (!string.IsNullOrEmpty(_framework))
-            {
-                projectFileTargetFrameworks=[_framework];
-                _logger.LogWarning("Failed to identify target frameworks for project {ProjectFilePath}. Assuming selected framework ({Framework}) is present.", ProjectFileName, _framework);
-            }
-            else
-            {
-                projectFileTargetFrameworks = AnalyzerLastResults.Select(br => br.TargetFramework).ToArray();
-                _logger.LogWarning("Failed to identify target frameworks for project {ProjectFilePath}. Using analysis results: {Frameworks}", ProjectFileName, string.Join(',', projectFileTargetFrameworks));
-            }
+            projectFileTargetFrameworks = [_framework];
+            _logger.LogWarning(
+                "Failed to retrieve target framework(s) from {ProjectFilePath}. Assuming selected framework ({Framework}) is present.",
+                ProjectFileName, _framework);
+        }
+        else if (AnalyzerLastResults.Count > 0)
+        {
+            // we extract the frameworks from the analysis results.
+            projectFileTargetFrameworks = AnalyzerLastResults.Select(br => br.TargetFramework).ToArray();
+            _logger.LogWarning(
+                "Failed to retrieve target framework(s) from {ProjectFilePath}. Using analysis results: {Frameworks}",
+                ProjectFileName, string.Join(',', projectFileTargetFrameworks));
         }
 
         _targetFrameworks = projectFileTargetFrameworks;
@@ -120,9 +140,8 @@ public class ProjectSimulatedBuildWrapper
     public IEnumerable<string> FailedFrameworks => _targetFrameworks?.Where(tf =>
         !AnalyzerLastResults.Any( ar => ar.TargetFramework == tf && ar.IsValid())) ?? [];
 
-    public bool IsTest => AnalyzerLastResults.IsTestProject();
-
-    public bool HasValidResults() => AnalyzerLastResults.IsValidFor(_targetFrameworks);
+    public bool HasValidResults() => _targetFrameworks.Length == 0 ? AnalyzerLastResults.Count>0 && AnalyzerLastResults.All(r => r.IsValid())
+        : AnalyzerLastResults.IsValidFor(_targetFrameworks);
 
     public bool IsTestProject() => AnalyzerLastResults.IsTestProject();
 
@@ -142,26 +161,55 @@ public class ProjectSimulatedBuildWrapper
             log.AppendLine($"Project: {ProjectFileName}");
             if (AnalyzerLastResults.Count == 0)
             {
-                _logger.LogTrace("No analyzer results to log. This indicates an early failure in analysis, check build log for details.");
+                log.AppendLine("No analyzer results to log. This indicates an early failure in analysis, check build log for details.");
                 return;
             }
             // dump all properties as it can help diagnosing build issues for user project.
             foreach (var analyzerResult in AnalyzerLastResults)
             {
-                DumpTestAnalyzerResult(log, analyzerResult);
+                LogAnalyzerResultInDetails(log, analyzerResult, _logger.IsEnabled(LogLevel.Trace));
             }
         }
         finally
         {
             log.AppendLine("**** End Buildalyzer result ****");
-            _logger.LogDebug(log.ToString());
+            _logger.LogTrace(log.ToString());
         }
     }
 
-    private void DumpTestAnalyzerResult(StringBuilder log, IAnalyzerResult analyzerResult)
+    private static string PropertyOption(string propertyName, string value) => $"-P {propertyName}={value}";
+
+    // use analysis results to identify potential problems with this project
+    public IEnumerable<string> IdentifiedProblems()
     {
-        log.AppendLine($"TargetFramework: {analyzerResult.TargetFramework}");
-        log.AppendLine($"Simulated build: {(analyzerResult.Succeeded ? "succeeded": "failed")}");
+        if (AnalyzerLastResults.Any(r => r.Properties.ContainsKey("UseWPF") || r.Properties.ContainsKey("UseWindowsForms")))
+        {
+            if (Environment.OSVersion.Platform!=PlatformID.Win32NT
+                && !AnalyzerLastResults.Any(r => r.Properties.TryGetValue("EnableWindowsTargeting", out var enable) && enable.Equals("true", StringComparison.OrdinalIgnoreCase)))
+            {
+                // SDK will refuse to build WPF or Windows Forms projects on non-Windows platforms,
+                yield return $"Project {ProjectFileName} is a WPF or Windows Forms project. Please add {PropertyOption("EnableWindowsTargeting", "true")} to the command line to build it on non-Windows platforms.";
+            }
+            // look for net10+wpf issues
+            if (AnalyzerLastResults.Any(r => r.Properties.TryGetValue("TargetFramework", out var tf) && tf.StartsWith("net10.0", StringComparison.OrdinalIgnoreCase)
+                    && (!r.Properties.TryGetValue(DesignTimeProperty, out var design) || design.Equals("true", StringComparison.OrdinalIgnoreCase)))
+               )
+            {
+                yield return $"Project {ProjectFileName} does not support design time build (WPF or Windows Forms project with targeting net 10). Please add {PropertyOption(DesignTimeProperty, "false")} to the command line.";
+            }
+        }
+        if (AnalyzerLastResults.Any(r => r.PackageReferences.Keys.Any( name =>  name.Contains("Nerdbank.GitVersioning", StringComparison.OrdinalIgnoreCase)
+                                             && (!r.Properties.TryGetValue(DesignTimeProperty, out var design) || design.Equals("true", StringComparison.OrdinalIgnoreCase))) && r.IsSignedAssembly())
+                                         && Environment.GetEnvironmentVariable("NBGV_GitEngine") != "Disabled")
+        {
+            yield return $"Project {ProjectFileName} uses GitVersioning package and is a signed assembly. Please add {PropertyOption("DesignTimeBuild", "false")} to the command line.";
+        }
+    }
+
+    private static void LogAnalyzerResultInDetails(StringBuilder log, IAnalyzerResult analyzerResult, bool allProperties)
+    {
+        log.AppendLine($"TargetFramework : {analyzerResult.TargetFramework}");
+        log.AppendLine($"Simulated build : {(analyzerResult.Succeeded ? "succeeded": "failed")}");
         log.AppendLine($"Stryker analysis: {(analyzerResult.IsValid() ? "succeeded": "failed")}");
 
         var properties = analyzerResult.Properties;
@@ -174,7 +222,7 @@ public class ProjectSimulatedBuildWrapper
 
         log.AppendLine($"Compiler command: {analyzerResult.Command}");
 
-        if (_logger.IsEnabled(LogLevel.Trace))
+        if (allProperties)
         {
             // dumps all other properties as well, as they can be useful for diagnosing build issues
             var propertiesString = string.Join(", ", properties.
@@ -219,7 +267,7 @@ public class ProjectSimulatedBuildWrapper
         }
     }
 
-    public bool FindMatchingVariant(string assemblyPath, out IAnalyzerResult? analyzerResult)
+    public bool BuildThisAssembly(string assemblyPath, out IAnalyzerResult? analyzerResult)
     {
         analyzerResult= AnalyzerLastResults.FirstOrDefault( r=> r.BuildsAnAssembly() &&
                             (string.Compare(assemblyPath, r.GetAssemblyPath(), StringComparison.OrdinalIgnoreCase) == 0

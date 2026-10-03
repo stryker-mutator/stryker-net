@@ -58,7 +58,7 @@ public class InitialisationProcess(
     public void BuildProjects(IStrykerOptions options, RelatedSourceProjectsInfo projects)
     {
         // ensure test projects are built
-        projects.BuildTestProjects(_initialBuildProcess);
+        projects.BuildTestProjects(_initialBuildProcess, options.BuildProperties);
         // perform post build update (to capture some content files in C# project for example)
         foreach (var project in projects.SourceProjectInfos)
         {
