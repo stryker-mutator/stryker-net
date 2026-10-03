@@ -70,19 +70,25 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         });
     }
 
-    public async Task<bool> DiscoverTestsAsync(string assembly)
+    public async Task<bool> DiscoverTestsAsync(
+        string assembly,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(assembly) || !File.Exists(assembly))
         {
             return false;
         }
 
-        return await RunThisAsync(runner => runner.DiscoverTestsAsync(assembly)).ConfigureAwait(false);
+        return await RunThisAsync(
+            runner => runner.DiscoverTestsAsync(assembly, cancellationToken),
+            cancellationToken).ConfigureAwait(false);
     }
 
     public ITestSet GetTests(IProjectAndTests project) => _testSet;
 
-    public async Task<ITestRunResult> InitialTestAsync(IProjectAndTests project)
+    public async Task<ITestRunResult> InitialTestAsync(
+        IProjectAndTests project,
+        CancellationToken cancellationToken = default)
     {
         var assemblies = project.GetTestAssemblies();
         if (!assemblies.Any())
@@ -90,11 +96,10 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
             return new TestRunResult(false, "No test assemblies found");
         }
 
-        var results = await RunThisAsync(runner => runner.InitialTestAsync(project)).ConfigureAwait(false);
-
-        // reset all test processes after the initial test run
+        var results = await RunThisAsync(
+            runner => runner.InitialTestAsync(project, cancellationToken),
+            cancellationToken).ConfigureAwait(false);
         ResetTestProcesses();
-
         return results;
     }
 
@@ -302,7 +307,8 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         IProjectAndTests project,
         ITimeoutValueCalculator? timeoutCalc,
         IReadOnlyList<IMutant> mutants,
-        TestUpdateHandler? update)
+        TestUpdateHandler? update,
+        CancellationToken cancellationToken = default)
     {
         var assemblies = project.GetTestAssemblies();
         if (!assemblies.Any())
@@ -310,10 +316,19 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
             return new TestRunResult(false, "No test assemblies found");
         }
 
-        return await RunThisAsync(runner => runner.TestMultipleMutantsAsync(project, timeoutCalc, mutants, update)).ConfigureAwait(false);
+        return await RunThisAsync(
+            runner => runner.TestMultipleMutantsAsync(
+                project,
+                timeoutCalc,
+                mutants,
+                update,
+                cancellationToken),
+            cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<T> RunThisAsync<T>(Func<MicrosoftTestingPlatformRunner, Task<T>> task)
+    private async Task<T> RunThisAsync<T>(
+        Func<MicrosoftTestingPlatformRunner, Task<T>> task,
+        CancellationToken cancellationToken = default)
     {
         MicrosoftTestingPlatformRunner? runner;
 
@@ -325,6 +340,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
         while (!_availableRunners.TryTake(out runner))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (!_runnerAvailableHandler.WaitOne(waitIntervalMs))
             {
                 attempts++;
@@ -343,7 +359,26 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
         try
         {
-            return await task(runner).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            var execution = task(runner);
+            try
+            {
+                return await execution.WaitAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                await runner.ResetServerAsync().ConfigureAwait(false);
+                try
+                {
+                    await execution.ConfigureAwait(false);
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogDebug(exception, "Microsoft Testing Platform execution ended after cancellation.");
+                }
+
+                throw;
+            }
         }
         finally
         {
@@ -368,4 +403,3 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         _runnerAvailableHandler.Dispose();
     }
 }
-

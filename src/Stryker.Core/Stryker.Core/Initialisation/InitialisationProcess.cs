@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
@@ -23,8 +24,11 @@ public interface IInitialisationProcess
 
     void BuildProjects(IStrykerOptions options, RelatedSourceProjectsInfo projects);
 
-    Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
-        RelatedSourceProjectsInfo projects, ITestRunner runner);
+    Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(
+        IStrykerOptions options,
+        RelatedSourceProjectsInfo projects,
+        ITestRunner runner,
+        CancellationToken cancellationToken = default);
 }
 
 public class InitialisationProcess(
@@ -66,22 +70,30 @@ public class InitialisationProcess(
         }
     }
 
-    public async Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
+    public async Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(
+        IStrykerOptions options,
         RelatedSourceProjectsInfo projects,
-        ITestRunner runner)
+        ITestRunner runner,
+        CancellationToken cancellationToken = default)
     {
-        var getInputs = projects.SourceProjectInfos.Select(async info => new MutationTestInput {
+        var getInputs = projects.SourceProjectInfos.Select(async info => new MutationTestInput
+        {
             SourceProjectInfo = info,
             TestRunner = runner,
-            InitialTestRun = await InitialTestAsync(options, info, runner, projects.SourceProjectInfos.Count == 1)
+            InitialTestRun = await InitialTestAsync(
+                options,
+                info,
+                runner,
+                projects.SourceProjectInfos.Count == 1,
+                cancellationToken)
         });
         return await Task.WhenAll(getInputs);
     }
 
     private async Task<InitialTestRun> InitialTestAsync(IStrykerOptions options, SourceProjectInfo projectInfo,
-        ITestRunner testRunner, bool throwIfFails)
+        ITestRunner testRunner, bool throwIfFails, CancellationToken cancellationToken)
     {
-        DiscoverTests(projectInfo, testRunner);
+        await DiscoverTestsAsync(projectInfo, testRunner, cancellationToken);
 
         // initial test
         _logger.LogInformation(
@@ -89,7 +101,11 @@ public class InitialisationProcess(
         testRunner.GetTests(projectInfo).Count,
         projectInfo.AnalyzerResult.ProjectFilePath);
 
-        var result = await _initialTestProcess.InitialTestAsync(options, projectInfo, testRunner);
+        var result = await _initialTestProcess.InitialTestAsync(
+            options,
+            projectInfo,
+            testRunner,
+            cancellationToken);
 
         if (!result.Result.FailingTests.IsEmpty)
         {
@@ -127,11 +143,18 @@ public class InitialisationProcess(
                 ("Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter", "MSTest.TestAdapter")
     };
 
-    private void DiscoverTests(SourceProjectInfo projectInfo, ITestRunner testRunner)
+    private async Task DiscoverTestsAsync(
+        SourceProjectInfo projectInfo,
+        ITestRunner testRunner,
+        CancellationToken cancellationToken)
     {
         foreach (var testProject in projectInfo.TestProjectsInfo.AnalyzerResults)
         {
-            if (testRunner.DiscoverTestsAsync(testProject.GetAssemblyPath()).GetAwaiter().GetResult())
+            cancellationToken.ThrowIfCancellationRequested();
+            var discovered = await testRunner.DiscoverTestsAsync(
+                testProject.GetAssemblyPath(),
+                cancellationToken);
+            if (discovered)
             {
                 continue;
             }

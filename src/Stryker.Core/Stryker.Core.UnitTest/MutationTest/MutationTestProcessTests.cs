@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -142,6 +144,55 @@ public class MutationTestProcessTests : TestBase
 
         TestScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
         TestScenario.GetMutantStatus(2).ShouldBe(MutantStatus.NoCoverage);
+    }
+
+    [TestMethod]
+    public async Task ShouldCancelAnActiveExecutorRun()
+    {
+        TestScenario.CreateMutants(1);
+        TestScenario.CreateTest(1);
+        Folder.Add(new CsharpFileLeaf
+        {
+            SourceCode = SourceFile,
+            Mutants = TestScenario.GetMutants()
+        });
+        var executor = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var executorStarted = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        executor.Setup(current => current.TestAsync(
+                Input.SourceProjectInfo,
+                It.IsAny<IList<IMutant>>(),
+                It.IsAny<ITimeoutValueCalculator>(),
+                It.IsAny<ITestRunner.TestUpdateHandler>(),
+                cancellationTokenSource.Token))
+            .Returns<IProjectAndTests, IList<IMutant>, ITimeoutValueCalculator,
+                ITestRunner.TestUpdateHandler, CancellationToken>(
+                async (_, _, _, _, cancellationToken) =>
+                {
+                    executorStarted.SetResult();
+                    await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                });
+        var target = new MutationTestProcess(
+            executor.Object,
+            Mock.Of<ICoverageAnalyser>(),
+            Mock.Of<IMutationProcess>(),
+            TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        Input.InitialTestRun = new InitialTestRun(
+            TestScenario.GetInitialRunResult(),
+            new TimeoutValueCalculator(500));
+        target.Initialize(
+            Input,
+            new StrykerOptions { Concurrency = 1, OptimizationMode = OptimizationModes.None },
+            null);
+
+        var run = target.TestAsync(TestScenario.GetMutants(), cancellationTokenSource.Token);
+        await executorStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        cancellationTokenSource.Cancel();
+
+        await Should.ThrowAsync<OperationCanceledException>(
+            () => run.WaitAsync(TimeSpan.FromSeconds(1)));
+        executor.VerifyAll();
     }
 
     [TestMethod]

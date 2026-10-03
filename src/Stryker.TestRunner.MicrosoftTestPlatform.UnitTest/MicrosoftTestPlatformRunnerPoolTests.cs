@@ -31,6 +31,72 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
     }
 
     [TestMethod]
+    public async Task CancelledMutationTestShouldNotStartAnMtpSession()
+    {
+        var options = new Mock<IStrykerOptions>();
+        options.Setup(x => x.Concurrency).Returns(1);
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(["test.dll"]);
+        using var cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.Cancel();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => pool.TestMultipleMutantsAsync(
+            project.Object,
+            null,
+            [Mock.Of<IMutant>()],
+            null,
+            cancellationTokenSource.Token));
+    }
+
+    [TestMethod]
+    public async Task CancellingAnActiveMutationTestShouldResetWithoutRetryAndAllowReuse()
+    {
+        var options = new Mock<IStrykerOptions>();
+        options.Setup(x => x.Concurrency).Returns(1);
+        var runner = new CancellableRunner();
+        var runnerFactory = new Mock<ISingleRunnerFactory>();
+        runnerFactory.Setup(factory => factory.CreateRunner(
+                It.IsAny<int>(),
+                It.IsAny<Dictionary<string, List<TestNode>>>(),
+                It.IsAny<Dictionary<string, MtpTestDescription>>(),
+                It.IsAny<TestSet>(),
+                It.IsAny<object>(),
+                It.IsAny<ILogger>(),
+                It.IsAny<IStrykerOptions>()))
+            .Returns(runner);
+        using var pool = new MicrosoftTestPlatformRunnerPool(
+            options.Object,
+            NullLogger.Instance,
+            runnerFactory.Object);
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(["test.dll"]);
+        using var cancellationTokenSource = new CancellationTokenSource();
+
+        var run = pool.TestMultipleMutantsAsync(
+            project.Object,
+            null,
+            [Mock.Of<IMutant>()],
+            null,
+            cancellationTokenSource.Token);
+        await runner.Started.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        cancellationTokenSource.Cancel();
+
+        await Should.ThrowAsync<OperationCanceledException>(
+            () => run.WaitAsync(TimeSpan.FromSeconds(1)));
+        runner.ResetCount.ShouldBe(1);
+        runner.RunCount.ShouldBe(1);
+
+        var nextRun = await pool.TestMultipleMutantsAsync(
+            project.Object,
+            null,
+            [Mock.Of<IMutant>()],
+            null);
+        nextRun.ShouldNotBeNull();
+        runner.RunCount.ShouldBe(2);
+    }
+
+    [TestMethod]
     public void Constructor_ShouldCreateAtLeastOneRunner_WhenConcurrencyIsZero()
     {
         // Arrange
@@ -197,7 +263,7 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         var start = timeout.ElapsedMilliseconds;
         lock (createdRunners)
         {
-            while (createdRunners.Count < 3 && timeout.ElapsedMilliseconds-start < 2000)
+            while (createdRunners.Count < 3 && timeout.ElapsedMilliseconds - start < 2000)
             {
                 Monitor.Wait(createdRunners, 200);
             }
@@ -339,8 +405,10 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
                     // Populate the pool's shared dictionaries so it discovers the same tests set up above.
                     if (tba.Count == 0)
                     {
-                        foreach (var kvp in testsByAssembly) tba[kvp.Key] = kvp.Value;
-                        foreach (var kvp in testDescriptions) td[kvp.Key] = kvp.Value;
+                        foreach (var kvp in testsByAssembly)
+                            tba[kvp.Key] = kvp.Value;
+                        foreach (var kvp in testDescriptions)
+                            td[kvp.Key] = kvp.Value;
                     }
                     return new TestableRunner(id, tba, td, ts, dl,
                         () => { },
@@ -604,8 +672,10 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
                         {
                             if (tba.Count == 0)
                             {
-                                foreach (var kvp in testsByAssembly) tba[kvp.Key] = kvp.Value;
-                                foreach (var kvp in _descriptions) td[kvp.Key] = kvp.Value;
+                                foreach (var kvp in testsByAssembly)
+                                    tba[kvp.Key] = kvp.Value;
+                                foreach (var kvp in _descriptions)
+                                    td[kvp.Key] = kvp.Value;
                             }
                         }
 
@@ -663,6 +733,51 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         // Assert
         pool.ShouldNotBeNull();
     }
+
+    private sealed class CancellableRunner : MicrosoftTestingPlatformRunner
+    {
+        private readonly TaskCompletionSource _release = new(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public CancellableRunner()
+            : base(
+                0,
+                new Dictionary<string, List<TestNode>>(),
+                new Dictionary<string, MtpTestDescription>(),
+                new TestSet(),
+                new object(),
+                NullLogger.Instance)
+        {
+        }
+
+        public TaskCompletionSource Started { get; } = new(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        public int ResetCount { get; private set; }
+        public int RunCount { get; private set; }
+
+        public override async Task<ITestRunResult> TestMultipleMutantsAsync(
+            IProjectAndTests project,
+            ITimeoutValueCalculator timeoutCalc,
+            IReadOnlyList<IMutant> mutants,
+            ITestRunner.TestUpdateHandler update,
+            CancellationToken cancellationToken)
+        {
+            RunCount++;
+            Started.TrySetResult();
+            if (cancellationToken.CanBeCanceled)
+            {
+                await _release.Task;
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            return new TestRunResult(false);
+        }
+
+        public override Task ResetServerAsync()
+        {
+            ResetCount++;
+            _release.TrySetResult();
+            return Task.CompletedTask;
+        }
+    }
 }
-
-

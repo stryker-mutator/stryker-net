@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using Stryker.Abstractions;
@@ -188,9 +189,9 @@ internal class FullRunScenario
                 return result;
             });
         runnerMock.Setup(x => x.TestMultipleMutantsAsync(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(),
-                It.IsAny<IReadOnlyList<IMutant>>(), It.IsAny<TestUpdateHandler>())).
-            Callback((Action<IProjectAndTests, ITimeoutValueCalculator, IReadOnlyList<IMutant>, TestUpdateHandler>)((_, test1, list,
-                update) =>
+                It.IsAny<IReadOnlyList<IMutant>>(), It.IsAny<TestUpdateHandler>(), It.IsAny<CancellationToken>())).
+            Callback((Action<IProjectAndTests, ITimeoutValueCalculator, IReadOnlyList<IMutant>, TestUpdateHandler, CancellationToken>)((_, test1, list,
+                update, _) =>
             {
                 foreach (var m in list)
                 {
