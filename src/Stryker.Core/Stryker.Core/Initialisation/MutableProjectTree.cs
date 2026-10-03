@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Amazon.Runtime.SharedInterfaces;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Stryker.Utilities.Buildalyzer;
@@ -20,9 +19,9 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
 
     public bool IsValidTarget => Targets.Any(t => t.IsValidTarget);
 
-    public bool HasTests => Targets.Any(t => t.TestProjects.Count > 0);
+    private bool HasTests => Targets.Any(t => t.TestProjects.Count > 0);
 
-    public bool HasValidAnalysis => project.AnalyzerLastResults.Any(r => r.IsValid());
+    private bool HasValidAnalysis => project.AnalyzerLastResults.Any(r => r.IsValid());
 
     public MutableProjectTarget this[IAnalyzerResult target]
     {
@@ -64,7 +63,7 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
 
         var mutableProjectTargets = Targets.Where(t => t.IsValidTarget).ToList();
         var countOfValidTargets = mutableProjectTargets.Count;
-        // keep the first non netframework target otherwise pick the first one when running on Windows OS
+        // keep the first non netFramework target otherwise pick the first one when running on Windows OS
         targetToKeep = mutableProjectTargets.FirstOrDefault( t => !t.ProjectTarget.TargetsDesktop()) ??
                        mutableProjectTargets.FirstOrDefault(_ => OperatingSystem.IsWindows());
         Targets.Clear();
@@ -79,7 +78,7 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
 
     public IEnumerable<string> KnownProblems() => project.IdentifiedProblems();
 
-    public void LogAllAnalysisSummaries(bool optionsDiagMode)
+    public void LogAllAnalysisSummaries(bool diagnosticMode)
     {
         var statusText = HasTests switch
         {
@@ -99,7 +98,7 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
             }
         }
 
-        if (!optionsDiagMode)
+        if (!diagnosticMode)
         {
             return;
         }

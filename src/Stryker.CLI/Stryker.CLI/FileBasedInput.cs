@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Newtonsoft.Json;
 using YamlDotNet.Serialization;
 
 namespace Stryker.CLI;
@@ -102,7 +101,7 @@ public class FileBasedInput : IExtraData
     [JsonPropertyName("break-on-initial-test-failure")]
     public bool? BreakOnInitialTestFailure { get; init; }
 
-    [System.Text.Json.Serialization.JsonExtensionData]
+    [JsonExtensionData]
     public Dictionary<string, JsonElement> ExtraData { get; init; }
 
     [JsonPropertyName("build-properties")]
@@ -120,7 +119,7 @@ public class Since : IExtraData
     [JsonPropertyName("target")]
     public string Target { get; init; }
 
-    [System.Text.Json.Serialization.JsonExtensionData]
+    [JsonExtensionData]
     public Dictionary<string, JsonElement> ExtraData { get; init; }
 }
 
@@ -147,7 +146,7 @@ public class Baseline : IExtraData
     [JsonPropertyName("fallback-version")]
     public string FallbackVersion { get; init; }
 
-    [System.Text.Json.Serialization.JsonExtensionData]
+    [JsonExtensionData]
     public Dictionary<string, JsonElement> ExtraData { get; init; }
 }
 
@@ -162,7 +161,7 @@ public class ProjectInfo : IExtraData
     [JsonPropertyName("version")]
     public string Version { get; init; }
 
-    [System.Text.Json.Serialization.JsonExtensionData]
+    [JsonExtensionData]
     public Dictionary<string, JsonElement> ExtraData { get; init; }
 }
 
@@ -177,6 +176,6 @@ public class ThresholdsConfig : IExtraData
     [JsonPropertyName("break")]
     public int? Break { get; init; }
 
-    [System.Text.Json.Serialization.JsonExtensionData]
+    [JsonExtensionData]
     public Dictionary<string, JsonElement> ExtraData { get; init; }
 }

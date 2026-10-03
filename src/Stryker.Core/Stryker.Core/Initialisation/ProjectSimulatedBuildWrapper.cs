@@ -202,7 +202,7 @@ public class ProjectSimulatedBuildWrapper
                                              && (!r.Properties.TryGetValue(DesignTimeProperty, out var design) || design.Equals("true", StringComparison.OrdinalIgnoreCase))) && r.IsSignedAssembly())
                                          && Environment.GetEnvironmentVariable("NBGV_GitEngine") != "Disabled")
         {
-            yield return $"Project {ProjectFileName} uses GitVersioning package. Please add {PropertyOption("ContinuousIntegrationBuild", "true")} to the command line.";
+            yield return $"Project {ProjectFileName} uses GitVersioning package and is a signed assembly. Please add {PropertyOption("DesignTimeBuild", "false")} to the command line.";
         }
     }
 
