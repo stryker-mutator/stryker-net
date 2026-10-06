@@ -16,9 +16,9 @@
       },
       "Microsoft.Testing.Platform.ServerMode.Client.Sources": {
         "type": "Direct",
-        "requested": "[2.4.1, )",
-        "resolved": "2.4.1",
-        "contentHash": "fBIqDYs/iNq2GW5pmWk1v0YquUu9/2AHgsfZNHOCsCkHf1666ZLwriVdo99uhwKAWRZQuSxqo/oJekRO5xJGOw=="
+        "requested": "[2.5.0, )",
+        "resolved": "2.5.0",
+        "contentHash": "TizuaQxuQbnejoQdrPZpKRl1l7zETAjSLiMHo6FqgabcozSudjcQNr70Z6FsjML8Gt8eeZZLxtxqmawb2XgjVA=="
       },
       "System.Security.Cryptography.Xml": {
         "type": "Direct",
