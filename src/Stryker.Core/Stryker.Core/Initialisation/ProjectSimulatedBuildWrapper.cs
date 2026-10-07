@@ -143,7 +143,7 @@ public class ProjectSimulatedBuildWrapper
     public bool HasValidResults() => _targetFrameworks.Length == 0 ? AnalyzerLastResults.Count>0 && AnalyzerLastResults.All(r => r.IsValid())
         : AnalyzerLastResults.IsValidFor(_targetFrameworks);
 
-    public bool IsTestProject() => AnalyzerLastResults.IsTestProject();
+    public bool IsTestProject(List<string>? details= null) => AnalyzerLastResults.IsTestProject(details);
 
     public bool BuildsAnAssembly() => AnalyzerLastResults.Any(p => p.BuildsAnAssembly());
 

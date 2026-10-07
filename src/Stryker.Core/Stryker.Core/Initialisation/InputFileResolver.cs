@@ -108,7 +108,7 @@ public class InputFileResolver(
             ScanMode.NoScan);
         // identify target projects and their associated test projects
         var (findMutableAnalyzerResults, orphanedProjects) =
-            ExtractMutableProjectTrees(mutableProjectsAnalyzerResults);
+            ExtractMutableProjectTrees(mutableProjectsAnalyzerResults, options);
         // keep only suitable candidates
         var projectInfos = AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphanedProjects);
         ThrowIfUnityTestProject(projectInfos);
@@ -155,7 +155,7 @@ public class InputFileResolver(
         var analyzedProjects = AnalyzeAllNeededProjects(solution,
             normalizedProjectUnderTestNameFilter, options, ScanMode.ScanTestProjectReferences);
         // we match test projects to mutable projects
-        var (findMutableAnalyzerResults, orphans) = ExtractMutableProjectTrees(analyzedProjects);
+        var (findMutableAnalyzerResults, orphans) = ExtractMutableProjectTrees(analyzedProjects, options);
 
         var result = AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphans);
         result = SelectSingleProject(normalizedProjectUnderTestNameFilter, result, targetProjectMode, testProjectFileNames);
@@ -346,7 +346,8 @@ public class InputFileResolver(
         return mutableProjectsAnalyzerResults;
     }
 
-    private void ProcessProject(string entry, string projectUnderTestNameFilter, ConcurrentBag<ProjectSimulatedBuildWrapper> results, ScanMode scanMode, DynamicEnumerableQueue<string> dynamicEnumerableQueue, ProjectsTracker solutionInfo, IStrykerOptions options)
+    private void ProcessProject(string entry, string projectUnderTestNameFilter, ConcurrentBag<ProjectSimulatedBuildWrapper> results,
+        ScanMode scanMode, DynamicEnumerableQueue<string> dynamicEnumerableQueue, ProjectsTracker solutionInfo, IStrykerOptions options)
     {
         var projectAnalysisContext = solutionInfo.GetProjectAnalysisContext(entry);
         IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(projectAnalysisContext, options);
@@ -436,16 +437,19 @@ public class InputFileResolver(
     }
 
     private (List<MutableProjectTree>, List<ProjectSimulatedBuildWrapper>) ExtractMutableProjectTrees(
-        IEnumerable<ProjectSimulatedBuildWrapper> projectsSimulatedBuild)
+        IEnumerable<ProjectSimulatedBuildWrapper> projectsSimulatedBuild, IStrykerOptions options)
     {
         // separate test projects from mutable projects, and keep only analyzer results building an assembly (exclude solution folders and such)
         var testProjects = new List<ProjectSimulatedBuildWrapper>();
         var mutableProjects = new List<ProjectSimulatedBuildWrapper>();
+        var detailsPerProject = new Dictionary<ProjectSimulatedBuildWrapper, List<string>>();
         foreach (var project in projectsSimulatedBuild)
         {
-            if (project.IsTestProject())
+            var details = new List<string>();
+            if (project.IsTestProject(details))
             {
                 testProjects.Add(project);
+                detailsPerProject[project] = details;
             }
             else if (project.BuildsAnAssembly())
             {
@@ -456,10 +460,20 @@ public class InputFileResolver(
                 _logger.LogDebug("Disregarding project {Discarded} as it does not build an assembly.", project.ProjectFileName);
             }
         }
+
+        if (options.DiagMode || mutableProjects.Count == 0)
+        {
+            foreach (var (project, details) in detailsPerProject)
+            {
+                _logger.LogInformation("{ProjectName} is detected as a test project because: {Details}",
+                    project.ProjectFileName, string.Join(", ", details));
+            }
+        }
+
         if (mutableProjects.Count == 0 )
         {
-            _logger.LogError
-                ($"Stryker identified every project as a test project: {string.Join(", ", testProjects.Select(p => p.ProjectFileName))}. Please check your project settings.");
+            _logger.LogError("Stryker identified each valid project as a test project: {TestProjects}. Please check your project settings.",
+            string.Join(", ", testProjects.Select(p => p.ProjectFileName)));
             return ([], testProjects);
         }
 

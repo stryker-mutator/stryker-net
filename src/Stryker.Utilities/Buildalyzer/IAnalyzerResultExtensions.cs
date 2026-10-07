@@ -205,7 +205,8 @@ public static class IAnalyzerResultExtensions
         || (targetFrameworks.Length>0
             && Array.TrueForAll(targetFrameworks, fmw => br.Results.Any( r=> r.IsValidFor(fmw))));
 
-    public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
+    public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults, List<string>? details = null)
+        => analyzerResults.Any(x => x.IsTestProject(details));
 
     /// <summary>
     /// Checks whether an analysis result references the assemblies that identify a Unity test assembly.
@@ -215,36 +216,44 @@ public static class IAnalyzerResultExtensions
             analyzerResult.References?.Any(path =>
                 string.Equals(Path.GetFileNameWithoutExtension(path), reference, StringComparison.OrdinalIgnoreCase)) == true);
 
-    private static bool IsTestProject(this IAnalyzerResult analyzerResult)
+    private static bool IsTestProject(this IAnalyzerResult analyzerResult, List<string>? details = null)
     {
         // if 'IsTestingPlatformApplication' is defined and true, this is a test project
         if (analyzerResult.TryGetProperty("IsTestingPlatformApplication", out var value)
             && bool.TryParse(value, out var isMtp)
             && isMtp)
         {
+            details?.Add($"IsTestingPlatformApplication is true (for framework {analyzerResult.TargetFramework})");
             return true;
         }
 
         // if 'IsTestProject' is defined, we use its value to check if it's a test project (or not)
         if (analyzerResult.TryGetProperty("IsTestProject", out value))
         {
+            details?.Add($"IsTestProject is {value} (for framework {analyzerResult.TargetFramework})");
             return bool.TryParse(value, out var isTestProject) && isTestProject;
         }
 
-        if (Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n)))
+        var testPackage = Array.Find(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n));
+        if (testPackage != null)
         {
+            details?.Add($"Package reference to known test package {testPackage} found (for framework {analyzerResult.TargetFramework})");
             return true;
         }
 
         if (analyzerResult.IsUnityTestProject())
         {
+            details?.Add($"Project is a Unity test project (for framework {analyzerResult.TargetFramework})");
             return true;
         }
 
         const string TestProjectTypeGuid = "{3AC096D0-A1C2-E12C-1390-A8335801FDAB}";
-        return analyzerResult
+        var asGuid= analyzerResult
             .GetPropertyOrDefault("ProjectTypeGuids", "")
             .Contains(TestProjectTypeGuid);
+        details?.Add($"Project has known test project Guid ({TestProjectTypeGuid})");
+        details?.Add($"Project has known test project Guid ({TestProjectTypeGuid}).");
+        return asGuid;
     }
 
     public static OutputKind GetOutputKind(this IAnalyzerResult analyzerResult) =>
