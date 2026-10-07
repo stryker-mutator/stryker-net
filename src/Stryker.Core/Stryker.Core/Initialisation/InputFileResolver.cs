@@ -456,9 +456,15 @@ public class InputFileResolver(
                 _logger.LogDebug("Disregarding project {Discarded} as it does not build an assembly.", project.ProjectFileName);
             }
         }
+        if (mutableProjects.Count == 0 )
+        {
+            _logger.LogError
+                ($"Stryker identified every project as a test project: {string.Join(", ", testProjects.Select(p => p.ProjectFileName))}. Please check your project settings.");
+            return ([], testProjects);
+        }
+
         var mutableToTestMap = mutableProjects.ToDictionary(p =>p, p => new MutableProjectTree(p, _logger));
         var unusedTestProjects = new List<ProjectSimulatedBuildWrapper>();
-
         // for each test project
         foreach (var testProject in testProjects)
         {
