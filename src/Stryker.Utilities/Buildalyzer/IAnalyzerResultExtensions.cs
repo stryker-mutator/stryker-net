@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
@@ -62,7 +63,8 @@ public static class IAnalyzerResultExtensions
 
     public static string? MsBuildPath(this IAnalyzerResult analyzerResult) => analyzerResult.Analyzer?.EnvironmentFactory.GetBuildEnvironment()?.MsBuildExePath;
 
-    public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger)
+    public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger,
+        List<string> issues)
     {
         ArgumentNullException.ThrowIfNull(logger);
 
@@ -72,7 +74,7 @@ public static class IAnalyzerResultExtensions
             try
             {
                 var analyzerFileReference = new AnalyzerFileReference(analyzer, AnalyzerAssemblyLoader.Instance);
-                analyzerFileReference.AnalyzerLoadFailed += (sender, e) => LogAnalyzerLoadError(logger, sender, e);
+                analyzerFileReference.AnalyzerLoadFailed += (sender, e) => LogAnalyzerLoadError(logger, issues, sender, e);
                 generators.AddRange(analyzerFileReference.GetGenerators(LanguageNames.CSharp));
             }
             catch (Exception e)
@@ -106,20 +108,22 @@ public static class IAnalyzerResultExtensions
     }
 
     [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]
-    private static void LogAnalyzerLoadError(ILogger? logger, object? sender, AnalyzerLoadFailureEventArgs e)
+    private static void LogAnalyzerLoadError(ILogger? logger, List<string> issues, object? sender,
+        AnalyzerLoadFailureEventArgs e)
     {
         var source = (sender as AnalyzerReference)?.Display ?? "unknown";
-        logger?.LogWarning(
-            "Failed to load analyzer '{Source}': {Message} (error : {Error}, analyzer: {Analyzer}).",
-            source, e.Message, Enum.GetName(e.ErrorCode.GetType(), e.ErrorCode) ?? e.ErrorCode.ToString(),
-            e.TypeName ?? "All");
+        string message;
         if (e.ErrorCode == AnalyzerLoadFailureEventArgs.FailureErrorCode.ReferencesNewerCompiler)
         {
-            logger?.LogWarning(
-                "The analyzer '{Source}' references a newer version ({ReferencedCompilerVersion}) of the compiler than the one used by Stryker.NET.",
-                source, e.ReferencedCompilerVersion);
+            message = $"The analyzer '{source}' references a newer Roslyn version ({e.ReferencedCompilerVersion}) than Stryker's ({typeof(CSharpCompilation).Assembly.GetName().Version}). This may cause issues during analysis.";
+        }
+        else
+        {
+            message = $"Failed to load analyzer '{source}': {e.Message} (error : {Enum.GetName(e.ErrorCode.GetType(), e.ErrorCode) ?? e.ErrorCode.ToString()}, analyzer: {e.TypeName ?? "All"}).";
         }
 
+        issues.Add(message);
+        logger?.LogWarning(message);
         if (e.Exception != null)
         {
             logger?.LogWarning("Failed to load analyzer '{Source}': Exception {Exception}.", source, e.Exception);
