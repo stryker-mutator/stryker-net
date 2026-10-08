@@ -103,6 +103,10 @@ Config file: `"test-case-filter": "(FullyQualifiedName~UnitTest1&TestCategory=Ca
 
 Filter expression to run selective tests. Uses `dotnet test --filter` option syntax, [detailed here](https://docs.microsoft.com/en-us/dotnet/core/testing/selective-unit-tests). Use this option if you wish to run stryker only on a selective subset of tests from your test suite.
 
+When using Microsoft Testing Platform, the test application must expose the
+`--filter` command-line option. The current xUnit v3 and TUnit MTP runners do
+not expose this option, so `test-case-filter` cannot be used with them.
+
 ### `mutate` &lt;`glob[]`&gt;
 
 Default: `*`  
@@ -465,6 +469,8 @@ Command line: `N/A`
 Config file: `"disable-mix-mutants": true`
 
 Stryker combines multiple mutants in the same testrun when the mutants are not covered by the same unit tests. This reduces the total runtime. You can disable this behavior and run every mutation in an isolated testrun. This can be useful when mixed mutants have unintended side effects.
+
+*\* This flag is only applicable to the vstest testrunner. When using the MTP testrunner, this flag will be ignored since our MTP implementation doesn't combine mutants.*
 
 ### `since` &lt;`flag`&gt; [`:committish`]
 

@@ -1,4 +1,5 @@
 using Moq;
+using Microsoft.Testing.Platform.ServerMode.Client;
 using Shouldly;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
@@ -17,7 +18,7 @@ public class DefaultTestServerConnectionFactoryTests
         var arguments = factory.BuildArguments("tests.dll", 1234);
 
         supportsTestCaseFilter.VerifyNoOtherCalls();
-        arguments.ShouldBe(["tests.dll", "--server", "--client-port", "1234"]);
+        arguments.ShouldBe(["tests.dll", .. MtpServerConnector.BuildInProcessServerArguments(1234)]);
     }
 
     [TestMethod]
@@ -28,7 +29,7 @@ public class DefaultTestServerConnectionFactoryTests
 
         var arguments = factory.BuildArguments("tests.dll", 1234);
 
-        arguments.ShouldBe(["tests.dll", "--server", "--client-port", "1234", "--filter", filter]);
+        arguments.ShouldBe(["tests.dll", .. MtpServerConnector.BuildInProcessServerArguments(1234), "--filter", filter]);
     }
 
     [TestMethod]
