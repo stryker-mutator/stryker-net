@@ -55,7 +55,7 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
             outputPipe = PipeTarget.Null;
         }
 
-        var arguments = new List<string> { assembly, .. MtpServerConnector.BuildInProcessServerArguments(port) };
+        List<string> arguments = [assembly, .. MtpServerConnector.BuildInProcessServerArguments(port)];
         if (environmentVariables.ContainsKey(MtpCompatibility.BlockingCoverageEnvironmentVariable))
         {
             dynamicExtensionManifest = DynamicExtensionManifest.Acquire(assembly);
