@@ -120,7 +120,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     public async Task ResetServerAsync()
     {
         _logger.LogDebug("{RunnerId}: Resetting test servers to reload assemblies", RunnerId);
-        
+
         lock (_serverLock)
         {
             foreach (var server in _assemblyServers.Values)
@@ -129,7 +129,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             }
             _assemblyServers.Clear();
         }
-        
+
         _logger.LogDebug("{RunnerId}: Test servers reset complete", RunnerId);
         await Task.CompletedTask;
     }
@@ -177,7 +177,14 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         if (_perTestCoverageMode)
         {
             envVars["STRYKER_COVERAGE_FILE"] = Path.GetFileName(GetPerTestCoverageFilePath(assembly));
-            envVars["STRYKER_COVERAGE_EPOCH_FILE"] = Path.GetFileName(GetPerTestEpochFilePath(assembly));
+            if (MtpCompatibility.SupportsBlockingDataConsumer(assembly))
+            {
+                envVars[MtpCompatibility.BlockingCoverageEnvironmentVariable] = "1";
+            }
+            else
+            {
+                envVars[MtpCompatibility.CoverageEpochFileEnvironmentVariable] = Path.GetFileName(GetPerTestEpochFilePath(assembly));
+            }
         }
         else if (_coverageMode)
         {
@@ -397,11 +404,16 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                 return (Array.Empty<int>(), Array.Empty<int>());
             }
 
-            var parts = content.Split(';');
-            var coveredMutants = ParseMutantIds(parts.Length > 0 ? parts[0] : string.Empty);
-            var staticMutants = ParseMutantIds(parts.Length > 1 ? parts[1] : string.Empty);
+            var coveredMutants = new HashSet<int>();
+            var staticMutants = new HashSet<int>();
+            foreach (var entry in content.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var parts = entry.Split(';');
+                coveredMutants.UnionWith(ParseMutantIds(parts.Length > 0 ? parts[0] : string.Empty));
+                staticMutants.UnionWith(ParseMutantIds(parts.Length > 1 ? parts[1] : string.Empty));
+            }
 
-            return (coveredMutants, staticMutants);
+            return (coveredMutants.ToList(), staticMutants.ToList());
         }
         catch (Exception ex)
         {
@@ -421,7 +433,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
             .Select(s => int.TryParse(s.Trim(), out var id) ? id : (int?)null)
             .Where(id => id.HasValue)
-            .Select(id => id.Value)
+            .Select(id => id.GetValueOrDefault())
             .ToList();
     }
 
@@ -626,18 +638,23 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     {
         var coverageFilePath = GetPerTestCoverageFilePath(assembly);
         var epochFilePath = GetPerTestEpochFilePath(assembly);
+        var useBlockingConsumer = MtpCompatibility.SupportsBlockingDataConsumer(assembly);
 
         lock (_serverLock)
         {
             if (_initializedPerTestFiles.Add(assembly))
             {
-                // Relays left behind by an earlier run would be waited on and never acknowledge, or worse
-                // already show this epoch, so clear them before the host creates its own
-                foreach (var staleRelayFilePath in EnumerateEpochRelayFiles(epochFilePath))
+                if (!useBlockingConsumer)
                 {
-                    DeleteFileIfExists(staleRelayFilePath);
+                    // Relays left behind by an earlier run would be waited on and never acknowledge, or worse
+                    // already show this epoch, so clear them before the host creates its own
+                    foreach (var staleRelayFilePath in EnumerateEpochRelayFiles(epochFilePath))
+                    {
+                        DeleteFileIfExists(staleRelayFilePath);
+                    }
+                    InitializeEpochFile(epochFilePath);
                 }
-                InitializeEpochFile(epochFilePath);
+
                 foreach (var staleCoverageFilePath in EnumerateCoverageFiles(coverageFilePath))
                 {
                     DeleteFileIfExists(staleCoverageFilePath);
@@ -657,6 +674,14 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         {
             try
             {
+                if (useBlockingConsumer)
+                {
+                    foreach (var previousCoverageFilePath in EnumerateCoverageFiles(coverageFilePath))
+                    {
+                        DeleteFileIfExists(previousCoverageFilePath);
+                    }
+                }
+
                 var server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
                 var (_, timedOut) = await server.RunTestsAsync(new[] { test }, CalculateSingleTestTimeout(test)).ConfigureAwait(false);
                 if (timedOut)
@@ -669,24 +694,27 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                         Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
                 }
 
-                int epoch;
-                lock (_serverLock)
+                if (!useBlockingConsumer)
                 {
-                    _perTestEpochCounters.TryGetValue(assembly, out var current);
-                    epoch = current + 1;
-                    _perTestEpochCounters[assembly] = epoch;
-                }
+                    int epoch;
+                    lock (_serverLock)
+                    {
+                        _perTestEpochCounters.TryGetValue(assembly, out var current);
+                        epoch = current + 1;
+                        _perTestEpochCounters[assembly] = epoch;
+                    }
 
-                var requestedRelays = BroadcastEpochRequest(epochFilePath, epoch);
+                    var requestedRelays = BroadcastEpochRequest(epochFilePath, epoch);
 
-                var acked = await WaitForAllEpochAcksAsync(requestedRelays, epoch, TimeSpan.FromSeconds(10)).ConfigureAwait(false);
-                if (!acked)
-                {
-                    _logger.LogWarning(
-                        "{RunnerId}: Timed out waiting for coverage relay ack for test {TestId}; marking as Dubious",
-                        RunnerId, testId);
-                    return CoverageRunResult.Create(testId, CoverageConfidence.Dubious,
-                        Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
+                    var acked = await WaitForAllEpochAcksAsync(requestedRelays, epoch, TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                    if (!acked)
+                    {
+                        _logger.LogWarning(
+                            "{RunnerId}: Timed out waiting for coverage relay ack for test {TestId}; marking as Dubious",
+                            RunnerId, testId);
+                        return CoverageRunResult.Create(testId, CoverageConfidence.Dubious,
+                            Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
+                    }
                 }
 
                 var (covered, staticMutants) = ReadCoverageForHandedOutPath(coverageFilePath);
@@ -936,13 +964,13 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         _logger.LogDebug("{RunnerId}: Test run timed out for {Assembly}", RunnerId, Path.GetFileName(assembly));
 
         allTimedOutTests.AddRange(discoveredTests.Select(t => t.Uid));
-        
+
         AssemblyTestServer? server;
         lock (_serverLock)
         {
             _assemblyServers.TryGetValue(assembly, out server);
         }
-        
+
         if (server is not null)
         {
             _logger.LogDebug("{RunnerId}: Restarting test server for {Assembly} after timeout", RunnerId, Path.GetFileName(assembly));
@@ -1377,5 +1405,3 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         _disposed = true;
     }
 }
-
-

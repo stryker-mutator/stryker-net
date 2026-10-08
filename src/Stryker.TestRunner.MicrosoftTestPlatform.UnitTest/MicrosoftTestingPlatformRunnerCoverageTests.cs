@@ -387,12 +387,36 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
             result.StaticMutants.ShouldContain(10);
             result.StaticMutants.ShouldContain(20);
         }
+
         finally
         {
             if (File.Exists(coverageFilePath))
             {
                 File.Delete(coverageFilePath);
             }
+        }
+    }
+
+    [TestMethod]
+    public void ReadCoverageData_ShouldUnionEntriesAppendedByBlockingConsumer()
+    {
+        using var runner = CreateRunner(515);
+        var coverageFilePath = runner.GetCoverageFilePath("Tests.dll");
+
+        try
+        {
+            File.WriteAllText(
+                coverageFilePath,
+                $"1,2;10{Environment.NewLine}2,3;20{Environment.NewLine}");
+
+            var result = runner.ReadCoverageData();
+
+            result.CoveredMutants.ShouldBe(new[] { 1, 2, 3 }, ignoreOrder: true);
+            result.StaticMutants.ShouldBe(new[] { 10, 20 }, ignoreOrder: true);
+        }
+        finally
+        {
+            File.Delete(coverageFilePath);
         }
     }
 
@@ -631,7 +655,8 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         }
         finally
         {
-            if (File.Exists(epochFilePath)) File.Delete(epochFilePath);
+            if (File.Exists(epochFilePath))
+                File.Delete(epochFilePath);
         }
     }
 
@@ -664,7 +689,8 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         }
         finally
         {
-            if (File.Exists(epochFilePath)) File.Delete(epochFilePath);
+            if (File.Exists(epochFilePath))
+                File.Delete(epochFilePath);
         }
     }
 
@@ -689,7 +715,8 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         }
         finally
         {
-            if (File.Exists(epochFilePath)) File.Delete(epochFilePath);
+            if (File.Exists(epochFilePath))
+                File.Delete(epochFilePath);
         }
     }
 
@@ -746,7 +773,8 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         {
             foreach (var path in new[] { basePath, firstRelay, secondRelay })
             {
-                if (File.Exists(path)) File.Delete(path);
+                if (File.Exists(path))
+                    File.Delete(path);
             }
         }
     }
@@ -783,7 +811,8 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         {
             foreach (var path in new[] { basePath, reachedRelay, lateRelay })
             {
-                if (path is not null && File.Exists(path)) File.Delete(path);
+                if (path is not null && File.Exists(path))
+                    File.Delete(path);
             }
         }
     }
@@ -816,7 +845,8 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         {
             foreach (var path in new[] { basePath, firstRelay, secondRelay })
             {
-                if (File.Exists(path)) File.Delete(path);
+                if (File.Exists(path))
+                    File.Delete(path);
             }
         }
     }
@@ -843,7 +873,8 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         }
         finally
         {
-            if (File.Exists(basePath)) File.Delete(basePath);
+            if (File.Exists(basePath))
+                File.Delete(basePath);
         }
     }
 
@@ -942,7 +973,8 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         {
             foreach (var path in writtenByTheHost.Concat(new[] { coverageFilePath, epochFilePath }))
             {
-                if (File.Exists(path)) File.Delete(path);
+                if (File.Exists(path))
+                    File.Delete(path);
             }
         }
     }
@@ -1070,7 +1102,8 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         }
         finally
         {
-            if (File.Exists(coverageFilePath)) File.Delete(coverageFilePath);
+            if (File.Exists(coverageFilePath))
+                File.Delete(coverageFilePath);
         }
     }
 
