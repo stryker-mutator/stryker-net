@@ -1,6 +1,6 @@
 <Project>
   <ItemGroup>
-    <PackageVersion Include="AWSSDK.S3" Version="4.0.104.1" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.104.2" />
     <PackageVersion Include="Azure.Storage.Files.Shares" Version="12.28.0" />
     <PackageVersion Include="CliWrap" Version="3.10.5" />
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="2.0.5" />
