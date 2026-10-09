@@ -29,12 +29,12 @@ jobs:
         with:
           # Configure which types are allowed (newline-delimited).
           types: |
-            feat
-            fix
-            docs
-            style
-            refactor
-            test
-            chore
+            [fF]eat
+            [fF]ix
+            [dD]ocs
+            [sS]tyle
+            [rR]efactor
+            [tT]est
+            [cC]hore
           # Configure that a scope must always be provided.
           requireScope: true
