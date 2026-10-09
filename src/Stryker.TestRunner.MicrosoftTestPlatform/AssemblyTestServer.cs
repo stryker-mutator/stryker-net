@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
@@ -95,7 +96,7 @@ internal sealed class AssemblyTestServer : IDisposable
             _logger.LogDebug("{RunnerId}: Test server started successfully for {Assembly}", _runnerId, _assembly);
             return true;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not InputException)
         {
             _logger.LogDebug(ex, "{RunnerId}: Failed to start test server for {Assembly}", _runnerId, _assembly);
             await StopAsync().ConfigureAwait(false);

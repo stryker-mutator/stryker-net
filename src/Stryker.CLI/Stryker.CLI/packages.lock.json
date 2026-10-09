@@ -49,8 +49,8 @@
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "4.0.102.8",
-        "contentHash": "90B9Skhl+ORbtWNXrrmGdGhGvAfZiPmZafRYrB/xHelZjePIwPvXioqz9UiiF1vo21eDLzTnXh5EC4RjbNWsFQ=="
+        "resolved": "4.0.102.9",
+        "contentHash": "VWGkR0QXDTmThusATC6I9IX06YtYeQNF+1/v6vBbfzIC+MaAuNjYn0aSTIyX+abciZvFhuSSi0d6/pC93wROCw=="
       },
       "Azure.Core": {
         "type": "Transitive",
@@ -397,7 +397,7 @@
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "AWSSDK.S3": "[4.0.104.1, )",
+          "AWSSDK.S3": "[4.0.104.2, )",
           "Azure.Storage.Files.Shares": "[12.28.0, )",
           "Buildalyzer": "[9.0.0, )",
           "DotNet.Glob": "[3.1.3, )",
@@ -485,7 +485,7 @@
         "type": "Project",
         "dependencies": {
           "CliWrap": "[3.10.5, )",
-          "Microsoft.Testing.Platform.ServerMode.Client.Sources": "[2.5.0, )",
+          "Microsoft.Testing.Platform.ServerMode.Client.Sources": "[2.5.1, )",
           "Stryker.TestRunner": "[5.0.0, )",
           "Stryker.Utilities": "[5.0.0, )"
         }
@@ -519,11 +519,11 @@
       },
       "AWSSDK.S3": {
         "type": "CentralTransitive",
-        "requested": "[4.0.104.1, )",
-        "resolved": "4.0.104.1",
-        "contentHash": "syEbfUR1Qjy9WS0fmg5MWOq0aGghq+pBIyrvDP3BFLc5K2OITxMiwbPkZhEJeAq8SWRn2bfVaWWmNLp8hS9VwQ==",
+        "requested": "[4.0.104.2, )",
+        "resolved": "4.0.104.2",
+        "contentHash": "ImZ1pO9SWh+RAN8hmN5OnonyTvq+/q4dXLxTxjtsZ60c06dnCCy+MX3sc4F3Q8c9J1bg8WoU+VkrrVIpXLviww==",
         "dependencies": {
-          "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+          "AWSSDK.Core": "[4.0.102.9, 5.0.0)"
         }
       },
       "Azure.Storage.Files.Shares": {
@@ -631,9 +631,9 @@
       },
       "Microsoft.Testing.Platform.ServerMode.Client.Sources": {
         "type": "CentralTransitive",
-        "requested": "[2.5.0, )",
-        "resolved": "2.5.0",
-        "contentHash": "TizuaQxuQbnejoQdrPZpKRl1l7zETAjSLiMHo6FqgabcozSudjcQNr70Z6FsjML8Gt8eeZZLxtxqmawb2XgjVA=="
+        "requested": "[2.5.1, )",
+        "resolved": "2.5.1",
+        "contentHash": "knkWvW/lBBCRB+IoeuLHEya+N3s3pnYQDqAUxFxDXxNSw3uSbhStq/4TI5VrYQgCCOHvQfPUcfiyNM1qLtPsog=="
       },
       "Microsoft.TestPlatform": {
         "type": "CentralTransitive",

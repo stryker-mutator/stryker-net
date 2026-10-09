@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
+using Stryker.Abstractions.Exceptions;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
@@ -112,6 +113,18 @@ public class AssemblyTestServerTests
 
         started.ShouldBeFalse();
         server.IsInitialized.ShouldBeFalse();
+    }
+
+    [TestMethod]
+    public async Task StartAsync_WhenFactoryThrowsInputException_PropagatesIt()
+    {
+        _factory.Setup(factory => factory.CreateListener()).Throws(new InputException("Unsupported filter"));
+
+        using var server = CreateServer();
+
+        var exception = await Should.ThrowAsync<InputException>(async () => await server.StartAsync());
+
+        exception.Message.ShouldBe("Unsupported filter");
     }
 
     [TestMethod]

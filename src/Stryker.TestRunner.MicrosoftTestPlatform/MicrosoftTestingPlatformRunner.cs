@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
@@ -860,7 +861,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             _logger.LogDebug("{RunnerId}: Discovered {TestCount} tests in {Assembly}", RunnerId, tests.Count, assembly);
             return tests.Count > 0;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not InputException)
         {
             _logger.LogDebug(ex, "{RunnerId}: Failed to discover tests in {Assembly}", RunnerId, assembly);
             return false;
@@ -1377,5 +1378,3 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         _disposed = true;
     }
 }
-
-
