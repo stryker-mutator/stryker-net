@@ -77,6 +77,9 @@ public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output
         {
             // Process may have already exited
         }
+        catch (InvalidOperationException) when (HasExited)
+        {
+        }
     }
 
     public Task<int> StopAsync()

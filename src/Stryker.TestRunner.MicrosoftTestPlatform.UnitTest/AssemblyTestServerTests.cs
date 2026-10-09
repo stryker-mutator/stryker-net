@@ -464,6 +464,44 @@ public class AssemblyTestServerTests
     }
 
     [TestMethod]
+    public async Task StopAsync_ProcessExitsDuringKill_DoesNotFailSuccessfulTeardown()
+    {
+        _processHandle.Setup(process => process.Kill()).Callback(() =>
+        {
+            _process.SetupGet(process => process.HasExited).Returns(true);
+            throw new InvalidOperationException("The process has exited.");
+        });
+        using var server = CreateServer();
+        await server.StartAsync();
+
+        await server.StopAsync(force: true);
+
+        server.IsInitialized.ShouldBeFalse();
+        _client.Verify(client => client.Dispose(), Times.Once);
+        _process.Verify(process => process.Dispose(), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task StopAsync_KillFailsWhileProcessIsAlive_StillAborts()
+    {
+        _processHandle.Setup(process => process.Kill()).Throws(new InvalidOperationException("Cannot stop the running process."));
+        using var server = CreateServer();
+        await server.StartAsync();
+        try
+        {
+            await Assert.ThrowsExactlyAsync<TestHostTerminationException>(() => server.StopAsync(force: true));
+            server.IsAlive.ShouldBeFalse();
+            _process.Verify(process => process.Dispose(), Times.Never);
+        }
+        finally
+        {
+            _process.SetupGet(process => process.HasExited).Returns(true);
+            _process.Setup(process => process.WaitForExitAsync()).Returns(Task.CompletedTask);
+            _processHandle.Setup(process => process.Kill());
+        }
+    }
+
+    [TestMethod]
     public async Task StopAsync_WhenExitFails_StillDisposesResources()
     {
         _client.Setup(client => client.ExitAsync(true)).ThrowsAsync(new InvalidOperationException("exit failed"));

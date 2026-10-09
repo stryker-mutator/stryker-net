@@ -264,6 +264,54 @@ public sealed class MtpBailPolicyTests
         }
     }
 
+    [TestMethod]
+    public async Task Pool_ResetIncludesLeasedRunnerAndWaitsForItsActiveRun()
+    {
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var resetStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var logger = new Mock<ILogger>();
+        logger.Setup(value => value.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(),
+            It.IsAny<Exception?>(), (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()))
+            .Callback(new InvocationAction(invocation =>
+            {
+                if (invocation.Arguments[2]?.ToString()?.Contains("Resetting test servers to reload assemblies", StringComparison.Ordinal) == true)
+                {
+                    resetStarted.TrySetResult();
+                }
+            }));
+        var runner = new PolicyRunner([Node("test", TestNodeStates.Passed)], [], logger: logger.Object);
+        runner.BeforeTerminal = async () =>
+        {
+            entered.SetResult();
+            await release.Task;
+        };
+        var options = new Mock<IStrykerOptions>();
+        options.SetupGet(value => value.Concurrency).Returns(1);
+        var factory = new Mock<ISingleRunnerFactory>();
+        factory.Setup(value => value.CreateRunner(It.IsAny<int>(), It.IsAny<Dictionary<string, List<TestNode>>>(),
+            It.IsAny<Dictionary<string, MtpTestDescription>>(), It.IsAny<TestSet>(), It.IsAny<object>(),
+            It.IsAny<ILogger>(), It.IsAny<IStrykerOptions?>())).Returns(runner);
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance, factory.Object);
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(value => value.GetTestAssemblies()).Returns(["first"]);
+        var run = pool.TestMultipleMutantsAsync(project.Object, null, [Mutant()], null);
+        await entered.Task;
+        pool.Runners.ShouldBeEmpty();
+        var reset = Task.Run(pool.ResetTestProcesses);
+        try
+        {
+            (await Task.WhenAny(resetStarted.Task, reset)).ShouldBeSameAs(resetStarted.Task);
+            reset.IsCompleted.ShouldBeFalse();
+        }
+        finally
+        {
+            release.TrySetResult();
+            await Task.WhenAll(run, reset);
+        }
+        pool.Runners.Single().ShouldBeSameAs(runner);
+    }
+
     private static IMutant Mutant()
     {
         var mutant = new Mock<IMutant>();
@@ -283,15 +331,15 @@ public sealed class MtpBailPolicyTests
         public bool RuntimeIssue { get; set; }
         public Func<Task>? BeforeTerminal { get; set; }
 
-        public PolicyRunner(TestNodeUpdate[] first, TestNodeUpdate[] second, bool disableBail = false)
+        public PolicyRunner(TestNodeUpdate[] first, TestNodeUpdate[] second, bool disableBail = false, ILogger? logger = null)
             : this(new Dictionary<string, TestNodeUpdate[]> { ["first"] = first, ["second"] = second },
-                new Dictionary<string, MtpTestDescription>(), disableBail)
+                new Dictionary<string, MtpTestDescription>(), disableBail, logger)
         {
         }
 
         private PolicyRunner(Dictionary<string, TestNodeUpdate[]> batches,
-            Dictionary<string, MtpTestDescription> descriptions, bool disableBail)
-            : base(0, Discover(batches), descriptions, new TestSet(), new object(), NullLogger.Instance, Options(disableBail))
+            Dictionary<string, MtpTestDescription> descriptions, bool disableBail, ILogger? logger)
+            : base(0, Discover(batches), descriptions, new TestSet(), new object(), logger ?? NullLogger.Instance, Options(disableBail))
         {
             _batches = batches;
             Descriptions = descriptions;

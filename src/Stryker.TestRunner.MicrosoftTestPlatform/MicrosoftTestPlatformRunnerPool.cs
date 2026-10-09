@@ -46,7 +46,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     public void ResetTestProcesses()
     {
         _logger.LogDebug("Resetting all test server processes in the pool");
-        var tasks = _availableRunners.Select(runner => runner.ResetServerAsync());
+        var tasks = _allRunners.Select(runner => runner.ResetServerAsync());
         Task.WhenAll(tasks).Wait();
         _logger.LogDebug("All test server processes have been reset");
     }

@@ -331,6 +331,10 @@ internal sealed class AssemblyTestServer : IDisposable
                 }
             }
         }
+        catch (InvalidOperationException exception) when (process is { HasExited: true })
+        {
+            _logger.LogDebug(exception, "{RunnerId}: Test server process for {Assembly} exited while shutdown was requested.", _runnerId, _assembly);
+        }
         catch (Exception exception) when (process is { HasExited: false } && exception is not TestHostTerminationException)
         {
             throw new TestHostTerminationException(
