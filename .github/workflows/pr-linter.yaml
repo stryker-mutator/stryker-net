@@ -34,7 +34,12 @@ jobs:
             [dD]ocs
             [sS]tyle
             [rR]efactor
+            [pP]erf
             [tT]est
+            [bB]uild
+            CI
+            ci
             [cC]hore
-          # Configure that a scope must always be provided.
-          requireScope: true
+            [rR]evert
+          # Scopes are optional but recommended.
+          requireScope: false
