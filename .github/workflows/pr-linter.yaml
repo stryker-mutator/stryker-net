@@ -40,9 +40,6 @@ jobs:
             ci
             chore
             revert
-          # Match Angular's header format; breaking changes require a footer.
-          headerPattern: '^(\w*)(?:\((.*)\))?: (.*)$'
-          headerPatternCorrespondence: type, scope, subject
           # Require a lowercase scope.
           requireScope: true
           disallowScopes: |
