@@ -733,6 +733,26 @@ Config file: `break-on-initial-test-failure`
 
 Instruct Stryker to break execution when at least one test failed on initial test run.
 
+### `auto-ignore-timeouts` &lt;`flag`&gt;
+
+Default: `false`  
+Command line: `--auto-ignore-timeouts`  
+Config file: `auto-ignore-timeouts`
+
+Mutants that cause a timeout are expensive: every one of them costs a full timeout period before Stryker gives up on it. With this flag, Stryker adds a `// Stryker disable once` comment to your source code for every mutant that ended with the status `Timeout`, so these mutants are skipped in the next run.
+
+```shell
+dotnet stryker --auto-ignore-timeouts
+```
+
+After the mutation test run finished, Stryker will:
+
+1. Find the closest statement or member declaration around each mutant that timed out, using the syntax tree of the file.
+2. Add a comment above it, for example `// Stryker disable once Arithmetic: Auto-ignored by Stryker (--auto-ignore-timeouts), the mutation caused a timeout`. Only the mutator types that timed out are disabled.
+3. Build the project to verify the modified code is valid. If the build fails, all changes to that project are reverted.
+
+See [ignore mutations](./ignore-mutations.md#automatically-ignore-timeouts) for more details and caveats.
+
 ### `skip-version-check` &lt;`flag`&gt;
 
 Default: `false`  

@@ -612,6 +612,18 @@ Options:";
     }
 
     [TestMethod]
+    [DataRow("--auto-ignore-timeouts")]
+    public async Task ShouldSupplyAutoIgnoreTimeoutsWhenPassed(params string[] argName)
+    {
+        await _target.RunAsync(argName);
+
+        _strykerRunnerMock.VerifyAll();
+
+        _inputs.AutoIgnoreTimeoutsInput.SuppliedInput.HasValue.ShouldBeTrue();
+        _inputs.AutoIgnoreTimeoutsInput.SuppliedInput.Value.ShouldBeTrue();
+    }
+
+    [TestMethod]
     [DataRow("--break-on-initial-test-failure")]
     public async Task ShouldSupplyBreakOnInitialTestFailureWhenPassed(params string[] argName)
     {

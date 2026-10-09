@@ -279,6 +279,11 @@ public class StrykerOptions : IStrykerOptions
     /// </summary>
     public bool BreakOnInitialTestFailure { get; set; }
 
+    /// <summary>
+    /// Mark mutants that resulted in a timeout as ignored by adding Stryker comments to the source code.
+    /// </summary>
+    public bool AutoIgnoreTimeouts { get; init; }
+
     /// </summary>
     /// The test runner to use for executing tests
     /// <summary>

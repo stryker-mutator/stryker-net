@@ -94,6 +94,38 @@ will only mark mutations impacting `SomeMethod(x*5)` as ignored, keeping every o
 - while multi line comments can be used anywhere within the code, Stryker may not be able to identify which part of the code they refer to.
 Meaning you may get what you expect. This is due to how Stryker and the Roslyn compiler interact. That is why we recommend using single line comments.
 
+### Automatically ignore timeouts
+
+Mutants that cause a timeout make a mutation run a lot slower. Instead of adding comments by hand, you can let Stryker do it with the [auto-ignore-timeouts](./configuration.md#auto-ignore-timeouts-flag) flag:
+
+```shell
+dotnet stryker --auto-ignore-timeouts
+```
+
+When the run is complete, Stryker adds a Stryker comment for every mutant with the status `Timeout`:
+
+```csharp
+// Stryker disable once Arithmetic: Auto-ignored by Stryker (--auto-ignore-timeouts), the mutation caused a timeout
+while (i < Compute(i + 1))
+{
+    ...
+}
+```
+
+How it works:
+
+- Comments are added using the syntax tree, directly above the closest statement or member declaration containing the mutation. This guarantees the comment is placed on a valid location and keeps existing comments and formatting intact.
+- Only the mutator types that timed out are disabled (`once` applies to the whole statement, so other mutants of the same types in that statement are ignored too).
+- After the files are changed, Stryker builds the project to verify the result. If the build fails, the files are restored to their original content and an error is logged.
+- Files that changed on disk since the analysis are not touched.
+- The next run skips these mutants, and they show up as `Ignored` in the report.
+
+Things to keep in mind:
+
+- A timeout is not always caused by the mutation. A heavily loaded machine can also cause timeouts. Review the added comments (for example in a pull request) and remove those that hide a mutant you do want to test.
+- Ignoring a timeout hides a mutant that probably would have been detected. Fix the underlying issue when possible, for example by making the test suite faster or the loop condition testable.
+- Remove a comment, or use `// Stryker restore`, to test the mutant again.
+
 ### Examples
 
 ```csharp

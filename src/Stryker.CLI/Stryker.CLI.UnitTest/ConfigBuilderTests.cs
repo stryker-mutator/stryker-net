@@ -225,6 +225,7 @@ public class ConfigBuilderTests
         inputs.Setup(x => x.IgnoredMethodsInput).Returns(new IgnoreMethodsInput());
         inputs.Setup(x => x.ReportFileNameInput).Returns(new ReportFileNameInput());
         inputs.Setup(x => x.BreakOnInitialTestFailureInput).Returns(new BreakOnInitialTestFailureInput());
+        inputs.Setup(x => x.AutoIgnoreTimeoutsInput).Returns(new AutoIgnoreTimeoutsInput());
         inputs.Setup(x => x.OutputPathInput).Returns(new OutputPathInput());
         inputs.Setup(x => x.TestRunnerInput).Returns(new TestRunnerInput());
         inputs.Setup(x => x.S3BucketNameInput).Returns(new S3BucketNameInput());

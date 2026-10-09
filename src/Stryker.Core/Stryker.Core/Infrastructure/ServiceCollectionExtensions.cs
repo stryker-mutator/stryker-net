@@ -29,6 +29,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IInitialisationProcess, InitialisationProcess>();
         services.AddTransient<IMutationTestProcess, MutationTestProcess>();
         services.AddTransient<IMutationProcess, CsharpMutationProcess>();
+        services.AddTransient<IAutoIgnoreTimeoutsProcess, AutoIgnoreTimeoutsProcess>();
 
         // Initialisation services - Transient as they perform per-run operations
         services.AddTransient<IInitialBuildProcess, InitialBuildProcess>();

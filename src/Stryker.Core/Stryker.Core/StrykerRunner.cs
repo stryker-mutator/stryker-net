@@ -29,12 +29,15 @@ public class StrykerRunner : IStrykerRunner
     private readonly ILogger _logger;
     private readonly IReporterFactory _reporterFactory;
     private readonly IProjectOrchestrator _projectOrchestrator;
+    private readonly IAutoIgnoreTimeoutsProcess _autoIgnoreTimeoutsProcess;
 
     public StrykerRunner(
         IReporterFactory reporterFactory,
         IProjectOrchestrator projectOrchestrator,
-        ILogger<StrykerRunner> logger)
+        ILogger<StrykerRunner> logger,
+        IAutoIgnoreTimeoutsProcess autoIgnoreTimeoutsProcess = null)
     {
+        _autoIgnoreTimeoutsProcess = autoIgnoreTimeoutsProcess;
         _reporterFactory = reporterFactory ?? throw new ArgumentNullException(nameof(reporterFactory));
         _projectOrchestrator = projectOrchestrator ?? throw new ArgumentNullException(nameof(projectOrchestrator));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -132,6 +135,11 @@ public class StrykerRunner : IStrykerRunner
             }
 
             reporters.OnAllMutantsTested(rootComponent, combinedTestProjectsInfo);
+
+            if (options.AutoIgnoreTimeouts)
+            {
+                _autoIgnoreTimeoutsProcess?.IgnoreTimeouts(_mutationTestProcesses.Select(x => x.Input.SourceProjectInfo), options);
+            }
 
             return new StrykerRunResult(options, rootComponent.GetMutationScore());
         }

@@ -18,6 +18,7 @@ public interface IStrykerOptions
     BaselineProvider BaselineProvider { get; init; }
     string BaselineOutputPath { get; init; }
     bool BreakOnInitialTestFailure { get; set; }
+    bool AutoIgnoreTimeouts { get; init; }
     int Concurrency { get; init; }
     string Configuration { get; init; }
     string DashboardApiKey { get; init; }

@@ -210,6 +210,7 @@ public class CommandLineConfigReader
         AddCliInput(inputs.OutputPathInput, "output", "O", optionType: CommandOptionType.SingleValue, category: InputCategory.Reporting);
         // Category: Misc
         AddCliInput(inputs.BreakOnInitialTestFailureInput, "break-on-initial-test-failure", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
+        AddCliInput(inputs.AutoIgnoreTimeoutsInput, "auto-ignore-timeouts", null, optionType: CommandOptionType.NoValue, category: InputCategory.Mutation);
         AddCliInput(inputs.DiagModeInput, "diag", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
         AddCliInput(inputs.TestCaseFilterInput, "test-case-filter", null, argumentHint: "expression", category: InputCategory.Misc);
         AddCliInput(inputs.TestRunnerInput, "test-runner", "t", argumentHint: "vstest,mtp", category: InputCategory.Misc);

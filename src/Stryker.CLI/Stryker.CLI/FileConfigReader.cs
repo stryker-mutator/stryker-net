@@ -77,6 +77,7 @@ public static class FileConfigReader
 
         inputs.ReportFileNameInput.SuppliedInput = config.ReportFileName;
         inputs.BreakOnInitialTestFailureInput.SuppliedInput = config.BreakOnInitialTestFailure;
+        inputs.AutoIgnoreTimeoutsInput.SuppliedInput = config.AutoIgnoreTimeouts;
     }
 
     private static FileBasedInput LoadConfig(string configFilePath)
