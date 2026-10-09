@@ -70,27 +70,44 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         });
     }
 
-    public async Task<bool> DiscoverTestsAsync(string assembly)
+    public Task<bool> DiscoverTestsAsync(string assembly) => DiscoverTestsAsync(assembly, CancellationToken.None);
+
+    /// <summary>Discovers tests with caller cancellation, including cancellation while waiting for a runner.</summary>
+    public async Task<bool> DiscoverTestsAsync(string assembly, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (string.IsNullOrEmpty(assembly) || !File.Exists(assembly))
         {
             return false;
         }
 
-        return await RunThisAsync(runner => runner.DiscoverTestsAsync(assembly)).ConfigureAwait(false);
+        return await RunThisAsync(runner => runner.DiscoverTestsAsync(assembly, cancellationToken), cancellationToken).ConfigureAwait(false);
     }
 
     public ITestSet GetTests(IProjectAndTests project) => _testSet;
 
-    public async Task<ITestRunResult> InitialTestAsync(IProjectAndTests project)
+    public Task<ITestRunResult> InitialTestAsync(IProjectAndTests project) => InitialTestAsync(project, CancellationToken.None);
+
+    /// <summary>Runs initial tests with caller cancellation distinct from mutation-test timeout.</summary>
+    public async Task<ITestRunResult> InitialTestAsync(IProjectAndTests project, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var assemblies = project.GetTestAssemblies();
         if (!assemblies.Any())
         {
             return new TestRunResult(false, "No test assemblies found");
         }
 
-        var results = await RunThisAsync(runner => runner.InitialTestAsync(project)).ConfigureAwait(false);
+        var results = await RunThisAsync(runner => runner.InitialTestAsync(project, cancellationToken), cancellationToken).ConfigureAwait(false);
+
+        lock (_discoveryLock)
+        {
+            var initiallyFailed = results.FailingTests.GetIdentifiers().ToHashSet();
+            foreach (var description in _testDescriptions.Values)
+            {
+                description.InitiallyFailed = initiallyFailed.Contains(description.Id);
+            }
+        }
 
         // reset all test processes after the initial test run
         ResetTestProcesses();
@@ -298,23 +315,34 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         }
     }
 
+    public Task<ITestRunResult> TestMultipleMutantsAsync(
+        IProjectAndTests project,
+        ITimeoutValueCalculator? timeoutCalc,
+        IReadOnlyList<IMutant> mutants,
+        TestUpdateHandler? update) => TestMultipleMutantsAsync(project, timeoutCalc, mutants, update, CancellationToken.None);
+
+    /// <summary>Tests mutations with caller cancellation, retaining a runner only after safe host disposal.</summary>
     public async Task<ITestRunResult> TestMultipleMutantsAsync(
         IProjectAndTests project,
         ITimeoutValueCalculator? timeoutCalc,
         IReadOnlyList<IMutant> mutants,
-        TestUpdateHandler? update)
+        TestUpdateHandler? update,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var assemblies = project.GetTestAssemblies();
         if (!assemblies.Any())
         {
             return new TestRunResult(false, "No test assemblies found");
         }
 
-        return await RunThisAsync(runner => runner.TestMultipleMutantsAsync(project, timeoutCalc, mutants, update)).ConfigureAwait(false);
+        return await RunThisAsync(runner => runner.TestMultipleMutantsAsync(project, timeoutCalc, mutants, update, cancellationToken),
+            cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<T> RunThisAsync<T>(Func<MicrosoftTestingPlatformRunner, Task<T>> task)
+    private async Task<T> RunThisAsync<T>(Func<MicrosoftTestingPlatformRunner, Task<T>> task, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         MicrosoftTestingPlatformRunner? runner;
 
         // Try to get a runner with a timeout to prevent indefinite blocking
@@ -325,7 +353,12 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
         while (!_availableRunners.TryTake(out runner))
         {
-            if (!_runnerAvailableHandler.WaitOne(waitIntervalMs))
+            cancellationToken.ThrowIfCancellationRequested();
+            var signalled = cancellationToken.CanBeCanceled
+                ? WaitHandle.WaitAny([_runnerAvailableHandler, cancellationToken.WaitHandle], waitIntervalMs)
+                : _runnerAvailableHandler.WaitOne(waitIntervalMs) ? 0 : WaitHandle.WaitTimeout;
+            cancellationToken.ThrowIfCancellationRequested();
+            if (signalled == WaitHandle.WaitTimeout)
             {
                 attempts++;
                 if (attempts >= maxAttempts)
@@ -343,6 +376,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return await task(runner).ConfigureAwait(false);
         }
         finally
@@ -368,4 +402,3 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         _runnerAvailableHandler.Dispose();
     }
 }
-

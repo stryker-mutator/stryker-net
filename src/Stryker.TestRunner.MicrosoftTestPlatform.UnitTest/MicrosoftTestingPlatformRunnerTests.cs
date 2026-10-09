@@ -790,7 +790,7 @@ public class MicrosoftTestingPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
-    public void BuildTestRunResult_ExecutedTests_CollapsesToEveryTest_WhenAllFinished()
+    public void BuildTestRunResult_ExecutedTests_PreservesIdentities_WhenAllFinished()
     {
         using var runner = CreateRunner();
 
@@ -799,11 +799,50 @@ public class MicrosoftTestingPlatformRunnerTests
             totalDiscoveredTests: 2,
             duration: TimeSpan.FromMilliseconds(10));
 
-        // When every discovered test finished, ExecutedTests is the sentinel
-        // "every test" (IsEveryTest == true). Downstream Mutant.AnalyzeTestRun
-        // uses this sentinel to mark mutants as Survived when they weren't
-        // covered.
-        result.ExecutedTests.IsEveryTest.ShouldBeTrue();
+        result.ExecutedTests.IsEveryTest.ShouldBeFalse();
+        result.ExecutedTests.GetIdentifiers().ShouldBe(["t1", "t2"]);
+    }
+
+    [TestMethod]
+    public void BuildTestRunResult_RetryFailureFollowedByPass_DoesNotKillMutant()
+    {
+        using var runner = CreateRunner();
+        var failure = Update("retried", TestNodeStates.Failed);
+        var passed = Update("retried", TestNodeStates.Passed);
+
+        var result = runner.BuildTestRunResult([failure, passed], 2, TimeSpan.Zero);
+
+        result.FailingTests.IsEmpty.ShouldBeTrue();
+        result.ExecutedTests.IsEveryTest.ShouldBeFalse();
+        result.ExecutedTests.GetIdentifiers().ShouldBe(["retried"]);
+    }
+
+    [TestMethod]
+    public void BuildTestRunResult_SupersededFailureWithoutFinalAttempt_IsNotExecutedOrFailing()
+    {
+        using var runner = CreateRunner();
+        var superseded = Update("retried", TestNodeStates.Failed);
+        superseded = superseded with { Node = superseded.Node with { RetryAttempt = 1, RetryIsSuperseded = true } };
+
+        var result = runner.BuildTestRunResult([superseded, Update("unknown", "provider-unknown")], 2, TimeSpan.Zero);
+
+        result.FailingTests.IsEmpty.ShouldBeTrue();
+        result.ExecutedTests.IsEmpty.ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void BuildTestRunResult_LateOlderRetryAttempt_DoesNotReplaceFinalOutcome()
+    {
+        using var runner = CreateRunner();
+        var failed = Update("retried", TestNodeStates.Failed);
+        failed = failed with { Node = failed.Node with { RetryAttempt = 1, RetryIsSuperseded = true } };
+        var passed = Update("retried", TestNodeStates.Passed);
+        passed = passed with { Node = passed.Node with { RetryAttempt = 2, RetryIsSuperseded = false } };
+
+        var result = runner.BuildTestRunResult([passed, failed], 1, TimeSpan.Zero);
+
+        result.FailingTests.IsEmpty.ShouldBeTrue();
+        result.ExecutedTests.GetIdentifiers().ShouldBe(["retried"]);
     }
 
     [TestMethod, Timeout(1000)]
@@ -891,7 +930,8 @@ public class MicrosoftTestingPlatformRunnerTests
             => _discovered = discovered;
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null,
+            Func<IReadOnlyCollection<TestNodeUpdate>, bool>? shouldBail = null, CancellationToken cancellationToken = default)
             => Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>(
                 (new TestRunResult(false, "simulated test host crash"), false, _discovered));
     }
@@ -1041,7 +1081,8 @@ public class MicrosoftTestingPlatformRunnerTests
             => _perAssembly = perAssembly;
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null,
+            Func<IReadOnlyCollection<TestNodeUpdate>, bool>? shouldBail = null, CancellationToken cancellationToken = default)
         {
             var (result, discovered) = _perAssembly[assembly];
             return Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>((result, false, discovered));
@@ -1779,7 +1820,8 @@ public class MicrosoftTestingPlatformRunnerTests
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null,
+            Func<IReadOnlyCollection<TestNodeUpdate>, bool>? shouldBail = null, CancellationToken cancellationToken = default)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
             var result = new TestRunResult(
@@ -1806,7 +1848,8 @@ public class MicrosoftTestingPlatformRunnerTests
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null,
+            Func<IReadOnlyCollection<TestNodeUpdate>, bool>? shouldBail = null, CancellationToken cancellationToken = default)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
             var result = new TestRunResult(
