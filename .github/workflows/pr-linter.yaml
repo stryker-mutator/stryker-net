@@ -24,20 +24,26 @@ jobs:
     steps:
         # see https://github.com/marketplace/actions/semantic-pull-request for configuration options
       - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # Configure which types are allowed (newline-delimited).
           types: |
-            [fF]eat
-            [fF]ix
-            [dD]ocs
-            [sS]tyle
-            [rR]efactor
-            [pP]erf
-            [tT]est
-            [bB]uild
-            CI
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
             ci
-            [cC]hore
-            [rR]evert
-          # Scopes are optional but recommended.
-          requireScope: false
+            chore
+            revert
+          # Match Angular's header format; breaking changes require a footer.
+          headerPattern: '^(\w*)(?:\((.*)\))?: (.*)$'
+          headerPatternCorrespondence: type, scope, subject
+          # Require a lowercase scope.
+          requireScope: true
+          disallowScopes: |
+            .*[A-Z].*
