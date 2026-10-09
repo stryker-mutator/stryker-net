@@ -1,9 +1,7 @@
 const { execSync } = require('child_process');
-const { promisify } = require('util');
 const readline = require('readline');
 const fs = require('fs');
 const semver = require('semver');
-const conventionalRecommendedBump = require('conventional-recommended-bump');
 const packagejson = require('./package.json');
 
 const exec = (command) => execSync(command, { stdio: [0, 1, 2] });
@@ -24,10 +22,13 @@ const oldVersionPrefix = packagejson.versionPrefix;
 const oldVersionSuffix = packagejson.versionSuffix;
 const oldVersion = oldVersionPrefix + (oldVersionSuffix ? '-' : '') + oldVersionSuffix;
 
-const bump = promisify(conventionalRecommendedBump);
-
 (async () => {
-    const recommendation = await bump({ preset: 'angular', tagPrefix: 'dotnet-stryker@' });
+    const { Bumper } = await import('conventional-recommended-bump');
+    const { ConventionalChangelog } = await import('conventional-changelog');
+    const recommendation = await new Bumper()
+        .loadPreset('angular')
+        .tag({ prefix: 'dotnet-stryker@' })
+        .bump();
     const releaseType = recommendation.releaseType ?? 'patch';
     const suggestedVersion = semver.inc(oldVersionPrefix, releaseType);
 
@@ -43,8 +44,10 @@ const bump = promisify(conventionalRecommendedBump);
         output: process.stdout
     });
 
-    rl.question(`What should the new package version be? [${suggestedVersion}] `, (input) => {
-        const newVersionNumber = input.trim() || suggestedVersion;
+    const input = await new Promise(resolve =>
+        rl.question(`What should the new package version be? [${suggestedVersion}] `, resolve));
+    rl.close();
+    const newVersionNumber = input.trim() || suggestedVersion;
     let commitMessageLines = ['Publish', '', ''];
     let versionPrefix = newVersionNumber;
     let versionSuffix = '';
@@ -67,7 +70,14 @@ const bump = promisify(conventionalRecommendedBump);
     if (!versionSuffix) {
         console.log(`Updating changelog`);
         commitMessageLines.push(`- dotnet-stryker@${newVersionNumber}`);
-        releaseNotes = execSync(`npx conventional-changelog-cli -p angular --tag-prefix "dotnet-stryker@"`, { encoding: 'utf8' }).trim();
+        const changelogGenerator = new ConventionalChangelog()
+            .loadPreset('angular')
+            .readPackage()
+            .tags({ prefix: 'dotnet-stryker@' });
+        for await (const chunk of changelogGenerator.write()) {
+            releaseNotes += chunk;
+        }
+        releaseNotes = releaseNotes.trim();
         const changelogPath = './CHANGELOG.md';
         const changelog = fs.readFileSync(changelogPath, { encoding: 'UTF-8' });
         const marker = '<!-- changelog -->';
@@ -103,6 +113,7 @@ const bump = promisify(conventionalRecommendedBump);
             console.warn('Failed to create GitHub release:', e.message);
         }
     }
-    rl.close();
-    });
-})().catch(console.error);
+})().catch(error => {
+    console.error(error);
+    process.exitCode = 1;
+});
