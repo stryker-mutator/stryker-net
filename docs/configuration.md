@@ -107,12 +107,6 @@ When using Microsoft Testing Platform, the test application must expose the
 `--filter` command-line option. The current xUnit v3 and TUnit MTP runners do
 not expose this option, so `test-case-filter` cannot be used with them.
 
-If discovery completes successfully but no tests match the filter for a project,
-Stryker skips that project and reports that no test cases matched
-`test-case-filter`. If no projects have matching tests, the run stops with a
-configuration error. Change `test-case-filter` to include tests and try again.
-Discovery failures are reported as errors, not as projects skipped by the filter.
-
 ### `mutate` &lt;`glob[]`&gt;
 
 Default: `*`  
