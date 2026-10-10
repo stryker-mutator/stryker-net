@@ -10,12 +10,14 @@ using Buildalyzer.Environment;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using NuGet.Frameworks;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options;
 using Stryker.Configuration.Options;
 using Stryker.Core.Initialisation;
 using Stryker.Utilities.Buildalyzer;
@@ -125,7 +127,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 
         Action lambda = () => analyzerResult.GetNuGetFramework();
 
-        lambda.ShouldThrow(typeof(InputException));
+        lambda.ShouldThrow<InputException>();
     }
 
     [TestMethod]
@@ -170,7 +172,6 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
         });
 
         var target = BuildTestResolver(fileSystem);
-
         var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
 
         result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
@@ -187,8 +188,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
             [],
             new Dictionary<string, string> { { "Language", "C#" } },
             [_sourceProjectFilePath],
-            rawReferences:
-            [
+            rawReferences: [
                 Path.Combine(_testPath, "nunit.framework.dll"),
                 Path.Combine(_testPath, "UnityEngine.TestRunner.dll")
             ]);
@@ -223,7 +223,9 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
             { _testProjectFilePath, new MockFileData(_defaultTestProjectFileContents)},
             { Path.Combine(_sourcePath, "bin", "Debug", "netcoreapp2.0"), new MockFileData("Bytecode") }, // bin should be excluded
             { Path.Combine(_sourcePath, "obj", "Release", "netcoreapp2.0"), new MockFileData("Bytecode") }, // obj should be excluded
-            { Path.Combine(_sourcePath, "node_modules", "Some package"), new MockFileData("bla") }};
+            { Path.Combine(_sourcePath, "node_modules", "Some package"), new MockFileData("bla") }
+        };
+
         if (files != null)
         {
             foreach (var fileName in files.Keys)
@@ -958,7 +960,7 @@ using System.Reflection;
         };
         // create analyzerMocks returning selected frameworks for source and test projects
         var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath,
-            [.. fileSystem.AllFiles.Where(s => s.EndsWith(".cs"))], null,  projectFrameworks.Split(','));
+            [.. fileSystem.AllFiles.Where(s => s.EndsWith(".cs"))], null, frameworks: projectFrameworks.Split(','));
         var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, frameworks: testFrameworks.Split(','));
 
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
@@ -1003,7 +1005,7 @@ using System.Reflection;
         };
 
         var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath,
-            fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray(), null,  projectFrameworks.Split(','));
+            fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray(), null,  frameworks: projectFrameworks.Split(','));
         var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, frameworks: testFrameworks.Split(','));
 
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
@@ -1186,7 +1188,7 @@ using System.Reflection;
         var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath, []);
         var sourceProject2ManagerMock = SourceProjectAnalyzerMock(project2, []);
         var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
-        var testProjectManagerMock = BuildProjectAnalyzerMock(_testProjectFilePath, [], properties, [_sourceProjectFilePath, project2], ["netcore2.1"]);
+        var testProjectManagerMock = BuildProjectAnalyzerMock(_testProjectFilePath, [], properties, [_sourceProjectFilePath, project2], frameworks: ["netcore2.1"]);
 
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
@@ -1221,9 +1223,9 @@ using System.Reflection;
         var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath, []);
         var sourceProject2ManagerMock = SourceProjectAnalyzerMock(project2, []);
         var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
-        var testProjectManagerMock = BuildProjectAnalyzerMock(_testProjectFilePath, [], properties, [_sourceProjectFilePath, project2], ["netcore2.1"]);
+        var testProjectManagerMock = BuildProjectAnalyzerMock(_testProjectFilePath, [], properties, [_sourceProjectFilePath, project2], frameworks: ["netcore2.1"]);
         var properties2 = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
-        var testProjectManagerMock2 = BuildProjectAnalyzerMock(test2Path, [], properties2, [_sourceProjectFilePath], ["netcore2.1"]);
+        var testProjectManagerMock2 = BuildProjectAnalyzerMock(test2Path, [], properties2, [_sourceProjectFilePath], frameworks: ["netcore2.1"]);
 
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
@@ -1262,9 +1264,9 @@ using System.Reflection;
         var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath, []);
         var sourceProject2ManagerMock = SourceProjectAnalyzerMock(project2, []);
         var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
-        var testProjectManagerMock = BuildProjectAnalyzerMock(_testProjectFilePath, [], properties, [_sourceProjectFilePath, project2], ["netcore2.1"]);
+        var testProjectManagerMock = BuildProjectAnalyzerMock(_testProjectFilePath, [], properties, [_sourceProjectFilePath, project2], frameworks: ["netcore2.1"]);
         var properties2 = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
-        var testProjectManagerMock2 = BuildProjectAnalyzerMock(test2Path, [], properties2, [_sourceProjectFilePath, project2], ["netcore2.1"]);
+        var testProjectManagerMock2 = BuildProjectAnalyzerMock(test2Path, [], properties2, [_sourceProjectFilePath, project2], frameworks: ["netcore2.1"]);
 
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
@@ -1308,7 +1310,7 @@ using System.Reflection;
         var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath, []);
         var sourceProject2ManagerMock = SourceProjectAnalyzerMock(project2, []);
         var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
-        var testProjectManagerMock = BuildProjectAnalyzerMock(_testProjectFilePath, [], properties, [_sourceProjectFilePath, project2], ["netcore2.1"]);
+        var testProjectManagerMock = BuildProjectAnalyzerMock(_testProjectFilePath, [], properties, [_sourceProjectFilePath, project2], frameworks: ["netcore2.1"]);
 
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
@@ -1345,7 +1347,7 @@ using System.Reflection;
         var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath, []);
         var sourceProject2ManagerMock = SourceProjectAnalyzerMock(project2, []);
         var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
-        var testProjectManagerMock = BuildProjectAnalyzerMock(_testProjectFilePath, [], properties, [_sourceProjectFilePath, project2], ["netcore2.1"]);
+        var testProjectManagerMock = BuildProjectAnalyzerMock(_testProjectFilePath, [], properties, [_sourceProjectFilePath, project2], frameworks: ["netcore2.1"]);
 
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
@@ -1521,6 +1523,176 @@ using System.Reflection;
 
         // Assert
         sourceProjectManagerMock.Verify(x => x.Build(It.Is<EnvironmentOptions>( env => env.GlobalProperties["Platform"] == "x64")), Times.AtLeastOnce);
+    }
+
+
+    [TestMethod]
+    public void ShouldDiscardProjectsWoTestsInSolutionMode()
+    {
+        // Arrange
+        var solutionPath = Path.Combine(_filesystemRoot, "solution.sln");
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectFilePath, new MockFileData(_defaultSourceProjectFileContents)},
+            { Path.Combine(_sourcePath, "source.cs"), new MockFileData(_sourceFile)},
+            { _testProjectFilePath, new MockFileData(_defaultTestProjectFileContents)},
+            { solutionPath, new MockFileData("") },
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath,
+            [.. fileSystem.AllFiles.Where(s => s.EndsWith(".cs"))]);
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"]);
+        var secondProjectFilePath = Path.Combine(_filesystemRoot, "SecondProject", "SecondProject.csproj");
+        var secondSourceProjectManagerMock = SourceProjectAnalyzerMock(secondProjectFilePath, []);
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object },
+            { "SecondProject", secondSourceProjectManagerMock.Object }
+        };
+        var managerMock = BuildBuildAnalyzerMock(analyzerResults);
+
+        // Build a solution that assigns x64 platform to projects
+        var solution = SolutionFile.BuildFromProjectList(solutionPath,
+            [_sourceProjectFilePath, _testProjectFilePath, secondProjectFilePath]);
+
+        var captureLogger = new CaptureLogger<InputFileResolver>();
+        ISolutionProvider solutionProvider = new CustomSolutionProvider(_ => solution);
+        var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object, solutionProvider, captureLogger);
+
+        // IsSolutionContext is true when WorkingDirectory matches solution's parent dir
+        var options = new StrykerOptions
+        {
+            SolutionPath = solutionPath,
+            WorkingDirectory = _filesystemRoot,
+            DiagMode = true
+        };
+
+        // Act
+        var result = target.ResolveSourceProjectInfos(options);
+
+        // Assert
+        result.SourceProjectInfos.ShouldHaveSingleItem();
+        captureLogger.Entries.ShouldContain(e => e.Level == LogLevel.Information
+                                                 && e.Message.Contains("Project SecondProject.csproj overall analysis succeeded but can't be mutated because no test project references it."));
+    }
+
+    [TestMethodWithIgnoreIfSupport]
+    [IgnoreIf(nameof(Is.Windows))] // WPF is not supported on non-Windows platforms
+    public void ShouldRecognizeWPFProject()
+    {
+        var specificProperties = new Dictionary<string, string> { { "UseWPF", "true" } };
+        var target = SetupFailingProject(specificProperties, null, out var captureLogger, out var options);
+
+        // Act
+        var action = () => target.ResolveSourceProjectInfos(options);
+        action.ShouldThrow<GeneralStrykerException>();
+        // Assert
+        captureLogger.Entries.ShouldContain(e => e.Level == LogLevel.Warning
+                                                 && e.Message.Contains("is a WPF or Windows Forms project"));
+    }
+
+    [TestMethod]
+    public void ShouldRecognizeGitVersioningWithSignedAssembly()
+    {
+        var specificProperties = new Dictionary<string, string> { { "SignAssembly", "true" } };
+
+        var target = SetupFailingProject(specificProperties, "Nerdbank.GitVersioning", out var captureLogger, out var options);
+
+        // Act
+        var action = () => target.ResolveSourceProjectInfos(options);
+        action.ShouldThrow<GeneralStrykerException>();
+        // Assert
+        captureLogger.Entries.ShouldContain(e => e.Level == LogLevel.Warning
+                                                 && e.Message.Contains("uses GitVersioning package and is a signed assembly"));
+    }
+
+    private InputFileResolver SetupFailingProject(Dictionary<string, string> specificProperties,
+        string specificReference, out CaptureLogger<InputFileResolver> captureLogger,
+        out StrykerOptions options)
+    {
+        // Arrange
+        var solutionPath = Path.Combine(_filesystemRoot, "solution.sln");
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectFilePath, new MockFileData(_defaultSourceProjectFileContents)},
+            { Path.Combine(_sourcePath, "source.cs"), new MockFileData(_sourceFile)},
+            { _testProjectFilePath, new MockFileData(_defaultTestProjectFileContents)},
+            { solutionPath, new MockFileData("") },
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath,
+            [], specificProperties, specificReference is null ? [] : [specificReference], success: () => false);
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"]);
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object },
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+
+        // Build a solution that assigns x64 platform to projects
+        var solution = SolutionFile.BuildFromProjectList(solutionPath,
+            [_sourceProjectFilePath, _testProjectFilePath]);
+
+        captureLogger = new CaptureLogger<InputFileResolver>();
+        ISolutionProvider solutionProvider = new CustomSolutionProvider(_ => solution);
+        var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object, solutionProvider, captureLogger);
+
+        // IsSolutionContext is true when WorkingDirectory matches solution's parent dir
+        options = new StrykerOptions
+        {
+            SolutionPath = solutionPath,
+            WorkingDirectory = _filesystemRoot,
+            DiagMode = true
+        };
+        return target;
+    }
+
+    [TestMethod]
+    public void ShouldDisableDesignTimeAccordingToProperty()
+    {
+        // Arrange
+        var solutionPath = Path.Combine(_filesystemRoot, "solution.sln");
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectFilePath, new MockFileData(_defaultSourceProjectFileContents)},
+            { Path.Combine(_sourcePath, "source.cs"), new MockFileData(_sourceFile)},
+            { _testProjectFilePath, new MockFileData(_defaultTestProjectFileContents)},
+            { solutionPath, new MockFileData("") },
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath, fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"]);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        var managerMock = BuildBuildAnalyzerMock(analyzerResults);
+
+        // Build a solution
+        var solution = SolutionFile.BuildFromProjectList("solution.sln", [_sourceProjectFilePath, _testProjectFilePath]);
+
+        var target = BuildTestResolverWithSolutionProvider(fileSystem,
+            new CustomSolutionProvider(_ => solution));
+
+        // IsSolutionContext is true when WorkingDirectory matches solution's parent dir
+        var options = new StrykerOptions
+        {
+            ProjectPath = _sourcePath,
+            SolutionPath = solutionPath,
+            WorkingDirectory = _filesystemRoot,
+            BuildProperties = new Dictionary<string, string> { { "DesignTimeBuild", "false" } }
+        };
+
+        // Act
+        target.ResolveSourceProjectInfos(options);
+
+        // Assert
+        sourceProjectManagerMock.Verify(x=>x.Build(It.Is<EnvironmentOptions>(eo => !eo.DesignTime)), Times.AtLeastOnce);
+        sourceProjectManagerMock.Verify(x=>x.Build(It.Is<EnvironmentOptions>(eo => eo.DesignTime)), Times.Never);
     }
 
     [TestMethod]

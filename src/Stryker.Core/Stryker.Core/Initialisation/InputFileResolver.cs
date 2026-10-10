@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -38,7 +39,6 @@ public class InputFileResolver(
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IBuildalyzerProvider _analyzerProvider = analyzerProvider ?? throw new ArgumentNullException(nameof(analyzerProvider));
     private readonly ISolutionProvider _solutionProvider = solutionProvider ?? throw new ArgumentNullException(nameof(solutionProvider));
-
     private readonly INugetRestoreProcess _nugetRestoreProcess = nugetRestoreProcess ?? throw new ArgumentNullException(nameof(nugetRestoreProcess));
     public IFileSystem FileSystem { get; } = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
 
@@ -108,7 +108,7 @@ public class InputFileResolver(
             ScanMode.NoScan);
         // identify target projects and their associated test projects
         var (findMutableAnalyzerResults, orphanedProjects) =
-            ExtractMutableProjectTrees(mutableProjectsAnalyzerResults);
+            ExtractMutableProjectTrees(mutableProjectsAnalyzerResults, options);
         // keep only suitable candidates
         var projectInfos = AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphanedProjects);
         ThrowIfUnityTestProject(projectInfos);
@@ -152,10 +152,10 @@ public class InputFileResolver(
 
         solution.AddProjects(testProjectFileNames);
         // we analyze test projects
-        var analyzeAllNeededProjects = AnalyzeAllNeededProjects(solution,
+        var analyzedProjects = AnalyzeAllNeededProjects(solution,
             normalizedProjectUnderTestNameFilter, options, ScanMode.ScanTestProjectReferences);
         // we match test projects to mutable projects
-        var (findMutableAnalyzerResults, orphans) = ExtractMutableProjectTrees(analyzeAllNeededProjects);
+        var (findMutableAnalyzerResults, orphans) = ExtractMutableProjectTrees(analyzedProjects, options);
 
         var result = AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphans);
         result = SelectSingleProject(normalizedProjectUnderTestNameFilter, result, targetProjectMode, testProjectFileNames);
@@ -240,33 +240,62 @@ public class InputFileResolver(
 
     // analyze projects, do same for their upstream dependencies if activated, and identify which one(s)
     // to proceed with
-    private List<SourceProjectInfo> AnalyzeAndIdentifyProjects(IStrykerOptions options,
+     private List<SourceProjectInfo> AnalyzeAndIdentifyProjects(IStrykerOptions options,
         List<MutableProjectTree> findMutableAnalyzerResults,
         List<ProjectSimulatedBuildWrapper> unusedTestProjects)
     {
+        // do we have at least one valid target?
+        if (findMutableAnalyzerResults.Count == 0)
+        {
+            // no mutable project found
+            _logger.LogWarning("No project found, check settings and ensure project file is not corrupted.");
+            throw new InputException("Failed to analyze project builds. Stryker cannot continue.");
+        }
+
         // build all projects
         _logger.LogDebug("Scanning {Count} possible targets.", findMutableAnalyzerResults.Count);
 
         var suitableCandidates =
             findMutableAnalyzerResults.Where(p => p.IsValidTarget).ToList();
+        var discardedCandidates = findMutableAnalyzerResults.Except(suitableCandidates).ToList();
 
-        // do we have at least one valid target?
+        if (discardedCandidates.Count>0)
+        {
+            // we provide details about discarded candidate project
+            _logger.LogWarning("Discarded {Count} project(s) due to:", discardedCandidates.Count);
+            foreach (var discardedCandidate in discardedCandidates)
+            {
+                discardedCandidate.LogAllAnalysisSummaries(options.DiagMode);
+            }
+
+            if (!options.DiagMode)
+            {
+                _logger.LogWarning("** You can use --diag option to get analysis's details. **");
+            }
+        }
+
+        if (unusedTestProjects.Count > 0)
+        {
+            _logger.LogInformation("Found {Count} test project(s) referencing no candidate project: {Projects}", unusedTestProjects.Count, string.Join(", ",
+                unusedTestProjects.Select(p => p.ProjectFileName)));
+        }
+
         if (suitableCandidates.Count == 0)
         {
-            // no mutable project found
-            LogAnalysis(findMutableAnalyzerResults, unusedTestProjects, options.DiagMode);
-            throw new InputException("Failed to analyze project builds. Stryker cannot continue.");
+            _logger.LogWarning("No suitable candidates found.{UseDiagOptionToHaveTheAnalysisLogsInTheLogFile}",
+                options.DiagMode ? " Check the logs for more details." : " Use --diag option to have the analysis logs in the log file.");
+            throw new GeneralStrykerException("Analysis failed for all candidate projects. Stryker cannot continue.");
         }
 
         // we keep only one target framework per project
+        // we must select projects according to framework settings if any
         foreach (var candidate in suitableCandidates)
         {
             candidate.KeepOnlyOneTarget(options.TargetFramework);
         }
-        // keep only projects with one or more test projects
-        // we must select projects according to framework settings if any
+
         var projectInfos = suitableCandidates.Where(p => p.Targets.Count > 0)
-            .Select(analyzerResult => analyzerResult.Targets[0].BuildSourceProjectInfo(options, FileSystem))
+            .Select(analyzerResult => analyzerResult.Targets[0].BuildSourceProjectInfo(options, FileSystem, analyzerResult.KnownProblems()))
             .ToList();
 
         if (projectInfos.Count != 0)
@@ -278,84 +307,34 @@ public class InputFileResolver(
         throw new InputException("No valid project analysis results could be found.");
     }
 
-    // Log the analysis results
-    private void LogAnalysis(List<MutableProjectTree> findMutableAnalyzerResults,
-        List<ProjectSimulatedBuildWrapper> unusedTestProjects, bool optionsDiagMode)
-    {
-        if (findMutableAnalyzerResults.Count == 0)
-        {
-            _logger.LogWarning( optionsDiagMode ? "No project found, check settings and ensure project file is not corrupted.":
-                               """
-                               No project found, check settings and ensure project file is not corrupted.
-                               Use --diag option to have the simulated build logs.
-                               """);
-            return;
-        }
-        foreach (var projectTree in findMutableAnalyzerResults)
-        {
-            projectTree.LogAllAnalysisSummaries();
-        }
-        // dump test projects that do not reference any mutable project
-        foreach (var unusedTestProject in unusedTestProjects)
-        {
-            _logger.LogInformation("Test project {ProjectName} does not appear to test any mutable project, simulated build {Result}.",
-                unusedTestProject.ProjectFileName,
-                unusedTestProject.HasValidResults() ? "succeeded" : "failed");
-        }
-
-        if (!optionsDiagMode)
-        {
-            _logger.LogWarning("Use --diag option to have the analysis logs in the log file.");
-        }
-    }
-
     private ConcurrentBag<ProjectSimulatedBuildWrapper> AnalyzeAllNeededProjects(
         ProjectsTracker solutionInfo,
         string normalizedProjectUnderTestNameFilter,
         IStrykerOptions options, ScanMode mode)
     {
         var mutableProjectsAnalyzerResults = new ConcurrentBag<ProjectSimulatedBuildWrapper>();
-
+        var parallelOptions = new ParallelOptions
+            { MaxDegreeOfParallelism = options.DiagMode ? 1 : Math.Max(options.Concurrency, 1) };
         var list = new DynamicEnumerableQueue<string>(solutionInfo.SelectedProjects);
         try
         {
-            var parallelOptions = new ParallelOptions
-                { MaxDegreeOfParallelism = options.DiagMode ? 1 : Math.Max(options.Concurrency, 1) };
             while (!list.Empty)
             {
-                Parallel.ForEach(list.Consume(),
-                    parallelOptions, entry =>
+                #if DEBUG
+                if (Debugger.IsAttached)
+                {
+                    foreach (var project in list.Consume())
                     {
-                        var projectAnalysisContext = solutionInfo.GetProjectAnalysisContext(entry);
-
-                        IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(projectAnalysisContext, options);
-
-                        // apply project name filter (except for test projects)
-                        if (normalizedProjectUnderTestNameFilter != null
-                              && !buildResult.IsTestProject()
-                              && !projectAnalysisContext.ProjectFileName.Replace('\\', '/')
-                              .Contains(normalizedProjectUnderTestNameFilter,
-                                  StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            return;
-                        }
-
-                        mutableProjectsAnalyzerResults.Add(projectAnalysisContext);
-                        // recursively scan dependencies only if enabled and current project is a test project
-                        if (mode == ScanMode.NoScan
-                            || (mode == ScanMode.ScanTestProjectReferences && !projectAnalysisContext.IsTestProject()))
-                        {
-
-                            return;
-                        }
-
-                        // scan references if recursive scan is enabled
-                        // Stryker will recursively scan projects
-                        // add any project reference for progressive discovery (when not using solution file)
-                        list.Add(projectAnalysisContext.GetProjectReferences()
-                            .Where(projectReference => FileSystem.File.Exists(projectReference)));
+                        ProcessProject(project, normalizedProjectUnderTestNameFilter, mutableProjectsAnalyzerResults, mode, list, solutionInfo, options);
                     }
-                );
+                }
+                else
+                #endif
+                {
+                    Parallel.ForEach(list.Consume(),
+                        parallelOptions, entry => ProcessProject(entry, normalizedProjectUnderTestNameFilter, mutableProjectsAnalyzerResults, mode, list, solutionInfo, options)
+                    );
+                }
             }
         }
         catch (AggregateException ex)
@@ -367,6 +346,38 @@ public class InputFileResolver(
         return mutableProjectsAnalyzerResults;
     }
 
+    private void ProcessProject(string entry, string projectUnderTestNameFilter, ConcurrentBag<ProjectSimulatedBuildWrapper> results,
+        ScanMode scanMode, DynamicEnumerableQueue<string> dynamicEnumerableQueue, ProjectsTracker solutionInfo, IStrykerOptions options)
+    {
+        var projectAnalysisContext = solutionInfo.GetProjectAnalysisContext(entry);
+        IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(projectAnalysisContext, options);
+
+        // apply project name filter (except for test projects)
+        if (projectUnderTestNameFilter != null
+            && !buildResult.IsTestProject()
+            && !projectAnalysisContext.ProjectFileName.Replace('\\', '/')
+                .Contains(projectUnderTestNameFilter,
+                    StringComparison.InvariantCultureIgnoreCase))
+        {
+            return;
+        }
+
+        results.Add(projectAnalysisContext);
+        // recursively scan dependencies only if enabled and current project is a test project
+        if (scanMode == ScanMode.NoScan
+            || (scanMode == ScanMode.ScanTestProjectReferences && !projectAnalysisContext.IsTestProject()))
+        {
+            return;
+        }
+
+        // scan references if recursive scan is enabled
+        // Stryker will recursively scan projects
+        // add any project reference for progressive discovery (when not using solution file)
+        dynamicEnumerableQueue.Add(projectAnalysisContext.GetProjectReferences()
+            .Where(projectReference => FileSystem.File.Exists(projectReference)));
+    }
+
+    // analyze a single project with retry attempts if needed, and return the analyzer results
     private IAnalyzerResults AnalyzeSingleProject(ProjectSimulatedBuildWrapper project, IStrykerOptions options)
     {
         var projectLogName = FileSystem.Path.GetRelativePath(options.WorkingDirectory, project.ProjectFileName);
@@ -376,20 +387,14 @@ public class InputFileResolver(
         var buildResult = project.Analyze();
         var buildResultOverallSuccess = project.HasValidResults();
 
-        // if buildalyzer failed, we can try again with a nuget restore, as missing packages is a common cause of
-        // buildalyzer failure, especially for full framework projects
-        if (buildResult.All(ar=>!ar.Succeeded))
+        // if buildalyzer failed, we can try again with a NuGet restore, as missing packages is a common cause of
+        // buildalyzer failure. NetFramework project can only be retried on Windows platforms
+        if (buildResult.All(ar=>!ar.Succeeded) && (!project.IsNetFramework||Environment.OSVersion.Platform==PlatformID.Win32NT))
         {
-            if (project.IsNetFramework && Environment.OSVersion.Platform!=PlatformID.Win32NT)
-            {
-                _logger.LogWarning("Project {ProjectFilePath} is a .NET Framework project. It requires Windows for mutation testing. Discarding.", projectLogName);
-                return buildResult;
-            }
-
             shouldConfirmSuccess = true;
-            _logger.LogWarning("Project {ProjectFilePath} simulated build failed. Trying again with a nuget restore.", projectLogName);
+            _logger.LogDebug("Project {ProjectFilePath} simulated build failed. Trying again with a NuGet restore.", projectLogName);
 
-            // if this is a full framework project, we can retry after a nuget restore
+            // if this is a full framework project, we can retry after a NuGet restore
             buildResult = project.Analyze(withRestore: true);
 
             // check the new status
@@ -400,24 +405,24 @@ public class InputFileResolver(
                 // still failed, we can try using target framework option
                 // note that the project will be 'built' against the requested framework disregarding the
                 // framework(s) declared in the project.
-                _logger.LogWarning("Project {ProjectFilePath} simulated build failed again. Last attempt, forcing the target framework.", projectLogName);
+                _logger.LogDebug("Project {ProjectFilePath} simulated build failed again. Last attempt, forcing the target framework.", projectLogName);
                 buildResult = project.Analyze(forceFramework: true);
                 buildResultOverallSuccess = project.HasValidResults();
             }
         }
-        if (!buildResult.OverallSuccess)
-        {
-            _logger.LogWarning("Project {ProjectFilePath} simulated build failed. Use '--diag' option to have the build log.", projectLogName);
-        }
+
+        project.InitializeTargetFrameworks();
 
         if (options.DiagMode)
         {
+            _logger.Log(buildResult.OverallSuccess ? LogLevel.Debug : LogLevel.Information,
+                "{ProjectFilePath}'s build log is:{Eol}{Log}", projectLogName, Environment.NewLine, project.LastBuildLog);
             project.LogAnalyzerResult();
         }
 
         if (buildResultOverallSuccess)
         {
-            _logger.Log(shouldConfirmSuccess ? LogLevel.Warning : LogLevel.Debug,
+            _logger.Log((shouldConfirmSuccess||!buildResult.OverallSuccess) ? LogLevel.Information : LogLevel.Debug,
                 "Analysis of project {ProjectFilePath} succeeded{Extra}", projectLogName,
                 buildResult.OverallSuccess ? "." : " but simulated build failed; Stryker may fail later.");
             return buildResult;
@@ -425,28 +430,26 @@ public class InputFileResolver(
 
         // log failure details
         _logger.LogWarning(
-            "Analysis of project {ProjectFilePath} failed for frameworks {FrameworkList}.",
+            "Analysis of project {ProjectFilePath} failed for all frameworks ({FrameworkList}).",
             projectLogName, string.Join(',', project.FailedFrameworks));
-
-        if (options.DiagMode)
-        {
-            _logger.LogWarning("{ProjectFilePath}'s build log is: {Log}", projectLogName, project.LastBuildLog);
-        }
 
         return buildResult;
     }
 
     private (List<MutableProjectTree>, List<ProjectSimulatedBuildWrapper>) ExtractMutableProjectTrees(
-        IEnumerable<ProjectSimulatedBuildWrapper> projectsSimulatedBuild)
+        IEnumerable<ProjectSimulatedBuildWrapper> projectsSimulatedBuild, IStrykerOptions options)
     {
         // separate test projects from mutable projects, and keep only analyzer results building an assembly (exclude solution folders and such)
         var testProjects = new List<ProjectSimulatedBuildWrapper>();
         var mutableProjects = new List<ProjectSimulatedBuildWrapper>();
+        var detailsPerProject = new Dictionary<ProjectSimulatedBuildWrapper, List<string>>();
         foreach (var project in projectsSimulatedBuild)
         {
-            if (project.IsTestProject())
+            var details = new List<string>();
+            if (project.IsTestProject(details))
             {
                 testProjects.Add(project);
+                detailsPerProject[project] = details;
             }
             else if (project.BuildsAnAssembly())
             {
@@ -457,14 +460,37 @@ public class InputFileResolver(
                 _logger.LogDebug("Disregarding project {Discarded} as it does not build an assembly.", project.ProjectFileName);
             }
         }
+
+        if (options.DiagMode || mutableProjects.Count == 0)
+        {
+            foreach (var (project, details) in detailsPerProject)
+            {
+                _logger.LogInformation("{ProjectName} is detected as a test project because: {Details}",
+                    project.ProjectFileName, string.Join(", ", details));
+            }
+        }
+
+        if (mutableProjects.Count == 0 )
+        {
+            _logger.LogError("Stryker identified each valid project as a test project: {TestProjects}. Please check your project settings.",
+            string.Join(", ", testProjects.Select(p => p.ProjectFileName)));
+            return ([], testProjects);
+        }
+
         var mutableToTestMap = mutableProjects.ToDictionary(p =>p, p => new MutableProjectTree(p, _logger));
         var unusedTestProjects = new List<ProjectSimulatedBuildWrapper>();
-
         // for each test project
         foreach (var testProject in testProjects)
         {
+            if (testProject.AnalyzerLastResults.Count == 0)
+            {
+                _logger.LogWarning("Test project {ProjectName} analysis failed, it will be ignored.", testProject.ProjectFileName);
+                continue;
+            }
+
             if (ScanAssemblyReferences(mutableToTestMap, mutableProjects, testProject))
             {
+                // we found at least one mutable project tested by ths project
                 continue;
             }
 
@@ -472,20 +498,18 @@ public class InputFileResolver(
             // we try to find a project reference
             if (!ScanProjectReferences(mutableToTestMap, mutableProjects, testProject))
             {
+                // it looks like this test project does not reference any mutable project
                 unusedTestProjects.Add(testProject);
             }
         }
 
-        return (mutableToTestMap.Values.ToList(), unusedTestProjects);
+        return ([.. mutableToTestMap.Values], unusedTestProjects);
     }
 
+    // maps test project to mutable project(s) by scanning assembly references
     private static bool ScanAssemblyReferences(Dictionary<ProjectSimulatedBuildWrapper, MutableProjectTree> mutableToTestMap,
         List<ProjectSimulatedBuildWrapper> mutableProjects, ProjectSimulatedBuildWrapper testProject)
     {
-        if (testProject.AnalyzerLastResults.Count == 0)
-        {
-            throw new InvalidOperationException("Failed to analyze the test project {testProject.ProjectFileName} while trying to find its references.");
-        }
         var foundOneProject = false;
         // we do the work for each available target
         foreach (var variant in testProject.AnalyzerLastResults)
@@ -495,13 +519,12 @@ public class InputFileResolver(
             {
                 foreach (var candidateProject in mutableProjects)
                 {
-                    if (!candidateProject.FindMatchingVariant(variantReference, out var candidateTarget))
+                    if (!candidateProject.BuildThisAssembly(variantReference, out var candidateTarget))
                     {
                         continue;
                     }
                     // find the entry
                     mutableToTestMap[candidateProject][candidateTarget].AddTestProject(variant);
-
                     foundOneProject = true;
                 }
             }
@@ -509,13 +532,10 @@ public class InputFileResolver(
         return foundOneProject;
     }
 
+    // maps test project to mutable project(s) by scanning project references
     private static bool ScanProjectReferences(Dictionary<ProjectSimulatedBuildWrapper, MutableProjectTree> mutableToTestMap,
         List<ProjectSimulatedBuildWrapper> mutableProjects, ProjectSimulatedBuildWrapper testProject)
     {
-        if (testProject.AnalyzerLastResults.Count == 0)
-        {
-            throw new InvalidOperationException($"Failed to analyze the test project {testProject.ProjectFileName} while trying to find its references.");
-        }
         var foundOneProject = false;
         foreach (var variant in testProject.AnalyzerLastResults)
         {
@@ -528,7 +548,7 @@ public class InputFileResolver(
                     // probably another test project
                     continue;
                 }
-                // we try to find a target with the same target framework, or one of the same kind (full or core)
+                // we try to find result with the same target framework, or one of the same kind (full or core)
                 var candidateVariant = candidateProjectVariants.FirstOrDefault( v=> v.TargetFramework == variant.TargetFramework) ??
                                        candidateProjectVariants.FirstOrDefault( v=> v.TargetsDesktop() == variant.TargetsDesktop());
                 if (candidateVariant == null)

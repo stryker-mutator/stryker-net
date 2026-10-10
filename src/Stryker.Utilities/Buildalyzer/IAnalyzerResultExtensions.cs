@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -9,6 +10,7 @@ using System.Text;
 using System.Threading;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
@@ -61,7 +63,8 @@ public static class IAnalyzerResultExtensions
 
     public static string? MsBuildPath(this IAnalyzerResult analyzerResult) => analyzerResult.Analyzer?.EnvironmentFactory.GetBuildEnvironment()?.MsBuildExePath;
 
-    public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger)
+    public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger,
+        List<string> issues)
     {
         ArgumentNullException.ThrowIfNull(logger);
 
@@ -71,7 +74,7 @@ public static class IAnalyzerResultExtensions
             try
             {
                 var analyzerFileReference = new AnalyzerFileReference(analyzer, AnalyzerAssemblyLoader.Instance);
-                analyzerFileReference.AnalyzerLoadFailed += (sender, e) => LogAnalyzerLoadError(logger, sender, e);
+                analyzerFileReference.AnalyzerLoadFailed += (sender, e) => LogAnalyzerLoadError(logger, issues, sender, e);
                 generators.AddRange(analyzerFileReference.GetGenerators(LanguageNames.CSharp));
             }
             catch (Exception e)
@@ -105,20 +108,22 @@ public static class IAnalyzerResultExtensions
     }
 
     [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]
-    private static void LogAnalyzerLoadError(ILogger? logger, object? sender, AnalyzerLoadFailureEventArgs e)
+    private static void LogAnalyzerLoadError(ILogger? logger, List<string> issues, object? sender,
+        AnalyzerLoadFailureEventArgs e)
     {
         var source = (sender as AnalyzerReference)?.Display ?? "unknown";
-        logger?.LogWarning(
-            "Failed to load analyzer '{Source}': {Message} (error : {Error}, analyzer: {Analyzer}).",
-            source, e.Message, Enum.GetName(e.ErrorCode.GetType(), e.ErrorCode) ?? e.ErrorCode.ToString(),
-            e.TypeName ?? "All");
+        string message;
         if (e.ErrorCode == AnalyzerLoadFailureEventArgs.FailureErrorCode.ReferencesNewerCompiler)
         {
-            logger?.LogWarning(
-                "The analyzer '{Source}' references a newer version ({ReferencedCompilerVersion}) of the compiler than the one used by Stryker.NET.",
-                source, e.ReferencedCompilerVersion);
+            message = $"The analyzer '{source}' references a newer Roslyn version ({e.ReferencedCompilerVersion}) than Stryker's ({typeof(CSharpCompilation).Assembly.GetName().Version}). This may cause issues during analysis.";
+        }
+        else
+        {
+            message = $"Failed to load analyzer '{source}': {e.Message} (error : {Enum.GetName(e.ErrorCode.GetType(), e.ErrorCode) ?? e.ErrorCode.ToString()}, analyzer: {e.TypeName ?? "All"}).";
         }
 
+        issues.Add(message);
+        logger?.LogWarning(message);
         if (e.Exception != null)
         {
             logger?.LogWarning("Failed to load analyzer '{Source}': Exception {Exception}.", source, e.Exception);
@@ -200,7 +205,8 @@ public static class IAnalyzerResultExtensions
         || (targetFrameworks.Length>0
             && Array.TrueForAll(targetFrameworks, fmw => br.Results.Any( r=> r.IsValidFor(fmw))));
 
-    public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
+    public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults, List<string>? details = null)
+        => analyzerResults.Any(x => x.IsTestProject(details));
 
     /// <summary>
     /// Checks whether an analysis result references the assemblies that identify a Unity test assembly.
@@ -210,36 +216,44 @@ public static class IAnalyzerResultExtensions
             analyzerResult.References?.Any(path =>
                 string.Equals(Path.GetFileNameWithoutExtension(path), reference, StringComparison.OrdinalIgnoreCase)) == true);
 
-    private static bool IsTestProject(this IAnalyzerResult analyzerResult)
+    private static bool IsTestProject(this IAnalyzerResult analyzerResult, List<string>? details = null)
     {
         // if 'IsTestingPlatformApplication' is defined and true, this is a test project
         if (analyzerResult.TryGetProperty("IsTestingPlatformApplication", out var value)
             && bool.TryParse(value, out var isMtp)
             && isMtp)
         {
+            details?.Add($"IsTestingPlatformApplication is true (for framework {analyzerResult.TargetFramework})");
             return true;
         }
 
         // if 'IsTestProject' is defined, we use its value to check if it's a test project (or not)
         if (analyzerResult.TryGetProperty("IsTestProject", out value))
         {
+            details?.Add($"IsTestProject is {value} (for framework {analyzerResult.TargetFramework})");
             return bool.TryParse(value, out var isTestProject) && isTestProject;
         }
 
-        if (Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n)))
+        var testPackage = Array.Find(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n));
+        if (testPackage != null)
         {
+            details?.Add($"Package reference to known test package {testPackage} found (for framework {analyzerResult.TargetFramework})");
             return true;
         }
 
         if (analyzerResult.IsUnityTestProject())
         {
+            details?.Add($"Project is a Unity test project (for framework {analyzerResult.TargetFramework})");
             return true;
         }
 
         const string TestProjectTypeGuid = "{3AC096D0-A1C2-E12C-1390-A8335801FDAB}";
-        return analyzerResult
+        var asGuid= analyzerResult
             .GetPropertyOrDefault("ProjectTypeGuids", "")
             .Contains(TestProjectTypeGuid);
+        details?.Add($"Project has known test project Guid ({TestProjectTypeGuid})");
+        details?.Add($"Project has known test project Guid ({TestProjectTypeGuid}).");
+        return asGuid;
     }
 
     public static OutputKind GetOutputKind(this IAnalyzerResult analyzerResult) =>
@@ -340,7 +354,7 @@ public static class IAnalyzerResultExtensions
     {
         public static readonly IAnalyzerAssemblyLoader Instance = new AnalyzerAssemblyLoader();
 
-        private readonly Dictionary<string, Assembly> _cache = [];
+        private readonly ConcurrentDictionary<string, Assembly> _cache = [];
 
         private AnalyzerAssemblyLoader() { }
 

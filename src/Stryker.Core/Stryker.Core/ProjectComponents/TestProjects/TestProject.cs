@@ -4,7 +4,6 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using Buildalyzer;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
