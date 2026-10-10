@@ -62,6 +62,19 @@ namespace Stryker
         // value means the poller does nothing until the runner's first genuine request (>= 1) arrives.
         private static int _lastHandledEpoch = 0;
 
+        // Reached-mutant relay for the MTP runner. When STRYKER_REACHED_FILE names an 8-byte memory-mapped
+        // file (offset 0: reached flag, offset 4: reached mutant id), the first IsActive() call for the
+        // active mutant writes the flag once, so the runner can tell "the mutated code executed" from
+        // "every test passed without ever touching it" - the signature of a mutant hidden by state a
+        // reused host cached earlier (memoized fields, Lazy<T>, transitive static initialization).
+        private static string _cachedReachedFilePath = string.Empty;
+        private static bool _reachedFilePathCached;
+        private static object _reachedMmf = new System.Object();
+        private static object _reachedAccessor = new System.Object();
+        private static bool _reachedMmfReady;
+        private static bool _reachedMmfFailed;
+        private static int _reportedReachedMutant = int.MinValue;
+
         // this attribute will be set by the Stryker Data Collector before each test
         public static bool CaptureCoverage;
         public static int ActiveMutant = -2;
@@ -532,7 +545,12 @@ namespace Stryker
             if (!string.IsNullOrEmpty(_cachedMutantFilePath))
             {
                 int fileMutantId;
-                return TryReadMutantFromFile(out fileMutantId) && id == fileMutantId;
+                bool isActive = TryReadMutantFromFile(out fileMutantId) && id == fileMutantId;
+                if (isActive)
+                {
+                    ReportReached(id);
+                }
+                return isActive;
             }
 
             // lazy load the active mutant id from the environment variable (used by VSTest runner)
@@ -573,6 +591,134 @@ namespace Stryker
                 {
                     _coveredStaticMutants.Add(id);
                 }
+            }
+        }
+
+        // Reports the active mutant as reached through the relay file. Touched at most once per mutant
+        // id: after the first write, subsequent IsActive() calls for the same id only compare an int.
+        private static void ReportReached(int id)
+        {
+            if (_reportedReachedMutant == id)
+            {
+                return;
+            }
+
+            if (!_reachedFilePathCached)
+            {
+                _cachedReachedFilePath = System.Environment.GetEnvironmentVariable("STRYKER_REACHED_FILE") ?? string.Empty;
+                _reachedFilePathCached = true;
+            }
+
+            if (string.IsNullOrEmpty(_cachedReachedFilePath))
+            {
+                _reportedReachedMutant = id;
+                return;
+            }
+
+            if (!_reachedMmfFailed)
+            {
+                if (!_reachedMmfReady)
+                {
+                    EnsureReachedMmf();
+                }
+
+                if (_reachedMmfReady)
+                {
+                    try
+                    {
+                        ((System.IO.MemoryMappedFiles.MemoryMappedViewAccessor)_reachedAccessor).Write(0, 1);
+                        ((System.IO.MemoryMappedFiles.MemoryMappedViewAccessor)_reachedAccessor).Write(4, id);
+                        ((System.IO.MemoryMappedFiles.MemoryMappedViewAccessor)_reachedAccessor).Flush();
+                        _reportedReachedMutant = id;
+                        return;
+                    }
+                    catch
+                    {
+                        _reachedMmfFailed = true;
+                    }
+                }
+            }
+
+            // Fallback when the mapping is unavailable: a plain file write. The runner reads this file
+            // only after the test run ends, so a single write with no shared-lock dance is enough. The
+            // write must share access because the runner keeps the file open for its own resets.
+            try
+            {
+                using (System.IO.FileStream stream = new System.IO.FileStream(
+                    _cachedReachedFilePath,
+                    System.IO.FileMode.Open,
+                    System.IO.FileAccess.Write,
+                    System.IO.FileShare.ReadWrite))
+                {
+                    byte[] bytes = System.Text.Encoding.UTF8.GetBytes(id.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    stream.Write(bytes, 0, bytes.Length);
+                }
+
+                _reportedReachedMutant = id;
+            }
+            catch
+            {
+                // Signal lost; the runner then sees the mutant as not reached. That can trigger a
+                // needless fresh-host retest, but never changes a verdict by itself.
+                _reportedReachedMutant = id;
+            }
+        }
+
+        private static void EnsureReachedMmf()
+        {
+            if (_reachedMmfReady || _reachedMmfFailed)
+            {
+                return;
+            }
+
+            if (!System.IO.File.Exists(_cachedReachedFilePath))
+            {
+                return;
+            }
+
+            try
+            {
+                System.IO.FileStream stream = new System.IO.FileStream(
+                    _cachedReachedFilePath,
+                    System.IO.FileMode.Open,
+                    System.IO.FileAccess.ReadWrite,
+                    System.IO.FileShare.ReadWrite);
+
+                try
+                {
+                    System.IO.MemoryMappedFiles.MemoryMappedFile mmf = System.IO.MemoryMappedFiles.MemoryMappedFile.CreateFromFile(
+                        stream,
+                        null,
+                        8,
+                        System.IO.MemoryMappedFiles.MemoryMappedFileAccess.ReadWrite,
+                        System.IO.HandleInheritability.None,
+                        false);
+
+                    try
+                    {
+                        System.IO.MemoryMappedFiles.MemoryMappedViewAccessor accessor = mmf.CreateViewAccessor(0, 8, System.IO.MemoryMappedFiles.MemoryMappedFileAccess.ReadWrite);
+
+                        _reachedMmf = mmf;
+                        _reachedAccessor = accessor;
+                        _reachedMmfReady = true;
+                    }
+                    catch
+                    {
+                        mmf.Dispose();
+                        throw;
+                    }
+                }
+                catch
+                {
+                    stream.Dispose();
+                    throw;
+                }
+            }
+            catch
+            {
+                // Same tradeoff as the mutant-id mapping: without a view the direct file write above
+                // keeps the signal available, just slower.
+                _reachedMmfFailed = true;
             }
         }
     }

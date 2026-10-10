@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -74,6 +75,42 @@ internal static class StrykerMtpConcurrencyKillCountTestSupport
         TimeSpan timeout,
         string solutionPath = null)
     {
+        var report = await RunStrykerAsync(
+            cliDll,
+            testProjectDirectory,
+            configPath,
+            concurrency,
+            timeout,
+            solutionPath);
+        return ParseMutationReport(report);
+    }
+
+    public static async Task<Dictionary<string, MutationStatusCounts>> RunStrykerAndGetPerFileCountsAsync(
+        string cliDll,
+        string testProjectDirectory,
+        string configPath,
+        int concurrency,
+        TimeSpan timeout,
+        string solutionPath = null)
+    {
+        var report = await RunStrykerAsync(
+            cliDll,
+            testProjectDirectory,
+            configPath,
+            concurrency,
+            timeout,
+            solutionPath);
+        return ParseMutationReportPerFile(report);
+    }
+
+    private static async Task<string> RunStrykerAsync(
+        string cliDll,
+        string testProjectDirectory,
+        string configPath,
+        int concurrency,
+        TimeSpan timeout,
+        string solutionPath = null)
+    {
         var outputDir = Path.Combine(testProjectDirectory, "StrykerOutput");
         if (Directory.Exists(outputDir))
         {
@@ -106,7 +143,7 @@ internal static class StrykerMtpConcurrencyKillCountTestSupport
             .FirstOrDefault();
         report.ShouldNotBeNull($"no mutation-report.json under {outputDir} (concurrency {concurrency})");
 
-        return ParseMutationReport(report);
+        return report;
     }
 
     public static async Task<int> RunStrykerAndCountKilledAsync(
@@ -176,6 +213,60 @@ internal static class StrykerMtpConcurrencyKillCountTestSupport
     }
 
     public static int CountKilled(string reportPath) => ParseMutationReport(reportPath).Killed;
+
+    /// <summary>
+    /// Per-file verdict counts from a Stryker mutation-report.json file, keyed by source file name.
+    /// </summary>
+    public static Dictionary<string, MutationStatusCounts> ParseMutationReportPerFile(string reportPath)
+    {
+        using var stream = File.OpenRead(reportPath);
+        using var document = JsonDocument.Parse(stream);
+        var perFile = new Dictionary<string, MutationStatusCounts>();
+        if (!document.RootElement.TryGetProperty("files", out var files))
+        {
+            return perFile;
+        }
+
+        foreach (var file in files.EnumerateObject())
+        {
+            if (!file.Value.TryGetProperty("mutants", out var mutants))
+            {
+                continue;
+            }
+
+            var killed = 0;
+            var survived = 0;
+            var noCoverage = 0;
+            var timeout = 0;
+            foreach (var mutant in mutants.EnumerateArray())
+            {
+                if (!mutant.TryGetProperty("status", out var statusElement))
+                {
+                    continue;
+                }
+
+                switch (statusElement.GetString())
+                {
+                    case "Killed":
+                        killed++;
+                        break;
+                    case "Survived":
+                        survived++;
+                        break;
+                    case "NoCoverage":
+                        noCoverage++;
+                        break;
+                    case "Timeout":
+                        timeout++;
+                        break;
+                }
+            }
+
+            perFile[Path.GetFileName(file.Name)] = new MutationStatusCounts(killed, survived, noCoverage, timeout);
+        }
+
+        return perFile;
+    }
 
     public static async Task<(int ExitCode, string StdOut, string StdErr)> RunProcessAsync(
         string fileName,

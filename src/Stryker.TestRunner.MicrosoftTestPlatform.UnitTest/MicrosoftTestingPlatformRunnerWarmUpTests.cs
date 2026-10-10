@@ -252,10 +252,10 @@ public class MicrosoftTestingPlatformRunnerWarmUpTests
 
     [TestMethod]
     [DataRow(OptimizationModes.None, false)]
-    [DataRow(OptimizationModes.SkipUncoveredMutants, false)]
+    [DataRow(OptimizationModes.SkipUncoveredMutants, true)]
     [DataRow(OptimizationModes.CoverageBasedTest, true)]
     [DataRow(OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest, true)]
-    public void WarmUpEnabled_FollowsCoverageBasedTesting(OptimizationModes mode, bool expected)
+    public void WarmUpEnabled_FollowsCoverageModes(OptimizationModes mode, bool expected)
     {
         var options = new Mock<IStrykerOptions>();
         options.SetupGet(o => o.OptimizationMode).Returns(mode);

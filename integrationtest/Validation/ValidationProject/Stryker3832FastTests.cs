@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Shouldly;
@@ -13,15 +14,24 @@ namespace Validation;
 public class Stryker3832FastTests
 {
     /// <summary>
-    /// Calibrated on the Release CLI with the default mutation level: 67 killed and 256 survived of 323 tested mutants.
-    /// The lower bound sits above the 53 kills seen when mutants in static code were not given a fresh host.
-    /// A mutant that breaks the static initializer in <c>DateFormatting</c> poisons a reused test host; without the
-    /// host recycling every later mutant is reported as killed (about 320 at concurrency 1), so the upper bound
-    /// catches false kills that parity between concurrency levels alone could miss.
+    /// Calibrated on the Release CLI with the default mutation level: 73 killed and 259 survived of 332 tested
+    /// mutants, identical at concurrency 1 and 8. The lower bound sits above the 53 kills seen when mutants in
+    /// static code were not given a fresh host. A mutant that breaks the static initializer in
+    /// <c>DateFormatting</c> poisons a reused test host; without the host recycling every later mutant is
+    /// reported as killed (about 320 at concurrency 1), so the upper bound catches false kills that parity
+    /// between concurrency levels alone could miss.
     /// </summary>
     private const int MinimumExpectedKilled = 58;
 
     private const int MaximumExpectedKilled = 75;
+
+    /// <summary>
+    /// Upper bound for <c>all</c> mode only. With the warm-up and the fresh-host retest the count matches the
+    /// other covered modes exactly (73: the equivalent reload-guard mutants of <c>MemoizedHelper</c> survive),
+    /// but a regression that drops the warm-up while keeping the retest poisons replacement hosts and drove
+    /// the count to 161; the ~320 false kills a fully poisoned host produces stay far above the bound either way.
+    /// </summary>
+    private const int MaximumExpectedKilledAllMode = 240;
 
     private const int ParallelConcurrency = 8;
 
@@ -37,7 +47,7 @@ public class Stryker3832FastTests
     [Trait("Category", "XUnitMTP")]
     [Trait("Runtime", "netcore")]
     public Task MtpConcurrencyEight_ShouldMatchConcurrencyOneKillCount_OnMiniFixture() =>
-        AssertConcurrencyParityAsync("stryker-config.json");
+        AssertConcurrencyParityAsync("stryker-config.json", assertHiddenStateMutantsKilled: true);
 
     /// <summary>
     /// Same checks as the default-mode test, in <c>perTestInIsolation</c>: the isolated capture must also give the same
@@ -48,36 +58,41 @@ public class Stryker3832FastTests
     [Trait("Category", "XUnitMTP")]
     [Trait("Runtime", "netcore")]
     public Task MtpPerTestInIsolation_ConcurrencyEight_ShouldMatchConcurrencyOneKillCount_OnMiniFixture() =>
-        AssertConcurrencyParityAsync("stryker-config.isolated.json");
+        AssertConcurrencyParityAsync("stryker-config.isolated.json", assertHiddenStateMutantsKilled: true);
 
     /// <summary>
     /// <c>all</c> mode has no warm-up, so a poisoned host would make the kill count depend on the concurrency. Parity is
-    /// asserted, not equality with <c>perTest</c>: mutants reached only through a static initializer are not killed in this mode.
+    /// asserted, not equality with <c>perTest</c>. The reached-signal retest now kills mutants hidden by reused-host
+    /// static state (<c>StaticOnlyHelper</c>, <c>MemoizedHelper</c>), which is asserted per file.
     /// </summary>
     [Fact]
     [Trait("Category", "Stryker3832Fast")]
     [Trait("Category", "XUnitMTP")]
     [Trait("Runtime", "netcore")]
     public Task MtpAllCoverageAnalysis_ConcurrencyEight_ShouldMatchConcurrencyOneKillCount_OnMiniFixture() =>
-        AssertConcurrencyParityAsync("stryker-config.all.json");
+        AssertConcurrencyParityAsync("stryker-config.all.json", assertHiddenStateMutantsKilled: true, MaximumExpectedKilledAllMode);
 
     /// <summary>
-    /// <c>off</c> mode has no warm-up, so a poisoned host would make the kill count depend on the concurrency. Parity is
-    /// asserted, not equality with <c>perTest</c>: mutants reached only through a static initializer are not killed in this mode.
+    /// <c>off</c> mode has no warm-up and no coverage data, so a poisoned host would make the kill count depend on the
+    /// concurrency. Parity is the only assertion: the retest cannot run without coverage, so mutants hidden by
+    /// reused-host state keep the known limitation (see configuration docs).
     /// </summary>
     [Fact]
     [Trait("Category", "Stryker3832Fast")]
     [Trait("Category", "XUnitMTP")]
     [Trait("Runtime", "netcore")]
     public Task MtpOffCoverageAnalysis_ConcurrencyEight_ShouldMatchConcurrencyOneKillCount_OnMiniFixture() =>
-        AssertConcurrencyParityAsync("stryker-config.off.json");
+        AssertConcurrencyParityAsync("stryker-config.off.json", assertHiddenStateMutantsKilled: false);
 
     /// <summary>
     /// Asserts concurrency 1 and 8 yield the same kill count for <paramref name="configFileName"/>.
     /// For <c>stryker-config.all.json</c> and <c>stryker-config.off.json</c> that is the only parity required;
     /// do not compare those kill counts to <c>perTest</c> (MTP static-initializer limitation; see configuration docs).
+    /// When <paramref name="assertHiddenStateMutantsKilled"/> is set, the mutants of the two files that reused-host
+    /// state can hide (<c>StaticOnlyHelper</c>, <c>MemoizedHelper</c>) must all be killed at concurrency 1: they are
+    /// covered, and a survivor there means the fresh-host retest did not run.
     /// </summary>
-    private static async Task AssertConcurrencyParityAsync(string configFileName)
+    private static async Task AssertConcurrencyParityAsync(string configFileName, bool assertHiddenStateMutantsKilled, int maximumExpectedKilled = MaximumExpectedKilled)
     {
         var miniRoot = StrykerMtpConcurrencyKillCountTestSupport.FindDirectoryUnderRepository(
             "integrationtest",
@@ -109,21 +124,83 @@ public class Stryker3832FastTests
             concurrency: 1,
             StrykerRunTimeout,
             solutionPath);
-        var atParallel = await StrykerMtpConcurrencyKillCountTestSupport.RunStrykerAndGetCountsAsync(
-            cliDll,
-            testProject,
-            config,
-            concurrency: ParallelConcurrency,
-            StrykerRunTimeout,
-            solutionPath);
+
+        // When per-file verdicts are needed, take them from the concurrency-8 run and aggregate; the
+        // support harness deletes StrykerOutput on every run, so the last report is the only one left.
+        Dictionary<string, MutationStatusCounts> perFile = null;
+        MutationStatusCounts atParallel;
+        if (assertHiddenStateMutantsKilled)
+        {
+            perFile = await StrykerMtpConcurrencyKillCountTestSupport.RunStrykerAndGetPerFileCountsAsync(
+                cliDll,
+                testProject,
+                config,
+                concurrency: ParallelConcurrency,
+                StrykerRunTimeout,
+                solutionPath);
+            atParallel = Sum(perFile.Values);
+        }
+        else
+        {
+            atParallel = await StrykerMtpConcurrencyKillCountTestSupport.RunStrykerAndGetCountsAsync(
+                cliDll,
+                testProject,
+                config,
+                concurrency: ParallelConcurrency,
+                StrykerRunTimeout,
+                solutionPath);
+        }
 
         // A timed-out mutant is reported as killed, so slow test sessions would otherwise pass unnoticed.
         atOne.Timeout.ShouldBe(0);
         atParallel.Timeout.ShouldBe(0);
         atOne.Killed.ShouldBeGreaterThan(MinimumExpectedKilled);
-        atOne.Killed.ShouldBeLessThan(MaximumExpectedKilled);
+        atOne.Killed.ShouldBeLessThan(maximumExpectedKilled);
         atParallel.CoveredVerdicts.ShouldBe(atOne.CoveredVerdicts);
         atParallel.Killed.ShouldBe(atOne.Killed);
+
+        if (perFile is not null)
+        {
+            AssertHiddenStateMutantsKilled(perFile);
+        }
+    }
+
+    /// <summary>
+    /// Asserts the mutants of the two files whose verdicts reused-host state can hide were killed.
+    /// <c>StaticOnlyHelper</c> must lose every mutant: its tests fail as soon as the initializer mutant
+    /// runs. <c>MemoizedHelper</c> may keep three mutants: negating the <c>reload</c> guard, removing the
+    /// guard's block, and replacing <c>??=</c> with <c>=</c>. The test's first call passes
+    /// <c>reload: true</c> and the cache only ever holds <c>Build()</c>'s value, so all three return
+    /// <c>first-second</c> for both assertions and are semantically equivalent.
+    /// </summary>
+    private static void AssertHiddenStateMutantsKilled(Dictionary<string, MutationStatusCounts> perFile)
+    {
+        perFile.ShouldContainKey("StaticOnlyHelper.cs");
+        perFile["StaticOnlyHelper.cs"].Survived.ShouldBe(0, "a StaticOnlyHelper survivor means its static-initializer mutant was not tested");
+        perFile["StaticOnlyHelper.cs"].Timeout.ShouldBe(0);
+        perFile["StaticOnlyHelper.cs"].Killed.ShouldBeGreaterThan(0);
+
+        perFile.ShouldContainKey("MemoizedHelper.cs");
+        perFile["MemoizedHelper.cs"].Survived.ShouldBeLessThanOrEqualTo(3, "only the semantically equivalent reload-guard and ??= mutants may survive");
+        perFile["MemoizedHelper.cs"].Timeout.ShouldBe(0);
+        perFile["MemoizedHelper.cs"].Killed.ShouldBeGreaterThan(1);
+    }
+
+    private static MutationStatusCounts Sum(System.Collections.Generic.IEnumerable<MutationStatusCounts> counts)
+    {
+        var killed = 0;
+        var survived = 0;
+        var noCoverage = 0;
+        var timeout = 0;
+        foreach (var count in counts)
+        {
+            killed += count.Killed;
+            survived += count.Survived;
+            noCoverage += count.NoCoverage;
+            timeout += count.Timeout;
+        }
+
+        return new MutationStatusCounts(killed, survived, noCoverage, timeout);
     }
 
     /// <summary>

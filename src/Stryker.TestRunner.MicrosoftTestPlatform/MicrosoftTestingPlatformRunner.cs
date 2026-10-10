@@ -42,6 +42,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     private readonly object _discoveryLock;
     private readonly ILogger _logger;
     private readonly string _mutantFilePath;
+    private readonly string _reachedFilePath;
     private readonly string _runIdentity;
     private readonly string _coverageFilePathBase;
     private readonly IStrykerOptions? _options;
@@ -49,6 +50,10 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     private readonly SemaphoreSlim _sessionSemaphore = new(1, 1);
     private readonly object _mutantFileLock = new();
     private FileStream? _mutantFileStream;
+    private readonly object _reachedFileLock = new();
+    private FileStream? _reachedFileStream;
+    private int _retestCount;
+    private int _retestedKilledCount;
     private readonly HashSet<string> _initializedPerTestFiles = new();
     private readonly Dictionary<string, int> _perTestEpochCounters = new();
 
@@ -58,6 +63,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     /// Path of the mutant-id control file this runner shares with its test hosts. Exposed for unit testing.
     /// </summary>
     internal string MutantFilePath => _mutantFilePath;
+
+    /// <summary>
+    /// Path of the reached-mutant relay file this runner shares with its test hosts. Exposed for unit testing.
+    /// </summary>
+    internal string ReachedFilePath => _reachedFilePath;
 
     public MicrosoftTestingPlatformRunner(
         int id,
@@ -87,6 +97,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         // writes or disposal from changing this runner's active mutant.
         _runIdentity = $"{Environment.ProcessId}-{_id}-{Guid.NewGuid().ToString("N")[..8]}";
         _mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-{_runIdentity}.txt");
+        _reachedFilePath = Path.Combine(Path.GetTempPath(), $"stryker-reached-{_runIdentity}.txt");
         _coverageFilePathBase = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{_runIdentity}");
 
         // Initialize with no active mutation. A failure is already logged and the next session
@@ -98,6 +109,10 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         catch (InvalidOperationException)
         {
         }
+
+        // Size the reached-signal file up front so the test host can memory-map it on its first
+        // ReportReached call. A failure is already logged and only costs the reached signal.
+        ResetReachedFile();
     }
 
     public Task<bool> DiscoverTestsAsync(string assembly)
@@ -209,7 +224,8 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     {
         var envVars = new Dictionary<string, string?>
         {
-            ["STRYKER_MUTANT_FILE"] = _mutantFilePath
+            ["STRYKER_MUTANT_FILE"] = _mutantFilePath,
+            ["STRYKER_REACHED_FILE"] = _reachedFilePath
         };
 
         ExternalEnvironmentVariables.Add(envVars);
@@ -1287,12 +1303,18 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
     /// <summary>
     /// Whether a fresh host runs all tests once with no mutant active before its first mutant. Without
-    /// coverage-based testing a mutant in code reached only from a static initializer is not flagged as
-    /// static, so the warm-up would initialize that code with the original value and the mutant could
-    /// never take effect. Unknown options keep the warm-up on.
+    /// the warm-up, the first session on a host initializes every static with the current mutant active,
+    /// and that value stays for the host's life: a mutant that corrupts a static silently poisons the
+    /// host and every later mutant on it can be falsely killed. The warm-up used to be skipped without
+    /// coverage-based testing because a mutant in code reached only from a static initializer is not
+    /// flagged as static and could never take effect on a warmed host; the fresh-host retest now covers
+    /// exactly that case, so every covered mode warms up. <c>off</c> has no coverage data, so no retest
+    /// is possible and the warm-up stays off there. Unknown options keep the warm-up on.
     /// </summary>
     internal bool WarmUpEnabled =>
-        _options is null || _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest);
+        _options is null
+        || _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest)
+        || _options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants);
 
     /// <summary>
     /// The warm-up runs every test, so it cannot borrow the per-mutant timeout, which is sized for the
@@ -1428,6 +1450,10 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                     continue;
                 }
 
+                // The host reports reaching the active mutant through the relay file; clear any signal
+                // from an earlier run so what we read after this run belongs to it alone.
+                ResetReachedFile();
+
                 var (testResults, timedOut) = await server.RunTestsAsync(testsToRun, timeout).ConfigureAwait(false);
 
                 var duration = DateTime.UtcNow - startTime;
@@ -1446,6 +1472,32 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                     await RecycleIfHostPoisonedAsync(assembly, testResults).ConfigureAwait(false);
                 }
 
+                // A survivor that never reached its mutated code may have been hidden by reused-host state.
+                // Retest once on a fresh host; the fresh-host result is final (no loops).
+                var reached = ReadReachedFile();
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug("{RunnerId}: Test run used reached signal: {Reached}", RunnerId, reached);
+                }
+
+                // No active mutant (coverage analysis, warm-up bookkeeping) has nothing to retest, and
+                // a retest there would spin a fresh host for a session that judges no mutant.
+                if (!freshHost && !timedOut && RetestHiddenSurvivorsEnabled && ShouldRetestHiddenSurvivor(result, reached, ActiveMutantId))
+                {
+                    _logger.LogDebug("{RunnerId}: Retesting mutant {MutantId} on a fresh host: it survived on a reused host without reaching its mutated code",
+                        RunnerId, ActiveMutantId);
+                    _retestCount++;
+
+                    var (retestResult, retestTimedOut) = await RunAssemblyTestsInternalAsync(
+                        assembly, testUidFilter, timeout, warmUpTimeout, freshHost: true).ConfigureAwait(false);
+                    if (!retestResult.FailingTests.IsEmpty && !retestResult.FailingTests.IsEveryTest)
+                    {
+                        _retestedKilledCount++;
+                    }
+
+                    return (retestResult, retestTimedOut);
+                }
+
                 return (result, timedOut);
             }
             catch (Exception ex)
@@ -1462,6 +1514,132 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         // Every attempt failed. Return the crash sentinel; the accumulator recognises it and flags the
         // run as crashed, so the affected mutants are reported as RuntimeError rather than Survived.
         return (new TestRunResult(false, lastRunException!.Message), false);
+    }
+
+    /// <summary>
+    /// True when a run's outcome may have been distorted by reused-host state and a fresh-host retest is
+    /// worthwhile: the mutant was not reached while every executed test passed on a non-fresh host. A run
+    /// with no active mutant (coverage analysis) judges no mutant, so it is never retested.
+    /// Exposed for unit testing. Coverage-mode gating is separate (<see cref="RetestHiddenSurvivorsEnabled"/>).
+    /// </summary>
+    internal static bool ShouldRetestHiddenSurvivor(TestRunResult result, bool reached, int activeMutantId) =>
+        activeMutantId >= 0
+        && !reached
+        && !result.ExecutedTests.IsEmpty
+        && result.FailingTests.IsEmpty
+        && result.TimedOutTests.IsEmpty
+        && !result.SessionTimedOut
+        && !result.SessionHadRuntimeIssue;
+
+    /// <summary>
+    /// True when the mode has coverage data to compare against, so a not-reached survivor can be told
+    /// apart from a simply uncovered one. In <c>off</c> mode there is no coverage, so a survivor says
+    /// nothing about reaching the code and a retest is skipped (the user chose the mode; hidden mutants
+    /// remain a known limitation there).
+    /// </summary>
+    internal bool RetestHiddenSurvivorsEnabled =>
+        _options is null
+        || _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest)
+        || _options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants);
+
+    /// <summary>
+    /// Number of mutants this runner retested on a fresh host because reused-host state hid them, and
+    /// how many of those retests killed the mutant. Exposed for unit testing and the pool summary.
+    /// </summary>
+    internal (int Retested, int Killed) RetestStatistics => (_retestCount, _retestedKilledCount);
+
+    /// <summary>
+    /// Reads the reached flag the test host wrote during the run. The host either memory-maps the file
+    /// (offset 0: flag, offset 4: mutant id) or, as a fallback, writes the id as text; both spell
+    /// "reached". Any failure reads as "not reached", which can only cost an extra fresh-host retest,
+    /// never a wrong verdict.
+    /// </summary>
+    internal bool ReadReachedFile()
+    {
+        try
+        {
+            var bytes = new byte[2 * sizeof(int)];
+            int read;
+            lock (_reachedFileLock)
+            {
+                var stream = _reachedFileStream;
+                if (stream is null)
+                {
+                    // The persistent stream could not be opened; fall back to a shared read.
+                    if (!File.Exists(_reachedFilePath))
+                    {
+                        return false;
+                    }
+
+                    using var diskStream = new FileStream(_reachedFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    read = 0;
+                    while (read < bytes.Length)
+                    {
+                        var chunk = diskStream.Read(bytes, read, bytes.Length - read);
+                        if (chunk == 0)
+                        {
+                            break;
+                        }
+
+                        read += chunk;
+                    }
+                }
+                else
+                {
+                    stream.Seek(0, SeekOrigin.Begin);
+                    read = 0;
+                    while (read < bytes.Length)
+                    {
+                        var chunk = stream.Read(bytes, read, bytes.Length - read);
+                        if (chunk == 0)
+                        {
+                            break;
+                        }
+
+                        read += chunk;
+                    }
+                }
+            }
+
+            if (read < sizeof(int))
+            {
+                return false;
+            }
+
+            return BitConverter.ToInt32(bytes, 0) != 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "{RunnerId}: Failed to read the reached-signal file {FilePath}",
+                RunnerId, _reachedFilePath);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Clears the reached signal before a run so the flag the host writes belongs to this run only.
+    /// The file is sized to 8 bytes (flag + mutant id) so the host can memory-map it.
+    /// </summary>
+    private void ResetReachedFile()
+    {
+        try
+        {
+            lock (_reachedFileLock)
+            {
+                // Keep the file open for the life of the runner: reopening it can invalidate the memory-mapped
+                // view the reused host holds, exactly like the mutant control file.
+                _reachedFileStream ??= OpenMutantControlFile(_reachedFilePath, stream => stream.SetLength(2 * sizeof(int)));
+                var zeros = new byte[2 * sizeof(int)];
+                _reachedFileStream.Seek(0, SeekOrigin.Begin);
+                _reachedFileStream.Write(zeros);
+                _reachedFileStream.Flush();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "{RunnerId}: Failed to reset the reached-signal file {FilePath}",
+                RunnerId, _reachedFilePath);
+        }
     }
 
     /// <summary>
@@ -1576,9 +1754,20 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                     _mutantFileStream = null;
                 }
 
+                lock (_reachedFileLock)
+                {
+                    _reachedFileStream?.Dispose();
+                    _reachedFileStream = null;
+                }
+
                 if (File.Exists(_mutantFilePath))
                 {
                     File.Delete(_mutantFilePath);
+                }
+
+                if (File.Exists(_reachedFilePath))
+                {
+                    File.Delete(_reachedFilePath);
                 }
                 // Only has anything to do when the runner is disposed while still in per-test mode,
                 // leaving the mode deletes these files and forgets the assemblies they belong to

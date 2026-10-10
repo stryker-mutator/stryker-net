@@ -757,10 +757,10 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
 
     [TestMethod]
     [DataRow(OptimizationModes.None, true, "off")]
-    [DataRow(OptimizationModes.SkipUncoveredMutants, true, "all")]
+    [DataRow(OptimizationModes.SkipUncoveredMutants, false, "")]
     [DataRow(OptimizationModes.CoverageBasedTest, false, "")]
     [DataRow(OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest, false, "")]
-    public void Constructor_LogsStaticInitializerLimitation_OnlyWhenCoverageBasedTestIsOff(
+    public void Constructor_LogsStaticStateLimitation_OnlyWhenCoverageAnalysisIsOff(
         OptimizationModes mode,
         bool expectLog,
         string modeLabel)
@@ -772,8 +772,9 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
 
         using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, logger);
 
+        // The reached-signal retest protects every mode with coverage data; only "off" keeps the limitation.
         var infos = logger.Entries
-            .Where(entry => entry.Level == LogLevel.Information && entry.Message.Contains("static initializer", StringComparison.Ordinal))
+            .Where(entry => entry.Level == LogLevel.Information && entry.Message.Contains("Coverage analysis", StringComparison.Ordinal))
             .ToList();
         if (expectLog)
         {
