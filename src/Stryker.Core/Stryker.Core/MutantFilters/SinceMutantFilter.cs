@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -55,17 +54,37 @@ public class SinceMutantFilter : IMutantFilter
         IEnumerable<IMutant> filteredMutants;
 
         // A non-csharp file is flagged by the diff result as modified. We cannot determine which mutants will be affected by this, thus all mutants have to be tested.
-        if (_diffResult.ChangedTestFiles is { } && _diffResult.ChangedTestFiles.Any(x => !x.EndsWith(".cs")))
+        if (_diffResult.ChangedTestFiles is { } && _diffResult.ChangedTestFiles.Keys.Any(x => !x.EndsWith(".cs")))
         {
             _logger.LogDebug("Returning all mutants in {RelativePath} because a non-source file is modified", file.RelativePath);
             return SetMutantStatusForNonCSharpFileChanged(mutants);
         }
 
         // If the diff result flags this file as modified, we want to run all mutants again
-        if (_diffResult.ChangedSourceFiles != null && _diffResult.ChangedSourceFiles.Contains(file.FullPath))
+        if (_diffResult.ChangedSourceFiles != null && _diffResult.ChangedSourceFiles.Keys.Contains(file.FullPath))
         {
+            foreach (var mutant in mutants)
+            {
+                foreach (var line in _diffResult.ChangedSourceFiles[file.FullPath])
+                {
+
+                    var actualLineSpan = mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan();
+
+                    _logger.LogDebug("Original line span is found to be {actualLineSpan}", actualLineSpan);
+                    var start = actualLineSpan.Span.Start.Line;
+                    var end = actualLineSpan.Span.Start.Line;
+                    if (start <= line && line <= end)
+                    {
+                        if (mutant.ResultStatus != MutantStatus.NoCoverage)
+                        {
+                            mutant.ResultStatus = MutantStatus.Pending;
+                            mutant.ResultStatusReason = "Mutant changed compared to target commit";
+                        }
+                    }
+                }
+            }
             _logger.LogDebug("Returning all mutants in {RelativePath} because the file is modified", file.RelativePath);
-            return SetMutantStatusForFileChanged(mutants);
+            return mutants;
         }
         else
         {
@@ -74,12 +93,30 @@ public class SinceMutantFilter : IMutantFilter
 
         // If any of the tests have been changed, we want to return all mutants covered by these testfiles.
         // Only check for changed c# files. Other files have already been handled.
-        if (_diffResult.ChangedTestFiles != null && _diffResult.ChangedTestFiles.Any(file => file.EndsWith(".cs")))
+        if (_diffResult.ChangedTestFiles != null && _diffResult.ChangedTestFiles.Keys.Any(file => file.EndsWith(".cs")))
         {
-            filteredMutants = ResetMutantStatusForChangedTests(mutants);
+            foreach (var mutant in mutants)
+            {
+                foreach (var line in _diffResult.ChangedTestFiles[file.FullPath])
+                {
+                    var actualLineSpan = mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan();
+
+                    _logger.LogDebug("Original line span is found to be {actualLineSpan}", actualLineSpan);
+                    var start = actualLineSpan.Span.Start.Line;
+                    var end = actualLineSpan.Span.Start.Line;
+                    if (start <= line && line <= end)
+                    {
+                        if (mutant.ResultStatus != MutantStatus.NoCoverage)
+                        {
+                            mutant.ResultStatus = MutantStatus.Pending;
+                            mutant.ResultStatusReason = "Mutant changed compared to target commit";
+                        }
+                    }
+                }
+            }
         }
 
-        return filteredMutants;
+        return mutants;
     }
 
     private static IEnumerable<IMutant> SetNotRunMutantsToIgnored(IEnumerable<IMutant> mutants)
@@ -128,7 +165,7 @@ public class SinceMutantFilter : IMutantFilter
             var coveringTests = _tests.Extract(mutant.CoveringTests.GetIdentifiers());
 
             if (coveringTests != null
-                && coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestFilePath == changedTestFile
+                && coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Keys.Any(changedTestFile => coveringTest.TestFilePath == changedTestFile
                     || string.IsNullOrEmpty(coveringTest.TestFilePath))))
             {
                 mutant.ResultStatus = MutantStatus.Pending;
@@ -141,3 +178,4 @@ public class SinceMutantFilter : IMutantFilter
         return filteredMutants;
     }
 }
+
