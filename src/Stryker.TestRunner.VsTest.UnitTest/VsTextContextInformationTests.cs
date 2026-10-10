@@ -196,6 +196,7 @@ public class VsTextContextInformationTests : TestBase
         using var context = BuildVsTextContext(new StrykerOptions(), out var mock);
         mock.Setup(x => x.DiscoverTests(It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), It.IsAny<ITestDiscoveryEventsHandler>()))
             .Throws(new InvalidOperationException("Test host disconnected."));
+        mock.Setup(x => x.EndSession()).Throws(new InvalidOperationException("Could not end test session."));
 
         var exception = Should.Throw<InputException>(() => context.AddTestSource(_testAssemblyPath));
 

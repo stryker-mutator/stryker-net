@@ -178,7 +178,7 @@ public sealed class VsTestContextInformation : IDisposable
     {
         if (!_fileSystem.File.Exists(source))
         {
-            throw new GeneralStrykerException(
+            throw new InputException(
                 $"The test project binaries could not be found at {source}, exiting...");
         }
 
@@ -221,7 +221,14 @@ public sealed class VsTestContextInformation : IDisposable
         }
         finally
         {
-            wrapper.EndSession();
+            try
+            {
+                wrapper.EndSession();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Test discovery cleanup failed for assembly {Assembly}", newSource);
+            }
         }
 
         TestsPerSource[newSource] = handler.DiscoveredTestCases.Select(c => c.Id).ToHashSet();
