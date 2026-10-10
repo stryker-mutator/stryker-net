@@ -56,6 +56,21 @@ jobs:
         shell: pwsh
         run: ./integration-tests.ps1
 
+      - name: Validate MTP cancellation and host reuse
+        if: matrix.category == 'MSTestMTP' && matrix.runtime == 'netcore'
+        shell: pwsh
+        run: |
+          dotnet restore ./src/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest.csproj --locked-mode
+          if ($LASTEXITCODE -ne 0) { throw "MTP unit-host restore failed." }
+          ./integrationtest/TargetProjects/MicrosoftTestPlatform/Cancellation/run-validation.ps1 -EvidencePath ./publish/mtp-cancellation
+
+      - name: Upload MTP cancellation evidence
+        if: always() && matrix.category == 'MSTestMTP' && matrix.runtime == 'netcore'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: mtp-cancellation-${{ matrix.agent }}
+          path: publish/mtp-cancellation
+
   # Fan-in job that depends on all matrix combinations
   # This job can be used as a single required check in PR rules
   integration-test-complete:

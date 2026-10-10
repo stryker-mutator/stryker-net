@@ -14,7 +14,9 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
     private readonly IProcessHandle _processHandler;
     private readonly ILogger _logger;
     private readonly SemaphoreSlim _requestGate = new(1, 1);
+    private readonly HashSet<Guid> _completedRuns = [];
     private bool _disposed;
+    private bool _requestFailed;
 
     public TestingPlatformClient(IMtpServerClient client, IProcessHandle processHandler, ILogger logger)
     {
@@ -49,7 +51,7 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
         }
         else
         {
-            _client.Dispose();
+            Dispose();
         }
     }
 
@@ -71,24 +73,105 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
     {
         await _requestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         var callbacks = new List<Task>();
+        Guid? runId = null;
+        var collecting = true;
+        Task previousCallback = Task.CompletedTask;
+        Exception? requestException = null;
         void OnTestNodesUpdated(object? _, MtpTestNodeUpdateEventArgs eventArgs)
         {
-            if (eventArgs.Changes.Count > 0)
+            lock (callbacks)
             {
-                callbacks.Add(action(eventArgs.Changes.Select(ToTestNodeUpdate).ToArray()));
+                if (!collecting)
+                {
+                    return;
+                }
+                // The source client owns the run ID. A failed request is never reused; for completed
+                // requests, reject a previously observed ID and batches from a different run.
+                if (eventArgs.RunId != Guid.Empty
+                    && (_completedRuns.Contains(eventArgs.RunId) || runId is not null && runId != eventArgs.RunId))
+                {
+                    _logger.LogWarning("Ignoring MTP updates for an inactive run {RunId}.", eventArgs.RunId);
+                    return;
+                }
+
+                if (eventArgs.RunId != Guid.Empty)
+                {
+                    runId ??= eventArgs.RunId;
+                }
+                if (eventArgs.Changes.Count > 0)
+                {
+                    try
+                    {
+                        var updates = eventArgs.Changes.Select(ToTestNodeUpdate).ToArray();
+                        var precedingCallback = previousCallback;
+                        // Reporting must not block the ordered transport read loop.
+                        previousCallback = Task.Run(async () =>
+                        {
+                            await precedingCallback.ConfigureAwait(false);
+                            await action(updates).ConfigureAwait(false);
+                        });
+                        callbacks.Add(previousCallback);
+                    }
+                    catch (Exception exception)
+                    {
+                        callbacks.Add(Task.FromException(exception));
+                    }
+                }
             }
         }
 
         _client.TestNodesUpdated += OnTestNodesUpdated;
         try
         {
+            ThrowIfUnusable();
             await request(cancellationToken).ConfigureAwait(false);
-            await Task.WhenAll(callbacks).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            // Cancellation completes locally, not at the server's terminal response. No subsequent
+            // request may attach a new result handler to this connection.
+            _requestFailed = true;
+            requestException = exception;
+            throw;
         }
         finally
         {
             _client.TestNodesUpdated -= OnTestNodesUpdated;
-            _requestGate.Release();
+            Task[] pendingCallbacks;
+            lock (callbacks)
+            {
+                collecting = false;
+                pendingCallbacks = callbacks.ToArray();
+            }
+            if (runId is not null)
+            {
+                _completedRuns.Add(runId.Value);
+            }
+            var callbackDrain = Task.WhenAll(pendingCallbacks);
+            try
+            {
+                await callbackDrain.WaitAsync(RequestTimeout).ConfigureAwait(false);
+            }
+            catch (TimeoutException exception) when (!callbackDrain.IsCompleted)
+            {
+                _requestFailed = true;
+                throw new TestHostTerminationException("MTP result processing did not drain within the request deadline. Mutation testing cannot safely continue.",
+                    exception);
+            }
+            catch (Exception exception) when (requestException is not null)
+            {
+                _requestFailed = true;
+                _logger.LogError(exception, "An MTP result callback failed while the request was already failing.");
+            }
+            catch
+            {
+                _requestFailed = true;
+                throw;
+            }
+            finally
+            {
+                _requestGate.Release();
+            }
         }
     }
 
@@ -97,11 +180,26 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
         await _requestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            ThrowIfUnusable();
             await request(cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            _requestFailed = true;
+            throw;
         }
         finally
         {
             _requestGate.Release();
+        }
+    }
+
+    private void ThrowIfUnusable()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_requestFailed)
+        {
+            throw new InvalidOperationException("The previous MTP request did not complete. Discard this test host before running more tests.");
         }
     }
 
@@ -128,13 +226,26 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
             update.LineStart,
             update.LineEnd,
             GetString(update.Node, LocationType),
-            GetString(update.Node, LocationMethod));
+            GetString(update.Node, LocationMethod),
+            GetRetryAttempt(update.Node),
+            update.Node.TryGetValue("retry.is-superseded", out var superseded) ? superseded as bool? : null);
 
         return new TestNodeUpdate(node, update.ParentUid ?? string.Empty);
     }
 
     private static string? GetString(IReadOnlyDictionary<string, object?> properties, string key)
         => properties.TryGetValue(key, out var value) ? value as string : null;
+
+    private static int? GetRetryAttempt(IReadOnlyDictionary<string, object?> properties)
+        => properties.TryGetValue("retry.attempt", out var value)
+            ? value switch
+            {
+                int attempt => attempt,
+                long attempt when attempt is >= 1 and <= int.MaxValue => (int)attempt,
+                double attempt when attempt is >= 1 and <= int.MaxValue && attempt == Math.Truncate(attempt) => (int)attempt,
+                _ => null
+            }
+            : null;
 
     private void OnLogReceived(object? sender, MtpLogEventArgs eventArgs)
         => _logger.LogDebug(
@@ -149,9 +260,8 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
             return;
         }
 
+        _disposed = true;
         _client.LogReceived -= OnLogReceived;
         _client.Dispose();
-        _requestGate.Dispose();
-        _disposed = true;
     }
 }

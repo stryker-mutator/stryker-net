@@ -36,4 +36,12 @@ public sealed record TestNode
 
     [property: JsonPropertyName("location.method")]
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    string? LocationMethod = null);
+    string? LocationMethod = null,
+
+    [property: JsonPropertyName("retry.attempt")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    int? RetryAttempt = null,
+
+    [property: JsonPropertyName("retry.is-superseded")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    bool? RetryIsSuperseded = null);

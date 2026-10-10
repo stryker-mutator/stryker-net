@@ -23,6 +23,7 @@ internal static class TestNodeStates
     public const string Error = "error";
     public const string TimedOut = "timed-out";
     public const string Cancelled = "cancelled";
+    public const string Canceled = "canceled";
 
     /// <summary>
     /// True when the test has reached a terminal state (i.e. not still running or
@@ -30,7 +31,7 @@ internal static class TestNodeStates
     /// executed-tests set.
     /// </summary>
     public static bool IsFinished(string? state) =>
-        state is not (null or InProgress or Discovered);
+        state is Passed or Skipped or Failed or Error or TimedOut or Cancelled or Canceled;
 
     /// <summary>
     /// True when the test ended in a state that indicates the mutant changed
@@ -40,7 +41,10 @@ internal static class TestNodeStates
     /// <c>Timeout</c> rather than <c>Killed</c>.
     /// </summary>
     public static bool IsFailure(string? state) =>
-        state is Failed or Error or Cancelled;
+        state is Failed or Error or Cancelled or Canceled;
+
+    public static bool IsCancellation(string? state) =>
+        state is Cancelled or Canceled;
 
     /// <summary>
     /// True when the test reported a per-test timeout.

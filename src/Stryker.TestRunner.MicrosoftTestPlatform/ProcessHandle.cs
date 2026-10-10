@@ -9,10 +9,47 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output) : IProcessHandle, IDisposable
 {
     private bool _disposed;
+    private volatile bool _exitVerified;
+    private readonly Process? _process = CaptureProcess(commandTask);
 
     public int Id { get; } = commandTask.ProcessId;
     public string ProcessName { get; } = "dotnet";
     public int ExitCode { get; private set; }
+    public bool HasExited
+    {
+        get
+        {
+            if (_exitVerified || _process is null)
+            {
+                return true;
+            }
+            if (_process.HasExited)
+            {
+                _exitVerified = true;
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private static Process? CaptureProcess(CommandTask<CommandResult> command)
+    {
+        if (command.Task.IsCompleted)
+        {
+            return null;
+        }
+        try
+        {
+            var process = Process.GetProcessById(command.ProcessId);
+            // Retain the OS handle rather than reopening a possibly recycled PID during teardown.
+            _ = process.Handle;
+            return process;
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+    }
     public TextWriter StandardInput => new StringWriter();
     public TextReader StandardOutput
     {
@@ -31,12 +68,17 @@ public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output
     {
         try
         {
-            using var process = Process.GetProcessById(Id);
-            process.Kill(entireProcessTree: true);
+            if (_process is not null && !HasExited)
+            {
+                _process.Kill(entireProcessTree: true);
+            }
         }
-        catch (Exception)
+        catch (ArgumentException)
         {
             // Process may have already exited
+        }
+        catch (InvalidOperationException) when (HasExited)
+        {
         }
     }
 
@@ -55,7 +97,7 @@ public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output
     {
         return Task.CompletedTask;
     }
-    
+
     public void Dispose()
     {
         Dispose(true);
@@ -86,6 +128,10 @@ public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output
                 }
             }
 
+            if (!HasExited)
+            {
+                throw new InvalidOperationException("Cannot dispose an MTP process handle before its exit has been verified.");
+            }
             try
             {
                 commandTask.Dispose();
@@ -94,8 +140,9 @@ public class ProcessHandle(CommandTask<CommandResult> commandTask, Stream output
             {
                 // Task may still not be in a completion state after kill
             }
+            _process?.Dispose();
         }
-        
+
         _disposed = true;
     }
 }
