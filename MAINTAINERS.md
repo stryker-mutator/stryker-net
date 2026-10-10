@@ -87,10 +87,14 @@ All new issues will need to be triaged, and pull requests must be examined. Main
 
 We’re also using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) (or see [summary here](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716)). This means that the **commit message decides the next release version number** as well as the **annotation in the changelog**. This why it is important to always _squash merge_ PR’s and decide on a good commit message.
 
+For breaking changes, include a `BREAKING CHANGE: <description>` footer in the
+PR description and preserve it in the squash commit message. Do not use `!` in
+the title: the current configuration does not recognize that header syntax.
+
 Some examples:
 
 ✅ A feature without breaking change.
-> feat(Regex mutations): Add regex mutations. Not enabled by default.
+> feat(regex mutations): Add regex mutations. Not enabled by default.
 
 ✅ Fix something in the docs (won’t appear in changelog)
 > docs(plugins): fix dead link
@@ -105,10 +109,13 @@ Some examples:
 
 ❌ Format issues:
 > ~~ feat(Html reporter) Add html reporter ~~ // missing :
-> ~~ feat: Add html reporter (#2622) ~~ // missing subject
+> ~~ feat: Add html reporter (#2622) ~~ // missing scope
 
 ❌ Scope too vague
 > ~~feat(stryker): changed option~~
+
+❌ Scope must be lowercase
+> ~~feat(Html reporter): add html reporter~~
 
 
 It is important to note that these message are **not necessary when contributing a PR**, only when **squash merging them** (we only care about commit messages on the master branch).
