@@ -35,24 +35,40 @@ public class MicrosoftTestingPlatformRunnerTests
         new(id, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public async Task DiscoverTestsAsync_ShouldDistinguishSuccessfulEmptyDiscovery(bool hasTests)
+    public async Task DiscoverTestsAsync_ShouldReturnTrueWhenTestsAreDiscoveredAsync()
     {
-        const string assembly = "/test/discovery.dll";
+        const string Assembly = "/test/discovery.dll";
         using var runner = CreateRunner();
-        var client = await AddDiscoveryServerAsync(runner, assembly);
+        var client = await AddDiscoveryServerAsync(runner, Assembly);
         var node = new TestNode("id", "Test", "action", TestNodeStates.Discovered);
         client.Setup(x => x.DiscoverTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<CancellationToken>()))
             .Returns<Func<TestNodeUpdate[], Task>, CancellationToken>((callback, _) =>
-                callback(hasTests ? [new TestNodeUpdate(node, "")] : []));
+                callback([new TestNodeUpdate(node, "")]));
 
-        var result = await runner.DiscoverTestsAsync(assembly);
+        var result = await runner.DiscoverTestsAsync(Assembly);
 
-        result.ShouldBe(hasTests);
-        runner.GetDiscoveredTests(assembly).ShouldNotBeNull();
-        runner.GetDiscoveredTests(assembly)!.Count.ShouldBe(hasTests ? 1 : 0);
-        _testSet.Count.ShouldBe(hasTests ? 1 : 0);
+        result.ShouldBeTrue();
+        runner.GetDiscoveredTests(Assembly).ShouldNotBeNull();
+        runner.GetDiscoveredTests(Assembly)!.Count.ShouldBe(1);
+        _testSet.Count.ShouldBe(1);
+    }
+
+    [TestMethod]
+    public async Task DiscoverTestsAsync_ShouldReturnFalseWhenNoTestsAreDiscoveredAsync()
+    {
+        const string Assembly = "/test/discovery.dll";
+        using var runner = CreateRunner();
+        var client = await AddDiscoveryServerAsync(runner, Assembly);
+        client.Setup(x => x.DiscoverTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<CancellationToken>()))
+            .Returns<Func<TestNodeUpdate[], Task>, CancellationToken>((callback, _) =>
+                callback([]));
+
+        var result = await runner.DiscoverTestsAsync(Assembly);
+
+        result.ShouldBeFalse();
+        runner.GetDiscoveredTests(Assembly).ShouldNotBeNull();
+        runner.GetDiscoveredTests(Assembly)!.Count.ShouldBe(0);
+        _testSet.Count.ShouldBe(0);
     }
 
     [TestMethod]

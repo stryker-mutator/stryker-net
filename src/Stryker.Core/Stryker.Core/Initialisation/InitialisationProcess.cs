@@ -153,9 +153,13 @@ public class InitialisationProcess(
             });
         }
 
-        var runnerName = options.TestRunner == Abstractions.Options.TestRunner.MicrosoftTestPlatform
-            ? "Microsoft Testing Platform"
-            : "VsTest";
+        var runnerName = testRunner.RunnerType switch
+        {
+            Abstractions.Options.TestRunner.MicrosoftTestPlatform => "Microsoft Testing Platform",
+            Abstractions.Options.TestRunner.VsTest => "VsTest",
+            _ => "Unknown Test Runner"
+        };
+
         var message = $"No test result reported. Make sure your test project contains tests and is compatible with {runnerName}.";
         throw new InputException(string.Join(Environment.NewLine, projectInfo.Warnings.Prepend(message)));
     }

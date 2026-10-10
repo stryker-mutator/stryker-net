@@ -18,6 +18,9 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 /// </summary>
 public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 {
+    public Abstractions.Options.TestRunner RunnerType =>
+        Abstractions.Options.TestRunner.MicrosoftTestPlatform;
+
     private readonly AutoResetEvent _runnerAvailableHandler = new(false);
     private readonly ConcurrentBag<MicrosoftTestingPlatformRunner> _availableRunners = new();
     private readonly ConcurrentBag<MicrosoftTestingPlatformRunner> _allRunners = new();

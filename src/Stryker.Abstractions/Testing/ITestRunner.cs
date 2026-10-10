@@ -1,11 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Stryker.Abstractions.Options;
 
 namespace Stryker.Abstractions.Testing;
 
 public interface ITestRunner : IDisposable
 {
+    /// <summary>
+    /// Gets the test runner implementation currently in use.
+    /// </summary>
+    TestRunner RunnerType { get; }
+
     public delegate bool TestUpdateHandler(IReadOnlyList<IMutant> testedMutants,
        ITestIdentifiers failedTests,
        ITestIdentifiers ranTests,
