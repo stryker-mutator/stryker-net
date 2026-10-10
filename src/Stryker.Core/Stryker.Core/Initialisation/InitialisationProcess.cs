@@ -34,6 +34,15 @@ public class InitialisationProcess(
     ILogger<InitialisationProcess> logger = null)
     : IInitialisationProcess
 {
+    private const string NoMatchingTestsMessage =
+        "No test cases matched `test-case-filter`. Skipping this project. Change your configuration and try again.";
+    private const string NoMatchingProjectsMessage =
+        "No projects have test cases matching `test-case-filter`. Change your configuration and try again.";
+
+    private abstract record ProjectPreparation;
+    private sealed record ReadyProject(MutationTestInput Input) : ProjectPreparation;
+    private sealed record SkippedByTestCaseFilter : ProjectPreparation;
+
     private readonly IInputFileResolver _inputFileResolver = inputFileResolver ?? throw new ArgumentNullException(nameof(inputFileResolver));
     private readonly IInitialBuildProcess _initialBuildProcess = initialBuildProcess ?? throw new ArgumentNullException(nameof(initialBuildProcess));
     private readonly IInitialTestProcess _initialTestProcess = initialTestProcess ?? throw new ArgumentNullException(nameof(initialTestProcess));
@@ -70,18 +79,28 @@ public class InitialisationProcess(
         RelatedSourceProjectsInfo projects,
         ITestRunner runner)
     {
-        var getInputs = projects.SourceProjectInfos.Select(async info => new MutationTestInput {
-            SourceProjectInfo = info,
-            TestRunner = runner,
-            InitialTestRun = await InitialTestAsync(options, info, runner, projects.SourceProjectInfos.Count == 1)
-        });
-        return await Task.WhenAll(getInputs);
+        var prepareProjects = projects.SourceProjectInfos.Select(info =>
+            PrepareProjectAsync(options, info, runner, projects.SourceProjectInfos.Count == 1));
+        var preparations = await Task.WhenAll(prepareProjects);
+        var inputs = preparations.OfType<ReadyProject>().Select(project => project.Input).ToList();
+        if (preparations.Length > 0 && preparations.All(project => project is SkippedByTestCaseFilter))
+        {
+            throw new InputException(NoMatchingProjectsMessage);
+        }
+
+        return inputs;
     }
 
-    private async Task<InitialTestRun> InitialTestAsync(IStrykerOptions options, SourceProjectInfo projectInfo,
+    private async Task<ProjectPreparation> PrepareProjectAsync(IStrykerOptions options, SourceProjectInfo projectInfo,
         ITestRunner testRunner, bool throwIfFails)
     {
-        DiscoverTests(projectInfo, testRunner);
+        var hasDiscoveredTests = await DiscoverTestsAsync(options, projectInfo, testRunner);
+        var hasTestCaseFilter = !string.IsNullOrWhiteSpace(options.TestCaseFilter);
+        if (!hasDiscoveredTests && hasTestCaseFilter && projectInfo.TestProjectsInfo.AnalyzerResults.Any())
+        {
+            LogFilteredProject(projectInfo);
+            return new SkippedByTestCaseFilter();
+        }
 
         // initial test
         _logger.LogInformation(
@@ -90,6 +109,18 @@ public class InitialisationProcess(
         projectInfo.AnalyzerResult.ProjectFilePath);
 
         var result = await _initialTestProcess.InitialTestAsync(options, projectInfo, testRunner);
+
+        if (result.Result.SessionTimedOut || result.Result.SessionHadRuntimeIssue || !result.Result.TimedOutTests.IsEmpty)
+        {
+            throw new InputException("Initial test run could not be completed.", result.Result.ResultMessage);
+        }
+
+        if (result.Result.ExecutedTests.IsEmpty && hasTestCaseFilter &&
+            result.Result.FailingTests.IsEmpty && hasDiscoveredTests)
+        {
+            LogFilteredProject(projectInfo);
+            return new SkippedByTestCaseFilter();
+        }
 
         if (!result.Result.FailingTests.IsEmpty)
         {
@@ -112,12 +143,23 @@ public class InitialisationProcess(
 
         if (!result.Result.ExecutedTests.IsEmpty || !throwIfFails)
         {
-            return result;
+            return new ReadyProject(new MutationTestInput
+            {
+                SourceProjectInfo = projectInfo,
+                TestRunner = testRunner,
+                InitialTestRun = result
+            });
         }
 
-        const string Message = "No test result reported. Make sure your test project contains test and is compatible with VsTest.";
-        throw new InputException(string.Join(Environment.NewLine, projectInfo.Warnings.Prepend(Message)));
+        var runnerName = options.TestRunner == Abstractions.Options.TestRunner.MicrosoftTestPlatform
+            ? "Microsoft Testing Platform"
+            : "VsTest";
+        var message = $"No test result reported. Make sure your test project contains tests and is compatible with {runnerName}.";
+        throw new InputException(string.Join(Environment.NewLine, projectInfo.Warnings.Prepend(message)));
     }
+
+    private void LogFilteredProject(SourceProjectInfo projectInfo) =>
+        _logger.LogWarning("{Message} Project: {ProjectFilePath}", NoMatchingTestsMessage, projectInfo.AnalyzerResult.ProjectFilePath);
 
     private static readonly Dictionary<string, (string assembly, string package)> TestFrameworks = new()
     {
@@ -127,18 +169,26 @@ public class InitialisationProcess(
                 ("Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter", "MSTest.TestAdapter")
     };
 
-    private void DiscoverTests(SourceProjectInfo projectInfo, ITestRunner testRunner)
+    private async Task<bool> DiscoverTestsAsync(IStrykerOptions options, SourceProjectInfo projectInfo, ITestRunner testRunner)
     {
+        var hasDiscoveredTests = false;
         foreach (var testProject in projectInfo.TestProjectsInfo.AnalyzerResults)
         {
-            if (testRunner.DiscoverTestsAsync(testProject.GetAssemblyPath()).GetAwaiter().GetResult())
+            if (await testRunner.DiscoverTestsAsync(testProject.GetAssemblyPath()))
+            {
+                hasDiscoveredTests = true;
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(options.TestCaseFilter))
             {
                 continue;
             }
 
             var causeFound = false;
             foreach (var (framework, (adapter, package)) in
-                     TestFrameworks.Where(t => testProject.References.Any(r => r.Contains(t.Key))))
+                     TestFrameworks.Where(t => options.TestRunner == Abstractions.Options.TestRunner.VsTest &&
+                         testProject.References.Any(r => r.Contains(t.Key))))
             {
                 if (testProject.References.Any(r => r.Contains(adapter)))
                 {
@@ -164,15 +214,6 @@ public class InitialisationProcess(
                 _logger.LogWarning(message);
             }
 
-            if (!causeFound && testProject.References.Any(r => r.Contains("Microsoft.Testing.Platform")))
-            {
-                causeFound = true;
-                var message = $"Project '{testProject.ProjectFilePath}' is using Microsoft.Testing.Platform which is not yet supported by Stryker, " +
-                              $"see https://github.com/stryker-mutator/stryker-net/issues/3094";
-                projectInfo.LogError(message);
-                _logger.LogWarning(message);
-            }
-
             if (causeFound)
             {
                 continue;
@@ -182,5 +223,7 @@ public class InitialisationProcess(
             projectInfo.LogError(messageForNoReason);
             _logger.LogWarning(messageForNoReason);
         }
+
+        return hasDiscoveredTests;
     }
 }

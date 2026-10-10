@@ -104,15 +104,46 @@ public class AssemblyTestServerTests
     }
 
     [TestMethod]
-    public async Task StartAsync_WhenFactoryThrows_ReturnsFalse()
+    public async Task StartAsync_WhenFactoryThrows_PropagatesFailure()
     {
         _factory.Setup(factory => factory.CreateListener()).Throws(new InvalidOperationException("boom"));
 
         using var server = CreateServer();
-        var started = await server.StartAsync();
+        var exception = await Should.ThrowAsync<InvalidOperationException>(() => server.StartAsync());
 
-        started.ShouldBeFalse();
+        exception.Message.ShouldBe("boom");
         server.IsInitialized.ShouldBeFalse();
+    }
+
+    [TestMethod]
+    public async Task StartAsync_WhenClientInitializationIsCanceled_PropagatesCancellationAndCleansUp()
+    {
+        _client.Setup(client => client.InitializeAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+        using var server = CreateServer();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => server.StartAsync());
+
+        server.IsInitialized.ShouldBeFalse();
+        _client.Verify(client => client.Dispose(), Times.Once);
+        _process.Verify(process => process.Dispose(), Times.Once);
+        _listener.Verify(listener => listener.Stop(), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task StartAsync_WhenConnectionWaitIsCanceled_PropagatesCancellationAndCleansUp()
+    {
+        using var cancellation = new CancellationTokenSource();
+        _listener.Setup(listener => listener.AcceptConnectionAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => cancellation.Cancel())
+            .Returns(new TaskCompletionSource<TcpClient>().Task);
+        using var server = CreateServer();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => server.StartAsync(cancellation.Token));
+
+        server.IsInitialized.ShouldBeFalse();
+        _process.Verify(process => process.Dispose(), Times.Once);
+        _listener.Verify(listener => listener.Stop(), Times.Once);
     }
 
     [TestMethod]
@@ -137,9 +168,9 @@ public class AssemblyTestServerTests
             .Throws(new InvalidOperationException("boom"));
 
         using var server = CreateServer();
-        var started = await server.StartAsync();
+        var exception = await Should.ThrowAsync<InvalidOperationException>(() => server.StartAsync());
 
-        started.ShouldBeFalse();
+        exception.Message.ShouldBe("boom");
         tcpClient.Client.ShouldBeNull();
     }
 

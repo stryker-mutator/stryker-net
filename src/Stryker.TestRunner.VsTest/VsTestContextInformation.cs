@@ -184,7 +184,15 @@ public sealed class VsTestContextInformation : IDisposable
 
         if (!TestsPerSource.ContainsKey(source))
         {
-            DiscoverTestsInSources(source, frameworkVersion, platform);
+            try
+            {
+                DiscoverTestsInSources(source, frameworkVersion, platform);
+            }
+            catch (Exception ex) when (ex is not InputException && ex is not OperationCanceledException)
+            {
+                _logger.LogError(ex, "Test discovery failed for assembly {Assembly}", source);
+                throw new InputException($"Test discovery failed for assembly '{source}'.", ex.Message);
+            }
         }
 
         return TestsPerSource[source].Count > 0;
@@ -196,17 +204,25 @@ public sealed class VsTestContextInformation : IDisposable
         var messages = new List<string>();
         var handler = new DiscoveryEventHandler(messages);
         var settings = GenerateRunSettingsForDiscovery(frameworkVersion, platform);
-        wrapper.DiscoverTests([newSource], settings, handler);
-
-        handler.WaitEnd();
-        if (handler.Aborted)
+        try
         {
-            _logger.LogDebug("TestDiscoverer: Discovery settings: {discoverySettings}", settings);
-            _logger.LogDebug("TestDiscoverer: {messages}", string.Join(Environment.NewLine, messages));
-            _logger.LogError("TestDiscoverer: Test discovery has been aborted!");
+            wrapper.DiscoverTests([newSource], settings, handler);
+            handler.WaitEnd();
+            if (handler.Aborted || handler.HasErrors)
+            {
+                _logger.LogDebug("TestDiscoverer: Discovery settings: {discoverySettings}", settings);
+                _logger.LogError("TestDiscoverer: Test discovery failed for {Assembly}: {Messages}",
+                    newSource, string.Join(Environment.NewLine, messages));
+                throw new InputException($"Test discovery failed for assembly '{newSource}'.",
+                    handler.Aborted
+                        ? string.Join(Environment.NewLine, messages.Prepend("Test discovery was aborted."))
+                        : string.Join(Environment.NewLine, messages));
+            }
         }
-
-        wrapper.EndSession();
+        finally
+        {
+            wrapper.EndSession();
+        }
 
         TestsPerSource[newSource] = handler.DiscoveredTestCases.Select(c => c.Id).ToHashSet();
         VsTests ??= new Dictionary<Guid, VsTestDescription>(handler.DiscoveredTestCases.Count);

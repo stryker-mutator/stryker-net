@@ -24,12 +24,294 @@ using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.VsTest;
 using Stryker.Utilities.Buildalyzer;
+using TestRunnerOption = Stryker.Abstractions.Options.TestRunner;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 
 [TestClass]
 public class InitialisationProcessTests : TestBase
 {
+    private const string NoMatchingTestsMessage =
+        "No test cases matched `test-case-filter`. Skipping this project. Change your configuration and try again.";
+    private const string NoMatchingProjectsMessage =
+        "No projects have test cases matching `test-case-filter`. Change your configuration and try again.";
+
+    [TestMethod]
+    public async Task InitialisationProcess_ShouldNotReportFilteringWhenNoProjectsWereFound()
+    {
+        var options = new StrykerOptions { TestCaseFilter = "FullyQualifiedName~MatchingTest" };
+        var target = new InitialisationProcess(Mock.Of<IInputFileResolver>(), Mock.Of<IInitialBuildProcess>(),
+            new Mock<IInitialTestProcess>(MockBehavior.Strict).Object, Mock.Of<ILogger<InitialisationProcess>>());
+
+        var inputs = await target.GetMutationTestInputsAsync(options, new RelatedSourceProjectsInfo(null, []),
+            new Mock<ITestRunner>(MockBehavior.Strict).Object);
+
+        inputs.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    [DataRow(TestRunnerOption.VsTest, false)]
+    [DataRow(TestRunnerOption.VsTest, true)]
+    [DataRow(TestRunnerOption.MicrosoftTestPlatform, false)]
+    [DataRow(TestRunnerOption.MicrosoftTestPlatform, true)]
+    public async Task InitialisationProcess_ShouldExplainWhenAllTestsAreFilteredOut(TestRunnerOption runner, bool testsDiscovered)
+    {
+        var options = new StrykerOptions { TestRunner = runner, TestCaseFilter = "FullyQualifiedName~NoMatchingTest" };
+        var project = CreateTestProject("Project.csproj");
+        var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
+        testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).ReturnsAsync(testsDiscovered);
+        var tests = new TestSet();
+        if (testsDiscovered)
+        {
+            tests.RegisterTest(new TestDescription("id", "test", "test.cs"));
+        }
+        testRunnerMock.Setup(x => x.GetTests(project)).Returns(tests);
+        var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
+        if (testsDiscovered)
+        {
+            initialTestProcessMock.Setup(x => x.InitialTestAsync(options, project, testRunnerMock.Object))
+                .ReturnsAsync(new InitialTestRun(EmptyTestRunResult(), null));
+        }
+        var loggerMock = new Mock<ILogger<InitialisationProcess>>();
+        var target = new InitialisationProcess(Mock.Of<IInputFileResolver>(), Mock.Of<IInitialBuildProcess>(),
+            initialTestProcessMock.Object, loggerMock.Object);
+
+        var exception = await Should.ThrowAsync<InputException>(() =>
+            target.GetMutationTestInputsAsync(options, new RelatedSourceProjectsInfo(null, [project]), testRunnerMock.Object));
+
+        exception.Message.ShouldBe(NoMatchingProjectsMessage);
+        project.Warnings.ShouldBeEmpty();
+        initialTestProcessMock.Verify(x => x.InitialTestAsync(options, project, testRunnerMock.Object),
+            testsDiscovered ? Times.Once() : Times.Never());
+        loggerMock.Invocations.ShouldContain(invocation => invocation.Method.Name == nameof(ILogger.Log) &&
+            invocation.Arguments[0].Equals(LogLevel.Warning) &&
+            invocation.Arguments[2].ToString() == $"{NoMatchingTestsMessage} Project: Project.csproj");
+    }
+
+    [TestMethod]
+    [DataRow(TestRunnerOption.VsTest, false)]
+    [DataRow(TestRunnerOption.VsTest, true)]
+    [DataRow(TestRunnerOption.MicrosoftTestPlatform, false)]
+    [DataRow(TestRunnerOption.MicrosoftTestPlatform, true)]
+    public async Task InitialisationProcess_ShouldSkipOnlyFilteredProjects(TestRunnerOption runner, bool allProjectsFiltered)
+    {
+        var options = new StrykerOptions { TestRunner = runner, TestCaseFilter = "FullyQualifiedName~MatchingTest" };
+        var filteredProject = CreateTestProject("Filtered.csproj");
+        var otherProject = CreateTestProject("Other.csproj");
+        var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
+        testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).ReturnsAsync(false);
+        testRunnerMock.Setup(x => x.DiscoverTestsAsync(otherProject.GetTestAssemblies().Single())).ReturnsAsync(!allProjectsFiltered);
+        var tests = new TestSet();
+        if (!allProjectsFiltered)
+        {
+            tests.RegisterTest(new TestDescription("id", "MatchingTest", "test.cs"));
+        }
+        testRunnerMock.Setup(x => x.GetTests(otherProject)).Returns(tests);
+        var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
+        var initialTestRun = new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(0));
+        if (!allProjectsFiltered)
+        {
+            initialTestProcessMock.Setup(x => x.InitialTestAsync(options, otherProject, testRunnerMock.Object))
+                .ReturnsAsync(initialTestRun);
+        }
+        var target = new InitialisationProcess(Mock.Of<IInputFileResolver>(), Mock.Of<IInitialBuildProcess>(),
+            initialTestProcessMock.Object, Mock.Of<ILogger<InitialisationProcess>>());
+        var projects = new RelatedSourceProjectsInfo(null, [filteredProject, otherProject]);
+
+        if (allProjectsFiltered)
+        {
+            var exception = await Should.ThrowAsync<InputException>(() =>
+                target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object));
+            exception.Message.ShouldBe(NoMatchingProjectsMessage);
+        }
+        else
+        {
+            var inputs = await target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object);
+            inputs.Count.ShouldBe(1);
+            inputs.Single().SourceProjectInfo.ShouldBeSameAs(otherProject);
+            inputs.Single().InitialTestRun.ShouldBeSameAs(initialTestRun);
+        }
+
+        initialTestProcessMock.Verify(x => x.InitialTestAsync(options, filteredProject, testRunnerMock.Object), Times.Never);
+        filteredProject.Warnings.ShouldBeEmpty();
+        otherProject.Warnings.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    [DataRow(TestRunnerOption.VsTest, null)]
+    [DataRow(TestRunnerOption.VsTest, "")]
+    [DataRow(TestRunnerOption.VsTest, "  ")]
+    [DataRow(TestRunnerOption.MicrosoftTestPlatform, null)]
+    [DataRow(TestRunnerOption.MicrosoftTestPlatform, "")]
+    [DataRow(TestRunnerOption.MicrosoftTestPlatform, "  ")]
+    public async Task InitialisationProcess_ShouldReportSelectedRunnerWhenNoFilterIsApplied(TestRunnerOption runner, string filter)
+    {
+        var options = new StrykerOptions { TestRunner = runner, TestCaseFilter = filter };
+        var project = CreateTestProject("Project.csproj");
+        var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
+        testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).ReturnsAsync(false);
+        testRunnerMock.Setup(x => x.GetTests(project)).Returns(new TestSet());
+        var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
+        initialTestProcessMock.Setup(x => x.InitialTestAsync(options, project, testRunnerMock.Object))
+            .ReturnsAsync(new InitialTestRun(EmptyTestRunResult(), null));
+        var target = new InitialisationProcess(Mock.Of<IInputFileResolver>(), Mock.Of<IInitialBuildProcess>(),
+            initialTestProcessMock.Object, Mock.Of<ILogger<InitialisationProcess>>());
+
+        var exception = await Should.ThrowAsync<InputException>(() =>
+            target.GetMutationTestInputsAsync(options, new RelatedSourceProjectsInfo(null, [project]), testRunnerMock.Object));
+
+        var runnerName = runner == TestRunnerOption.VsTest ? "VsTest" : "Microsoft Testing Platform";
+        exception.Message.ShouldStartWith($"No test result reported. Make sure your test project contains tests and is compatible with {runnerName}.");
+        exception.Message.ShouldNotContain("not yet supported");
+        exception.Message.ShouldNotContain("filtered out");
+        if (runner == TestRunnerOption.MicrosoftTestPlatform)
+        {
+            exception.Message.ShouldNotContain("VsTest");
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public async Task InitialisationProcess_ShouldNotTreatTestSessionFailuresAsFilteredTests(bool timedOut, bool multipleProjects)
+    {
+        var options = new StrykerOptions { TestCaseFilter = "FullyQualifiedName~MatchingTest" };
+        var project = CreateTestProject("Project.csproj");
+        var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
+        testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).ReturnsAsync(true);
+        var tests = new TestSet();
+        tests.RegisterTest(new TestDescription("id", "MatchingTest", "test.cs"));
+        testRunnerMock.Setup(x => x.GetTests(project)).Returns(tests);
+        var result = timedOut
+            ? TestRunResult.TimedOut([], TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), "timeout", [], TimeSpan.Zero)
+            : TestRunResult.RuntimeError([], TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), "crash", [], TimeSpan.Zero);
+        var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
+        initialTestProcessMock.Setup(x => x.InitialTestAsync(options, project, testRunnerMock.Object))
+            .ReturnsAsync(new InitialTestRun(result, null));
+        var target = new InitialisationProcess(Mock.Of<IInputFileResolver>(), Mock.Of<IInitialBuildProcess>(),
+            initialTestProcessMock.Object, Mock.Of<ILogger<InitialisationProcess>>());
+
+        var projects = multipleProjects ? new[] { project, project } : [project];
+        var exception = await Should.ThrowAsync<InputException>(() =>
+            target.GetMutationTestInputsAsync(options, new RelatedSourceProjectsInfo(null, projects), testRunnerMock.Object));
+
+        exception.Message.ShouldBe("Initial test run could not be completed.");
+        exception.Details.ShouldBe(timedOut ? "timeout" : "crash");
+        exception.Message.ShouldNotContain("matched");
+    }
+
+    [TestMethod]
+    [DataRow(TestRunnerOption.VsTest)]
+    [DataRow(TestRunnerOption.MicrosoftTestPlatform)]
+    public async Task InitialisationProcess_ShouldUseAssemblyDiscoveryInsteadOfSharedTestCount(TestRunnerOption runner)
+    {
+        var options = new StrykerOptions { TestRunner = runner, TestCaseFilter = "FullyQualifiedName~MatchingTest" };
+        var project = CreateTestProject("Filtered.csproj");
+        var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
+        testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).ReturnsAsync(false);
+        var sharedTests = new TestSet();
+        sharedTests.RegisterTest(new TestDescription("other-project-test", "MatchingTest", "other.cs"));
+        testRunnerMock.Setup(x => x.GetTests(project)).Returns(sharedTests);
+        var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
+        var target = new InitialisationProcess(Mock.Of<IInputFileResolver>(), Mock.Of<IInitialBuildProcess>(),
+            initialTestProcessMock.Object, Mock.Of<ILogger<InitialisationProcess>>());
+
+        var exception = await Should.ThrowAsync<InputException>(() =>
+            target.GetMutationTestInputsAsync(options, new RelatedSourceProjectsInfo(null, [project]), testRunnerMock.Object));
+
+        exception.Message.ShouldBe(NoMatchingProjectsMessage);
+        initialTestProcessMock.VerifyNoOtherCalls();
+        testRunnerMock.Verify(x => x.GetTests(project), Times.Never);
+    }
+
+    [TestMethod]
+    [DataRow(TestRunnerOption.VsTest, false, false)]
+    [DataRow(TestRunnerOption.VsTest, false, true)]
+    [DataRow(TestRunnerOption.VsTest, true, false)]
+    [DataRow(TestRunnerOption.VsTest, true, true)]
+    [DataRow(TestRunnerOption.MicrosoftTestPlatform, false, false)]
+    [DataRow(TestRunnerOption.MicrosoftTestPlatform, false, true)]
+    [DataRow(TestRunnerOption.MicrosoftTestPlatform, true, false)]
+    [DataRow(TestRunnerOption.MicrosoftTestPlatform, true, true)]
+    public async Task InitialisationProcess_ShouldDiscoverEveryAssemblyBeforeSkipping(TestRunnerOption runner, bool discoveryFails, bool firstHasTests)
+    {
+        var options = new StrykerOptions { TestRunner = runner, TestCaseFilter = "FullyQualifiedName~MatchingTest" };
+        var project = CreateTestProject("Project.csproj");
+        var otherProject = CreateTestProject("Other.csproj");
+        var firstAssembly = project.GetTestAssemblies().Single();
+        var secondAssembly = otherProject.GetTestAssemblies().Single();
+        project.TestProjectsInfo.TestProjects = project.TestProjectsInfo.TestProjects.Concat(otherProject.TestProjectsInfo.TestProjects).ToList();
+        var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
+        testRunnerMock.Setup(x => x.DiscoverTestsAsync(firstAssembly)).ReturnsAsync(firstHasTests);
+        var discoveryError = new InputException("Discovery failed.", "The test adapter could not load.");
+        if (discoveryFails)
+        {
+            testRunnerMock.Setup(x => x.DiscoverTestsAsync(secondAssembly)).ThrowsAsync(discoveryError);
+        }
+        else
+        {
+            testRunnerMock.Setup(x => x.DiscoverTestsAsync(secondAssembly)).ReturnsAsync(!firstHasTests);
+        }
+        var tests = new TestSet();
+        tests.RegisterTest(new TestDescription("id", "MatchingTest", "test.cs"));
+        testRunnerMock.Setup(x => x.GetTests(project)).Returns(tests);
+        var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
+        initialTestProcessMock.Setup(x => x.InitialTestAsync(options, project, testRunnerMock.Object))
+            .ReturnsAsync(new InitialTestRun(new TestRunResult(true), null));
+        var loggerMock = new Mock<ILogger<InitialisationProcess>>();
+        var target = new InitialisationProcess(Mock.Of<IInputFileResolver>(), Mock.Of<IInitialBuildProcess>(),
+            initialTestProcessMock.Object, loggerMock.Object);
+        var projects = new RelatedSourceProjectsInfo(null, [project]);
+
+        if (discoveryFails)
+        {
+            var exception = await Should.ThrowAsync<InputException>(() =>
+                target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object));
+            exception.ShouldBeSameAs(discoveryError);
+            initialTestProcessMock.Verify(x => x.InitialTestAsync(options, project, testRunnerMock.Object), Times.Never);
+            loggerMock.Invocations.ShouldNotContain(invocation => invocation.Method.Name == nameof(ILogger.Log) &&
+                invocation.Arguments[2].ToString().Contains("Skipping this project"));
+        }
+        else
+        {
+            var inputs = await target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object);
+            inputs.Count.ShouldBe(1);
+        }
+        testRunnerMock.Verify(x => x.DiscoverTestsAsync(firstAssembly), Times.Once);
+        testRunnerMock.Verify(x => x.DiscoverTestsAsync(secondAssembly), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task InitialisationProcess_ShouldPropagateDiscoveryCancellation()
+    {
+        var options = new StrykerOptions { TestCaseFilter = "FullyQualifiedName~MatchingTest" };
+        var project = CreateTestProject("Project.csproj");
+        var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
+        testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).ThrowsAsync(new OperationCanceledException());
+        var target = new InitialisationProcess(Mock.Of<IInputFileResolver>(), Mock.Of<IInitialBuildProcess>(),
+            new Mock<IInitialTestProcess>(MockBehavior.Strict).Object, Mock.Of<ILogger<InitialisationProcess>>());
+
+        await Should.ThrowAsync<OperationCanceledException>(() =>
+            target.GetMutationTestInputsAsync(options, new RelatedSourceProjectsInfo(null, [project]), testRunnerMock.Object));
+    }
+
+    private static SourceProjectInfo CreateTestProject(string projectFilePath)
+    {
+        var fileSystem = new MockFileSystem();
+        return new SourceProjectInfo(TestHelper.SetupProjectAnalyzerResult(projectFilePath: projectFilePath, references: []).Object,
+            new TestProjectsInfo(fileSystem)
+            {
+                TestProjects = [new TestProject(fileSystem, TestHelper.SetupProjectAnalyzerResult(
+                    projectFilePath: $"Tests.{projectFilePath}",
+                    references: ["xunit.core", "xunit.runner.visualstudio", "Microsoft.Testing.Platform"]).Object)]
+            });
+    }
+
+    private static TestRunResult EmptyTestRunResult() =>
+        new([], TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), string.Empty, [], TimeSpan.Zero);
+
     [TestMethod]
     public void InitialisationProcess_ShouldCallNeededResolvers()
     {
@@ -399,4 +681,3 @@ public class InitialisationProcessTests : TestBase
         Should.Throw<InputException>(async () => await target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object)).Message.ShouldContain("failed to deploy or run.");
     }
 }
-
