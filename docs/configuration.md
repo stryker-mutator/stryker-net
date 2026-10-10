@@ -434,6 +434,8 @@ Both, method names and constructor names support wildcards.
 }
 ```
 
+*Note that this only ignores mutation inside the method calls, not the method declaration.*
+
 ### `output` &lt;`string`&gt;
 
 Default: `null`  
