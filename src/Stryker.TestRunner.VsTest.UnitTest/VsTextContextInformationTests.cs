@@ -72,7 +72,7 @@ public class VsTextContextInformationTests : TestBase
             { Path.Combine(filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
             { Path.Combine(filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
             { testProjectPath, new MockFileData(DefaultTestProjectFileContents)},
-            { _testAssemblyPath!, new MockFileData("Bytecode") },
+            { _testAssemblyPath, new MockFileData("Bytecode") },
             { Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"), new MockFileData("Bytecode") },
         });
         content.Add(new CsharpFileLeaf());
@@ -105,9 +105,9 @@ public class VsTextContextInformationTests : TestBase
 
     public List<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> TestCases { get; set; }
 
-    private Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCase(string name) => new(name, _executorUri, _testAssemblyPath) { Id = new Guid() };
+    private Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCase(string name) => new(name, _executorUri, _testAssemblyPath) { Id = Guid.NewGuid() };
 
-    private Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCaseMsTest(string name) => new(name, _msTestExecutorUri, _testAssemblyPath) { Id = new Guid() };
+    private Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCaseMsTest(string name) => new(name, _msTestExecutorUri, _testAssemblyPath) { Id = Guid.NewGuid() };
 
     private VsTestContextInformation BuildVsTextContext(IStrykerOptions options, out Mock<IVsTestConsoleWrapper> mockedVsTestConsole)
     {
@@ -234,7 +234,7 @@ public class VsTextContextInformationTests : TestBase
     [TestMethod]
     public void CleanupProperly()
     {
-        using var runner = BuildVsTextContext(new StrykerOptions(), out var mock);
+        var runner = BuildVsTextContext(new StrykerOptions(), out var mock);
         // make sure we have discovered first and second tests
         foreach (var testAssembly in _testProjectsInfo.GetTestAssemblies())
         {

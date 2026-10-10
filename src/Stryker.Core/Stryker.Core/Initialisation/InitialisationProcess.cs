@@ -39,9 +39,11 @@ public class InitialisationProcess(
     private const string NoMatchingProjectsMessage =
         "No projects have test cases matching `test-case-filter`. Change your configuration and try again.";
 
-    private abstract record ProjectPreparation;
-    private sealed record ReadyProject(MutationTestInput Input) : ProjectPreparation;
-    private sealed record SkippedByTestCaseFilter : ProjectPreparation;
+    private interface IProjectPreparation
+    {
+    }
+    private sealed record ReadyProject(MutationTestInput Input) : IProjectPreparation;
+    private sealed record SkippedByTestCaseFilter : IProjectPreparation;
 
     private readonly IInputFileResolver _inputFileResolver = inputFileResolver ?? throw new ArgumentNullException(nameof(inputFileResolver));
     private readonly IInitialBuildProcess _initialBuildProcess = initialBuildProcess ?? throw new ArgumentNullException(nameof(initialBuildProcess));
@@ -91,7 +93,7 @@ public class InitialisationProcess(
         return inputs;
     }
 
-    private async Task<ProjectPreparation> PrepareProjectAsync(IStrykerOptions options, SourceProjectInfo projectInfo,
+    private async Task<IProjectPreparation> PrepareProjectAsync(IStrykerOptions options, SourceProjectInfo projectInfo,
         ITestRunner testRunner, bool throwIfFails)
     {
         var hasDiscoveredTests = await DiscoverTestsAsync(options, projectInfo, testRunner);
