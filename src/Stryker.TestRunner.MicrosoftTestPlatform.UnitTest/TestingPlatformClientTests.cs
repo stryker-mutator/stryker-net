@@ -223,12 +223,13 @@ public class TestingPlatformClientTests
     }
 
     [TestMethod, Timeout(5000)]
-    public async Task AwaitCallbacksAsync_StopsAtTheCap_WhenAQueuedCallbackNeverCompletes()
+    public async Task AwaitCallbacksAsync_ThrowsAtTheCap_WhenAQueuedCallbackNeverCompletes()
     {
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         var callbacks = new List<Task> { new TaskCompletionSource().Task };
 
-        await TestingPlatformClient.AwaitCallbacksAsync(callbacks, new object(), maxWaitMs: 100);
+        await Should.ThrowAsync<TimeoutException>(
+            () => TestingPlatformClient.AwaitCallbacksAsync(callbacks, new object(), maxWaitMs: 100));
 
         stopwatch.Elapsed.ShouldBeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(90));
         stopwatch.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(3));
@@ -240,7 +241,8 @@ public class TestingPlatformClientTests
         var logger = new CapturingLogger();
         var callbacks = new List<Task> { new TaskCompletionSource().Task, Task.CompletedTask, new TaskCompletionSource().Task };
 
-        await TestingPlatformClient.AwaitCallbacksAsync(callbacks, new object(), maxWaitMs: 50, logger: logger);
+        await Should.ThrowAsync<TimeoutException>(
+            () => TestingPlatformClient.AwaitCallbacksAsync(callbacks, new object(), maxWaitMs: 50, logger: logger));
 
         var warning = logger.Entries.ShouldHaveSingleItem();
         warning.Level.ShouldBe(Microsoft.Extensions.Logging.LogLevel.Warning);

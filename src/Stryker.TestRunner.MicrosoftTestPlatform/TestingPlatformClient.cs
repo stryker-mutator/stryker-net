@@ -107,7 +107,9 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
     /// <param name="callbacks">The tasks returned by the update handlers, guarded by <paramref name="callbackLock"/>.</param>
     /// <param name="callbackLock">The lock protecting <paramref name="callbacks"/>.</param>
     /// <param name="maxWaitMs">Upper bound for the wait, so a callback that never completes cannot hang a run.</param>
-    /// <param name="logger">Receives a warning when the bound is reached, since the results of the pending callbacks are then lost.</param>
+    /// <param name="logger">Receives a warning when the bound is reached, before the failure is raised.</param>
+    /// <exception cref="TimeoutException">Pending callbacks did not complete within <paramref name="maxWaitMs"/>; the run's
+    /// results may be missing updates, so the caller must treat the request as failed instead of trusting a partial verdict.</exception>
     internal static async Task AwaitCallbacksAsync(List<Task> callbacks, object callbackLock, int maxWaitMs = 5_000, ILogger? logger = null)
     {
         Task[] batch;
@@ -127,7 +129,7 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
         {
             logger?.LogWarning("{PendingCount} test update callback(s) did not complete within {MaxWaitMs} ms; their results may be missing from this run",
                 batch.Count(task => !task.IsCompleted), maxWaitMs);
-            return;
+            throw new TimeoutException($"{batch.Count(task => !task.IsCompleted)} test update callback(s) did not complete within {maxWaitMs} ms; the test run result is incomplete.");
         }
 
         // Surfaces a failing callback.

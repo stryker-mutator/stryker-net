@@ -295,13 +295,23 @@ namespace Stryker
                     System.IO.FileAccess.Read,
                     System.IO.FileShare.ReadWrite))
                 {
+                    // A FileStream read may return fewer bytes than requested without reaching the end of
+                    // the file, so loop until the id is complete; a zero-byte read means a truncated file.
                     byte[] bytes = new byte[4];
-                    int read = stream.Read(bytes, 0, bytes.Length);
-                    if (read >= 4)
+                    int offset = 0;
+                    while (offset < bytes.Length)
                     {
-                        mutantId = System.BitConverter.ToInt32(bytes, 0);
-                        return true;
+                        int read = stream.Read(bytes, offset, bytes.Length - offset);
+                        if (read <= 0)
+                        {
+                            return false;
+                        }
+
+                        offset += read;
                     }
+
+                    mutantId = System.BitConverter.ToInt32(bytes, 0);
+                    return true;
                 }
             }
             catch

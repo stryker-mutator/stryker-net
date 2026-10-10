@@ -463,7 +463,7 @@ When the [test runner](#test-runner-string) is `mtp`, the MTP pool reuses test h
 * **`perTest`** (default), **`perTestInIsolation`** and **`all`** have coverage data, so this detection is active in all three: the retest cost only applies to mutants the reused host actually hid.
 * **`off`** has no coverage data, so a survivor cannot be distinguished from an uncovered mutant and the retest cannot be gated. At run start, an **Information** log line states that `off` keeps this limitation.
 * In the three covered modes every freshly started host also runs the tests once with **no mutant active** before its first mutant session, so the host's statics always initialize with the original values. Without that warm-up, a host that starts mid-run would initialize its statics under the active mutant and could silently poison every later mutant on it. `off` skips the warm-up as before.
-* Stryker still guarantees consistent results at different [concurrency](#concurrency-number) values in every mode.
+* In the three covered modes Stryker guarantees consistent results at different [concurrency](#concurrency-number) values: warm-up plus the fresh-host retest close the reused-host gap. In `off`, host assignment can still decide whether a mutation reachable only from a static initializer is active at first initialization, so parity across concurrency values is not guaranteed there.
 * With verbose logging (`-V debug`), each test run logs whether the active mutant was reached, and every fresh-host retest is logged with its reason. At the end of a run, an **Information** summary line reports how many mutants were retested on a fresh host and how many of those were killed.
 
 ### `disable-bail` &lt;`flag`&gt;
