@@ -41,6 +41,7 @@ public class CoverageAnalyser : ICoverageAnalyser
         {
             mutant.CoveringTests = TestIdentifierList.EveryTest();
             mutant.AssessingTests = TestIdentifierList.EveryTest();
+            mutant.HitCount = null;
             mutant.HitLimit = null;
         }
     }
@@ -140,7 +141,7 @@ public class CoverageAnalyser : ICoverageAnalyser
             mutant.AssessingTests = testGuids.Merge(dubiousTests).Excluding(failedTest);
         }
 
-        mutant.HitLimit = CalculateHitLimit(mutant, mutationToResultMap);
+        (mutant.HitCount, mutant.HitLimit) = CalculateHitCountAndLimit(mutant, mutationToResultMap);
 
         // assess status according to actual coverage
         if (mutant.CoveringTests.IsEmpty && mutant.ResultStatus == MutantStatus.Pending)
@@ -164,12 +165,12 @@ public class CoverageAnalyser : ICoverageAnalyser
         }
     }
 
-    private static long? CalculateHitLimit(IMutant mutant,
+    private static (long? HitCount, long? HitLimit) CalculateHitCountAndLimit(IMutant mutant,
         IReadOnlyDictionary<int, List<ICoverageRunResult>> mutationToResultMap)
     {
         if (!mutationToResultMap.TryGetValue(mutant.Id, out var coverageResults))
         {
-            return null;
+            return (null, null);
         }
 
         long totalHits = 0;
@@ -191,13 +192,13 @@ public class CoverageAnalyser : ICoverageAnalyser
 
         if (!hasHitCounts)
         {
-            return null;
+            return (null, null);
         }
 
         var scaledLimit = totalHits > long.MaxValue / HitLimitMultiplier
             ? long.MaxValue
             : totalHits * HitLimitMultiplier;
-        return Math.Max(scaledLimit, MinimumHitLimit);
+        return (totalHits, Math.Max(scaledLimit, MinimumHitLimit));
     }
 
     private static (MutationTestingRequirements, ITestIdentifiers) ParseResultForThisMutant(

@@ -29,6 +29,7 @@ public class CoverageAnalyserTests : TestBase
         AnalyzeCoverage(coverage, mutant, OptimizationModes.CoverageBasedTest, new TestIdentifierList("failed"));
 
         mutant.HitLimit.ShouldBe(1500L);
+            mutant.HitCount.ShouldBe(15L);
         mutant.AssessingTests.GetIdentifiers().ShouldBe(new[] { "assessing-a", "assessing-b" });
     }
 
@@ -40,6 +41,7 @@ public class CoverageAnalyserTests : TestBase
         AnalyzeCoverage([Coverage("test", 1)], mutant, OptimizationModes.CoverageBasedTest, TestIdentifierList.NoTest());
 
         mutant.HitLimit.ShouldBe(1000L);
+        mutant.HitCount.ShouldBe(1L);
     }
 
     [TestMethod]
@@ -54,6 +56,8 @@ public class CoverageAnalyserTests : TestBase
         AnalyzeCoverage(coverage, mutant, OptimizationModes.CoverageBasedTest, TestIdentifierList.NoTest());
 
         mutant.HitLimit.ShouldBeNull();
+        mutant.HitCount.ShouldBeNull();
+        mutant.HitCount.ShouldBeNull();
     }
 
     [TestMethod]
