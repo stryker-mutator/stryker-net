@@ -16,6 +16,7 @@ public interface IMutant : IReadOnlyMutant
 
     string DisplayName { get; }
     bool MustBeTestedInIsolation { get; set; }
+    long? HitLimit { get; set; }
 
     void AnalyzeTestRun(ITestIdentifiers failedTests, ITestIdentifiers resultRanTests, ITestIdentifiers timedOutTests, bool sessionTimedOut, bool sessionRuntimeError);
 }

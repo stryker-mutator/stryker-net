@@ -250,13 +250,16 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         // Observe the file the way a test host does: MutantControl maps it once when the host starts
         // and reads the id from the live view on every IsActive call
         using var hostStream = new FileStream(runner.MutantFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        using var hostMap = MemoryMappedFile.CreateFromFile(hostStream, null, sizeof(int), MemoryMappedFileAccess.Read, HandleInheritability.None, leaveOpen: true);
-        using var hostView = hostMap.CreateViewAccessor(0, sizeof(int), MemoryMappedFileAccess.Read);
+        using var hostMap = MemoryMappedFile.CreateFromFile(hostStream, null, 16, MemoryMappedFileAccess.Read, HandleInheritability.None, leaveOpen: true);
+        using var hostView = hostMap.CreateViewAccessor(0, 16, MemoryMappedFileAccess.Read);
 
         // Publish an active mutant id through the real runner path (writes the mutant-id file, runs
         // no assemblies); the mapped host sees it live
         await runner.RunAllTestsAsync(Array.Empty<string>(), mutantId: 42, mutants: null, update: null);
         hostView.ReadInt32(0).ShouldBe(42);
+        var generation = hostView.ReadInt32(4);
+        generation.ShouldBeGreaterThan(0);
+        hostView.ReadInt64(8).ShouldBe(0);
 
         // Runner ids are pool-local indices, so an independently constructed runner can share this
         // runner's id. Construction writes a -1 reset to the new runner's mutant file and disposal
@@ -267,6 +270,7 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
 
             await otherRunner.RunAllTestsAsync(Array.Empty<string>(), mutantId: 99, mutants: null, update: null);
             hostView.ReadInt32(0).ShouldBe(42, "another runner's writes must not change this runner's active mutant id");
+            hostView.ReadInt32(4).ShouldBe(generation, "another runner's generation must not change this runner's run control data");
         }
 
         hostView.ReadInt32(0).ShouldBe(42, "another runner's disposal must not reset this runner's active mutant id");
@@ -275,6 +279,40 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         // The runner keeps publishing through the same path, so the host's view must still track it
         await runner.RunAllTestsAsync(Array.Empty<string>(), mutantId: 7, mutants: null, update: null);
         hostView.ReadInt32(0).ShouldBe(7, "the mapped view test hosts read from must still track this runner's file");
+        hostView.ReadInt32(4).ShouldBeGreaterThan(generation);
+    }
+
+    [TestMethod]
+    public void ReadCoverageDataWithHitCounts_ShouldParseNewAndLegacyFormats()
+    {
+        using var runner = CreateRunner(514);
+        var coverageFilePath = runner.GetCoverageFilePath("Tests.dll");
+
+        try
+        {
+            File.WriteAllText(coverageFilePath, "1,2;9;1:5,2:7");
+
+            var result = runner.ReadCoverageDataWithHitCounts();
+
+            result.CoveredMutants.ShouldBe(new[] { 1, 2 });
+            result.StaticMutants.ShouldBe(new[] { 9 });
+            result.MutationHitCounts.ShouldBe(new Dictionary<int, int> { [1] = 5, [2] = 7 });
+
+            File.WriteAllText(coverageFilePath, "3;4");
+
+            var legacyResult = runner.ReadCoverageDataWithHitCounts();
+
+            legacyResult.CoveredMutants.ShouldBe(new[] { 3 });
+            legacyResult.StaticMutants.ShouldBe(new[] { 4 });
+            legacyResult.MutationHitCounts.ShouldBeEmpty();
+        }
+        finally
+        {
+            if (File.Exists(coverageFilePath))
+            {
+                File.Delete(coverageFilePath);
+            }
+        }
     }
 
     [TestMethod]

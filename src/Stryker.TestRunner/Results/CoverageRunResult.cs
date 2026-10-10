@@ -7,9 +7,12 @@ namespace Stryker.TestRunner.Results;
 public class CoverageRunResult : ICoverageRunResult
 {
     public Dictionary<int, MutationTestingRequirements> MutationFlags { get; } = new();
+    public Dictionary<int, int> MutationHitCounts { get; } = new();
+    IReadOnlyDictionary<int, int> ICoverageRunResult.MutationHitCounts => MutationHitCounts;
 
     private CoverageRunResult(string testId, CoverageConfidence confidence, IEnumerable<int> coveredMutations,
-        IEnumerable<int> detectedStaticMutations, IEnumerable<int> leakedMutations)
+        IEnumerable<int> detectedStaticMutations, IEnumerable<int> leakedMutations,
+        IReadOnlyDictionary<int, int>? mutationHitCounts)
     {
         TestId = testId;
 
@@ -32,6 +35,14 @@ public class CoverageRunResult : ICoverageRunResult
             MutationFlags[leakedMutation] = requirement;
         }
 
+        if (mutationHitCounts is not null)
+        {
+            foreach (var (mutantId, hitCount) in mutationHitCounts)
+            {
+                MutationHitCounts[mutantId] = hitCount;
+            }
+        }
+
         Confidence = confidence;
     }
 
@@ -40,7 +51,9 @@ public class CoverageRunResult : ICoverageRunResult
         CoverageConfidence confidence,
         IEnumerable<int> coveredMutations,
         IEnumerable<int> detectedStaticMutations,
-        IEnumerable<int> leakedMutations) => new(testId, confidence, coveredMutations, detectedStaticMutations, leakedMutations);
+        IEnumerable<int> leakedMutations,
+        IReadOnlyDictionary<int, int>? mutationHitCounts = null) =>
+        new(testId, confidence, coveredMutations, detectedStaticMutations, leakedMutations, mutationHitCounts);
 
     public MutationTestingRequirements this[int mutation] => MutationFlags.TryGetValue(mutation, out var value) ? value : MutationTestingRequirements.NotCovered;
 
@@ -64,6 +77,13 @@ public class CoverageRunResult : ICoverageRunResult
             {
                 MutationFlags[mutationFlag.Key] = mutationFlag.Value;
             }
+        }
+
+        foreach (var (mutantId, hitCount) in coverage.MutationHitCounts)
+        {
+            MutationHitCounts[mutantId] = MutationHitCounts.TryGetValue(mutantId, out var existingHitCount)
+                ? existingHitCount + hitCount
+                : hitCount;
         }
     }
 }

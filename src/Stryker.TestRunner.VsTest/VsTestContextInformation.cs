@@ -125,7 +125,23 @@ public sealed class VsTestContextInformation : IDisposable
     /// </summary>
     /// <param name="runnerId">Name of the instance to create (used in log files)</param>
     /// <returns>a <see cref="IStrykerTestHostLauncher" /> </returns>
-    public IStrykerTestHostLauncher BuildHostLauncher(string runnerId) => _hostBuilder(runnerId);
+    public IStrykerTestHostLauncher BuildHostLauncher(string runnerId, string hitLimitMarkerPath = null)
+    {
+        var launcher = _hostBuilder(runnerId);
+        if (!string.IsNullOrEmpty(hitLimitMarkerPath))
+        {
+            if (launcher is IStrykerTestHostLauncherWithEnvironmentVariables environmentLauncher)
+            {
+                environmentLauncher.SetEnvironmentVariable("STRYKER_HITLIMIT_FILE", hitLimitMarkerPath);
+            }
+            else
+            {
+                _logger.LogWarning("{RunnerId}: Test host launcher cannot pass the hit-limit marker path; hit-limit enforcement is disabled", runnerId);
+            }
+        }
+
+        return launcher;
+    }
 
     private IVsTestConsoleWrapper BuildActualVsTestWrapper(ConsoleParameters parameters) =>
         new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(),
@@ -286,7 +302,8 @@ public sealed class VsTestContextInformation : IDisposable
 </RunSettings>";
 
     public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestIdentifiers> mutantTestsMap,
-        string helperNameSpace, string frameworkVersion = null, string platform = null)
+        string helperNameSpace, string frameworkVersion = null, string platform = null,
+        IReadOnlyDictionary<int, long> mutantHitLimits = null)
     {
         var settingsForCoverage = string.Empty;
         var needDataCollector = forCoverage || mutantTestsMap is not null;
@@ -294,7 +311,8 @@ public sealed class VsTestContextInformation : IDisposable
             ? CoverageCollector.GetVsTestSettings(
                 forCoverage,
                 mutantTestsMap?.Select(e => (e.Key, e.Value.GetIdentifiers().Select(x => Guid.Parse(x)))),
-                helperNameSpace)
+                helperNameSpace,
+                mutantHitLimits)
             : string.Empty;
         if (_testFramework.HasFlag(TestFrameworks.NUnit))
         {

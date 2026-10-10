@@ -142,10 +142,11 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
             // Aggregate coverage data from all runners
             var allCoveredMutants = new HashSet<int>();
             var allStaticMutants = new HashSet<int>();
+            var allMutationHitCounts = new Dictionary<int, int>();
 
             foreach (var runner in _availableRunners)
             {
-                var (coveredMutants, staticMutants) = runner.ReadCoverageData();
+                var (coveredMutants, staticMutants, mutationHitCounts) = runner.ReadCoverageDataWithHitCounts();
                 foreach (var mutantId in coveredMutants)
                 {
                     allCoveredMutants.Add(mutantId);
@@ -153,6 +154,12 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
                 foreach (var mutantId in staticMutants)
                 {
                     allStaticMutants.Add(mutantId);
+                }
+                foreach (var (mutantId, hitCount) in mutationHitCounts)
+                {
+                    allMutationHitCounts[mutantId] = allMutationHitCounts.TryGetValue(mutantId, out var existingHitCount)
+                        ? existingHitCount + hitCount
+                        : hitCount;
                 }
             }
 
@@ -162,13 +169,19 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
             // For cumulative coverage, we return a single coverage result that applies to all tests
             // Each test is assumed to cover all the mutations that were covered during the full test run
             // Static mutants are marked as such for proper handling during mutation testing
+            var failedTestIds = testResult.FailingTests.GetIdentifiers().ToHashSet();
+            var hitCountTestId = _testDescriptions.Values
+                .Select(testDescription => testDescription.Id)
+                .FirstOrDefault(testId => !failedTestIds.Contains(testId));
+
             return _testDescriptions.Values.Select(testDescription =>
                 CoverageRunResult.Create(
                     testDescription.Id,
                     CoverageConfidence.Normal,
                     allCoveredMutants,
                     allStaticMutants,
-                    []));
+                    [],
+                    testDescription.Id == hitCountTestId ? allMutationHitCounts : null));
         }
         finally
         {

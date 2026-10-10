@@ -29,6 +29,8 @@ public class Mutant : IMutant
 
     public bool MustBeTestedInIsolation { get; set; }
 
+    public long? HitLimit { get; set; }
+
     public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
 
     public void AnalyzeTestRun(ITestIdentifiers failedTests, ITestIdentifiers resultRanTests, ITestIdentifiers timedOutTests, bool sessionTimedOut, bool sessionRuntimeError)

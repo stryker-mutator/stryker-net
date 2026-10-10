@@ -213,6 +213,7 @@ public sealed class VsTestRunnerPool : ITestRunner
         IEnumerable<int> coveredMutants;
         IEnumerable<int> staticMutants;
         IEnumerable<int> leakedMutants;
+        IReadOnlyDictionary<int, int> mutationHitCounts;
 
         if (string.IsNullOrWhiteSpace(propertyPairValue))
         {
@@ -220,6 +221,7 @@ public sealed class VsTestRunnerPool : ITestRunner
             _logger.LogDebug("VsTestRunner: Test {TestCase} does not cover any mutation.", testResult.TestCase.DisplayName);
             coveredMutants = Enumerable.Empty<int>();
             staticMutants = Enumerable.Empty<int>();
+            mutationHitCounts = new Dictionary<int, int>();
         }
         else
         {
@@ -232,6 +234,10 @@ public sealed class VsTestRunnerPool : ITestRunner
                             Context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest)
                 ? Enumerable.Empty<int>()
                 : parts[1].Split(',').Select(int.Parse);
+
+            var (_, hitCountsValue) = testResult.GetProperties()
+                .FirstOrDefault(property => property.Key.Id == CoverageCollector.HitCountsPropertyName);
+            mutationHitCounts = ParseMutationHitCounts(hitCountsValue as string);
         }
 
         // look for suspicious mutants
@@ -252,6 +258,29 @@ public sealed class VsTestRunnerPool : ITestRunner
             leakedMutants = Enumerable.Empty<int>();
         }
 
-        return CoverageRunResult.Create(testCaseId.ToString(), level, coveredMutants, staticMutants, leakedMutants);
+        return CoverageRunResult.Create(testCaseId.ToString(), level, coveredMutants, staticMutants, leakedMutants, mutationHitCounts);
+    }
+
+    private static IReadOnlyDictionary<int, int> ParseMutationHitCounts(string value)
+    {
+        var result = new Dictionary<int, int>();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return result;
+        }
+
+        foreach (var entry in value.Split(',', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var parts = entry.Split(':');
+            if (parts.Length == 2 && int.TryParse(parts[0], out var mutantId) &&
+                int.TryParse(parts[1], out var hitCount) && hitCount >= 0)
+            {
+                result[mutantId] = result.TryGetValue(mutantId, out var existingHitCount)
+                    ? existingHitCount + hitCount
+                    : hitCount;
+            }
+        }
+
+        return result;
     }
 }

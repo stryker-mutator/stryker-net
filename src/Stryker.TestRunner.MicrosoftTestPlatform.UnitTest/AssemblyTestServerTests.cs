@@ -260,6 +260,43 @@ public class AssemblyTestServerTests
     }
 
     [TestMethod]
+    public async Task RunTestsAsync_WhenHitLimitMarkerExists_CancelsRequestAndKeepsPartialResults()
+    {
+        var markerPath = Path.Combine(Path.GetTempPath(), $"stryker-hitlimit-{Guid.NewGuid():N}.txt");
+        var partialResult = new TestNodeUpdate(
+            new TestNode("uid-1", "Test 1", "action", TestNodeStates.Passed),
+            "parent");
+        _client.Setup(client => client.RunTestsAsync(
+                It.IsAny<Func<TestNodeUpdate[], Task>>(),
+                null,
+                It.IsAny<CancellationToken>()))
+            .Returns<Func<TestNodeUpdate[], Task>, TestNode[]?, CancellationToken>(async (callback, _, cancellationToken) =>
+            {
+                await callback([partialResult]);
+                await Task.Delay(Timeout.Infinite, cancellationToken);
+            });
+
+        try
+        {
+            await File.WriteAllTextAsync(markerPath, "1;101;100");
+            using var server = CreateServer();
+            await server.StartAsync();
+
+            var (results, timedOut) = await server.RunTestsAsync(null, timeout: null, markerPath);
+
+            timedOut.ShouldBeTrue();
+            results.ShouldBe([partialResult]);
+        }
+        finally
+        {
+            if (File.Exists(markerPath))
+            {
+                File.Delete(markerPath);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task RunTestsAsync_WhenHostCrashes_ThrowsTestHostCrashed()
     {
         _client.Setup(client => client.RunTestsAsync(
