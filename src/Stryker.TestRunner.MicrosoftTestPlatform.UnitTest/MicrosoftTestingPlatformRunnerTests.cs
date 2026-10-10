@@ -660,6 +660,34 @@ public class MicrosoftTestingPlatformRunnerTests
         filter(new TestNode("test-3", "Test3", "test", "discovered")).ShouldBeFalse();
     }
 
+    [TestMethod]
+    public async Task RunAllTestsAsync_SerializesConcurrentSessionsOnSameRunner()
+    {
+        var concurrent = 0;
+        var maxConcurrent = 0;
+        using var runner = new SlowAssemblySessionRunner(
+            901,
+            () =>
+            {
+                var entered = Interlocked.Increment(ref concurrent);
+                var peak = entered;
+                if (peak > maxConcurrent)
+                {
+                    maxConcurrent = peak;
+                }
+            },
+            () => Interlocked.Decrement(ref concurrent));
+
+        var assembly = Path.Combine(Path.GetTempPath(), $"stryker-mtp-serialize-{Guid.NewGuid():N}.dll");
+        await File.WriteAllBytesAsync(assembly, [0]);
+
+        var first = runner.RunAllTestsAsync([assembly], mutantId: 1, mutants: null, update: null);
+        var second = runner.RunAllTestsAsync([assembly], mutantId: 2, mutants: null, update: null);
+        await Task.WhenAll(first, second);
+
+        maxConcurrent.ShouldBe(1);
+    }
+
     // --- BuildTestRunResult / execution-state attribution tests ---
     //
     // Regression coverage for the MTP false-negative kill attribution bug:
@@ -671,6 +699,19 @@ public class MicrosoftTestingPlatformRunnerTests
 
     private static TestNodeUpdate Update(string uid, string state) =>
         new(new TestNode(uid, uid, "test", state), ParentUid: "root");
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_DuplicateUid_FailureWinsOverPassed()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("t1", TestNodeStates.Passed), Update("t1", TestNodeStates.Failed)],
+            totalDiscoveredTests: 1,
+            duration: TimeSpan.FromMilliseconds(10));
+
+        result.FailingTests.GetIdentifiers().ShouldBe(["t1"]);
+    }
 
     [TestMethod, Timeout(1000)]
     public void BuildTestRunResult_FailedState_IsReportedAsFailing()
@@ -1225,7 +1266,11 @@ public class MicrosoftTestingPlatformRunnerTests
         var mutantFilePath = testableRunner.MutantFilePath;
 
         // Create the mutant file manually to test deletion
-        await File.WriteAllTextAsync(mutantFilePath, "-1");
+        // The runner keeps the control file open for writes, so the file must be opened with sharing here.
+        await using (new FileStream(mutantFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+        {
+        }
+
         File.Exists(mutantFilePath).ShouldBeTrue("Mutant file should exist before disposal");
 
         // Act

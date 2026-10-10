@@ -135,6 +135,201 @@ public class TestingPlatformClientTests
             Times.Once);
     }
 
+    [TestMethod, Timeout(5000)]
+    public async Task DiscoverTestsAsync_WaitsForASlowAsyncCallback_BeforeReturning()
+    {
+        _mtpClient.Setup(client => client.DiscoverTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => RaiseUpdates(CreateUpdate(executionState: TestNodeStates.Discovered)))
+            .Returns(Task.CompletedTask);
+
+        var callbackFinished = false;
+        using var client = CreateClient();
+
+        await client.DiscoverTestsAsync(async _ =>
+        {
+            await Task.Delay(50);
+            callbackFinished = true;
+        });
+
+        callbackFinished.ShouldBeTrue();
+    }
+    [TestMethod]
+    public async Task RunTestsAsync_MapsErrorDetailsOfAFailedTest()
+    {
+        _mtpClient.Setup(client => client.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => RaiseUpdates(CreateUpdate(
+                executionState: TestNodeStates.Error,
+                errorMessage: "System.TypeInitializationException : boom",
+                errorStackTrace: "   at X..cctor()")))
+            .ReturnsAsync(new MtpRunResult([]));
+
+        TestNodeUpdate[]? updates = null;
+        using var client = CreateClient();
+        await client.RunTestsAsync(received =>
+        {
+            updates = received;
+            return Task.CompletedTask;
+        });
+
+        updates.ShouldNotBeNull();
+        updates[0].Node.ErrorMessage.ShouldBe("System.TypeInitializationException : boom");
+        updates[0].Node.ErrorStackTrace.ShouldBe("   at X..cctor()");
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_LeavesErrorDetailsNull_WhenTheServerSendsNone()
+    {
+        _mtpClient.Setup(client => client.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => RaiseUpdates(CreateUpdate(executionState: TestNodeStates.Passed)))
+            .ReturnsAsync(new MtpRunResult([]));
+
+        TestNodeUpdate[]? updates = null;
+        using var client = CreateClient();
+        await client.RunTestsAsync(received =>
+        {
+            updates = received;
+            return Task.CompletedTask;
+        });
+
+        updates.ShouldNotBeNull();
+        updates[0].Node.ErrorMessage.ShouldBeNull();
+        updates[0].Node.ErrorStackTrace.ShouldBeNull();
+    }
+
+    [TestMethod, Timeout(2000)]
+    public async Task RunTestsAsync_ReturnsPromptly_WhenNoUpdateIsReported()
+    {
+        _mtpClient.Setup(client => client.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MtpRunResult([]));
+
+        using var client = CreateClient();
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        await client.RunTestsAsync(_ => Task.CompletedTask);
+
+        stopwatch.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(1));
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_PropagatesAFailingCallback()
+    {
+        _mtpClient.Setup(client => client.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => RaiseUpdates(CreateUpdate()))
+            .ReturnsAsync(new MtpRunResult([]));
+
+        using var client = CreateClient();
+
+        await Should.ThrowAsync<InvalidOperationException>(
+            () => client.RunTestsAsync(_ => Task.FromException(new InvalidOperationException("callback failed"))));
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task AwaitCallbacksAsync_StopsAtTheCap_WhenAQueuedCallbackNeverCompletes()
+    {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var callbacks = new List<Task> { new TaskCompletionSource().Task };
+
+        await TestingPlatformClient.AwaitCallbacksAsync(callbacks, new object(), maxWaitMs: 100);
+
+        stopwatch.Elapsed.ShouldBeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(90));
+        stopwatch.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(3));
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task AwaitCallbacksAsync_WarnsWithThePendingCount_WhenTheCapIsReached()
+    {
+        var logger = new CapturingLogger();
+        var callbacks = new List<Task> { new TaskCompletionSource().Task, Task.CompletedTask, new TaskCompletionSource().Task };
+
+        await TestingPlatformClient.AwaitCallbacksAsync(callbacks, new object(), maxWaitMs: 50, logger: logger);
+
+        var warning = logger.Entries.ShouldHaveSingleItem();
+        warning.Level.ShouldBe(Microsoft.Extensions.Logging.LogLevel.Warning);
+        warning.Message.ShouldContain("2 test update callback(s)");
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task AwaitCallbacksAsync_DoesNotWarn_WhenEveryCallbackCompletes()
+    {
+        var logger = new CapturingLogger();
+
+        await TestingPlatformClient.AwaitCallbacksAsync([Task.CompletedTask], new object(), logger: logger);
+
+        logger.Entries.ShouldBeEmpty();
+    }
+    [TestMethod, Timeout(5000)]
+    public async Task AwaitCallbacksAsync_Throws_WhenAQueuedCallbackFails()
+    {
+        var callbacks = new List<Task> { Task.FromException(new InvalidOperationException("callback failed")) };
+
+        await Should.ThrowAsync<InvalidOperationException>(
+            () => TestingPlatformClient.AwaitCallbacksAsync(callbacks, new object()));
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task AwaitCallbacksAsync_Throws_WhenOneOfSeveralCallbacksFails()
+    {
+        var callbacks = new List<Task>
+        {
+            Task.Run(async () => await Task.Delay(30)),
+            Task.FromException(new InvalidOperationException("callback failed")),
+        };
+
+        await Should.ThrowAsync<InvalidOperationException>(
+            () => TestingPlatformClient.AwaitCallbacksAsync(callbacks, new object()));
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task AwaitCallbacksAsync_AwaitsEveryQueuedCallback()
+    {
+        var completed = 0;
+        var callbacks = new List<Task>
+        {
+            Task.Run(async () => { await Task.Delay(30); Interlocked.Increment(ref completed); }),
+            Task.Run(async () => { await Task.Delay(60); Interlocked.Increment(ref completed); }),
+        };
+
+        await TestingPlatformClient.AwaitCallbacksAsync(callbacks, new object());
+
+        completed.ShouldBe(2);
+    }
+
+    [TestMethod]
+    public void AwaitCallbacksAsync_CompletesSynchronously_WhenNothingWasQueued()
+    {
+        var wait = TestingPlatformClient.AwaitCallbacksAsync([], new object());
+
+        wait.IsCompletedSuccessfully.ShouldBeTrue("no settle delay is needed once the request has completed");
+    }
+
+    [TestMethod]
+    public async Task AwaitCallbacksAsync_ClearsTheQueue_SoACallbackIsAwaitedOnce()
+    {
+        var callbacks = new List<Task> { Task.CompletedTask };
+
+        await TestingPlatformClient.AwaitCallbacksAsync(callbacks, new object());
+
+        callbacks.ShouldBeEmpty();
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task RunTestsAsync_WaitsForASlowAsyncCallback_BeforeReturning()
+    {
+        _mtpClient.Setup(client => client.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => RaiseUpdates(CreateUpdate(executionState: TestNodeStates.Failed)))
+            .ReturnsAsync(new MtpRunResult([]));
+
+        var callbackFinished = false;
+        using var client = CreateClient();
+
+        await client.RunTestsAsync(async _ =>
+        {
+            await Task.Delay(50);
+            callbackFinished = true;
+        });
+
+        callbackFinished.ShouldBeTrue();
+    }
+
     [TestMethod]
     public async Task RunTestsAsync_SerializesRequests()
     {
@@ -255,7 +450,9 @@ public class TestingPlatformClientTests
         int? lineStart = null,
         int? lineEnd = null,
         string? typeName = null,
-        string? methodName = null)
+        string? methodName = null,
+        string? errorMessage = null,
+        string? errorStackTrace = null)
     {
         var node = new Dictionary<string, object?>
         {
@@ -270,6 +467,8 @@ public class TestingPlatformClientTests
         AddIfNotNull(node, "location.line-end", lineEnd);
         AddIfNotNull(node, "location.type", typeName);
         AddIfNotNull(node, "location.method", methodName);
+        AddIfNotNull(node, "error.message", errorMessage);
+        AddIfNotNull(node, "error.stacktrace", errorStackTrace);
 
         return new MtpTestNodeUpdate(node, "parent");
     }

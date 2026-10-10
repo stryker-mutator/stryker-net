@@ -70,12 +70,17 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
         CancellationToken cancellationToken)
     {
         await _requestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        var callbackLock = new object();
         var callbacks = new List<Task>();
         void OnTestNodesUpdated(object? _, MtpTestNodeUpdateEventArgs eventArgs)
         {
             if (eventArgs.Changes.Count > 0)
             {
-                callbacks.Add(action(eventArgs.Changes.Select(ToTestNodeUpdate).ToArray()));
+                var callback = action(eventArgs.Changes.Select(ToTestNodeUpdate).ToArray());
+                lock (callbackLock)
+                {
+                    callbacks.Add(callback);
+                }
             }
         }
 
@@ -83,7 +88,7 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
         try
         {
             await request(cancellationToken).ConfigureAwait(false);
-            await Task.WhenAll(callbacks).ConfigureAwait(false);
+            await AwaitCallbacksAsync(callbacks, callbackLock, logger: _logger).ConfigureAwait(false);
         }
         finally
         {
@@ -92,6 +97,42 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
         }
     }
 
+    /// <summary>
+    /// Waits for the callbacks the request raised. The MTP client invokes every
+    /// <see cref="IMtpServerClient.TestNodesUpdated"/> handler of a request before that request completes
+    /// (it reads the server's messages in order and finishes a request only after the terminal response),
+    /// so the list is complete by now and no settle delay is needed: only the asynchronous work the handlers
+    /// started has to finish.
+    /// </summary>
+    /// <param name="callbacks">The tasks returned by the update handlers, guarded by <paramref name="callbackLock"/>.</param>
+    /// <param name="callbackLock">The lock protecting <paramref name="callbacks"/>.</param>
+    /// <param name="maxWaitMs">Upper bound for the wait, so a callback that never completes cannot hang a run.</param>
+    /// <param name="logger">Receives a warning when the bound is reached, since the results of the pending callbacks are then lost.</param>
+    internal static async Task AwaitCallbacksAsync(List<Task> callbacks, object callbackLock, int maxWaitMs = 5_000, ILogger? logger = null)
+    {
+        Task[] batch;
+        lock (callbackLock)
+        {
+            batch = callbacks.ToArray();
+            callbacks.Clear();
+        }
+
+        if (batch.Length == 0)
+        {
+            return;
+        }
+
+        var batchCompletion = Task.WhenAll(batch);
+        if (await Task.WhenAny(batchCompletion, Task.Delay(maxWaitMs)).ConfigureAwait(false) != batchCompletion)
+        {
+            logger?.LogWarning("{PendingCount} test update callback(s) did not complete within {MaxWaitMs} ms; their results may be missing from this run",
+                batch.Count(task => !task.IsCompleted), maxWaitMs);
+            return;
+        }
+
+        // Surfaces a failing callback.
+        await batchCompletion.ConfigureAwait(false);
+    }
     private async Task ExecuteRequestAsync(Func<CancellationToken, Task> request, CancellationToken cancellationToken)
     {
         await _requestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -128,7 +169,9 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
             update.LineStart,
             update.LineEnd,
             GetString(update.Node, LocationType),
-            GetString(update.Node, LocationMethod));
+            GetString(update.Node, LocationMethod),
+            update.ErrorMessage,
+            update.ErrorStackTrace);
 
         return new TestNodeUpdate(node, update.ParentUid ?? string.Empty);
     }

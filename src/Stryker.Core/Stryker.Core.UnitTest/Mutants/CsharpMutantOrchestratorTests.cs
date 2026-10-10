@@ -111,6 +111,20 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     }
 
     [TestMethod]
+    [DataRow(OptimizationModes.None, false)]
+    [DataRow(OptimizationModes.SkipUncoveredMutants, false)]
+    [DataRow(OptimizationModes.CoverageBasedTest, true)]
+    [DataRow(OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest, true)]
+    [DataRow(OptimizationModes.CaptureCoveragePerTest, false)]
+    public void ShouldTrackStaticUsage_OnlyWhenCoverageBasedTestIsEnabled(OptimizationModes mode, bool expected)
+    {
+        var orchestrator = new CsharpMutantOrchestrator(new MutantPlacer(Injector),
+            options: new StrykerOptions { OptimizationMode = mode });
+
+        orchestrator.MustInjectCoverageLogic.ShouldBe(expected);
+    }
+
+    [TestMethod]
     public void ShouldMutateBlockStatements()
     {
         var options = new StrykerOptions

@@ -367,6 +367,82 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
     }
 
     [TestMethod]
+    [DataRow("1,2,3;10,20", new[] { 1, 2, 3 }, new[] { 10, 20 })]
+    [DataRow("1,2;", new[] { 1, 2 }, new int[0])]
+    [DataRow("7", new[] { 7 }, new int[0])]
+    [DataRow(";5,6", new int[0], new[] { 5, 6 })]
+    public void BuildIsolatedCoverageResult_ShouldKeepStaticMutants_AndTrustTheResult(
+        string fileContent, int[] expectedCovered, int[] expectedStatic)
+    {
+        using var runner = CreateRunner(507);
+        var coverageFilePath = runner.GetCoverageFilePath("Tests.dll");
+
+        try
+        {
+            File.WriteAllText(coverageFilePath, fileContent);
+
+            var result = runner.BuildIsolatedCoverageResult("test-1", coverageFilePath, "Tests.dll");
+
+            result.TestId.ShouldBe("test-1");
+            result.Confidence.ShouldBe(CoverageConfidence.Exact);
+            result.MutationsCovered.OrderBy(id => id).ShouldBe(expectedCovered.Concat(expectedStatic).OrderBy(id => id));
+            foreach (var id in expectedStatic)
+            {
+                result[id].ShouldBe(MutationTestingRequirements.Static);
+            }
+
+            foreach (var id in expectedCovered)
+            {
+                result[id].ShouldBe(MutationTestingRequirements.None);
+            }
+        }
+        finally
+        {
+            if (File.Exists(coverageFilePath))
+            {
+                File.Delete(coverageFilePath);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void BuildIsolatedCoverageResult_ShouldLogHowManyMutantsWereStatic()
+    {
+        var logger = new CapturingLogger();
+        using var runner = new MicrosoftTestingPlatformRunner(509, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, logger);
+        var coverageFilePath = runner.GetCoverageFilePath("Tests.dll");
+
+        try
+        {
+            File.WriteAllText(coverageFilePath, "1,2,3;10,20");
+
+            runner.BuildIsolatedCoverageResult("test-3", coverageFilePath, "Tests.dll");
+
+            logger.Messages.ShouldContain(message =>
+                message.Contains("test-3") && message.Contains("3 mutant(s) covered") && message.Contains("2 of them in a static context"));
+        }
+        finally
+        {
+            if (File.Exists(coverageFilePath))
+            {
+                File.Delete(coverageFilePath);
+            }
+        }
+    }
+    [TestMethod]
+    public void BuildIsolatedCoverageResult_ShouldReportNothing_WhenNoCoverageFileWasWritten()
+    {
+        using var runner = CreateRunner(508);
+        var coverageFilePath = runner.GetCoverageFilePath("Tests.dll");
+        File.Delete(coverageFilePath);
+
+        var result = runner.BuildIsolatedCoverageResult("test-2", coverageFilePath, "Tests.dll");
+
+        result.MutationsCovered.ShouldBeEmpty();
+        result.Confidence.ShouldBe(CoverageConfidence.Exact);
+    }
+
+    [TestMethod]
     public void ReadCoverageData_ShouldParseCoveredAndStaticMutants()
     {
         using var runner = CreateRunner(504);

@@ -213,6 +213,8 @@ Available options:
 
 The MTP test runner is a modern alternative that provides better performance in certain scenarios and supports newer testing frameworks like TUnit. However, it's still in preview and may have limitations compared to the VsTest runner.
 
+With `test-runner` set to `mtp`, see [coverage analysis notes for MTP](#microsoft-test-platform-mtp) when choosing `off` or `all` instead of `perTest`.
+
 ### `mutation-level` &lt;`level`&gt;
 
 Default: `Standard`  
@@ -453,6 +455,14 @@ Stryker again without coverage analysis and report an issue if this mutant is ki
 are run against all tests as Stryker cannot reliably capture coverage for those. This is a consequence of static
 constructors/initializers being called only once during tests. This heuristic is not needed when using
 `perTestInIsolation` due to tests being run one by one.
+
+#### Microsoft Test Platform (`mtp`)
+
+When the [test runner](#test-runner-string) is `mtp`, `coverage-analysis` values `off` and `all` do **not** enable coverage-based static tracking or test-host warm-up. The MTP pool reuses test hosts across mutants in those modes. If a type's static constructor or static field initializer already ran while another mutant was active, mutants that are reached **only** through that static initialization may be reported as **Survived** even when `perTest` would kill them.
+
+* Prefer **`perTest`** (default) or **`perTestInIsolation`** on MTP when static-only mutants must be evaluated reliably.
+* **`off`** and **`all`**: Stryker still guarantees consistent results at different [concurrency](#concurrency-number) values; kill counts may be **lower** than `perTest` for the same project. This is a known limitation, not a poisoned-host defect (see [stryker-net#3832](https://github.com/stryker-mutator/stryker-net/issues/3832) for host recycling when static mutants *are* tracked).
+* At run start, an **Information** log line states that `off` / `all` do not track static initializer usage. With verbose logging (`-V debug`), each test run logs the active mutant id and `runs already executed on this host` to diagnose reuse.
 
 ### `disable-bail` &lt;`flag`&gt;
 

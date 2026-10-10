@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
@@ -46,6 +47,18 @@ internal sealed class AssemblyTestServer : IDisposable
     /// process is gone; this flag detects that so the server can be recreated instead of reused.
     /// </summary>
     public bool IsAlive => _isInitialized && !_disposed && _process is { HasExited: false };
+
+    /// <summary>
+    /// True once the host has run the tests with no mutant active, so every static initializer it
+    /// caches holds the original value instead of whatever mutant happened to run first.
+    /// </summary>
+    public bool IsWarmedUp { get; set; }
+
+    /// <summary>
+    /// Number of test runs requested on the current host process. A host with a positive count has already
+    /// initialized static state under whichever mutant was active during an earlier run.
+    /// </summary>
+    public int RunCount { get; private set; }
 
     public async Task<bool> StartAsync(CancellationToken cancellationToken = default)
     {
@@ -132,6 +145,33 @@ internal sealed class AssemblyTestServer : IDisposable
     }
 
     public async Task<(List<TestNodeUpdate> Results, bool TimedOut)> RunTestsAsync(TestNode[]? testsToRun, TimeSpan? timeout)
+    {
+        RunCount++;
+        if (!_logger.IsEnabled(LogLevel.Debug))
+        {
+            return await RunTestsCoreAsync(testsToRun, timeout).ConfigureAwait(false);
+        }
+
+        // A run that starts and never finishes is the signature of a hung host, so both ends are logged.
+        _logger.LogDebug("{RunnerId}: Test run started on {Assembly} ({TestCount} test(s), timeout {Timeout})",
+            _runnerId, _assembly, testsToRun?.Length.ToString() ?? "all", timeout?.ToString() ?? "none");
+        var startTimestamp = Stopwatch.GetTimestamp();
+        try
+        {
+            var result = await RunTestsCoreAsync(testsToRun, timeout).ConfigureAwait(false);
+            _logger.LogDebug("{RunnerId}: Test run finished on {Assembly} in {ElapsedMs:F0} ms ({UpdateCount} update(s), timed out: {TimedOut})",
+                _runnerId, _assembly, Stopwatch.GetElapsedTime(startTimestamp).TotalMilliseconds, result.Results.Count, result.TimedOut);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug("{RunnerId}: Test run failed on {Assembly} after {ElapsedMs:F0} ms: {Reason}",
+                _runnerId, _assembly, Stopwatch.GetElapsedTime(startTimestamp).TotalMilliseconds, ex.GetType().Name);
+            throw;
+        }
+    }
+
+    private async Task<(List<TestNodeUpdate> Results, bool TimedOut)> RunTestsCoreAsync(TestNode[]? testsToRun, TimeSpan? timeout)
     {
         if (!_isInitialized || _client is null)
         {
@@ -244,6 +284,9 @@ internal sealed class AssemblyTestServer : IDisposable
         }
         _process = null;
         _isInitialized = false;
+        // The next process starts cold, so it has to be warmed up again.
+        IsWarmedUp = false;
+        RunCount = 0;
     }
 
     public void Dispose()

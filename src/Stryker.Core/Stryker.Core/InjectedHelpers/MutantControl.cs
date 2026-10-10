@@ -144,7 +144,9 @@ namespace Stryker
             }
 
             // Fast path: read the active mutant id from a memory-mapped view of the file (see the field
-            // comments above). This is a plain memory read - no filesystem stat or content read per call.
+            // comments above). This is a plain memory read - no filesystem or mutex access per call, which
+            // matters because IsActive runs at every mutation point. The MTP runner keeps the control file
+            // open and rewrites it in place, so the view always reflects the latest id (stryker-mutator/stryker-net#3832).
             if (!_mutantMmfFailed)
             {
                 if (!_mutantMmfReady)
@@ -197,23 +199,42 @@ namespace Stryker
                     System.IO.FileAccess.Read,
                     System.IO.FileShare.ReadWrite);
 
-                System.IO.MemoryMappedFiles.MemoryMappedFile mmf = System.IO.MemoryMappedFiles.MemoryMappedFile.CreateFromFile(
-                    stream,
-                    null,
-                    4,
-                    System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read,
-                    System.IO.HandleInheritability.None,
-                    false);
+                try
+                {
+                    System.IO.MemoryMappedFiles.MemoryMappedFile mmf = System.IO.MemoryMappedFiles.MemoryMappedFile.CreateFromFile(
+                        stream,
+                        null,
+                        4,
+                        System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read,
+                        System.IO.HandleInheritability.None,
+                        false);
 
-                System.IO.MemoryMappedFiles.MemoryMappedViewAccessor accessor = mmf.CreateViewAccessor(0, 4, System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read);
+                    try
+                    {
+                        System.IO.MemoryMappedFiles.MemoryMappedViewAccessor accessor = mmf.CreateViewAccessor(0, 4, System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read);
 
-                _mutantMmf = mmf;
-                _mutantAccessor = accessor;
-                _mutantMmfReady = true;
+                        _mutantMmf = mmf;
+                        _mutantAccessor = accessor;
+                        _mutantMmfReady = true;
+                    }
+                    catch
+                    {
+                        mmf.Dispose();
+                        throw;
+                    }
+                }
+                catch
+                {
+                    // Disposing twice is harmless; this covers a failure before the mapping took ownership of the stream.
+                    stream.Dispose();
+                    throw;
+                }
             }
             catch
             {
                 // Memory mapping is unavailable in this environment; the direct-read fallback keeps the active mutant correct (just slower).
+                // Every handle opened above was released before the exception reached this point, so a control file
+                // that could not be mapped is not left locked for the runner.
                 _mutantMmfFailed = true;
             }
         }
@@ -227,19 +248,54 @@ namespace Stryker
                 return false;
             }
 
+            // The runner only rewrites the id between test sessions, so two identical consecutive reads
+            // are enough to rule out a read that overlapped a write; no cross-process lock is needed.
+            for (int attempt = 0; attempt < 3; attempt++)
+            {
+                int firstId;
+                int confirmId;
+                if (!TryReadMutantIdBytes(out firstId) || !TryReadMutantIdBytes(out confirmId))
+                {
+                    return false;
+                }
+
+                if (firstId == confirmId)
+                {
+                    mutantId = firstId;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool TryReadMutantIdBytes(out int mutantId)
+        {
+            mutantId = -1;
+
             try
             {
-                byte[] bytes = System.IO.File.ReadAllBytes(_cachedMutantFilePath);
-                if (bytes.Length >= 4)
+                // The MTP runner keeps the control file open while switching mutants; reads must share it.
+                using (System.IO.FileStream stream = new System.IO.FileStream(
+                    _cachedMutantFilePath,
+                    System.IO.FileMode.Open,
+                    System.IO.FileAccess.Read,
+                    System.IO.FileShare.ReadWrite))
                 {
-                    mutantId = System.BitConverter.ToInt32(bytes, 0);
-                    return true;
+                    byte[] bytes = new byte[4];
+                    int read = stream.Read(bytes, 0, bytes.Length);
+                    if (read >= 4)
+                    {
+                        mutantId = System.BitConverter.ToInt32(bytes, 0);
+                        return true;
+                    }
                 }
             }
             catch
             {
                 // Ignore file read errors
             }
+
             return false;
         }
 
@@ -466,21 +522,17 @@ namespace Stryker
                 return false;
             }
 
-            // Check for file-based mutant control (used by MTP runner for process reuse)
-            // Cache check: only call TryReadMutantFromFile if we might be using file-based control
-            if (!_mutantFilePathCached || !string.IsNullOrEmpty(_cachedMutantFilePath))
+            // File-based mutant control (MTP runner reuses the test host and updates STRYKER_MUTANT_FILE).
+            if (!_mutantFilePathCached)
+            {
+                _cachedMutantFilePath = System.Environment.GetEnvironmentVariable("STRYKER_MUTANT_FILE") ?? string.Empty;
+                _mutantFilePathCached = true;
+            }
+
+            if (!string.IsNullOrEmpty(_cachedMutantFilePath))
             {
                 int fileMutantId;
-                if (TryReadMutantFromFile(out fileMutantId))
-                {
-                    ActiveMutant = fileMutantId;
-                }
-
-                // If we cached the file path and it's set, always use file-based control
-                if (_mutantFilePathCached && !string.IsNullOrEmpty(_cachedMutantFilePath))
-                {
-                    return id == ActiveMutant;
-                }
+                return TryReadMutantFromFile(out fileMutantId) && id == fileMutantId;
             }
 
             // lazy load the active mutant id from the environment variable (used by VSTest runner)

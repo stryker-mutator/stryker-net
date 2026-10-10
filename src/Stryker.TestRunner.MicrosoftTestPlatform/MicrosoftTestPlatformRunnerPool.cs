@@ -40,7 +40,29 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         _runnerFactory = runnerFactory ?? new DefaultRunnerFactory();
         _logger.LogWarning("The Microsoft Test Platform testrunner is currently in preview. Results should be verified since this feature is still being tested.");
 
+        if (!options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+        {
+            _logger.LogInformation(
+                "Coverage analysis {Mode} does not track static initializer usage and does not warm test hosts up; a mutant reached only through a static initializer can survive.",
+                DescribeCoverageAnalysisMode(options.OptimizationMode));
+        }
+
         Initialize();
+    }
+
+    internal static string DescribeCoverageAnalysisMode(OptimizationModes mode)
+    {
+        if (mode == OptimizationModes.None)
+        {
+            return "off";
+        }
+
+        if (mode.HasFlag(OptimizationModes.SkipUncoveredMutants))
+        {
+            return "all";
+        }
+
+        return mode.ToString();
     }
 
     public void ResetTestProcesses()
