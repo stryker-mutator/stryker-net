@@ -67,6 +67,35 @@ public class MicrosoftTestingPlatformRunnerWarmUpTests
     }
 
     [TestMethod]
+    public async Task WarmUpServerAsync_DiscardsTheHost_WhenTheWarmUpReportsATypeInitializerFailure()
+    {
+        using var runner = new WarmUpRunner(timedOut: false, warmUpUpdates: [Update(TestNodeStates.Error, "System.TypeInitializationException : boom")]) { ActiveMutantId = 42 };
+        using var server = CreateServer();
+
+        var ready = await runner.WarmUpServerAsync(server, Assembly, null);
+
+        // The host initialized a poisoned type with no mutant active: the first mutant would be
+        // falsely killed on it, so it must not be marked warmed.
+        ready.ShouldBeFalse();
+        server.IsWarmedUp.ShouldBeFalse();
+        ReadMutantId(runner).ShouldBe(42);
+    }
+
+    [TestMethod]
+    public async Task WarmUpServerAsync_MarksTheHostWarm_WhenTheWarmUpReportsOnlyPlainFailures()
+    {
+        // Continuing after initial test failures is a supported choice; only a failed type
+        // initializer poisons the host.
+        using var runner = new WarmUpRunner(timedOut: false, warmUpUpdates: [Update(TestNodeStates.Failed, "Assert.Equal() Failure", "at Tests.Foo()")]) { ActiveMutantId = 42 };
+        using var server = CreateServer();
+
+        var ready = await runner.WarmUpServerAsync(server, Assembly, null);
+
+        ready.ShouldBeTrue();
+        server.IsWarmedUp.ShouldBeTrue();
+    }
+
+    [TestMethod]
     public async Task WarmUpServerAsync_RestoresTheMutantId_WhenTheWarmUpThrows()
     {
         using var runner = new WarmUpRunner(timedOut: false, failure: new InvalidOperationException("host crashed")) { ActiveMutantId = 13 };
@@ -272,6 +301,21 @@ public class MicrosoftTestingPlatformRunnerWarmUpTests
         runner.WarmUpEnabled.ShouldBeTrue();
     }
 
+    [TestMethod, Timeout(30000)]
+    public async Task RunAssemblyTestsInternalAsync_RetriesTheWarmUp_ThenReturnsTheCrashSentinel_WhenTheWarmUpNeverSucceeds()
+    {
+        // The warm-up gate must give up after two attempts and surface the crash sentinel, so the
+        // affected mutants are classified RuntimeError instead of being judged on an unwarmed host.
+        var testAssembly = typeof(MicrosoftTestingPlatformRunnerWarmUpTests).Assembly.Location;
+        using var runner = new WarmUpRunner(timedOut: true) { ActiveMutantId = 7 };
+
+        var (result, timedOut) = await runner.RunAssemblyTestsInternalAsync(testAssembly, testUidFilter: null);
+
+        timedOut.ShouldBeFalse();
+        runner.WarmUpCalls.ShouldBe(2, "both attempts must have tried to warm the host up");
+        result.FailingTests.IsEveryTest.ShouldBeTrue("the run must return the crash sentinel, not a judged result");
+    }
+
     private static IMutant StaticMutant(bool isStatic)
     {
         var mutant = new Mock<IMutant>();
@@ -348,12 +392,14 @@ public class MicrosoftTestingPlatformRunnerWarmUpTests
     {
         private readonly bool _timedOut;
         private readonly Exception? _failure;
+        private readonly TestNodeUpdate[]? _warmUpUpdates;
 
-        public WarmUpRunner(bool timedOut, Exception? failure = null, IStrykerOptions? options = null)
+        public WarmUpRunner(bool timedOut, Exception? failure = null, IStrykerOptions? options = null, TestNodeUpdate[]? warmUpUpdates = null)
             : base(0, new Dictionary<string, List<TestNode>>(), new Dictionary<string, MtpTestDescription>(), new TestSet(), new object(), NullLogger.Instance, options)
         {
             _timedOut = timedOut;
             _failure = failure;
+            _warmUpUpdates = warmUpUpdates;
         }
 
         public int WarmUpCalls { get; private set; }
@@ -364,14 +410,20 @@ public class MicrosoftTestingPlatformRunnerWarmUpTests
 
         public TimeSpan? TimeoutSeen { get; private set; }
 
-        internal override Task<bool> RunWarmUpTestsAsync(AssemblyTestServer server, TestNode[]? tests, TimeSpan? timeout)
+        internal override Task<(List<TestNodeUpdate> Updates, bool TimedOut)> RunWarmUpTestsAsync(AssemblyTestServer server, TestNode[]? tests, TimeSpan? timeout)
         {
             WarmUpCalls++;
             TimeoutSeen = timeout;
             IdSeenDuringWarmUp = ReadMutantId(this);
             TestsSeen = tests?.Select(test => test.Uid).ToArray() ?? [];
 
-            return _failure is null ? Task.FromResult(_timedOut) : Task.FromException<bool>(_failure);
+            if (_failure is not null)
+            {
+                return Task.FromException<(List<TestNodeUpdate> Updates, bool TimedOut)>(_failure);
+            }
+
+            List<TestNodeUpdate> updates = _warmUpUpdates is null ? [] : [.. _warmUpUpdates];
+            return Task.FromResult((updates, _timedOut));
         }
     }
 

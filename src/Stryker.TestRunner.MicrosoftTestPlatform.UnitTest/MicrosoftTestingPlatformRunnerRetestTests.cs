@@ -184,6 +184,128 @@ public class MicrosoftTestingPlatformRunnerRetestTests
     }
 
     [TestMethod]
+    public void ResetReachedFile_ReportsSuccess_WhenTheFileClears()
+    {
+        using var runner = new MicrosoftTestingPlatformRunner(0, [], [], new TestSet(), new object(), NullLogger.Instance);
+
+        runner.ResetReachedFile().ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void ResetReachedFile_ReportsFailure_WhenTheFileCannotBeReopened()
+    {
+        using var runner = new MicrosoftTestingPlatformRunner(0, [], [], new TestSet(), new object(), NullLogger.Instance);
+
+        // Drop the cached stream so the reset has to reopen the file, then hold it exclusively
+        // so that reopen fails with a sharing violation.
+        LoseTheReachedStream(runner);
+
+        using (var exclusive = new FileStream(runner.ReachedFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            runner.ResetReachedFile().ShouldBeFalse();
+        }
+
+        // The failure is not sticky: once the exclusive handle is gone the reset works again.
+        runner.ResetReachedFile().ShouldBeTrue();
+    }
+
+    private static void LoseTheReachedStream(MicrosoftTestingPlatformRunner runner)
+    {
+        var field = typeof(MicrosoftTestingPlatformRunner).GetField(
+            "_reachedFileStream", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+        using var cached = (FileStream)field.GetValue(runner)!;
+        field.SetValue(runner, null);
+    }
+
+    [TestMethod]
+    public void ReadReachedFile_FallsBackToADiskRead_WhenTheCachedStreamIsLost()
+    {
+        using var runner = new MicrosoftTestingPlatformRunner(0, [], [], new TestSet(), new object(), NullLogger.Instance);
+        runner.ActiveMutantId = 42;
+        LoseTheReachedStream(runner);
+
+        using (var stream = new FileStream(runner.ReachedFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+            stream.Write(BitConverter.GetBytes(1));
+            stream.Write(BitConverter.GetBytes(42));
+            stream.Flush();
+        }
+
+        runner.ReadReachedFile().ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void ReadReachedFile_Fallback_DoesNotTrustAFlagForAnotherMutant()
+    {
+        using var runner = new MicrosoftTestingPlatformRunner(0, [], [], new TestSet(), new object(), NullLogger.Instance);
+        runner.ActiveMutantId = 42;
+        LoseTheReachedStream(runner);
+
+        using (var stream = new FileStream(runner.ReachedFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+            stream.Write(BitConverter.GetBytes(1));
+            stream.Write(BitConverter.GetBytes(41));
+            stream.Flush();
+        }
+
+        runner.ReadReachedFile().ShouldBeFalse();
+    }
+
+    [TestMethod]
+    public void ReadReachedFile_ReturnsFalse_WhenTheRelayFileIsMissing()
+    {
+        using var runner = new MicrosoftTestingPlatformRunner(0, [], [], new TestSet(), new object(), NullLogger.Instance);
+        LoseTheReachedStream(runner);
+
+        File.Delete(runner.ReachedFilePath);
+
+        runner.ReadReachedFile().ShouldBeFalse();
+    }
+
+    [TestMethod]
+    public void ReadReachedFile_ReturnsFalse_WhenTheFileHoldsOnlyTheFlag()
+    {
+        using var runner = new MicrosoftTestingPlatformRunner(0, [], [], new TestSet(), new object(), NullLogger.Instance);
+        runner.ActiveMutantId = 42;
+        LoseTheReachedStream(runner);
+
+        // A host that died after writing the flag but before the id must read as not reached, not throw
+        using (var stream = new FileStream(runner.ReachedFilePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+        {
+            stream.Write(BitConverter.GetBytes(1));
+            stream.Flush();
+        }
+
+        runner.ReadReachedFile().ShouldBeFalse();
+    }
+
+    [TestMethod]
+    public void ReadReachedFile_ReturnsFalse_WhenTheFileCannotBeOpened()
+    {
+        using var runner = new MicrosoftTestingPlatformRunner(0, [], [], new TestSet(), new object(), NullLogger.Instance);
+        runner.ActiveMutantId = 42;
+        LoseTheReachedStream(runner);
+
+        using (var stream = new FileStream(runner.ReachedFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+            stream.Write(BitConverter.GetBytes(1));
+            stream.Write(BitConverter.GetBytes(42));
+            stream.Flush();
+        }
+
+        using (var exclusive = new FileStream(runner.ReachedFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            runner.ReadReachedFile().ShouldBeFalse();
+        }
+
+        // Back to normal once the foreign handle is gone: the failure must not be cached.
+        runner.ReadReachedFile().ShouldBeTrue();
+    }
+
+    [TestMethod]
     public void Dispose_RemovesTheReachedFile()
     {
         var runner = new MicrosoftTestingPlatformRunner(0, [], [], new TestSet(), new object(), NullLogger.Instance);

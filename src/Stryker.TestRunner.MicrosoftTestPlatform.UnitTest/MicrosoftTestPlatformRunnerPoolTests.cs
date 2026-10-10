@@ -787,5 +787,51 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
             infos.ShouldBeEmpty();
         }
     }
+
+    [TestMethod]
+    public void Dispose_LogsTheRetestSummary_WhenARunnerRetestedMutants()
+    {
+        // Arrange
+        var options = new Mock<IStrykerOptions>();
+        options.Setup(x => x.Concurrency).Returns(1);
+        var logger = new CapturingLogger(debugEnabled: false);
+
+        TestableRunner? created = null;
+        var runnerFactory = new Mock<ISingleRunnerFactory>();
+        runnerFactory.Setup(x => x.CreateRunner(
+                It.IsAny<int>(),
+                It.IsAny<Dictionary<string, List<TestNode>>>(),
+                It.IsAny<Dictionary<string, MtpTestDescription>>(),
+                It.IsAny<TestSet>(),
+                It.IsAny<object>(),
+                It.IsAny<ILogger>(),
+                It.IsAny<IStrykerOptions>()))
+            .Returns<int, Dictionary<string, List<TestNode>>, Dictionary<string, MtpTestDescription>, TestSet, object, ILogger, IStrykerOptions>(
+                (id, _, _, _, _, _, _) =>
+                {
+                    created = new TestableRunner(id, () => { });
+                    return created;
+                });
+
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, logger, runnerFactory.Object);
+        created.ShouldNotBeNull("the pool creates its runners before the constructor returns");
+
+        // Simulate the fresh-host retest having run twice and killed once
+        typeof(MicrosoftTestingPlatformRunner)
+            .GetField("_retestCount", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .SetValue(created, 2);
+        typeof(MicrosoftTestingPlatformRunner)
+            .GetField("_retestedKilledCount", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .SetValue(created, 1);
+
+        // Act
+        pool.Dispose();
+
+        // Assert
+        logger.Entries.ShouldContain(entry =>
+            entry.Level == LogLevel.Information &&
+            entry.Message.Contains("2 mutant(s) retested", StringComparison.Ordinal) &&
+            entry.Message.Contains("1 killed", StringComparison.Ordinal));
+    }
 }
 

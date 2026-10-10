@@ -147,7 +147,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     public async Task ResetServerAsync()
     {
         _logger.LogDebug("{RunnerId}: Resetting test servers to reload assemblies", RunnerId);
-        
+
         lock (_serverLock)
         {
             foreach (var server in _assemblyServers.Values)
@@ -156,7 +156,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             }
             _assemblyServers.Clear();
         }
-        
+
         _logger.LogDebug("{RunnerId}: Test servers reset complete", RunnerId);
         await Task.CompletedTask;
     }
@@ -1015,13 +1015,13 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         _logger.LogDebug("{RunnerId}: Test run timed out for {Assembly}", RunnerId, Path.GetFileName(assembly));
 
         allTimedOutTests.AddRange(discoveredTests.Select(t => t.Uid));
-        
+
         AssemblyTestServer? server;
         lock (_serverLock)
         {
             _assemblyServers.TryGetValue(assembly, out server);
         }
-        
+
         if (server is not null)
         {
             _logger.LogDebug("{RunnerId}: Restarting test server for {Assembly} after timeout", RunnerId, Path.GetFileName(assembly));
@@ -1333,7 +1333,9 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
     /// <summary>
     /// Runs the tests once with no mutant active on a host that has not run any yet, then restores the
-    /// active mutant id. Returns false, after discarding the host, when the warm-up timed out.
+    /// active mutant id. Returns false, after discarding the host, when the warm-up timed out or reported
+    /// a failed type initializer: such a host is already poisoned, and running the first mutant on it
+    /// would falsely kill the mutant before the poisoning is noticed.
     /// </summary>
     internal async Task<bool> WarmUpServerAsync(AssemblyTestServer server, string assembly, List<TestNode>? tests, TimeSpan? timeout = null)
     {
@@ -1341,10 +1343,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         {
             var mutantId = ActiveMutantId;
             WriteMutantIdToFile(-1);
+            List<TestNodeUpdate> updates;
             bool timedOut;
             try
             {
-                timedOut = await RunWarmUpTestsAsync(server, tests?.ToArray(), timeout).ConfigureAwait(false);
+                (updates, timedOut) = await RunWarmUpTestsAsync(server, tests?.ToArray(), timeout).ConfigureAwait(false);
             }
             finally
             {
@@ -1354,6 +1357,14 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             if (timedOut)
             {
                 _logger.LogDebug("{RunnerId}: Warm-up run of {Assembly} timed out; discarding the test server",
+                    RunnerId, Path.GetFileName(assembly));
+                await DiscardServerAsync(assembly).ConfigureAwait(false);
+                return false;
+            }
+
+            if (updates.Any(update => TestNodeStates.IsHostPoisoning(update.Node)))
+            {
+                _logger.LogDebug("{RunnerId}: A type initializer failed during the warm-up run of {Assembly}; discarding the poisoned test server",
                     RunnerId, Path.GetFileName(assembly));
                 await DiscardServerAsync(assembly).ConfigureAwait(false);
                 return false;
@@ -1381,10 +1392,9 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         return true;
     }
 
-    internal virtual async Task<bool> RunWarmUpTestsAsync(AssemblyTestServer server, TestNode[]? tests, TimeSpan? timeout)
+    internal virtual async Task<(List<TestNodeUpdate> Updates, bool TimedOut)> RunWarmUpTestsAsync(AssemblyTestServer server, TestNode[]? tests, TimeSpan? timeout)
     {
-        var (_, timedOut) = await server.RunTestsAsync(tests, timeout).ConfigureAwait(false);
-        return timedOut;
+        return await server.RunTestsAsync(tests, timeout).ConfigureAwait(false);
     }
 
     internal async Task<(ITestRunResult Result, bool TimedOut)> RunAssemblyTestsInternalAsync(
@@ -1446,13 +1456,15 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                 // outcome independent of which runner or host a mutant lands on (stryker-mutator/stryker-net#3832).
                 if (!freshHost && WarmUpEnabled && !server.IsWarmedUp && !await WarmUpServerAsync(server, assembly, tests, warmUpTimeout?.Invoke()).ConfigureAwait(false))
                 {
-                    lastRunException = new TimeoutException($"The warm-up run of {Path.GetFileName(assembly)} timed out");
+                    lastRunException = new TimeoutException($"The warm-up run of {Path.GetFileName(assembly)} did not complete");
                     continue;
                 }
 
                 // The host reports reaching the active mutant through the relay file; clear any signal
-                // from an earlier run so what we read after this run belongs to it alone.
-                ResetReachedFile();
+                // from an earlier run so what we read after this run belongs to it alone. When the clear
+                // failed the relay stays untrusted: a retry reruns the same mutant id, so a stale flag
+                // there would suppress the fresh-host retest. Ignoring it can only cost an extra retest.
+                var reachedSignalTrusted = ResetReachedFile();
 
                 var (testResults, timedOut) = await server.RunTestsAsync(testsToRun, timeout).ConfigureAwait(false);
 
@@ -1474,9 +1486,15 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
                 // A survivor that never reached its mutated code may have been hidden by reused-host state.
                 // Retest once on a fresh host; the fresh-host result is final (no loops).
-                var reached = ReadReachedFile();
+                var reached = reachedSignalTrusted && ReadReachedFile();
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
+                    if (!reachedSignalTrusted)
+                    {
+                        _logger.LogDebug("{RunnerId}: Ignoring the reached signal for {Assembly}: the relay file could not be cleared before the run",
+                            RunnerId, Path.GetFileName(assembly));
+                    }
+
                     _logger.LogDebug("{RunnerId}: Test run used reached signal: {Reached}", RunnerId, reached);
                 }
 
@@ -1620,9 +1638,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
     /// <summary>
     /// Clears the reached signal before a run so the flag the host writes belongs to this run only.
-    /// The file is sized to 8 bytes (flag + mutant id) so the host can memory-map it.
+    /// The file is sized to 8 bytes (flag + mutant id) so the host can memory-map it. Returns false when
+    /// the file could not be cleared: the caller must then ignore the signal, since a retry reruns the
+    /// same mutant id and the reader cannot tell a stale flag from this run's own.
     /// </summary>
-    private void ResetReachedFile()
+    internal bool ResetReachedFile()
     {
         try
         {
@@ -1635,12 +1655,14 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                 _reachedFileStream.Seek(0, SeekOrigin.Begin);
                 _reachedFileStream.Write(zeros);
                 _reachedFileStream.Flush();
+                return true;
             }
         }
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "{RunnerId}: Failed to reset the reached-signal file {FilePath}",
                 RunnerId, _reachedFilePath);
+            return false;
         }
     }
 

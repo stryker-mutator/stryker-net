@@ -1,0 +1,3 @@
+# Local calibration scratch (Stryker run logs, timing probes). Nothing in CI reads these;
+# the calibrated bounds live in the Stryker3832Fast test comments.
+logs/
