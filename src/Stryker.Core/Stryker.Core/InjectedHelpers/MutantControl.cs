@@ -9,6 +9,8 @@ namespace Stryker
     {
         private static System.Collections.Generic.List<int> _coveredMutants = new System.Collections.Generic.List<int>();
         private static System.Collections.Generic.List<int> _coveredStaticMutants = new System.Collections.Generic.List<int>();
+        private static int[] _hitCounts = new int[0];
+        private static bool[] _staticHitFlags = new bool[0];
         private static string envName = string.Empty;
         private static System.Object _coverageLock = new System.Object();
         // Initialized to avoid nullable warnings/errors
@@ -27,6 +29,12 @@ namespace Stryker
         private static object _mutantAccessor = new System.Object();
         private static bool _mutantMmfReady;
         private static bool _mutantMmfFailed;
+        private static long _activeHits;
+        private static int _hitLimitGeneration = int.MinValue;
+        private static int _hitLimitMarkerWritten;
+        private static System.Object _hitLimitLock = new System.Object();
+        private static string _cachedHitLimitFilePath = string.Empty;
+        private static bool _hitLimitFilePathCached;
 
         // Tells this copy of the class apart from the copies of the other mutated assemblies the test
         // host loads; see GetOwningAssemblyDiscriminator. Computed once, so every file this copy writes
@@ -65,6 +73,7 @@ namespace Stryker
         // this attribute will be set by the Stryker Data Collector before each test
         public static bool CaptureCoverage;
         public static int ActiveMutant = -2;
+        public static long HitLimit;
         public const int ActiveMutantNotInitValue = -2;
 
         static MutantControl()
@@ -97,6 +106,9 @@ namespace Stryker
                 EnsureEpochFileExists();
                 EnsureEpochPollerStarted();
             }
+
+            _cachedHitLimitFilePath = System.Environment.GetEnvironmentVariable("STRYKER_HITLIMIT_FILE") ?? string.Empty;
+            _hitLimitFilePathCached = true;
         }
 
         public static void InitCoverage()
@@ -106,6 +118,16 @@ namespace Stryker
 
         public static void ResetCoverage()
         {
+            lock (_coverageLock)
+            {
+                ResetCoverageLists();
+                System.Array.Clear(_hitCounts, 0, _hitCounts.Length);
+                System.Array.Clear(_staticHitFlags, 0, _staticHitFlags.Length);
+            }
+        }
+
+        private static void ResetCoverageLists()
+        {
             _coveredMutants = new System.Collections.Generic.List<int>();
             _coveredStaticMutants = new System.Collections.Generic.List<int>();
         }
@@ -113,6 +135,12 @@ namespace Stryker
         public static void ResetActiveMutant()
         {
             ActiveMutant = ActiveMutantNotInitValue;
+        }
+
+        public static void ResetHits()
+        {
+            System.Threading.Interlocked.Exchange(ref _activeHits, 0);
+            System.Threading.Interlocked.Exchange(ref _hitLimitMarkerWritten, 0);
         }
 
         public static void SetActiveMutantViaEnvironmentVariable(int mutantId)
@@ -156,7 +184,10 @@ namespace Stryker
                 {
                     try
                     {
-                        mutantId = ((System.IO.MemoryMappedFiles.MemoryMappedViewAccessor)_mutantAccessor).ReadInt32(0);
+                        System.IO.MemoryMappedFiles.MemoryMappedViewAccessor accessor =
+                            (System.IO.MemoryMappedFiles.MemoryMappedViewAccessor)_mutantAccessor;
+                        mutantId = accessor.ReadInt32(0);
+                        SetHitLimitFromFile(accessor.ReadInt32(4), accessor.ReadInt64(8));
                         return true;
                     }
                     catch
@@ -167,7 +198,7 @@ namespace Stryker
                 }
             }
 
-            // Fallback (no memory-mapped view could be created): read the 4-byte mutant id straight from
+            // Fallback (no memory-mapped view could be created): read the control data straight from
             // the file on every call. Correct but slower; only used if memory mapping is unavailable.
             return TryReadMutantFromFileDirect(out mutantId);
         }
@@ -200,12 +231,12 @@ namespace Stryker
                 System.IO.MemoryMappedFiles.MemoryMappedFile mmf = System.IO.MemoryMappedFiles.MemoryMappedFile.CreateFromFile(
                     stream,
                     null,
-                    4,
+                    16,
                     System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read,
                     System.IO.HandleInheritability.None,
                     false);
 
-                System.IO.MemoryMappedFiles.MemoryMappedViewAccessor accessor = mmf.CreateViewAccessor(0, 4, System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read);
+                System.IO.MemoryMappedFiles.MemoryMappedViewAccessor accessor = mmf.CreateViewAccessor(0, 16, System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read);
 
                 _mutantMmf = mmf;
                 _mutantAccessor = accessor;
@@ -233,6 +264,10 @@ namespace Stryker
                 if (bytes.Length >= 4)
                 {
                     mutantId = System.BitConverter.ToInt32(bytes, 0);
+                    if (bytes.Length >= 16)
+                    {
+                        SetHitLimitFromFile(System.BitConverter.ToInt32(bytes, 4), System.BitConverter.ToInt64(bytes, 8));
+                    }
                     return true;
                 }
             }
@@ -243,10 +278,52 @@ namespace Stryker
             return false;
         }
 
+        private static void SetHitLimitFromFile(int generation, long hitLimit)
+        {
+            if (_hitLimitGeneration == generation)
+            {
+                return;
+            }
+
+            lock (_hitLimitLock)
+            {
+                if (_hitLimitGeneration != generation)
+                {
+                    System.Threading.Interlocked.Exchange(ref _activeHits, 0);
+                    System.Threading.Interlocked.Exchange(ref _hitLimitMarkerWritten, 0);
+                    HitLimit = hitLimit;
+                    _hitLimitGeneration = generation;
+                }
+            }
+        }
+
         public static System.Collections.Generic.IList<int>[] GetCoverageData()
         {
-            System.Collections.Generic.IList<int>[] result = new System.Collections.Generic.IList<int>[] { _coveredMutants, _coveredStaticMutants };
-            ResetCoverage();
+            lock (_coverageLock)
+            {
+                System.Collections.Generic.IList<int>[] result = new System.Collections.Generic.IList<int>[] { _coveredMutants, _coveredStaticMutants };
+                ResetCoverageLists();
+                return result;
+            }
+        }
+
+        public static System.Collections.Generic.IDictionary<int, int> GetCoverageHitCounts()
+        {
+            System.Collections.Generic.Dictionary<int, int> result = new System.Collections.Generic.Dictionary<int, int>();
+            lock (_coverageLock)
+            {
+                for (int i = 0; i < _hitCounts.Length; i++)
+                {
+                    if (_hitCounts[i] > 0)
+                    {
+                        result.Add(i, _hitCounts[i]);
+                    }
+                }
+
+                System.Array.Clear(_hitCounts, 0, _hitCounts.Length);
+                System.Array.Clear(_staticHitFlags, 0, _staticHitFlags.Length);
+            }
+
             return result;
         }
 
@@ -313,7 +390,22 @@ namespace Stryker
                 {
                     string covered = string.Join(",", _coveredMutants);
                     string staticMutants = string.Join(",", _coveredStaticMutants);
-                    string content = covered + ";" + staticMutants;
+                    System.Text.StringBuilder hitCounts = new System.Text.StringBuilder();
+                    for (int i = 0; i < _hitCounts.Length; i++)
+                    {
+                        if (_hitCounts[i] > 0)
+                        {
+                            if (hitCounts.Length > 0)
+                            {
+                                hitCounts.Append(",");
+                            }
+                            hitCounts.Append(i);
+                            hitCounts.Append(":");
+                            hitCounts.Append(_hitCounts[i]);
+                        }
+                    }
+
+                    string content = covered + ";" + staticMutants + ";" + hitCounts.ToString();
                     System.IO.File.WriteAllText(_cachedCoverageFilePath, content);
                     ResetCoverage();
                 }
@@ -479,7 +571,7 @@ namespace Stryker
                 // If we cached the file path and it's set, always use file-based control
                 if (_mutantFilePathCached && !string.IsNullOrEmpty(_cachedMutantFilePath))
                 {
-                    return id == ActiveMutant;
+                    return IsActiveMutant(id);
                 }
             }
 
@@ -506,22 +598,108 @@ namespace Stryker
                 }
             }
 
-            return id == ActiveMutant;
+            return IsActiveMutant(id);
+        }
+
+        private static bool IsActiveMutant(int id)
+        {
+            if (id != ActiveMutant)
+            {
+                return false;
+            }
+
+            long hitLimit = HitLimit;
+            if (hitLimit > 0)
+            {
+                long hitCount = System.Threading.Interlocked.Increment(ref _activeHits);
+                if (hitCount > hitLimit)
+                {
+                    WriteHitLimitMarker(id, hitCount, hitLimit);
+                }
+            }
+
+            return true;
+        }
+
+        private static void WriteHitLimitMarker(int mutantId, long hitCount, long hitLimit)
+        {
+            if (System.Threading.Interlocked.CompareExchange(ref _hitLimitMarkerWritten, 1, 0) != 0)
+            {
+                return;
+            }
+
+            if (!_hitLimitFilePathCached)
+            {
+                _cachedHitLimitFilePath = System.Environment.GetEnvironmentVariable("STRYKER_HITLIMIT_FILE") ?? string.Empty;
+                _hitLimitFilePathCached = true;
+            }
+
+            if (string.IsNullOrEmpty(_cachedHitLimitFilePath))
+            {
+                return;
+            }
+
+            try
+            {
+                System.IO.File.WriteAllText(_cachedHitLimitFilePath,
+                    mutantId.ToString() + ";" + hitCount.ToString() + ";" + hitLimit.ToString());
+            }
+            catch
+            {
+                // The existing wall-clock timeout remains the fallback if marker publication fails.
+            }
         }
 
         private static void RegisterCoverage(int id)
         {
             lock (_coverageLock)
             {
-                if (!_coveredMutants.Contains(id))
+                if (id >= 0)
+                {
+                    EnsureHitCountCapacity(id);
+                    _hitCounts[id]++;
+                    if (_hitCounts[id] == 1)
+                    {
+                        _coveredMutants.Add(id);
+                    }
+                }
+                else if (!_coveredMutants.Contains(id))
                 {
                     _coveredMutants.Add(id);
                 }
-                if (MutantContext.InStatic() && !_coveredStaticMutants.Contains(id))
+                if (MutantContext.InStatic())
                 {
-                    _coveredStaticMutants.Add(id);
+                    if (id >= 0)
+                    {
+                        if (!_staticHitFlags[id])
+                        {
+                            _staticHitFlags[id] = true;
+                            _coveredStaticMutants.Add(id);
+                        }
+                    }
+                    else if (!_coveredStaticMutants.Contains(id))
+                    {
+                        _coveredStaticMutants.Add(id);
+                    }
                 }
             }
+        }
+
+        private static void EnsureHitCountCapacity(int id)
+        {
+            if (id < _hitCounts.Length)
+            {
+                return;
+            }
+
+            int capacity = _hitCounts.Length == 0 ? 16 : _hitCounts.Length;
+            while (capacity <= id)
+            {
+                capacity *= 2;
+            }
+
+            System.Array.Resize(ref _hitCounts, capacity);
+            System.Array.Resize(ref _staticHitFlags, capacity);
         }
     }
 }

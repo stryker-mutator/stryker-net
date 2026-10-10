@@ -62,10 +62,11 @@ public class CoverageCollectorTests : TestBase
         var testCase = new TestCase("theTest", new Uri("xunit://"), "source.cs");
         var nonCoveringTestCase = new TestCase("theOtherTest", new Uri("xunit://"), "source.cs");
         var mutantMap = new List<(int, IEnumerable<Guid>)> { (10, new List<Guid> { testCase.Id }), (5, new List<Guid> { nonCoveringTestCase.Id }) };
+        var mutantHitLimits = new Dictionary<int, long> { [10] = 1500, [5] = 2000 };
 
         var start = new TestSessionStartArgs
         {
-            Configuration = CoverageCollector.GetVsTestSettings(false, mutantMap, GetType().Namespace)
+            Configuration = CoverageCollector.GetVsTestSettings(false, mutantMap, GetType().Namespace, mutantHitLimits)
         };
         var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
         collector.Initialize(mock.Object);
@@ -76,6 +77,7 @@ public class CoverageCollectorTests : TestBase
         collector.TestCaseStart(new TestCaseStartArgs(testCase));
 
         MutantControl.ActiveMutant.ShouldBe(10);
+        MutantControl.HitLimit.ShouldBe(1500);
         collector.TestSessionEnd(new TestSessionEndArgs());
     }
 
@@ -123,6 +125,7 @@ public class CoverageCollectorTests : TestBase
         collector.TestCaseEnd(new TestCaseEndArgs(dataCollection, TestOutcome.Passed));
 
         mock.Verify(sink => sink.SendData(dataCollection, CoverageCollector.PropertyName, "0,1;1"), Times.Once);
+        mock.Verify(sink => sink.SendData(dataCollection, CoverageCollector.HitCountsPropertyName, "0:1,1:1"), Times.Once);
         collector.TestSessionEnd(new TestSessionEndArgs());
     }
 
@@ -182,7 +185,9 @@ public static class MutantControl
 {
     public static bool CaptureCoverage;
     public static int ActiveMutant = -1;
+    public static long HitLimit;
     private static List<int>[] coverageData = { new List<int>(), new List<int>() };
+    private static Dictionary<int, int> coverageHitCounts = new();
     public static IList<int>[] GetCoverageData()
     {
         var result = coverageData;
@@ -190,9 +195,20 @@ public static class MutantControl
         return result;
     }
 
+    public static IDictionary<int, int> GetCoverageHitCounts()
+    {
+        var result = coverageHitCounts;
+        coverageHitCounts = new Dictionary<int, int>();
+        return result;
+    }
+
     public static void ClearCoverageInfo() => coverageData = new[] { new List<int>(), new List<int>() };
 
-    public static void HitNormal(int mutation) => coverageData[0].Add(mutation);
+    public static void HitNormal(int mutation)
+    {
+        coverageData[0].Add(mutation);
+        coverageHitCounts[mutation] = coverageHitCounts.TryGetValue(mutation, out var hitCount) ? hitCount + 1 : 1;
+    }
 
     public static void HitStatic(int mutation) => coverageData[1].Add(mutation);
 }

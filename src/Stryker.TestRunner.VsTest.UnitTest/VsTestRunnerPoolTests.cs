@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
@@ -188,6 +191,56 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
 
         var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null).Result;
         result.TimedOutTests.IsEmpty.ShouldBeFalse();
+    }
+
+    [TestMethod]
+    public void HitLimitMarker_AbortsSessionAndReportsTimeoutReason()
+    {
+        var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+        mockVsTest.Setup(console => console.RunTestsWithCustomTestHost(
+                It.Is<IEnumerable<string>>(sources => sources.Any()),
+                It.Is<string>(settings => !settings.Contains("<Coverage")),
+                It.IsAny<TestPlatformOptions>(),
+                It.IsAny<ITestRunEventsHandler>(),
+                It.IsAny<ITestHostLauncher>()))
+            .Callback<IEnumerable<string>, string, TestPlatformOptions, ITestRunEventsHandler, ITestHostLauncher>(
+                (_, _, _, events, launcher) =>
+                {
+                    var markerPath = GetHostEnvironmentVariable(launcher, "STRYKER_HITLIMIT_FILE");
+                    File.WriteAllText(markerPath, "0;101;100");
+                    Thread.Sleep(100);
+                    CompleteMockTestRun(events, [new VsTestObjModel.TestResult(TestCases[0])
+                    {
+                        Outcome = VsTestObjModel.TestOutcome.Passed,
+                        ComputerName = "."
+                    }]);
+                });
+
+        Mutant.HitLimit = 100;
+        var result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, [Mutant], null).Result;
+
+        result.SessionTimedOut.ShouldBeTrue();
+        Mutant.ResultStatusReason.ShouldBe("Hit limit exceeded (101 > 100)");
+        mockVsTest.Verify(console => console.AbortTestRun(), Times.Once);
+    }
+
+    [TestMethod]
+    public void CaptureCoverage_ShouldParseMutationHitCounts()
+    {
+        var options = new StrykerOptions { OptimizationMode = OptimizationModes.CoverageBasedTest };
+        var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
+        SetupMockCoverageRun(mockVsTest, new Dictionary<string, string>
+        {
+            ["T0"] = "0;||0:11",
+            ["T1"] = "0;||0:7"
+        });
+
+        var results = runner.CaptureCoverage(SourceProjectInfo).ToList();
+
+        results.ShouldContain(result => result.TestId == TestCases[0].Id.ToString() &&
+            result.MutationHitCounts.ContainsKey(0) && result.MutationHitCounts[0] == 11);
+        results.ShouldContain(result => result.TestId == TestCases[1].Id.ToString() &&
+            result.MutationHitCounts.ContainsKey(0) && result.MutationHitCounts[0] == 7);
     }
 
     [TestMethod]

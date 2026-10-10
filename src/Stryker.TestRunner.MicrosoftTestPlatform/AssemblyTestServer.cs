@@ -131,7 +131,8 @@ internal sealed class AssemblyTestServer : IDisposable
         return results;
     }
 
-    public async Task<(List<TestNodeUpdate> Results, bool TimedOut)> RunTestsAsync(TestNode[]? testsToRun, TimeSpan? timeout)
+    public async Task<(List<TestNodeUpdate> Results, bool TimedOut)> RunTestsAsync(
+        TestNode[]? testsToRun, TimeSpan? timeout, string? hitLimitMarkerPath = null)
     {
         if (!_isInitialized || _client is null)
         {
@@ -149,23 +150,35 @@ internal sealed class AssemblyTestServer : IDisposable
             return Task.CompletedTask;
         };
 
-        if (timeout.HasValue)
+        if (timeout.HasValue || !string.IsNullOrEmpty(hitLimitMarkerPath))
         {
-            using var cancellationTokenSource = new CancellationTokenSource(timeout.Value);
+            using var timeoutCancellation = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
+            using var hitLimitCancellation = new CancellationTokenSource();
+            using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                timeoutCancellation.Token, hitLimitCancellation.Token);
+            var hitLimitWatcher = string.IsNullOrEmpty(hitLimitMarkerPath)
+                ? Task.CompletedTask
+                : WatchHitLimitMarkerAsync(hitLimitMarkerPath, hitLimitCancellation);
+
             try
             {
-                await _client.RunTestsAsync(onUpdate, testsToRun, cancellationTokenSource.Token).ConfigureAwait(false);
+                await _client.RunTestsAsync(onUpdate, testsToRun, linkedCancellation.Token).ConfigureAwait(false);
                 return (testResults.ToList(), false);
             }
-            catch (OperationCanceledException ex) when (cancellationTokenSource.IsCancellationRequested)
+            catch (OperationCanceledException ex) when (linkedCancellation.IsCancellationRequested)
             {
-                _logger.LogDebug(ex, "{RunnerId}: Test run RPC call timed out for {Assembly}", _runnerId, _assembly);
+                _logger.LogDebug(ex, "{RunnerId}: Test run RPC call timed out or exceeded its hit limit for {Assembly}", _runnerId, _assembly);
                 return (testResults.ToList(), true);
             }
             catch
             {
                 ThrowIfHostCrashed();
                 throw;
+            }
+            finally
+            {
+                await hitLimitCancellation.CancelAsync().ConfigureAwait(false);
+                await hitLimitWatcher.ConfigureAwait(false);
             }
         }
 
@@ -178,6 +191,27 @@ internal sealed class AssemblyTestServer : IDisposable
         {
             ThrowIfHostCrashed();
             throw;
+        }
+    }
+
+    private static async Task WatchHitLimitMarkerAsync(string markerPath, CancellationTokenSource cancellationTokenSource)
+    {
+        while (!cancellationTokenSource.IsCancellationRequested)
+        {
+            if (File.Exists(markerPath))
+            {
+                await cancellationTokenSource.CancelAsync().ConfigureAwait(false);
+                return;
+            }
+
+            try
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(50), cancellationTokenSource.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
         }
     }
 
