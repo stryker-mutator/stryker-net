@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 
@@ -69,6 +68,7 @@ internal sealed class AssemblyTestServer : IDisposable
 
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var (listener, port) = _connectionFactory.CreateListener();
             _listener = listener;
 
@@ -77,6 +77,7 @@ internal sealed class AssemblyTestServer : IDisposable
             var acceptTask = _listener.AcceptConnectionAsync(cancellationToken);
             var connectionTimeout = Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
             var completedTask = await Task.WhenAny(_process.WaitForExitAsync(), acceptTask, connectionTimeout).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (completedTask == connectionTimeout)
             {
@@ -109,11 +110,10 @@ internal sealed class AssemblyTestServer : IDisposable
             _logger.LogDebug("{RunnerId}: Test server started successfully for {Assembly}", _runnerId, _assembly);
             return true;
         }
-        catch (Exception ex) when (ex is not InputException)
+        catch
         {
-            _logger.LogDebug(ex, "{RunnerId}: Failed to start test server for {Assembly}", _runnerId, _assembly);
             await StopAsync().ConfigureAwait(false);
-            return false;
+            throw;
         }
     }
 
