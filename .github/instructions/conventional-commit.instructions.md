@@ -44,10 +44,12 @@ git commit -m "type(scope): description"
 <examples>
 	<example>feat(parser): add ability to parse arrays</example>
 	<example>fix(ui): correct button alignment</example>
-	<example>docs: update README with usage instructions</example>
-	<example>refactor: improve performance of data processing</example>
-	<example>chore: update dependencies</example>
-	<example>feat!: send email on registration (BREAKING CHANGE: email service required)</example>
+	<example>docs(readme): update README with usage instructions</example>
+	<example>refactor(core): improve performance of data processing</example>
+	<example>chore(deps): update dependencies</example>
+	<example>feat(auth): send email on registration
+
+BREAKING CHANGE: email service required</example>
 </examples>
 ```
 
@@ -55,11 +57,11 @@ git commit -m "type(scope): description"
 
 ```xml
 <validation>
-	<type>Must be one of the allowed types. See <reference>https://www.conventionalcommits.org/en/v1.0.0/#specification</reference></type>
-	<scope>Optional, but recommended for clarity.</scope>
+	<type>Must be one of the allowed types in lowercase. See <reference>https://www.conventionalcommits.org/en/v1.0.0/#specification</reference></type>
+	<scope>Required; use the affected area or component in lowercase.</scope>
 	<description>Required. Use the imperative mood (e.g., "add", not "added").</description>
 	<body>Optional. Use for additional context.</body>
-	<footer>Use for breaking changes or issue references.</footer>
+	<footer>For breaking changes, include BREAKING CHANGE: followed by a description in the squash commit footer.</footer>
 </validation>
 ```
 
@@ -82,7 +84,7 @@ git commit -m "type(scope): description"
 <pr-title>
 	<format>type(scope): description</format>
 	<type>feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert</type>
-	<scope>Optional but recommended - the affected area/component</scope>
+	<scope>required; the affected area/component in lowercase</scope>
 	<description>Short, imperative summary (present tense)</description>
 </pr-title>
 ```
@@ -100,11 +102,11 @@ This repository uses **squash merging**, which means:
 <pr-title-examples>
 	<example>feat(mutators): add string mutator support</example>
 	<example>fix(cli): resolve configuration parsing issue</example>
-	<example>docs: update contributor guidelines</example>
+	<example>docs(contributing): update contributor guidelines</example>
 	<example>refactor(core): improve mutation orchestrator performance</example>
 	<example>test(integration): add tests for VB.NET projects</example>
-	<example>ci: update Azure pipeline configuration</example>
-	<example>feat(reporters)!: add JSON reporter (BREAKING CHANGE)</example>
+	<example>ci(pipelines): update Azure pipeline configuration</example>
+	<example>feat(reporters): add JSON reporter</example>
 </pr-title-examples>
 ```
 
@@ -113,5 +115,6 @@ This repository uses **squash merging**, which means:
 - Use imperative mood: "add feature" not "added feature" or "adds feature"
 - Keep it concise but descriptive
 - No period at the end
-- If breaking change, add `!` after type or include BREAKING CHANGE in PR description
-- Type must be one of the allowed types listed above
+- For breaking changes, include a `BREAKING CHANGE: <description>` footer in the PR description and preserve it in the squash commit message. The current configuration does not recognize `!` in titles.
+- Type must be one of the allowed types listed above, in lowercase
+- Scope is required and must be lowercase
