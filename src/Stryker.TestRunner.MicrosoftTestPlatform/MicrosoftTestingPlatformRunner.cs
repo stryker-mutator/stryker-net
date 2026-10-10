@@ -1549,10 +1549,12 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     internal (int Retested, int Killed) RetestStatistics => (_retestCount, _retestedKilledCount);
 
     /// <summary>
-    /// Reads the reached flag the test host wrote during the run. The host either memory-maps the file
-    /// (offset 0: flag, offset 4: mutant id) or, as a fallback, writes the id as text; both spell
-    /// "reached". Any failure reads as "not reached", which can only cost an extra fresh-host retest,
-    /// never a wrong verdict.
+    /// Reads the reached signal the test host wrote during the run. The host either memory-maps the file
+    /// (offset 0: flag, offset 4: mutant id) or, as a fallback, writes the same binary pair; both spell
+    /// "reached". The signal only counts when the recorded id is the active mutant: a reset that failed
+    /// would otherwise leave a previous run's flag set and hide a not-reached survivor from the retest.
+    /// Any failure reads as "not reached", which can only cost an extra fresh-host retest, never a wrong
+    /// verdict.
     /// </summary>
     internal bool ReadReachedFile()
     {
@@ -1601,12 +1603,12 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                 }
             }
 
-            if (read < sizeof(int))
+            if (read < 2 * sizeof(int))
             {
                 return false;
             }
 
-            return BitConverter.ToInt32(bytes, 0) != 0;
+            return BitConverter.ToInt32(bytes, 0) != 0 && BitConverter.ToInt32(bytes, 4) == ActiveMutantId;
         }
         catch (Exception ex)
         {

@@ -25,14 +25,6 @@ public class Stryker3832FastTests
 
     private const int MaximumExpectedKilled = 75;
 
-    /// <summary>
-    /// Upper bound for <c>all</c> mode only. With the warm-up and the fresh-host retest the count matches the
-    /// other covered modes exactly (73: the equivalent reload-guard mutants of <c>MemoizedHelper</c> survive),
-    /// but a regression that drops the warm-up while keeping the retest poisons replacement hosts and drove
-    /// the count to 161; the ~320 false kills a fully poisoned host produces stay far above the bound either way.
-    /// </summary>
-    private const int MaximumExpectedKilledAllMode = 240;
-
     private const int ParallelConcurrency = 8;
 
     /// <summary>
@@ -61,16 +53,17 @@ public class Stryker3832FastTests
         AssertConcurrencyParityAsync("stryker-config.isolated.json", assertHiddenStateMutantsKilled: true);
 
     /// <summary>
-    /// <c>all</c> mode has no warm-up, so a poisoned host would make the kill count depend on the concurrency. Parity is
-    /// asserted, not equality with <c>perTest</c>. The reached-signal retest now kills mutants hidden by reused-host
-    /// static state (<c>StaticOnlyHelper</c>, <c>MemoizedHelper</c>), which is asserted per file.
+    /// <c>all</c> mode is a covered mode, so the warm-up and the fresh-host retest apply and the kill count must match
+    /// the other covered modes (a looser bound here would let a regression that drops the warm-up pass: it drove the
+    /// count to 161 while parity still held). The retest kills mutants hidden by reused-host static state
+    /// (<c>StaticOnlyHelper</c>, <c>MemoizedHelper</c>), which is asserted per file.
     /// </summary>
     [Fact]
     [Trait("Category", "Stryker3832Fast")]
     [Trait("Category", "XUnitMTP")]
     [Trait("Runtime", "netcore")]
     public Task MtpAllCoverageAnalysis_ConcurrencyEight_ShouldMatchConcurrencyOneKillCount_OnMiniFixture() =>
-        AssertConcurrencyParityAsync("stryker-config.all.json", assertHiddenStateMutantsKilled: true, MaximumExpectedKilledAllMode);
+        AssertConcurrencyParityAsync("stryker-config.all.json", assertHiddenStateMutantsKilled: true);
 
     /// <summary>
     /// <c>off</c> mode has no warm-up and no coverage data, so a poisoned host would make the kill count depend on the
@@ -85,9 +78,9 @@ public class Stryker3832FastTests
         AssertConcurrencyParityAsync("stryker-config.off.json", assertHiddenStateMutantsKilled: false);
 
     /// <summary>
-    /// Asserts concurrency 1 and 8 yield the same kill count for <paramref name="configFileName"/>.
-    /// For <c>stryker-config.all.json</c> and <c>stryker-config.off.json</c> that is the only parity required;
-    /// do not compare those kill counts to <c>perTest</c> (MTP static-initializer limitation; see configuration docs).
+    /// Asserts concurrency 1 and 8 yield the same kill count for <paramref name="configFileName"/>, within the
+    /// calibrated bounds (the same for every mode: the covered modes are all protected, and <c>off</c> measures
+    /// the same count on this fixture).
     /// When <paramref name="assertHiddenStateMutantsKilled"/> is set, the mutants of the two files that reused-host
     /// state can hide (<c>StaticOnlyHelper</c>, <c>MemoizedHelper</c>) must all be killed at concurrency 1: they are
     /// covered, and a survivor there means the fresh-host retest did not run.

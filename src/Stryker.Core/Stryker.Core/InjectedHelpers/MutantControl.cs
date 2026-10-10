@@ -660,7 +660,11 @@ namespace Stryker
                     System.IO.FileAccess.Write,
                     System.IO.FileShare.ReadWrite))
                 {
-                    byte[] bytes = System.Text.Encoding.UTF8.GetBytes(id.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    // Same binary pair as the mapping (offset 0: flag, offset 4: reached mutant id), so the
+                    // runner validates the id whichever way the signal arrived.
+                    byte[] flag = System.BitConverter.GetBytes(1);
+                    byte[] bytes = System.BitConverter.GetBytes(id);
+                    stream.Write(flag, 0, flag.Length);
                     stream.Write(bytes, 0, bytes.Length);
                 }
 

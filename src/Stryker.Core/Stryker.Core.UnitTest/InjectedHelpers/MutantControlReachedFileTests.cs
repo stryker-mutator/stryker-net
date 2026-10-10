@@ -127,13 +127,14 @@ public class MutantControlReachedFileTests : TestBase
 
             InvokeIsActive(assembly, 7).ShouldBeTrue();
 
-            // The plain-file fallback writes the id as text; the runner treats any content as reached.
+            // The plain-file fallback writes the same binary pair as the mapping (flag, mutant id).
             using (var reader = new FileStream(reachedFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 var bytes = new byte[2 * sizeof(int)];
                 var read = reader.Read(bytes, 0, bytes.Length);
-                read.ShouldBeGreaterThanOrEqualTo(1);
-                bytes[0].ShouldBe((byte)'7', "the fallback writes the mutant id as text");
+                read.ShouldBe(2 * sizeof(int));
+                BitConverter.ToInt32(bytes, 0).ShouldBe(1, "the fallback writes the reached flag");
+                BitConverter.ToInt32(bytes, 4).ShouldBe(7, "the fallback writes the reached mutant id");
             }
         }
         finally

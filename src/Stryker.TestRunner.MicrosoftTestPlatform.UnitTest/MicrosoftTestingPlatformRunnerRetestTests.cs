@@ -130,6 +130,7 @@ public class MicrosoftTestingPlatformRunnerRetestTests
     public void ReachedFile_ReadsAsReached_WhenTheHostWroteTheFlag()
     {
         using var runner = new MicrosoftTestingPlatformRunner(0, [], [], new TestSet(), new object(), NullLogger.Instance);
+        runner.ActiveMutantId = 42;
 
         // Write the signal the way the injected MutantControl does through its memory-mapped view.
         using (var stream = new FileStream(runner.ReachedFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
@@ -144,30 +145,35 @@ public class MicrosoftTestingPlatformRunnerRetestTests
     }
 
     [TestMethod]
-    public void ReachedFile_ReadsAsReached_WhenTheHostFellBackToATextWrite()
+    public void ReachedFile_ReadsAsNotReached_WhenTheFlagBelongsToAnotherMutant()
     {
         using var runner = new MicrosoftTestingPlatformRunner(0, [], [], new TestSet(), new object(), NullLogger.Instance);
+        runner.ActiveMutantId = 42;
 
-        // The fallback write shares access, exactly like the injected MutantControl's fallback.
-        using (var stream = new FileStream(runner.ReachedFilePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
+        // A reset that failed leaves the previous run's flag in place; the recorded id must
+        // disown it, or the stale signal would suppress the fresh-host retest.
+        using (var stream = new FileStream(runner.ReachedFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
         {
-            var bytes = System.Text.Encoding.UTF8.GetBytes("42");
-            stream.Write(bytes, 0, bytes.Length);
+            stream.Seek(0, SeekOrigin.Begin);
+            stream.Write(BitConverter.GetBytes(1));
+            stream.Write(BitConverter.GetBytes(41));
             stream.Flush();
         }
 
-        runner.ReadReachedFile().ShouldBeTrue();
+        runner.ReadReachedFile().ShouldBeFalse();
     }
 
     [TestMethod]
     public void ReachedFile_ReadsAsNotReached_AfterAReset()
     {
         using var runner = new MicrosoftTestingPlatformRunner(0, [], [], new TestSet(), new object(), NullLogger.Instance);
+        runner.ActiveMutantId = 42;
 
         using (var stream = new FileStream(runner.ReachedFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
         {
             stream.Seek(0, SeekOrigin.Begin);
             stream.Write(BitConverter.GetBytes(1));
+            stream.Write(BitConverter.GetBytes(42));
             stream.Flush();
         }
 
