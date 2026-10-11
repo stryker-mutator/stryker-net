@@ -1,3 +1,5 @@
+using Stryker.TestRunner.MicrosoftTestPlatform.Models;
+
 namespace Stryker.TestRunner.MicrosoftTestPlatform;
 
 /// <summary>
@@ -43,8 +45,63 @@ internal static class TestNodeStates
         state is Failed or Error or Cancelled;
 
     /// <summary>
+    /// True when the test ended in a failure caused by a type that could not be initialized or loaded.
+    /// The runtime caches such a failure for the life of the process, so a test host that reports one
+    /// would fail every later mutant the same way, and each of those would be reported as killed.
+    /// The host must be recycled before the next mutant runs (stryker-mutator/stryker-net#3832).
+    /// </summary>
+    public static bool IsHostPoisoning(TestNode node) =>
+        IsFailure(node.ExecutionState)
+        && (ContainsTypeFailure(node.ErrorMessage) || ContainsTypeFailure(node.ErrorStackTrace));
+
+    private static bool ContainsTypeFailure(string? text) =>
+        text is not null
+        && (text.Contains(nameof(TypeInitializationException), StringComparison.Ordinal)
+            || text.Contains(nameof(TypeLoadException), StringComparison.Ordinal));
+
+    /// <summary>
     /// True when the test reported a per-test timeout.
     /// </summary>
     public static bool IsTimeout(string? state) =>
         state is TimedOut;
+
+    /// <summary>
+    /// Collapses multiple updates for the same test UID. When the MTP server or concurrent aggregation
+    /// delivers more than one terminal state for a test, a failure or timeout must win over a later pass.
+    /// </summary>
+    public static IReadOnlyList<TestNodeUpdate> CollapseFinishedUpdates(IEnumerable<TestNodeUpdate> updates)
+    {
+        var bestByUid = new Dictionary<string, TestNodeUpdate>();
+        foreach (var update in updates)
+        {
+            if (!IsFinished(update.Node.ExecutionState))
+            {
+                continue;
+            }
+
+            var uid = update.Node.Uid;
+            if (!bestByUid.TryGetValue(uid, out var existing)
+                || OutcomeRank(update.Node.ExecutionState) > OutcomeRank(existing.Node.ExecutionState))
+            {
+                bestByUid[uid] = update;
+            }
+        }
+
+        return bestByUid.Values.ToList();
+    }
+
+    private static int OutcomeRank(string? state)
+    {
+        if (IsFailure(state))
+        {
+            return 3;
+        }
+
+        if (IsTimeout(state))
+        {
+            return 2;
+        }
+
+        return 1;
+    }
 }
