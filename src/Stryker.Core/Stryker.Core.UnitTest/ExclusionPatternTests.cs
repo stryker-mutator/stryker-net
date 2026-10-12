@@ -29,7 +29,7 @@ public class ExclusionPatternTests : TestBase
     [TestMethod]
     public void ExclusionPattern_MutantSpans()
     {
-        var s1 = new ExclusionPattern(@"src/Person.cs{10..100}");
+        var s1 = new ExclusionPattern(@"src/Person.cs:10:0:100:0");
         var s2 = new ExclusionPattern(@"src/Person.cs");
 
         s1.MutantSpans.ShouldBe(new[] { (10, 100) });
