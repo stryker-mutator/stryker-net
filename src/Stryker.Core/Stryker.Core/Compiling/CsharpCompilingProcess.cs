@@ -300,10 +300,12 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
                     ms,
                     manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
                     options: null);
+                // it appears to work, keep it
                 cleanedSyntaxTrees.Add(st);
             }
             catch (Exception e)
             {
+                // mutated the source file triggers an exception, use the original instead
                 _logger.LogError(e, "Failed to compile {FilePath} (compiler crash)", st.FilePath);
                 _logger.LogTrace("source code:\n {Source}", st.GetText());
                 var cleanUpFile = _originalSyntaxTrees.FirstOrDefault(x => x.FilePath == st.FilePath);
@@ -316,7 +318,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
             }
         }
         _logger.LogError("Please report an issue and provide the source code of the file that caused the exception for analysis.");
-        _compilation = _compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(cleanedSyntaxTrees);
+        _compilation = _compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(cleanedSyntaxTrees).AddSyntaxTrees(GeneratedTrees);
         _needToRunGenerators = true;
         RunSourceGenerators();
     }
