@@ -205,8 +205,8 @@ public static class IAnalyzerResultExtensions
         || (targetFrameworks.Length>0
             && Array.TrueForAll(targetFrameworks, fmw => br.Results.Any( r=> r.IsValidFor(fmw))));
 
-    public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults, List<string>? details = null)
-        => analyzerResults.Any(x => x.IsTestProject(details));
+    public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults, bool legacyMode = true, List<string>? details = null)
+        => analyzerResults.Any(x => x.IsTestProject(legacyMode, details));
 
     /// <summary>
     /// Checks whether an analysis result references the assemblies that identify a Unity test assembly.
@@ -216,7 +216,8 @@ public static class IAnalyzerResultExtensions
             analyzerResult.References?.Any(path =>
                 string.Equals(Path.GetFileNameWithoutExtension(path), reference, StringComparison.OrdinalIgnoreCase)) == true);
 
-    private static bool IsTestProject(this IAnalyzerResult analyzerResult, List<string>? details = null)
+    private static bool IsTestProject(this IAnalyzerResult analyzerResult, bool legacyMode = true,
+        List<string>? details = null)
     {
         // if 'IsTestingPlatformApplication' is defined and true, this is a test project
         if (analyzerResult.TryGetProperty("IsTestingPlatformApplication", out var value)
@@ -234,7 +235,7 @@ public static class IAnalyzerResultExtensions
             return bool.TryParse(value, out var isTestProject) && isTestProject;
         }
 
-        var testPackage = Array.Find(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n));
+        var testPackage = legacyMode ? Array.Find(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n)) : null;
         if (testPackage != null)
         {
             details?.Add($"Package reference to known test package {testPackage} found (for framework {analyzerResult.TargetFramework})");

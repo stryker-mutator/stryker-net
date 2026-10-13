@@ -332,7 +332,8 @@ public class InputFileResolver(
                 #endif
                 {
                     Parallel.ForEach(list.Consume(),
-                        parallelOptions, entry => ProcessProject(entry, normalizedProjectUnderTestNameFilter, mutableProjectsAnalyzerResults, mode, list, solutionInfo, options)
+                        parallelOptions, entry => ProcessProject(entry, normalizedProjectUnderTestNameFilter,
+                            mutableProjectsAnalyzerResults, mode, list, solutionInfo, options)
                     );
                 }
             }
@@ -356,7 +357,7 @@ public class InputFileResolver(
         if (projectUnderTestNameFilter != null
             && !buildResult.IsTestProject()
             && !projectAnalysisContext.ProjectFileName.Replace('\\', '/')
-                .Contains(projectUnderTestNameFilter,
+                .Contains(NormalizePath(projectUnderTestNameFilter),
                     StringComparison.InvariantCultureIgnoreCase))
         {
             return;
