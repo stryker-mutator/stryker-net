@@ -12,4 +12,5 @@
   <Project Path="MicrosoftTestPlatform/UnitTests.XUnit/UnitTests.XUnit.csproj" />
   <Project Path="MicrosoftTestPlatform/UnitTests.NUnit/UnitTests.NUnit.csproj" />
   <Project Path="MicrosoftTestPlatform/UnitTests.TUnit/UnitTests.TUnit.csproj" />
+  <Project Path="MicrosoftTestPlatform/EmptyTestProject/EmptyTestProject.csproj" />
 </Solution>

@@ -21,6 +21,9 @@ namespace Stryker.TestRunner.VsTest;
 
 public sealed class VsTestRunnerPool : ITestRunner
 {
+    public Abstractions.Options.TestRunner RunnerType =>
+        Abstractions.Options.TestRunner.VsTest;
+
     private readonly AutoResetEvent _runnerAvailableHandler = new(false);
     private readonly ConcurrentBag<VsTestRunner> _availableRunners = new();
     private readonly ILogger _logger;
