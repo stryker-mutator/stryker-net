@@ -1,0 +1,17 @@
+{
+  "stryker-config": {
+    "test-runner": "mtp",
+    "project": "Subject.csproj",
+    "mutation-level": "Standard",
+    "coverage-analysis": "off",
+    "concurrency": 1,
+    "reporters": ["json"],
+    "configuration": "Release",
+    "additional-timeout": 300,
+    "thresholds": {
+      "high": 80,
+      "low": 60,
+      "break": 0
+    }
+  }
+}
