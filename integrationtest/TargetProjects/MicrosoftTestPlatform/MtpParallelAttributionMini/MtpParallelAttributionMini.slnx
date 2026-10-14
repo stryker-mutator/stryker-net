@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="MtpParallelAttributionMini.csproj" />
+  <Project Path="MtpParallelAttributionMini.Tests/MtpParallelAttributionMini.Tests.csproj" />
+</Solution>
