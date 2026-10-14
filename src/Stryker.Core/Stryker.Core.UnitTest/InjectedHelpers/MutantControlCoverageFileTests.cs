@@ -199,7 +199,7 @@ public class MutantControlCoverageFileTests : TestBase
     }
 
     [TestMethod]
-    public void BlockingConsumerFlush_ShouldAppendCoverageFromMultipleTerminalUpdates()
+    public void DataConsumerFlush_ShouldAppendCoverageFromMultipleTerminalUpdates()
     {
         var coverageFileName = $"stryker-coverage-test-{Guid.NewGuid():N}.txt";
         var previousEnvironmentValue = Environment.GetEnvironmentVariable(CoverageFileEnvironmentVariable);
@@ -210,9 +210,9 @@ public class MutantControlCoverageFileTests : TestBase
 
             var assembly = CompileMutantControl("BlockingConsumerAssembly");
             RegisterCoverage(assembly, 7);
-            FlushBlockingCoverage(assembly);
+            FlushDataConsumerCoverage(assembly);
             RegisterCoverage(assembly, 8);
-            FlushBlockingCoverage(assembly);
+            FlushDataConsumerCoverage(assembly);
 
             var writtenFile = FindCoverageFiles(coverageFileName).ShouldHaveSingleItem();
             var entries = File.ReadAllLines(writtenFile);
@@ -383,8 +383,8 @@ public class MutantControlCoverageFileTests : TestBase
     private static void FlushCoverage(Assembly assembly) =>
         GetMutantControl(assembly).GetMethod("FlushCoverageToFile")!.Invoke(null, null);
 
-    private static void FlushBlockingCoverage(Assembly assembly) =>
-        GetMutantControl(assembly).GetMethod("FlushCoverageToFileForBlockingConsumer")!.Invoke(null, null);
+    private static void FlushDataConsumerCoverage(Assembly assembly) =>
+        GetMutantControl(assembly).GetMethod("FlushCoverageToFileForDataConsumer")!.Invoke(null, null);
 
     private static Type GetMutantControl(Assembly assembly) =>
         assembly.GetTypes().Single(type => type.Name == "MutantControl");

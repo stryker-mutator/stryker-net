@@ -8,23 +8,23 @@ using Stryker.TestRunner.MicrosoftTestPlatform.Extension;
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
 
 [TestClass]
-public class BlockingCoverageExtensionTests
+public class CoverageExtensionTests
 {
     [TestInitialize]
     public void Initialize()
     {
         FakeInjectedHelper.MutantControl.FlushCount = 0;
-        Environment.SetEnvironmentVariable(MtpCompatibility.BlockingCoverageEnvironmentVariable, "1");
+        Environment.SetEnvironmentVariable(MtpCompatibility.CoverageConsumerEnvironmentVariable, "1");
     }
 
     [TestCleanup]
     public void Cleanup() =>
-        Environment.SetEnvironmentVariable(MtpCompatibility.BlockingCoverageEnvironmentVariable, null);
+        Environment.SetEnvironmentVariable(MtpCompatibility.CoverageConsumerEnvironmentVariable, null);
 
     [TestMethod]
     public async Task ConsumeAsync_ShouldFlushLoadedMutantControlsForTerminalUpdate()
     {
-        var consumer = new BlockingCoverageDataConsumer();
+        var consumer = new CoverageDataConsumer();
         var message = CreateMessage(PassedTestNodeStateProperty.CachedInstance);
 
         await consumer.ConsumeAsync(null!, message, CancellationToken.None);
@@ -33,9 +33,17 @@ public class BlockingCoverageExtensionTests
     }
 
     [TestMethod]
+    public void CoverageDataConsumer_ShouldUseRegularAsynchronousConsumption()
+    {
+        typeof(CoverageDataConsumer).GetInterfaces()
+            .Select(type => type.Name)
+            .ShouldNotContain("IBlockingDataConsumer");
+    }
+
+    [TestMethod]
     public async Task ConsumeAsync_ShouldNotFlushForNonTerminalUpdate()
     {
-        var consumer = new BlockingCoverageDataConsumer();
+        var consumer = new CoverageDataConsumer();
 
         await consumer.ConsumeAsync(
             null!,
@@ -46,7 +54,7 @@ public class BlockingCoverageExtensionTests
     }
 
     [TestMethod]
-    public void DynamicExtensionManifest_ShouldReferenceBlockingCoverageHookAndDeleteOnDispose()
+    public void DynamicExtensionManifest_ShouldReferenceCoverageHookAndDeleteOnDispose()
     {
         var directory = Path.Combine(Path.GetTempPath(), $"stryker-manifest-{Guid.NewGuid():N}");
         Directory.CreateDirectory(directory);
@@ -66,9 +74,9 @@ public class BlockingCoverageExtensionTests
                 using var document = JsonDocument.Parse(File.ReadAllText(manifestPath));
                 var extension = document.RootElement.GetProperty("extensions")[0];
                 extension.GetProperty("assemblyPath").GetString()
-                    .ShouldBe(typeof(BlockingCoverageTestingPlatformBuilderHook).Assembly.Location);
+                    .ShouldBe(typeof(CoverageTestingPlatformBuilderHook).Assembly.Location);
                 extension.GetProperty("typeFullName").GetString()
-                    .ShouldBe(typeof(BlockingCoverageTestingPlatformBuilderHook).FullName);
+                    .ShouldBe(typeof(CoverageTestingPlatformBuilderHook).FullName);
 
                 firstManifest.Dispose();
                 File.Exists(manifestPath).ShouldBeTrue(
@@ -134,9 +142,9 @@ public class BlockingCoverageExtensionTests
     }
 
     [TestMethod]
-    public void BlockingCoverageExtension_ShouldTargetNetStandard()
+    public void CoverageExtension_ShouldTargetNetStandard()
     {
-        var targetFramework = typeof(BlockingCoverageTestingPlatformBuilderHook).Assembly
+        var targetFramework = typeof(CoverageTestingPlatformBuilderHook).Assembly
             .GetCustomAttributes(typeof(TargetFrameworkAttribute), inherit: false)
             .OfType<TargetFrameworkAttribute>()
             .ShouldHaveSingleItem();

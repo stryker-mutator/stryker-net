@@ -12,7 +12,7 @@ public class MtpCompatibilityTests
     [DataRow("2.4.0-preview.1", true)]
     [DataRow("3.0.0", true)]
     [TestMethod]
-    public void SupportsBlockingDataConsumerFromDepsFile_ShouldCheckDynamicExtensionVersion(
+    public void SupportsDataConsumerFromDepsFile_ShouldCheckDynamicExtensionVersion(
         string platformVersion,
         bool expected)
     {
@@ -30,7 +30,7 @@ public class MtpCompatibilityTests
                     }
                 }));
 
-            MtpCompatibility.SupportsBlockingDataConsumerFromDepsFile(dependenciesFile).ShouldBe(expected);
+            MtpCompatibility.SupportsDataConsumerFromDepsFile(dependenciesFile).ShouldBe(expected);
         }
         finally
         {
@@ -39,7 +39,7 @@ public class MtpCompatibilityTests
     }
 
     [TestMethod]
-    public void SupportsBlockingDataConsumerFromDepsFile_ShouldReturnFalseForInvalidFile()
+    public void SupportsDataConsumerFromDepsFile_ShouldReturnFalseForInvalidFile()
     {
         var dependenciesFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.deps.json");
 
@@ -47,7 +47,7 @@ public class MtpCompatibilityTests
         {
             File.WriteAllText(dependenciesFile, "{ invalid json");
 
-            MtpCompatibility.SupportsBlockingDataConsumerFromDepsFile(dependenciesFile).ShouldBeFalse();
+            MtpCompatibility.SupportsDataConsumerFromDepsFile(dependenciesFile).ShouldBeFalse();
         }
         finally
         {

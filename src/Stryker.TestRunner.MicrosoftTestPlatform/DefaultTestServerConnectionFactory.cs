@@ -73,7 +73,7 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
             outputPipe = PipeTarget.Null;
         }
 
-        if (environmentVariables.ContainsKey(MtpCompatibility.BlockingCoverageEnvironmentVariable))
+        if (environmentVariables.ContainsKey(MtpCompatibility.CoverageConsumerEnvironmentVariable))
         {
             dynamicExtensionManifest = DynamicExtensionManifest.Acquire(assembly);
             arguments.Add("--enable-dynamic-extensions");

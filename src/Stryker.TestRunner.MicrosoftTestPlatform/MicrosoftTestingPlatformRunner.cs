@@ -178,9 +178,9 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         if (_perTestCoverageMode)
         {
             envVars["STRYKER_COVERAGE_FILE"] = Path.GetFileName(GetPerTestCoverageFilePath(assembly));
-            if (MtpCompatibility.SupportsBlockingDataConsumer(assembly))
+            if (MtpCompatibility.SupportsDataConsumer(assembly))
             {
-                envVars[MtpCompatibility.BlockingCoverageEnvironmentVariable] = "1";
+                envVars[MtpCompatibility.CoverageConsumerEnvironmentVariable] = "1";
             }
             else
             {
@@ -639,13 +639,13 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     {
         var coverageFilePath = GetPerTestCoverageFilePath(assembly);
         var epochFilePath = GetPerTestEpochFilePath(assembly);
-        var useBlockingConsumer = MtpCompatibility.SupportsBlockingDataConsumer(assembly);
+        var useDataConsumer = MtpCompatibility.SupportsDataConsumer(assembly);
 
         lock (_serverLock)
         {
             if (_initializedPerTestFiles.Add(assembly))
             {
-                if (!useBlockingConsumer)
+                if (!useDataConsumer)
                 {
                     // Relays left behind by an earlier run would be waited on and never acknowledge, or worse
                     // already show this epoch, so clear them before the host creates its own
@@ -675,7 +675,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         {
             try
             {
-                if (useBlockingConsumer)
+                if (useDataConsumer)
                 {
                     foreach (var previousCoverageFilePath in EnumerateCoverageFiles(coverageFilePath))
                     {
@@ -695,7 +695,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                         Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
                 }
 
-                if (!useBlockingConsumer)
+                if (!useDataConsumer)
                 {
                     int epoch;
                     lock (_serverLock)

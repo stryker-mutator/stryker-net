@@ -71,7 +71,7 @@ internal sealed class DynamicExtensionManifest : IDisposable
             directory,
             $"stryker-{Environment.ProcessId}-{processStartTicks}.testingplatformextensions.json");
         var temporaryPath = $"{manifestPath}.{Guid.NewGuid():N}.tmp";
-        var extensionAssembly = typeof(BlockingCoverageTestingPlatformBuilderHook).Assembly.Location;
+        var extensionAssembly = typeof(CoverageTestingPlatformBuilderHook).Assembly.Location;
 
         var manifest = new
         {
@@ -80,9 +80,9 @@ internal sealed class DynamicExtensionManifest : IDisposable
                 new
                 {
                     id = GetExtensionId(extensionAssembly),
-                    displayName = "Stryker blocking coverage consumer",
+                    displayName = "Stryker coverage consumer",
                     assemblyPath = extensionAssembly,
-                    typeFullName = typeof(BlockingCoverageTestingPlatformBuilderHook).FullName
+                    typeFullName = typeof(CoverageTestingPlatformBuilderHook).FullName
                 }
             }
         };
@@ -102,7 +102,7 @@ internal sealed class DynamicExtensionManifest : IDisposable
     private static string GetExtensionId(string extensionAssembly)
     {
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(extensionAssembly));
-        return $"Stryker.BlockingCoverageConsumer.{Convert.ToHexString(hash[..8])}";
+        return $"Stryker.CoverageConsumer.{Convert.ToHexString(hash[..8])}";
     }
 
     private static void CleanupStaleManifests(string directory)

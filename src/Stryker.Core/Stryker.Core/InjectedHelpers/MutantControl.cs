@@ -66,7 +66,7 @@ namespace Stryker
         public static bool CaptureCoverage;
         public static int ActiveMutant = -2;
         public const int ActiveMutantNotInitValue = -2;
-        public const string BlockingCoverageConsumerMarker = "BlockingCoverageConsumer.v1";
+        public const string MtpCoverageConsumerMarker = "MtpCoverageConsumer.v1";
 
         static MutantControl()
         {
@@ -327,7 +327,7 @@ namespace Stryker
             }
         }
 
-        public static void FlushCoverageToFileForBlockingConsumer()
+        public static void FlushCoverageToFileForDataConsumer()
         {
             if (!_coverageFilePathCached)
             {
@@ -359,7 +359,7 @@ namespace Stryker
             catch (System.Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(string.Format(
-                    "[Stryker] Failed to flush blocking-consumer coverage to file '{0}': {1}",
+                    "[Stryker] Failed to flush MTP consumer coverage to file '{0}': {1}",
                     _cachedCoverageFilePath,
                     ex));
             }

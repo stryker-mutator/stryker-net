@@ -10,33 +10,35 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform.Extension;
 /// <summary>
 /// Registers Stryker's per-test coverage consumer when this assembly is loaded as an MTP dynamic extension.
 /// </summary>
-public static class BlockingCoverageTestingPlatformBuilderHook
+public static class CoverageTestingPlatformBuilderHook
 {
     /// <summary>
-    /// Adds the blocking coverage consumer to the in-process test host.
+    /// Adds the coverage consumer to the in-process test host.
     /// </summary>
     public static void AddExtensions(ITestApplicationBuilder builder, string[] arguments) =>
-        builder.TestHost.AddDataConsumer(static _ => new BlockingCoverageDataConsumer());
+        builder.TestHost.AddDataConsumer(static _ => new CoverageDataConsumer());
 }
 
-#pragma warning disable TPEXP
-internal sealed class BlockingCoverageDataConsumer : IBlockingDataConsumer
-#pragma warning restore TPEXP
+/// <remarks>
+/// Stryker runs one test per MTP request. MTP drains regular consumers before the test session ends,
+/// so inline blocking is unnecessary and would only couple coverage flushing to the publisher thread.
+/// </remarks>
+internal sealed class CoverageDataConsumer : IDataConsumer
 {
-    private const string BlockingCoverageEnvironmentVariable = "STRYKER_BLOCKING_COVERAGE_CONSUMER";
+    private const string CoverageEnvironmentVariable = "STRYKER_MTP_COVERAGE_CONSUMER";
 
-    public string Uid { get; } = $"Stryker.BlockingCoverageDataConsumer.{GetAssemblyLocationHash()}";
+    public string Uid { get; } = $"Stryker.CoverageDataConsumer.{GetAssemblyLocationHash()}";
 
     public string Version => "1.0.0";
 
-    public string DisplayName => "Stryker blocking coverage consumer";
+    public string DisplayName => "Stryker coverage consumer";
 
-    public string Description => "Flushes Stryker per-test coverage before an MTP test-result publication completes.";
+    public string Description => "Flushes Stryker per-test coverage when terminal MTP test results are consumed.";
 
     public Type[] DataTypesConsumed => new[] { typeof(TestNodeUpdateMessage) };
 
     public Task<bool> IsEnabledAsync() =>
-        Task.FromResult(Environment.GetEnvironmentVariable(BlockingCoverageEnvironmentVariable) is not null);
+        Task.FromResult(Environment.GetEnvironmentVariable(CoverageEnvironmentVariable) is not null);
 
     public Task ConsumeAsync(IDataProducer dataProducer, IData value, CancellationToken cancellationToken)
     {
@@ -44,7 +46,7 @@ internal sealed class BlockingCoverageDataConsumer : IBlockingDataConsumer
             && message.TestNode.Properties.SingleOrDefault<TestNodeStateProperty>() is not
                 (null or DiscoveredTestNodeStateProperty or InProgressTestNodeStateProperty))
         {
-            BlockingCoverageFlusher.FlushLoadedMutantControls();
+            CoverageFlusher.FlushLoadedMutantControls();
         }
 
         return Task.CompletedTask;
@@ -53,14 +55,14 @@ internal sealed class BlockingCoverageDataConsumer : IBlockingDataConsumer
     private static string GetAssemblyLocationHash()
     {
         using var sha256 = SHA256.Create();
-        var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(typeof(BlockingCoverageDataConsumer).Assembly.Location));
+        var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(typeof(CoverageDataConsumer).Assembly.Location));
         return BitConverter.ToString(hash, 0, 8).Replace("-", string.Empty);
     }
 }
 
-internal static class BlockingCoverageFlusher
+internal static class CoverageFlusher
 {
-    internal const string Marker = "BlockingCoverageConsumer.v1";
+    internal const string Marker = "MtpCoverageConsumer.v1";
 
     public static void FlushLoadedMutantControls()
     {
@@ -71,7 +73,7 @@ internal static class BlockingCoverageFlusher
                 try
                 {
                     var marker = type.GetField(
-                        "BlockingCoverageConsumerMarker",
+                        "MtpCoverageConsumerMarker",
                         BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 
                     if (!string.Equals(marker?.GetRawConstantValue() as string, Marker, StringComparison.Ordinal))
@@ -80,7 +82,7 @@ internal static class BlockingCoverageFlusher
                     }
 
                     type.GetMethod(
-                            "FlushCoverageToFileForBlockingConsumer",
+                            "FlushCoverageToFileForDataConsumer",
                             BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
                         ?.Invoke(null, null);
                 }

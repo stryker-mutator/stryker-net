@@ -5,17 +5,17 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 
 internal static class MtpCompatibility
 {
-    public const string BlockingCoverageEnvironmentVariable = "STRYKER_BLOCKING_COVERAGE_CONSUMER";
+    public const string CoverageConsumerEnvironmentVariable = "STRYKER_MTP_COVERAGE_CONSUMER";
     public const string CoverageEpochFileEnvironmentVariable = "STRYKER_COVERAGE_EPOCH_FILE";
 
     private static readonly Version DynamicExtensionsMinimumVersion = new(2, 4);
-    private static readonly ConcurrentDictionary<string, bool> BlockingConsumerSupport = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, bool> DataConsumerSupport = new(StringComparer.OrdinalIgnoreCase);
 
-    public static bool SupportsBlockingDataConsumer(string testApplication) =>
-        BlockingConsumerSupport.GetOrAdd(testApplication, static assembly =>
-            SupportsBlockingDataConsumerFromDepsFile(Path.ChangeExtension(assembly, ".deps.json")));
+    public static bool SupportsDataConsumer(string testApplication) =>
+        DataConsumerSupport.GetOrAdd(testApplication, static assembly =>
+            SupportsDataConsumerFromDepsFile(Path.ChangeExtension(assembly, ".deps.json")));
 
-    internal static bool SupportsBlockingDataConsumerFromDepsFile(string dependenciesFile)
+    internal static bool SupportsDataConsumerFromDepsFile(string dependenciesFile)
     {
         if (!File.Exists(dependenciesFile))
         {
