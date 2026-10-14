@@ -8,7 +8,7 @@ stryker-config:
   verbosity: trace
   coverage-analysis: perTest
   disable-bail: true
-  disable-mix-mutants: true 
+  disable-mix-mutants: true
   additional-timeout: 9999
   timeout-ratio: 2.5
   project: ExampleProject.csproj # trailing comment
@@ -48,3 +48,5 @@ stryker-config:
     s3-region: us-east-1
     provider: ''
   test-case-filter: "(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1"
+  build-properties:
+    - "DesignTimeBuild=false"

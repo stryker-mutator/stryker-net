@@ -97,6 +97,7 @@ public class FileConfigReaderTests
         actualInputs.S3EndpointInput.SuppliedInput.ShouldBe("https://minio.example.com:9000");
         actualInputs.S3RegionInput.SuppliedInput.ShouldBe("us-east-1");
         actualInputs.BreakOnInitialTestFailureInput.SuppliedInput.ShouldNotBeNull().ShouldBeFalse();
+        actualInputs.BuildPropertiesInput.SuppliedInput.ShouldHaveSingleItem("DesignTimeBuild=false");
     }
 
     [TestMethod]
@@ -148,5 +149,6 @@ public class FileConfigReaderTests
         actualInputs.S3EndpointInput.SuppliedInput.ShouldBe("https://minio.example.com:9000");
         actualInputs.S3RegionInput.SuppliedInput.ShouldBe("us-east-1");
         actualInputs.BreakOnInitialTestFailureInput.SuppliedInput.ShouldNotBeNull().ShouldBeTrue();
+        actualInputs.BuildPropertiesInput.SuppliedInput.ShouldHaveSingleItem("DesignTimeBuild=false");
     }
 }

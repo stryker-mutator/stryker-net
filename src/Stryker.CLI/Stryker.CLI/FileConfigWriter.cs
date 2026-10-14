@@ -68,7 +68,8 @@ public static class FileConfigGenerator
                 IgnoreMethods = inputs.IgnoredMethodsInput.SuppliedInput?.ToArray() ?? inputs.IgnoredMethodsInput.Default.ToArray(),
                 ReportFileName = inputs.ReportFileNameInput.SuppliedInput ?? inputs.ReportFileNameInput.Default,
                 BreakOnInitialTestFailure = inputs.BreakOnInitialTestFailureInput.SuppliedInput ?? inputs.BreakOnInitialTestFailureInput.Default,
-                Concurrency = inputs.ConcurrencyInput.SuppliedInput ?? inputs.ConcurrencyInput.Default
+                Concurrency = inputs.ConcurrencyInput.SuppliedInput ?? inputs.ConcurrencyInput.Default,
+                BuildProperties = [.. inputs.BuildPropertiesInput.SuppliedInput ?? inputs.BuildPropertiesInput.Default],
             }
         };
     }
