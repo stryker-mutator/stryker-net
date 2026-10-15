@@ -121,13 +121,20 @@ function Run-Category {
       break
     }
     'MSTestMTP' {
-      $mtpProject = switch ($Runtime) {
-        'netcore' { 'UnitTests.MSTest' }
-        'netframework' { 'MSTest.NetFx' }
-        Default { throw "Unknown runtime: $Runtime" }
+      if ($Runtime -eq 'netcore') {
+        $mtpWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\MicrosoftTestPlatform\UnitTests.MSTest'
+        if (Test-Path $mtpWd) {
+          Run-Stryker -WorkingDirectory $mtpWd -Arguments @(
+            '--test-case-filter'
+            'FullyQualifiedName~TestAgeExplicit'
+          )
+        } else { Write-Warn "MTP test project not found at $mtpWd" }
+      } elseif ($Runtime -eq 'netframework') {
+        $mtpWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\MicrosoftTestPlatform\MSTest.NetFx'
+        if (Test-Path $mtpWd) { Run-Stryker -WorkingDirectory $mtpWd } else { Write-Warn "MTP test project not found at $mtpWd" }
+      } else {
+        throw "Unknown runtime: $Runtime"
       }
-      $mtpWd = Join-Path $RepoRoot "integrationtest\TargetProjects\MicrosoftTestPlatform\$mtpProject"
-      if (Test-Path $mtpWd) { Run-Stryker -WorkingDirectory $mtpWd } else { Write-Warn "MTP test project not found at $mtpWd" }
       break
     }
     'XUnitMTP' {

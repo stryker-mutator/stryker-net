@@ -1,12 +1,14 @@
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using CliWrap;
 using Microsoft.Extensions.Logging;
-using StreamJsonRpc;
+using Microsoft.Testing.Platform.ServerMode.Client;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
-using Stryker.TestRunner.MicrosoftTestPlatform.RPC;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform;
 
@@ -15,13 +17,27 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 /// </summary>
 internal sealed class DefaultTestServerConnectionFactory : ITestServerConnectionFactory
 {
+    private static readonly ConcurrentDictionary<string, Lazy<bool>> TestCaseFilterSupport =
+        new(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+
     private readonly string? _outputPath;
     private readonly bool _logToFile;
+    private readonly string? _testCaseFilter;
+    private readonly Func<string, bool> _supportsTestCaseFilter;
 
     public DefaultTestServerConnectionFactory(IStrykerOptions? options = null)
+        : this(options, SupportsTestCaseFilter)
     {
+    }
+
+    internal DefaultTestServerConnectionFactory(IStrykerOptions? options, Func<string, bool> supportsTestCaseFilter)
+    {
+        ArgumentNullException.ThrowIfNull(supportsTestCaseFilter);
+
         _outputPath = options?.OutputPath;
         _logToFile = options?.LogOptions.LogToFile ?? false;
+        _testCaseFilter = string.IsNullOrWhiteSpace(options?.TestCaseFilter) ? null : options.TestCaseFilter;
+        _supportsTestCaseFilter = supportsTestCaseFilter;
     }
 
     public (ITestServerListener Listener, int Port) CreateListener()
@@ -34,6 +50,7 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
 
     public ITestServerProcess StartProcess(string assembly, int port, Dictionary<string, string?> environmentVariables)
     {
+        var (targetFilePath, arguments) = BuildCommand(assembly, port);
         Stream outputStream;
         PipeTarget outputPipe;
 
@@ -55,7 +72,6 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
             outputPipe = PipeTarget.Null;
         }
 
-        var (targetFilePath, arguments) = BuildCommand(assembly, port);
         CommandTask<CommandResult> cliProcess;
         try
         {
@@ -76,32 +92,117 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
         return new CliTestServerProcess(cliProcess, outputStream);
     }
 
-    internal static (string TargetFilePath, IReadOnlyList<string> Arguments) BuildCommand(string assembly, int port)
+    internal (string TargetFilePath, string[] Arguments) BuildCommand(string assembly, int port)
     {
-        var serverArguments = new[] { "--server", "--client-port", port.ToString() };
-        return string.Equals(Path.GetExtension(assembly), ".exe", StringComparison.OrdinalIgnoreCase)
-            ? (assembly, serverArguments)
-            : ("dotnet", [assembly, .. serverArguments]);
+        List<string> arguments = [.. MtpServerConnector.BuildInProcessServerArguments(port)];
+
+        if (_testCaseFilter is not null)
+        {
+            if (!_supportsTestCaseFilter(assembly))
+            {
+                throw new InputException(
+                    $"The test application '{Path.GetFileName(assembly)}' does not support 'test-case-filter' with Microsoft Testing Platform.",
+                    "Use a test framework version that registers the '--filter' option, or remove 'test-case-filter' from the Stryker configuration.");
+            }
+
+            arguments.AddRange(["--filter", _testCaseFilter]);
+        }
+
+        return BuildCommand(assembly, arguments);
     }
 
-    public ITestingPlatformClient CreateClient(Stream stream, IProcessHandle processHandle, ILogger logger, string? rpcLogFilePath)
-    {
-        var rpc = new JsonRpc(new HeaderDelimitedMessageHandler(stream, stream, new SystemTextJsonFormatter
-        {
-            JsonSerializerOptions = RpcJsonSerializerOptions.Default
-        }));
+    private static (string TargetFilePath, string[] Arguments) BuildCommand(string assembly, IEnumerable<string> arguments) =>
+        string.Equals(Path.GetExtension(assembly), ".exe", StringComparison.OrdinalIgnoreCase)
+            ? (assembly, [.. arguments])
+            : ("dotnet", [assembly, .. arguments]);
 
-        var tcpClient = new TcpClient();
-        return new TestingPlatformClient(rpc, tcpClient, processHandle, logger, rpcLogFilePath);
+    internal static bool HelpListsTestCaseFilter(string helpOutput) =>
+        helpOutput
+            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => line.TrimStart())
+            .Any(line => line.Equals("--filter", StringComparison.Ordinal) ||
+                         line.StartsWith("--filter ", StringComparison.Ordinal));
+
+    private static bool SupportsTestCaseFilter(string assembly)
+    {
+        var fullAssemblyPath = Path.GetFullPath(assembly);
+        return TestCaseFilterSupport
+            .GetOrAdd(fullAssemblyPath, static path => CreateTestCaseFilterSupportProbe(path, ProbeTestCaseFilterSupport))
+            .Value;
+    }
+
+    internal static Lazy<bool> CreateTestCaseFilterSupportProbe(string assembly, Func<string, bool> probe) =>
+        new(() => probe(assembly), LazyThreadSafetyMode.ExecutionAndPublication);
+
+    private static bool ProbeTestCaseFilterSupport(string assembly)
+    {
+        var standardOutput = new StringBuilder();
+        var standardError = new StringBuilder();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        try
+        {
+            var (targetFilePath, arguments) = BuildCommand(assembly, ["--help"]);
+            var helpProcess = Cli.Wrap(targetFilePath)
+                .WithWorkingDirectory(Path.GetDirectoryName(assembly) ?? string.Empty)
+                .WithArguments(arguments)
+                .WithValidation(CommandResultValidation.None)
+                .WithStandardOutputPipe(PipeTarget.ToStringBuilder(standardOutput))
+                .WithStandardErrorPipe(PipeTarget.ToStringBuilder(standardError))
+                .ExecuteAsync(timeout.Token);
+
+            helpProcess.Task.GetAwaiter().GetResult();
+        }
+        catch (OperationCanceledException)
+        {
+            throw new InputException(
+                $"Timed out while checking whether test application '{Path.GetFileName(assembly)}' supports 'test-case-filter'.",
+                "The test application did not complete '--help' within 30 seconds.");
+        }
+        catch (Exception ex)
+        {
+            throw new InputException(
+                $"Could not determine whether test application '{Path.GetFileName(assembly)}' supports 'test-case-filter'.",
+                $"{standardOutput}{standardError}{ex.Message}");
+        }
+
+        return HelpListsTestCaseFilter($"{standardOutput}{standardError}");
+    }
+
+    public ITestingPlatformClient CreateClient(TcpClient tcpClient, IProcessHandle processHandle, ILogger logger)
+    {
+        var clientLogger = new DelegateMtpClientLogger((level, message) =>
+        {
+            var logLevel = level switch
+            {
+                MtpClientLogLevel.Trace => Microsoft.Extensions.Logging.LogLevel.Trace,
+                MtpClientLogLevel.Debug => Microsoft.Extensions.Logging.LogLevel.Debug,
+                MtpClientLogLevel.Information => Microsoft.Extensions.Logging.LogLevel.Information,
+                MtpClientLogLevel.Warning => Microsoft.Extensions.Logging.LogLevel.Warning,
+                MtpClientLogLevel.Error => Microsoft.Extensions.Logging.LogLevel.Error,
+                _ => Microsoft.Extensions.Logging.LogLevel.Debug
+            };
+
+            logger.Log(logLevel, "{MtpClientMessage}", message);
+        });
+
+        var formatter = MtpServerConnector.CreateFormatter();
+        var connection = MtpServerConnector.CreateConnection(tcpClient, formatter, clientLogger);
+        var client = new MtpServerClient(connection, new MtpServerClientOptions
+        {
+            ClientName = "Stryker.NET",
+            ClientVersion = typeof(TestingPlatformClient).Assembly.GetName().Version?.ToString() ?? "0.0.0",
+            IsStateful = true,
+            Logger = clientLogger
+        });
+
+        return new TestingPlatformClient(client, processHandle, logger);
     }
 
     private sealed class TcpTestServerListener(TcpListener listener) : ITestServerListener
     {
-        public async Task<(Stream Stream, IDisposable Connection)> AcceptConnectionAsync(CancellationToken cancellationToken)
-        {
-            var tcpClient = await listener.AcceptTcpClientAsync(cancellationToken).ConfigureAwait(false);
-            return (tcpClient.GetStream(), tcpClient);
-        }
+        public Task<TcpClient> AcceptConnectionAsync(CancellationToken cancellationToken)
+            => listener.AcceptTcpClientAsync(cancellationToken).AsTask();
 
         public void Stop() => listener.Stop();
 

@@ -26,7 +26,7 @@ namespace Stryker.Core.UnitTest.Reporters.Json;
 public class JsonReporterTests : TestBase
 {
     private readonly IFileSystem _fileSystemMock = new MockFileSystem();
-    private readonly string _testFilePath = "c:\\mytestfile.cs";
+    private readonly string _testFilePath = "mytestfile.cs";
     private readonly string _testFileContents = @"using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ExtraProject.XUnit
@@ -203,7 +203,7 @@ namespace ExtraProject.XUnit
         report.Thresholds.ShouldContainKeyAndValue("low", 60);
 
         var testFile = report.TestFiles.ShouldHaveSingleItem();
-        testFile.Key.ShouldBe(_testFilePath);
+        testFile.Key.ShouldBe(_fileSystemMock.Path.GetFullPath(_testFilePath));
         testFile.Value.Language.ShouldBe("cs");
         testFile.Value.Source.ShouldBe(_testFileContents);
 
