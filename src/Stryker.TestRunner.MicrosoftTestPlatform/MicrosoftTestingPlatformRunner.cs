@@ -288,6 +288,28 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         }
     }
 
+    /// <summary>
+    /// Starts an assembly's per-test files from scratch, as for its first test: no relay or coverage
+    /// file left by an earlier run or host, and the epoch file back at request 0.
+    /// Callers hold <see cref="_serverLock"/>.
+    /// </summary>
+    private void ResetPerTestFiles(string assembly)
+    {
+        var epochFilePath = GetPerTestEpochFilePath(assembly);
+
+        // Relays left behind by an earlier run or host would be waited on and never acknowledge, or
+        // worse already show this epoch, so clear them before the host creates its own
+        foreach (var staleRelayFilePath in EnumerateEpochRelayFiles(epochFilePath))
+        {
+            DeleteFileIfExists(staleRelayFilePath);
+        }
+        InitializeEpochFile(epochFilePath);
+        foreach (var staleCoverageFilePath in EnumerateCoverageFiles(GetPerTestCoverageFilePath(assembly)))
+        {
+            DeleteFileIfExists(staleCoverageFilePath);
+        }
+    }
+
     private static string SanitizeAssemblyName(string assembly) =>
         $"{Path.GetFileNameWithoutExtension(assembly)}-{(uint)assembly.GetHashCode()}";
 
@@ -632,17 +654,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         {
             if (_initializedPerTestFiles.Add(assembly))
             {
-                // Relays left behind by an earlier run would be waited on and never acknowledge, or worse
-                // already show this epoch, so clear them before the host creates its own
-                foreach (var staleRelayFilePath in EnumerateEpochRelayFiles(epochFilePath))
-                {
-                    DeleteFileIfExists(staleRelayFilePath);
-                }
-                InitializeEpochFile(epochFilePath);
-                foreach (var staleCoverageFilePath in EnumerateCoverageFiles(coverageFilePath))
-                {
-                    DeleteFileIfExists(staleCoverageFilePath);
-                }
+                ResetPerTestFiles(assembly);
             }
         }
 
@@ -833,9 +845,27 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             _assemblyServers.Remove(assembly);
         }
 
-        if (server is not null)
+        try
         {
-            await server.StopAsync(force: true).ConfigureAwait(false);
+            if (server is not null)
+            {
+                await server.StopAsync(force: true).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            // The discarded host's relays outlive it: they are named per mutated assembly, not per
+            // process, and the host that replaces it only starts a poller for an assembly once that
+            // assembly's mutated code runs. Left in place, every later per-test capture would wait on a
+            // relay nobody acknowledges and come back Dubious, so start the files over for the next host.
+            lock (_serverLock)
+            {
+                if (_initializedPerTestFiles.Contains(assembly))
+                {
+                    ResetPerTestFiles(assembly);
+                    _perTestEpochCounters.Remove(assembly);
+                }
+            }
         }
     }
 
