@@ -994,6 +994,49 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         }
     }
 
+    [TestMethod, Timeout(10000)]
+    public async Task GetOrCreateServerAsync_ShouldForgetTheRelaysOfADeadHost()
+    {
+        // A host can also exit on its own between two tests. It is then replaced when the next test
+        // asks for a server, not discarded, and its relays must not outlive it either.
+        const string assembly = "/nonexistent/assembly.dll";
+
+        using var runner = CreateRunner(716);
+        runner.SetPerTestCoverageMode(true);
+        var epochFilePath = runner.GetPerTestEpochFilePath(assembly);
+
+        // Registers the assembly the way a real capture does, then fails for want of a test host
+        await runner.RunSingleTestForCoverageInReusedProcessAsync(
+            assembly, new TestNode("test-1", "Test1", "test", "discovered"), "test-1");
+
+        var leftByTheHost = WriteEpochRelayFile(epochFilePath, "FirstMutatedAssembly", request: 3, ack: 3);
+        // Never started, so not alive: stands in for a host whose process has exited
+        runner._assemblyServers[assembly] = new AssemblyTestServer(assembly, new(), NullLogger.Instance, "716");
+
+        try
+        {
+            try
+            {
+                await runner.GetOrCreateServerAsync(assembly);
+            }
+            catch (Exception)
+            {
+                // The replacement cannot start without a real test assembly; only what happens before matters here
+            }
+
+            File.Exists(leftByTheHost).ShouldBeFalse("the relay belonged to a dead host and must not be waited on");
+            runner.BroadcastEpochRequest(epochFilePath, 1).ShouldBeEmpty(
+                "no relay of a dead host should be asked to acknowledge");
+        }
+        finally
+        {
+            foreach (var path in new[] { leftByTheHost, epochFilePath })
+            {
+                if (File.Exists(path)) File.Delete(path);
+            }
+        }
+    }
+
     private static string SuffixedPath(string path, string suffix) =>
         Path.Combine(
             Path.GetDirectoryName(path)!,

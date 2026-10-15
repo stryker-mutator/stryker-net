@@ -789,7 +789,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         }
     }
 
-    private async Task<AssemblyTestServer> GetOrCreateServerAsync(string assembly)
+    internal async Task<AssemblyTestServer> GetOrCreateServerAsync(string assembly)
     {
         AssemblyTestServer? deadServer = null;
         lock (_serverLock)
@@ -813,6 +813,19 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         if (deadServer is not null)
         {
             await deadServer.StopAsync(force: true).ConfigureAwait(false);
+        }
+
+        // A host that replaces a discarded or dead one must not inherit its relays: they are named per
+        // mutated assembly, not per process, and the new host only starts a poller for an assembly once
+        // that assembly's mutated code runs. Left in place, every later per-test capture would wait on a
+        // relay nobody acknowledges and come back Dubious, so start the files over for the new host.
+        lock (_serverLock)
+        {
+            if (_initializedPerTestFiles.Contains(assembly))
+            {
+                ResetPerTestFiles(assembly);
+                _perTestEpochCounters.Remove(assembly);
+            }
         }
 
         var environmentVariables = BuildEnvironmentVariables(assembly);
@@ -845,27 +858,9 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             _assemblyServers.Remove(assembly);
         }
 
-        try
+        if (server is not null)
         {
-            if (server is not null)
-            {
-                await server.StopAsync(force: true).ConfigureAwait(false);
-            }
-        }
-        finally
-        {
-            // The discarded host's relays outlive it: they are named per mutated assembly, not per
-            // process, and the host that replaces it only starts a poller for an assembly once that
-            // assembly's mutated code runs. Left in place, every later per-test capture would wait on a
-            // relay nobody acknowledges and come back Dubious, so start the files over for the next host.
-            lock (_serverLock)
-            {
-                if (_initializedPerTestFiles.Contains(assembly))
-                {
-                    ResetPerTestFiles(assembly);
-                    _perTestEpochCounters.Remove(assembly);
-                }
-            }
+            await server.StopAsync(force: true).ConfigureAwait(false);
         }
     }
 
