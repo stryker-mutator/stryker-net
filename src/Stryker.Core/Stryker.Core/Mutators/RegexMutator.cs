@@ -16,56 +16,67 @@ namespace Stryker.Core.Mutators;
 public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>
 {
     private const string PatternArgumentName = "pattern";
-    private ILogger Logger { get; }
+    private ILogger Logger { get; } = ApplicationLogging.LoggerFactory.CreateLogger<RegexMutator>();
 
     public override MutationLevel MutationLevel => MutationLevel.Advanced;
-
-    public RegexMutator()
-    {
-        Logger = ApplicationLogging.LoggerFactory.CreateLogger<RegexMutator>();
-    }
 
     public override IEnumerable<Mutation> ApplyMutations(ObjectCreationExpressionSyntax node,
         SemanticModel semanticModel)
     {
         var name = node.Type.ToString();
-        if (name == nameof(Regex) || name == typeof(Regex).FullName)
+        if (name != nameof(Regex) && name != typeof(Regex).FullName)
         {
-            var arguments = node.ArgumentList.Arguments;
-            var namedArgument = arguments.FirstOrDefault(argument =>
-                argument.NameColon?.Name.Identifier.ValueText == PatternArgumentName);
-            var patternArgument = namedArgument ?? node.ArgumentList.Arguments.FirstOrDefault();
-            var patternExpression = patternArgument?.Expression;
+            yield break;
+        }
 
-            if (patternExpression!= null && patternExpression.IsAStringExpression())
+        var arguments = node.ArgumentList.Arguments;
+        var namedArgument = arguments.FirstOrDefault(argument =>
+            argument.NameColon?.Name.Identifier.ValueText == PatternArgumentName);
+        var patternArgument = namedArgument ?? node.ArgumentList.Arguments.FirstOrDefault();
+        var patternExpression = patternArgument?.Expression;
+
+        if (patternExpression == null || !patternExpression.IsAStringExpression())
+        {
+            yield break;
+        }
+
+        var interpolatedString = patternExpression as InterpolatedStringExpressionSyntax;
+        var isInterpolatedString = interpolatedString != null;
+
+        // we extract the text components of the interpolated string or the literal string to mutate them separately
+        IEnumerable<(SyntaxNode node, string text)> partsToMutate = isInterpolatedString ?
+            interpolatedString.Contents.OfType<InterpolatedStringTextSyntax>().Select(n => ((SyntaxNode)n, n.TextToken.ValueText))
+            : [(patternExpression, ((LiteralExpressionSyntax)patternExpression).Token.ValueText)];
+
+        foreach (var (subNode, currentValue)  in partsToMutate)
+        {
+            var regexMutantOrchestrator = new RegexMutantOrchestrator(currentValue);
+            var replacementValues = regexMutantOrchestrator.Mutate();
+            foreach (var regexMutation in replacementValues)
             {
-                var currentValue = ((LiteralExpressionSyntax)patternExpression).Token.ValueText;
-                var regexMutantOrchestrator = new RegexMutantOrchestrator(currentValue);
-                var replacementValues = regexMutantOrchestrator.Mutate();
-                foreach (var regexMutation in replacementValues)
+                try
                 {
-                    try
-                    {
-                        _ = new Regex(regexMutation.ReplacementPattern);
-                    }
-                    catch (ArgumentException exception)
-                    {
-                        Logger.LogDebug(
-                            "RegexMutator created mutation {CurrentValue} -> {ReplacementPattern} which is an invalid regular expression:\n{Message}",
-                            currentValue, regexMutation.ReplacementPattern, exception.Message);
-                        continue;
-                    }
-
-                    yield return new Mutation()
-                    {
-                        OriginalNode = node,
-                        ReplacementNode =  node.ReplaceNode(patternExpression, SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression,
-                            SyntaxFactory.Literal(regexMutation.ReplacementPattern))),
-                        DisplayName = regexMutation.DisplayName,
-                        Type = Mutator.Regex,
-                        Description = regexMutation.Description
-                    };
+                    _ = new Regex(regexMutation.ReplacementPattern);
                 }
+                catch (ArgumentException exception)
+                {
+                    Logger.LogDebug(
+                        "RegexMutator created mutation {CurrentValue} -> {ReplacementPattern} which is an invalid regular expression:\n{Message}",
+                        currentValue, regexMutation.ReplacementPattern, exception.Message);
+                    continue;
+                }
+
+                yield return new Mutation()
+                {
+                    OriginalNode = node,
+                    ReplacementNode = node.ReplaceNode(subNode,
+                        isInterpolatedString ? SyntaxFactory.InterpolatedStringText(SyntaxFactory.Token(subNode.GetFirstToken().LeadingTrivia, SyntaxKind.InterpolatedStringTextToken
+                                , regexMutation.ReplacementPattern, regexMutation.ReplacementPattern, subNode.GetFirstToken().TrailingTrivia))
+                            : SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(regexMutation.ReplacementPattern))),
+                    DisplayName = regexMutation.DisplayName,
+                    Type = Mutator.Regex,
+                    Description = regexMutation.Description
+                };
             }
         }
     }

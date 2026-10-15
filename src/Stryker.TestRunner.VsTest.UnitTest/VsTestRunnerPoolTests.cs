@@ -108,6 +108,15 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     }
 
     [TestMethod]
+    public void DiscoverTestsAsync_WithMissingAssembly_ThrowsInputException()
+    {
+        _ = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+        ITestRunner testRunner = runner;
+
+        Should.Throw<InputException>(() => testRunner.DiscoverTestsAsync("MissingTestAssembly.dll"));
+    }
+
+    [TestMethod]
     public void RunInitialTestsWithOneFailingTest()
     {
         var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);

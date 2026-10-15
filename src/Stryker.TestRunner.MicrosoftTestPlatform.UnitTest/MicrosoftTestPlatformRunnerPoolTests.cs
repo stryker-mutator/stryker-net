@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
@@ -111,7 +112,7 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
     }
 
     [TestMethod]
-    public async Task DiscoverTests_ShouldReturnFalse_WhenAssemblyPathIsEmpty()
+    public async Task DiscoverTests_ShouldThrow_WhenAssemblyPathIsEmpty()
     {
         // Arrange
         var options = new Mock<IStrykerOptions>();
@@ -119,14 +120,14 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
 
         // Act
-        var result = await pool.DiscoverTestsAsync(string.Empty);
+        var exception = await Should.ThrowAsync<InputException>(() => pool.DiscoverTestsAsync(string.Empty));
 
         // Assert
-        result.ShouldBeFalse();
+        exception.Message.ShouldContain("binaries could not be found");
     }
 
     [TestMethod]
-    public async Task DiscoverTests_ShouldReturnFalse_WhenAssemblyPathIsNull()
+    public async Task DiscoverTests_ShouldThrow_WhenAssemblyPathIsNull()
     {
         // Arrange
         var options = new Mock<IStrykerOptions>();
@@ -134,14 +135,14 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
 
         // Act
-        var result = await pool.DiscoverTestsAsync(null!);
+        var exception = await Should.ThrowAsync<InputException>(() => pool.DiscoverTestsAsync(null!));
 
         // Assert
-        result.ShouldBeFalse();
+        exception.Message.ShouldContain("binaries could not be found");
     }
 
     [TestMethod]
-    public async Task DiscoverTests_ShouldReturnFalse_WhenAssemblyDoesNotExist()
+    public async Task DiscoverTests_ShouldThrow_WhenAssemblyDoesNotExist()
     {
         // Arrange
         var options = new Mock<IStrykerOptions>();
@@ -149,10 +150,10 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
 
         // Act
-        var result = await pool.DiscoverTestsAsync("/nonexistent/path/assembly.dll");
+        var exception = await Should.ThrowAsync<InputException>(() => pool.DiscoverTestsAsync("/nonexistent/path/assembly.dll"));
 
         // Assert
-        result.ShouldBeFalse();
+        exception.Message.ShouldContain("/nonexistent/path/assembly.dll");
     }
 
     [TestMethod]
@@ -303,12 +304,12 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance);
 
         // Act
-        var result1 = await pool.DiscoverTestsAsync("/nonexistent/path1.dll");
-        var result2 = await pool.DiscoverTestsAsync("/nonexistent/path2.dll");
+        var exception1 = await Should.ThrowAsync<InputException>(() => pool.DiscoverTestsAsync("/nonexistent/path1.dll"));
+        var exception2 = await Should.ThrowAsync<InputException>(() => pool.DiscoverTestsAsync("/nonexistent/path2.dll"));
 
         // Assert
-        result1.ShouldBeFalse();
-        result2.ShouldBeFalse();
+        exception1.Message.ShouldContain("/nonexistent/path1.dll");
+        exception2.Message.ShouldContain("/nonexistent/path2.dll");
     }
 
     [TestMethod]

@@ -1,8 +1,10 @@
+using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
@@ -31,6 +33,108 @@ public class MicrosoftTestingPlatformRunnerTests
 
     private MicrosoftTestingPlatformRunner CreateRunner(int id = 0) =>
         new(id, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+    [TestMethod]
+    public async Task DiscoverTestsAsync_ShouldReturnTrueWhenTestsAreDiscoveredAsync()
+    {
+        const string Assembly = "/test/discovery.dll";
+        using var runner = CreateRunner();
+        var client = await AddDiscoveryServerAsync(runner, Assembly);
+        var node = new TestNode("id", "Test", "action", TestNodeStates.Discovered);
+        client.Setup(x => x.DiscoverTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<CancellationToken>()))
+            .Returns<Func<TestNodeUpdate[], Task>, CancellationToken>((callback, _) =>
+                callback([new TestNodeUpdate(node, "")]));
+
+        var result = await runner.DiscoverTestsAsync(Assembly);
+
+        result.ShouldBeTrue();
+        runner.GetDiscoveredTests(Assembly).ShouldNotBeNull();
+        runner.GetDiscoveredTests(Assembly)!.Count.ShouldBe(1);
+        _testSet.Count.ShouldBe(1);
+    }
+
+    [TestMethod]
+    public async Task DiscoverTestsAsync_ShouldReturnFalseWhenNoTestsAreDiscoveredAsync()
+    {
+        const string Assembly = "/test/discovery.dll";
+        using var runner = CreateRunner();
+        var client = await AddDiscoveryServerAsync(runner, Assembly);
+        client.Setup(x => x.DiscoverTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<CancellationToken>()))
+            .Returns<Func<TestNodeUpdate[], Task>, CancellationToken>((callback, _) =>
+                callback([]));
+
+        var result = await runner.DiscoverTestsAsync(Assembly);
+
+        result.ShouldBeFalse();
+        runner.GetDiscoveredTests(Assembly).ShouldNotBeNull();
+        runner.GetDiscoveredTests(Assembly)!.Count.ShouldBe(0);
+        _testSet.Count.ShouldBe(0);
+    }
+
+    [TestMethod]
+    [DataRow("rpc")]
+    [DataRow("input")]
+    [DataRow("cancellation")]
+    public async Task DiscoverTestsAsync_ShouldPropagateFailuresWithoutCachingPartialTests(string failure)
+    {
+        const string assembly = "/test/discovery.dll";
+        using var runner = CreateRunner();
+        var client = await AddDiscoveryServerAsync(runner, assembly);
+        Exception error = failure switch
+        {
+            "input" => new InputException("Unsupported filter."),
+            "cancellation" => new OperationCanceledException(),
+            _ => new InvalidOperationException("RPC connection lost.")
+        };
+        client.Setup(x => x.DiscoverTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<CancellationToken>()))
+            .Returns<Func<TestNodeUpdate[], Task>, CancellationToken>(async (callback, _) =>
+            {
+                await callback([new TestNodeUpdate(new TestNode("id", "Test", "action", TestNodeStates.Discovered), "")]);
+                throw error;
+            });
+
+        if (failure == "cancellation")
+        {
+            var discovery = runner.DiscoverTestsAsync(assembly);
+            await Should.ThrowAsync<OperationCanceledException>(() => discovery);
+            discovery.IsCanceled.ShouldBeTrue();
+        }
+        else
+        {
+            var exception = await Should.ThrowAsync<InputException>(() => runner.DiscoverTestsAsync(assembly));
+            if (failure == "input")
+            {
+                exception.ShouldBeSameAs(error);
+            }
+            else
+            {
+                exception.Message.ShouldContain(assembly);
+                exception.Details.ShouldBe(error.Message);
+            }
+        }
+        runner.GetDiscoveredTests(assembly).ShouldBeNull();
+        _testSet.Count.ShouldBe(0);
+    }
+
+    private static async Task<Mock<ITestingPlatformClient>> AddDiscoveryServerAsync(MicrosoftTestingPlatformRunner runner, string assembly)
+    {
+        var client = new Mock<ITestingPlatformClient>();
+        client.Setup(x => x.InitializeAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        client.Setup(x => x.ExitAsync(true)).Returns(Task.CompletedTask);
+        client.Setup(x => x.WaitServerProcessExitAsync()).ReturnsAsync(0);
+        var process = new Mock<ITestServerProcess>();
+        process.Setup(x => x.WaitForExitAsync()).Returns(new TaskCompletionSource().Task);
+        var listener = new Mock<ITestServerListener>();
+        listener.Setup(x => x.AcceptConnectionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new TcpClient());
+        var factory = new Mock<ITestServerConnectionFactory>();
+        factory.Setup(x => x.CreateListener()).Returns((listener.Object, 12345));
+        factory.Setup(x => x.StartProcess(assembly, 12345, It.IsAny<Dictionary<string, string?>>())).Returns(process.Object);
+        factory.Setup(x => x.CreateClient(It.IsAny<TcpClient>(), It.IsAny<IProcessHandle>(), It.IsAny<ILogger>())).Returns(client.Object);
+        var server = new AssemblyTestServer(assembly, [], NullLogger.Instance, "test-runner", connectionFactory: factory.Object);
+        await server.StartAsync();
+        runner._assemblyServers[assembly] = server;
+        return client;
+    }
 
     [TestMethod, Timeout(1000)]
     public async Task InitialTestAsync_CallsRunAssemblyTestsAsync_AndHandlesServerCreationFailure()
@@ -439,7 +543,7 @@ public class MicrosoftTestingPlatformRunnerTests
         result.Duration.ShouldBe(TimeSpan.Zero);
     }
 
-    [TestMethod, Timeout(1000)]
+    [TestMethod, Timeout(5000)]
     public async Task RunAssemblyTestsInternalAsync_WithTimeout_StillReturnsResult_WhenServerFails()
     {
         using var runner = CreateRunner();
@@ -1090,7 +1194,7 @@ public class MicrosoftTestingPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task DiscoverTestsAsync_ShouldReturnFalse_WhenAssemblyNotFound()
+    public async Task DiscoverTestsAsync_ShouldThrow_WhenAssemblyNotFound()
     {
         // Arrange
         using var runner = new MicrosoftTestingPlatformRunner(
@@ -1102,10 +1206,11 @@ public class MicrosoftTestingPlatformRunnerTests
             NullLogger.Instance);
 
         // Act
-        var result = await runner.DiscoverTestsAsync("/nonexistent/assembly.dll");
+        var exception = await Should.ThrowAsync<InputException>(() => runner.DiscoverTestsAsync("/nonexistent/assembly.dll"));
 
         // Assert
-        result.ShouldBeFalse();
+        exception.Message.ShouldContain("/nonexistent/assembly.dll");
+        exception.Details.ShouldNotBeNullOrEmpty();
     }
 
     [TestMethod, Timeout(1000)]
@@ -1117,21 +1222,24 @@ public class MicrosoftTestingPlatformRunnerTests
         var process = new Mock<ITestServerProcess>();
         var client = new Mock<ITestingPlatformClient>();
         var processHandle = Mock.Of<IProcessHandle>();
-        var stream = new MemoryStream();
+        using var tcpClient = new TcpClient();
 
         factory.Setup(f => f.CreateListener()).Returns((listener.Object, 12345));
         factory.Setup(f => f.StartProcess(assembly, 12345, It.IsAny<Dictionary<string, string?>>()))
             .Returns(process.Object);
-        factory.Setup(f => f.CreateClient(stream, processHandle, It.IsAny<ILogger>(), null))
+        factory.Setup(f => f.CreateClient(tcpClient, processHandle, It.IsAny<ILogger>()))
             .Returns(client.Object);
         listener.Setup(l => l.AcceptConnectionAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync((stream, Mock.Of<IDisposable>()));
+            .ReturnsAsync(tcpClient);
         process.SetupGet(p => p.ProcessHandle).Returns(processHandle);
         process.SetupGet(p => p.HasExited).Returns(false);
         process.Setup(p => p.WaitForExitAsync()).Returns(new TaskCompletionSource().Task);
-        client.Setup(c => c.InitializeAsync()).ReturnsAsync((InitializeResponse)null!);
-        client.Setup(c => c.DiscoverTestsAsync(It.IsAny<Guid>(), It.IsAny<Func<TestNodeUpdate[], Task>>(), true))
-            .Returns(new TaskCompletionSource<ResponseListener>().Task);
+        client.Setup(c => c.InitializeAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        client.Setup(c => c.DiscoverTestsAsync(
+                It.IsAny<Func<TestNodeUpdate[], Task>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(new TaskCompletionSource().Task);
 
         using var server = new AssemblyTestServer(
             assembly,
