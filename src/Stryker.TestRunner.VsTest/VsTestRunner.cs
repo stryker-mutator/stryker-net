@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
@@ -76,8 +77,14 @@ public sealed class VsTestRunner : IDisposable
         return BuildTestRunResult(testResults, totalCountOfTests, totalCountOfTests, false);
     }
 
-    public ITestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler? update)
+    public ITestRunResult TestMultipleMutants(
+        IProjectAndTests project,
+        ITimeoutValueCalculator? timeoutCalc,
+        IReadOnlyList<IMutant> mutants,
+        TestUpdateHandler? update,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var mutantTestsMap = new Dictionary<int, ITestIdentifiers>();
 
         var testCases = TestCases(mutants, mutantTestsMap);
@@ -110,7 +117,14 @@ public sealed class VsTestRunner : IDisposable
             _logger.LogDebug("{RunnerId}: Using {timeOutMs} ms as test run timeout", RunnerId, timeOutMs);
         }
 
-        var testResults = RunTestSession(new TestIdentifierList(testCases), project, timeOutMs, mutantTestsMap, HandleUpdate);
+        var testResults = RunTestSession(
+            new TestIdentifierList(testCases),
+            project,
+            false,
+            timeOutMs,
+            HandleUpdate,
+            mutantTestsMap,
+            cancellationToken).normal;
 
         return BuildTestRunResult(testResults, expectedTests, totalCountOfTests);
 
@@ -140,7 +154,7 @@ public sealed class VsTestRunner : IDisposable
             {
                 _vsTestConsole.CancelTestRun();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Error while cancelling VsTest session.");
                 // recycle the session
@@ -148,6 +162,28 @@ public sealed class VsTestRunner : IDisposable
             }
             _currentSessionCancelled = true;
         }
+    }
+
+    internal void CancelCurrentRun()
+    {
+        try
+        {
+            _vsTestConsole.CancelTestRun();
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Error while cancelling VsTest session.");
+            try
+            {
+                _vsTestConsole.AbortTestRun();
+            }
+            catch (Exception abortException)
+            {
+                _logger.LogWarning(abortException, "Error while aborting VsTest session.");
+            }
+        }
+
+        _currentSessionCancelled = true;
     }
 
     private ICollection<string> TestCases(IReadOnlyList<IMutant> mutants, Dictionary<int, ITestIdentifiers> mutantTestsMap)
@@ -231,7 +267,8 @@ public sealed class VsTestRunner : IDisposable
 
     private (IRunResults normal, IRunResults raw) RunTestSession(ITestIdentifiers tests, IProjectAndTests projectAndTests,
         bool forCoverage, int? timeOut = null, Action<IRunResults> updateHandler = null,
-        Dictionary<int, ITestIdentifiers> mutantTestsMap = null)
+        Dictionary<int, ITestIdentifiers> mutantTestsMap = null,
+        CancellationToken cancellationToken = default)
     {
         var sources = projectAndTests.GetTestAssemblies();
         var validSources = _context.GetValidSources(sources).ToList();
@@ -255,6 +292,7 @@ public sealed class VsTestRunner : IDisposable
         // work around VsTest issues when using multiple test assemblies
         foreach (var source in projectAndTests.TestProjectsInfo.AnalyzerResults)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var testForSource = _context.TestsPerSource[source.GetAssemblyPath()];
             var testsForAssembly = new TestIdentifierList(tests.GetIdentifiers().Where(id => testForSource.Contains(Guid.Parse(id))));
             if (!tests.IsEveryTest && testsForAssembly.Count == 0)
@@ -271,7 +309,14 @@ public sealed class VsTestRunner : IDisposable
                 activeId = mutantTestsMap.Keys.First();
             }
             Environment.SetEnvironmentVariable(ControlVariableName, activeId.ToString());
-            RunVsTest(tests, source.GetAssemblyPath(), runSettings, options, timeOut, runEventHandler);
+            RunVsTest(
+                tests,
+                source.GetAssemblyPath(),
+                runSettings,
+                options,
+                timeOut,
+                runEventHandler,
+                cancellationToken);
 
             if (_currentSessionCancelled)
             {
@@ -289,7 +334,7 @@ public sealed class VsTestRunner : IDisposable
     }
 
     private void RunVsTest(ITestIdentifiers tests, string source, string runSettings, TestPlatformOptions options,
-            int? timeOut, RunEventHandler eventHandler)
+            int? timeOut, RunEventHandler eventHandler, CancellationToken cancellationToken)
     {
         var attempt = 0;
         while (attempt < MaxAttempts)
@@ -298,8 +343,10 @@ public sealed class VsTestRunner : IDisposable
 
             eventHandler.StartSession();
             _currentSessionCancelled = false;
+            cancellationToken.ThrowIfCancellationRequested();
             var session = Task.Run(() =>
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     if (tests.IsEveryTest)
                     {
                         _vsTestConsole.RunTestsWithCustomTestHost([source], runSettings, options, eventHandler,

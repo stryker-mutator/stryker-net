@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -5,6 +6,7 @@ using Spectre.Console;
 using Stryker.Abstractions.Exceptions;
 using Stryker.CLI.Infrastructure;
 using Stryker.CLI.Logging;
+using Stryker.CLI.MutationServer;
 using Stryker.Configuration;
 using Stryker.Core.Infrastructure;
 
@@ -36,6 +38,11 @@ public static class Program
         {
             AnsiConsole.MarkupLine("[Yellow]Stryker.NET failed to mutate your project. For more information see the logs below:[/]");
             AnsiConsole.WriteLine(exception.ToString());
+            return ExitCodes.OtherError;
+        }
+        catch (MutationServerException exception)
+        {
+            Console.Error.WriteLine(exception.Message);
             return ExitCodes.OtherError;
         }
     }

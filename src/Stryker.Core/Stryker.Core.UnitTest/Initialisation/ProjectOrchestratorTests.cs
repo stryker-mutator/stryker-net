@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Buildalyzer;
 using Buildalyzer.Environment;
@@ -22,6 +23,7 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
 using Stryker.Utilities.Logging;
@@ -75,6 +77,63 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 
         // assert
         result.ShouldHaveSingleItem();
+    }
+
+    [TestMethod]
+    public async Task ShouldRestoreMutatedProjectsWhenMutationIsCancelled()
+    {
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var options = new StrykerOptions { ProjectPath = ProjectPath };
+        var sourceProjectInfo = new SourceProjectInfo(
+            TestHelper.SetupProjectAnalyzerResult(references: []).Object,
+            new TestProjectsInfo(null));
+        var projectInfos = new RelatedSourceProjectsInfo(null, [sourceProjectInfo]);
+        var mutationTestInput = new MutationTestInput { SourceProjectInfo = sourceProjectInfo };
+        var initializationProcessMock = new Mock<IInitialisationProcess>(MockBehavior.Strict);
+        var runnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
+        var mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
+        var projectMutatorMock = new Mock<IProjectMutator>(MockBehavior.Strict);
+        var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
+
+        initializationProcessMock
+            .Setup(process => process.GetMutableProjectsInfo(options))
+            .Returns(projectInfos);
+        initializationProcessMock.Setup(process => process.BuildProjects(options, projectInfos));
+        initializationProcessMock
+            .Setup(process => process.GetMutationTestInputsAsync(
+                options,
+                projectInfos,
+                runnerMock.Object,
+                cancellationTokenSource.Token))
+            .ReturnsAsync([mutationTestInput]);
+        mutationTestExecutorMock.SetupSet(executor => executor.TestRunner = runnerMock.Object);
+        mutationTestProcessMock.Setup(process => process.Restore());
+        projectMutatorMock
+            .Setup(mutator => mutator.MutateProject(
+                options,
+                mutationTestInput,
+                _reporterMock.Object,
+                null))
+            .Returns(() =>
+            {
+                cancellationTokenSource.Cancel();
+                return mutationTestProcessMock.Object;
+            });
+        var target = new ProjectOrchestrator(
+            projectMutatorMock.Object,
+            initializationProcessMock.Object,
+            new Mock<IInputFileResolver>(MockBehavior.Strict).Object,
+            new Mock<IServiceProvider>(MockBehavior.Strict).Object,
+            mutationTestExecutorMock.Object,
+            TestLoggerFactory.CreateLogger<ProjectOrchestrator>());
+
+        await Should.ThrowAsync<OperationCanceledException>(() => target.MutateProjectsAsync(
+            options,
+            _reporterMock.Object,
+            runnerMock.Object,
+            cancellationTokenSource.Token));
+
+        mutationTestProcessMock.Verify(process => process.Restore(), Times.Once);
     }
 
     [TestMethod]
@@ -167,7 +226,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object);
 
         // assert
-        sourceProjectAnalyzerMock.Verify(x => x.Build(It.Is<EnvironmentOptions>(env => env.GlobalProperties["Configuration"]=="Release")), Times.AtLeastOnce);
+        sourceProjectAnalyzerMock.Verify(x => x.Build(It.Is<EnvironmentOptions>(env => env.GlobalProperties["Configuration"] == "Release")), Times.AtLeastOnce);
     }
 
     [TestMethodWithIgnoreIfSupport]
@@ -300,7 +359,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
 
         // act
-        var result = async() => (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
+        var result = async () => (await target.MutateProjectsAsync(options, _reporterMock.Object, mockRunner.Object)).ToList();
 
         // assert
         result.ShouldThrow<InputException>();

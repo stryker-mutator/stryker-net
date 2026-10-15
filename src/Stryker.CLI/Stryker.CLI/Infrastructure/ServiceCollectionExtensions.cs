@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
+using Stryker.CLI.MutationServer;
 
 namespace Stryker.CLI.Infrastructure;
 
@@ -15,6 +16,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IConfigBuilder, ConfigBuilder>();
         services.AddSingleton<ILoggingInitializer, LoggingInitializer>();
         services.AddSingleton<IStrykerNugetFeedClient, StrykerNugetFeedClient>();
+        services.AddSingleton<MutationServerService>();
+        services.AddSingleton<IMutationServer, MutationServerHost>();
         services.AddSingleton(_ => AnsiConsole.Console);
         services.AddSingleton<IFileSystem, FileSystem>();
 
