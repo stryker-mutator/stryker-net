@@ -127,3 +127,16 @@ Example:
 
 **The final mutation score is 78.70%**  
 *Coverage Thresholds: high: 90 low: 60 break: 60*
+dotnet stryker --reporter "html"
+dotnet stryker --reporter "progress"
+dotnet stryker --reporter "dashboard"
+  <ItemGroup>
+    <PackageReference Include="DotNet.ReproducibleBuilds" Version="0.1.66" PrivateAssets="All"/>
+  </ItemGroup>
+  dotnet stryker --reporter "cleartext"
+  dotnet stryker --reporter "cleartexttree"
+dotnet stryker --reporter "dots"
+  dotnet stryker --reporter "json"
+  gitlab_quality.json
+  dotnet stryker --reporter "gitlab"
+  dotnet stryker --reporter "markdown"
