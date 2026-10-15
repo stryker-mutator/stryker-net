@@ -292,6 +292,8 @@ public class MutantControlCoverageFileTests : TestBase
         // follow what the runner writes between runs.
         var mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-test-{Guid.NewGuid():N}.txt");
         var previousEnvironmentValue = Environment.GetEnvironmentVariable(MutantFileEnvironmentVariable);
+        MemoryMappedViewAccessor mappedView = null;
+        IDisposable mapping = null;
 
         try
         {
@@ -301,6 +303,8 @@ public class MutantControlCoverageFileTests : TestBase
             var mutantControl = GetMutantControl(CompileMutantControl("MutantFileReader"));
             IsActive(mutantControl, 5).ShouldBeTrue("setup: the helper should read the mutant id the runner wrote");
             GetStaticField(mutantControl, "_mutantMmfReady").ShouldBe(true, "setup: the helper should have mapped the mutant file");
+            mappedView = (MemoryMappedViewAccessor)GetStaticField(mutantControl, "_mutantAccessor");
+            mapping = (IDisposable)GetStaticField(mutantControl, "_mutantMmf");
 
             // Stands in for an accessor the hot path must no longer use
             SetStaticField(mutantControl, "_mutantAccessor", new object());
@@ -314,14 +318,15 @@ public class MutantControlCoverageFileTests : TestBase
         finally
         {
             Environment.SetEnvironmentVariable(MutantFileEnvironmentVariable, previousEnvironmentValue);
-            try
+            // The helper keeps the file mapped for the life of the process, so undo that here or Windows
+            // won't let the file be deleted
+            if (mappedView is not null)
             {
-                File.Delete(mutantFilePath);
+                mappedView.SafeMemoryMappedViewHandle.DangerousRelease();
+                mappedView.Dispose();
             }
-            catch (IOException)
-            {
-                // The helper keeps the file mapped for the life of the process, which Windows won't delete
-            }
+            mapping?.Dispose();
+            File.Delete(mutantFilePath);
         }
     }
 

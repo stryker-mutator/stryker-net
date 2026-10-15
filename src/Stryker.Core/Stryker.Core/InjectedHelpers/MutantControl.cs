@@ -25,14 +25,17 @@ namespace Stryker
         // SafeBuffer (interlocked updates of one shared ref count), which serializes parallel test threads
         // and made instrumented code run orders of magnitude slower. So the view's address is taken once
         // (_mutantViewAddress, with a ref on the view handle that is never released: the mapping lives as
-        // long as the process) and read with Marshal.ReadInt32.
+        // long as the process) and read with Marshal.ReadInt32. _mutantMmfReady is volatile so that a thread
+        // seeing it set also sees that address, and the view is set up under _mutantMmfLock so that test
+        // threads arriving together create only one.
         // _mutantMmf / _mutantAccessor are typed as object and initialized to a non-null sentinel only to
         // root them (and avoid nullable warnings).
         private static object _mutantMmf = new System.Object();
         private static object _mutantAccessor = new System.Object();
         private static System.IntPtr _mutantViewAddress = System.IntPtr.Zero;
-        private static bool _mutantMmfReady;
+        private static volatile bool _mutantMmfReady;
         private static bool _mutantMmfFailed;
+        private static object _mutantMmfLock = new System.Object();
 
         // Tells this copy of the class apart from the copies of the other mutated assemblies the test
         // host loads; see GetOwningAssemblyDiscriminator. Computed once, so every file this copy writes
@@ -185,6 +188,20 @@ namespace Stryker
                 return;
             }
 
+            lock (_mutantMmfLock)
+            {
+                if (_mutantMmfReady || _mutantMmfFailed)
+                {
+                    return;
+                }
+
+                CreateMutantMmf();
+            }
+        }
+
+        // Callers hold _mutantMmfLock.
+        private static void CreateMutantMmf()
+        {
             // The runner creates the file (with the initial -1) before the test host starts, so it
             // normally exists on the first call. If it is not there yet, leave things unmapped and retry
             // on a later call rather than giving up permanently.
@@ -219,6 +236,8 @@ namespace Stryker
                 accessor.SafeMemoryMappedViewHandle.DangerousAddRef(ref addedRef);
                 if (!addedRef)
                 {
+                    accessor.Dispose();
+                    mmf.Dispose();
                     _mutantMmfFailed = true;
                     return;
                 }
@@ -226,8 +245,7 @@ namespace Stryker
                 _mutantViewAddress = new System.IntPtr(accessor.SafeMemoryMappedViewHandle.DangerousGetHandle().ToInt64() + accessor.PointerOffset);
                 _mutantMmf = mmf;
                 _mutantAccessor = accessor;
-                // Other test threads must not see the view as ready before they can see its address
-                System.Threading.Thread.MemoryBarrier();
+                // Volatile write: published after the address, see the field comments
                 _mutantMmfReady = true;
             }
             catch
