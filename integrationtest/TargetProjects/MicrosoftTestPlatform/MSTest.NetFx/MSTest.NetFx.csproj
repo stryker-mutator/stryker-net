@@ -1,0 +1,18 @@
+<Project Sdk="MSTest.Sdk/4.2.2">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Target.NetFx\Target.NetFx.csproj" />
+  </ItemGroup>
+
+</Project>
