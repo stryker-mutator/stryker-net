@@ -24,6 +24,22 @@ This affects:
 - how tests are executed
 - how test results are reported
 
+## Runaway mutant hit limits
+
+During coverage capture, the injected `MutantControl` records how many times
+each mutation site executes in each test. When testing a mutant, Stryker sums
+the baseline count for its assessing tests and sets a limit of 100 times that
+count, with a 1,000-hit minimum. Exceeding the limit cancels the run and reports
+the mutant as `Timeout`; the configured wall-clock timeout remains the fallback.
+
+The counter is shared by the VsTest and Microsoft Testing Platform runners.
+Each runner passes the active limit to the test host and observes a marker file
+when the limit is exceeded. Microsoft Testing Platform also uses a run
+generation in its mapped mutant-control file so reused hosts reset their
+counter between mutants. When counts are unavailable, hit-limit enforcement is
+disabled. The check only detects runaway execution that repeatedly visits the
+mutation site.
+
 ## Identification
 By default, VsTest generates unique identifiers stored as `Guid`. I do not know if test runners are able to provide
 a specific implementation but in practice, this identifier is derived from the(test's) display's name hash code.

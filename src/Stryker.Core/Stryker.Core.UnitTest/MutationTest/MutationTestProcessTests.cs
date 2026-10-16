@@ -141,6 +141,7 @@ public class MutationTestProcessTests : TestBase
         await target.TestAsync(TestScenario.GetCoveredMutants());
 
         TestScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
+        TestScenario.GetMutants().Single(mutant => mutant.Id == 1).TestDuration.ShouldNotBeNull();
         TestScenario.GetMutantStatus(2).ShouldBe(MutantStatus.NoCoverage);
     }
 

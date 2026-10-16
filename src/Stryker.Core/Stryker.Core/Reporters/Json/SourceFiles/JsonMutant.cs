@@ -33,18 +33,40 @@ public class JsonMutant : IJsonMutant
     {
         Id = mutant.Id.ToString();
         MutatorName = mutant.Mutation.DisplayName;
-        Description = mutant.Mutation.Description;
+        Description = BuildDescription(mutant);
 
         Replacement = mutant.Mutation.ReplacementNode.ToString();
         Location = new Location(mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan());
 
         Status = mutant.ResultStatus.ToString();
         StatusReason = mutant.ResultStatusReason;
+        Duration = mutant.TestDuration is { } testDuration ? (int)testDuration.TotalMilliseconds : null;
 
         Static = mutant.IsStaticValue;
 
         CoveredBy = mutant.CoveringTests.GetIdentifiers()?.Select(g => g.ToString());
         KilledBy = mutant.KillingTests.GetIdentifiers()?.Select(g => g.ToString());
+    }
+
+    private static string BuildDescription(IReadOnlyMutant mutant)
+    {
+        var details = new List<string>();
+        if (mutant.TestDuration is { } testDuration)
+        {
+            details.Add($"Duration: {(int)testDuration.TotalMilliseconds} ms");
+        }
+        if (mutant.HitCount is { } hitCount)
+        {
+            details.Add($"HitCount: {hitCount}");
+        }
+        if (mutant.HitLimit is { } hitLimit)
+        {
+            details.Add($"HitLimit: {hitLimit}");
+        }
+
+        return details.Count == 0
+            ? mutant.Mutation.Description
+            : $"{mutant.Mutation.Description} ({string.Join(", ", details)})";
     }
 }
 
