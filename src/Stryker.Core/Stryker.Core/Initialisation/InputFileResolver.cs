@@ -50,7 +50,6 @@ public class InputFileResolver(
     /// <exception cref="InputException">Thrown if the method fails during analysis.</exception>
     public RelatedSourceProjectsInfo ResolveSourceProjectInfos(IStrykerOptions options)
     {
-
         SolutionFile solution;
         if (string.IsNullOrEmpty(options.SolutionPath))
         {
@@ -155,7 +154,7 @@ public class InputFileResolver(
         var analyzedProjects = AnalyzeAllNeededProjects(solution,
             normalizedProjectUnderTestNameFilter, options, ScanMode.ScanTestProjectReferences);
         // we match test projects to mutable projects
-        var (findMutableAnalyzerResults, orphans) = ExtractMutableProjectTrees(analyzedProjects, options);
+            var (findMutableAnalyzerResults, orphans) = ExtractMutableProjectTrees(analyzedProjects, options);
 
         var result = AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphans);
         result = SelectSingleProject(normalizedProjectUnderTestNameFilter, result, targetProjectMode, testProjectFileNames);
@@ -400,7 +399,7 @@ public class InputFileResolver(
     }
 
     // analyze a single project with retry attempts if needed, and return the analyzer results
-    private IAnalyzerResults AnalyzeSingleProject(ProjectSimulatedBuildWrapper project, IStrykerOptions options)
+    private void AnalyzeSingleProject(ProjectSimulatedBuildWrapper project, IStrykerOptions options)
     {
         var projectLogName = FileSystem.Path.GetRelativePath(options.WorkingDirectory, project.ProjectFileName);
         var shouldConfirmSuccess = false;
@@ -447,7 +446,7 @@ public class InputFileResolver(
             _logger.Log((shouldConfirmSuccess||!buildResult.OverallSuccess) ? LogLevel.Information : LogLevel.Debug,
                 "Analysis of project {ProjectFilePath} succeeded{Extra}", projectLogName,
                 buildResult.OverallSuccess ? "." : " but simulated build failed; Stryker may fail later.");
-            return buildResult;
+            return;
         }
 
         // log failure details
@@ -455,7 +454,6 @@ public class InputFileResolver(
             "Analysis of project {ProjectFilePath} failed for all frameworks ({FrameworkList}).",
             projectLogName, string.Join(',', project.FailedFrameworks));
 
-        return buildResult;
     }
 
     private (List<MutableProjectTree>, List<ProjectSimulatedBuildWrapper>) ExtractMutableProjectTrees(
