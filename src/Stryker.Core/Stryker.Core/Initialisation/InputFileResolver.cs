@@ -50,7 +50,6 @@ public class InputFileResolver(
     /// <exception cref="InputException">Thrown if the method fails during analysis.</exception>
     public RelatedSourceProjectsInfo ResolveSourceProjectInfos(IStrykerOptions options)
     {
-        var normalizedProjectUnderTestNameFilter = NormalizePath(options.SourceProjectName);
 
         SolutionFile solution;
         if (string.IsNullOrEmpty(options.SolutionPath))
@@ -83,6 +82,7 @@ public class InputFileResolver(
         }
 
         var solutionInfo = BuildTracker(options, solution);
+        var normalizedProjectUnderTestNameFilter = NormalizePath(options.SourceProjectName);
         var sourceProjectInfos =  options.IsSolutionContext ? FindProjectsInSolutionMode(options, solutionInfo, normalizedProjectUnderTestNameFilter)
             : FindProjectInTargetProjectMode(options, solutionInfo, normalizedProjectUnderTestNameFilter);
         return new RelatedSourceProjectsInfo(solutionInfo, sourceProjectInfos, _logger);
@@ -312,6 +312,7 @@ public class InputFileResolver(
         string normalizedProjectUnderTestNameFilter,
         IStrykerOptions options, ScanMode mode)
     {
+        Func<ProjectSimulatedBuildWrapper, ScanResult> selector = p => ShouldScanProject(p, mode, normalizedProjectUnderTestNameFilter);
         var mutableProjectsAnalyzerResults = new ConcurrentBag<ProjectSimulatedBuildWrapper>();
         var parallelOptions = new ParallelOptions
             { MaxDegreeOfParallelism = options.DiagMode ? 1 : Math.Max(options.Concurrency, 1) };
@@ -320,20 +321,20 @@ public class InputFileResolver(
         {
             while (!list.Empty)
             {
-                #if DEBUG
+#if DEBUG
                 if (Debugger.IsAttached)
                 {
                     foreach (var project in list.Consume())
                     {
-                        ProcessProject(project, normalizedProjectUnderTestNameFilter, mutableProjectsAnalyzerResults, mode, list, solutionInfo, options);
+                        list.Add(ProcessProject(project, selector, mutableProjectsAnalyzerResults, solutionInfo, options));
                     }
                 }
                 else
                 #endif
                 {
                     Parallel.ForEach(list.Consume(),
-                        parallelOptions, entry => ProcessProject(entry, normalizedProjectUnderTestNameFilter,
-                            mutableProjectsAnalyzerResults, mode, list, solutionInfo, options)
+                        parallelOptions, entry => list.Add(ProcessProject(entry, selector,
+                            mutableProjectsAnalyzerResults, solutionInfo, options))
                     );
                 }
             }
@@ -347,35 +348,55 @@ public class InputFileResolver(
         return mutableProjectsAnalyzerResults;
     }
 
-    private void ProcessProject(string entry, string projectUnderTestNameFilter, ConcurrentBag<ProjectSimulatedBuildWrapper> results,
-        ScanMode scanMode, DynamicEnumerableQueue<string> dynamicEnumerableQueue, ProjectsTracker solutionInfo, IStrykerOptions options)
+    private enum ScanResult
     {
-        var projectAnalysisContext = solutionInfo.GetProjectAnalysisContext(entry);
-        IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(projectAnalysisContext, options);
+        Discard,
+        Keep,
+        KeepAndScanReferences
+    }
 
-        // apply project name filter (except for test projects)
+    private ScanResult ShouldScanProject(ProjectSimulatedBuildWrapper project, ScanMode scanMode, string projectUnderTestNameFilter)
+    {
         if (projectUnderTestNameFilter != null
-            && !buildResult.IsTestProject()
-            && !projectAnalysisContext.ProjectFileName.Replace('\\', '/')
+            && !project.IsTestProject()
+            && !project.ProjectFileName.Replace('\\', '/')
                 .Contains(NormalizePath(projectUnderTestNameFilter),
                     StringComparison.InvariantCultureIgnoreCase))
         {
-            return;
+            return ScanResult.Discard;
         }
 
-        results.Add(projectAnalysisContext);
-        // recursively scan dependencies only if enabled and current project is a test project
         if (scanMode == ScanMode.NoScan
-            || (scanMode == ScanMode.ScanTestProjectReferences && !projectAnalysisContext.IsTestProject()))
+            || (scanMode == ScanMode.ScanTestProjectReferences && !project.IsTestProject()))
         {
-            return;
+            return ScanResult.Keep;
         }
 
-        // scan references if recursive scan is enabled
-        // Stryker will recursively scan projects
-        // add any project reference for progressive discovery (when not using solution file)
-        dynamicEnumerableQueue.Add(projectAnalysisContext.GetProjectReferences()
-            .Where(projectReference => FileSystem.File.Exists(projectReference)));
+        return ScanResult.KeepAndScanReferences;
+    }
+
+    private IEnumerable<string> ProcessProject(string entry, Func<ProjectSimulatedBuildWrapper, ScanResult> selector,
+        ConcurrentBag<ProjectSimulatedBuildWrapper> results, ProjectsTracker solutionInfo, IStrykerOptions options)
+    {
+        var projectAnalysisContext = solutionInfo.GetProjectAnalysisContext(entry);
+        AnalyzeSingleProject(projectAnalysisContext, options);
+
+        switch (selector(projectAnalysisContext))
+        {
+            case ScanResult.Discard:
+            default:
+                return [];
+            case ScanResult.Keep:
+                results.Add(projectAnalysisContext);
+                return [];
+            case ScanResult.KeepAndScanReferences:
+                results.Add(projectAnalysisContext);
+                // scan references if recursive scan is enabled
+                // Stryker will recursively scan projects
+                // add any project reference for progressive discovery (when not using solution file)
+                return projectAnalysisContext.GetProjectReferences()
+                    .Where(projectReference => FileSystem.File.Exists(projectReference));
+        }
     }
 
     // analyze a single project with retry attempts if needed, and return the analyzer results
