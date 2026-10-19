@@ -1,0 +1,28 @@
+name: docs defaults check
+run-name: docs defaults check ${{ github.head_ref || github.ref_name }}
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  release:
+    types:
+      - published
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  docs-defaults-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Check documented default values
+        run: pwsh ./check-docs-defaults.ps1
