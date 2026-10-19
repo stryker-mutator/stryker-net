@@ -45,13 +45,15 @@ public class MutantTests : TestBase
     }
 
     [TestMethod]
-    public void ShouldSetKilledStateWhenAssesingTestFailed()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ShouldSetKilledStateWhenAssesingTestFailed(bool wrapped)
     {
         var failingTest = Guid.NewGuid().ToString();
         var succeedingTest = Guid.NewGuid().ToString();
         var mutant = new Mutant
         {
-            AssessingTests = new TestIdentifierList(new[] { failingTest })
+            AssessingTests = wrapped ? new WrappedIdentifierEnumeration(new[] { failingTest }) : new TestIdentifierList(new[] { failingTest })
         };
 
         mutant.AnalyzeTestRun(new TestIdentifierList(new[] { failingTest }),
@@ -66,13 +68,15 @@ public class MutantTests : TestBase
     }
 
     [TestMethod]
-    public void ShouldSetSurvivedWhenNonAssesingTestFailed()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ShouldSetSurvivedWhenNonAssesingTestFailed(bool wrapped)
     {
         var failingTest = Guid.NewGuid().ToString();
         var succeedingTest = Guid.NewGuid().ToString();
         var mutant = new Mutant
         {
-            AssessingTests = new TestIdentifierList(new[] { succeedingTest })
+            AssessingTests = wrapped ? new WrappedIdentifierEnumeration(new[] { succeedingTest }) : new TestIdentifierList(new[] { succeedingTest })
         };
 
         mutant.AnalyzeTestRun(new TestIdentifierList(new[] { failingTest }),
@@ -86,12 +90,14 @@ public class MutantTests : TestBase
     }
 
     [TestMethod]
-    public void ShouldSetSurvivedWhenNoTestSucceeds()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ShouldSetSurvivedWhenNoTestSucceeds(bool wrapped)
     {
         var succeedingTest = Guid.NewGuid().ToString();
         var mutant = new Mutant
         {
-            AssessingTests = new TestIdentifierList(new[] { succeedingTest })
+            AssessingTests = wrapped ? new WrappedIdentifierEnumeration(new[] { succeedingTest }) : new TestIdentifierList(new[] { succeedingTest })
         };
 
         mutant.AnalyzeTestRun(TestIdentifierList.NoTest(),
