@@ -45,7 +45,9 @@ public class ProjectMutator : IProjectMutator
 
     private void EnrichTestProjectsWithTestInfo(InitialTestRun initialTestRun, ITestProjectsInfo testProjectsInfo)
     {
-        var unitTests = initialTestRun.Result.TestDescriptions.Select(desc => desc.Case);
+        var unitTests = initialTestRun.Result.TestDescriptions.
+            Where(desc => initialTestRun.Result.ExecutedTests.Contains(desc.Id)).
+            Select(desc => desc.Case);
 
         foreach (var unitTest in unitTests)
         {
