@@ -49,7 +49,7 @@ public class Mutant : IMutant
             ResultStatus = MutantStatus.RuntimeError;
             ResultStatusReason = "The test host crashed or became unreachable while testing this mutant";
         }
-        else if (resultRanTests.IsEveryTest || !resultRanTests.IsEveryTest && AssessingTests.IsIncludedIn(resultRanTests))
+        else if (resultRanTests.IsEveryTest || AssessingTests.IsIncludedIn(resultRanTests))
         {
             ResultStatus = MutantStatus.Survived;
         }

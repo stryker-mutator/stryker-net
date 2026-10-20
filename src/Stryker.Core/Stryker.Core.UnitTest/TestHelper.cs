@@ -3,9 +3,6 @@ using System.Collections.Immutable;
 using System.IO;
 using Buildalyzer;
 using Moq;
-using Stryker.Abstractions;
-using Stryker.Utilities.Buildalyzer;
-
 namespace Stryker.Core.UnitTest;
 
 public static class TestHelper
