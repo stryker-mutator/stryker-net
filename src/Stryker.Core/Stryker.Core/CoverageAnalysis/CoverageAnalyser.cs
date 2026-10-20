@@ -60,12 +60,13 @@ public class CoverageAnalyser : ICoverageAnalyser
         {
             foreach (var i in coverageRunResult.MutationsCovered)
             {
-                if (!mutationToResultMap.ContainsKey(i))
+                if (!mutationToResultMap.TryGetValue(i, out var value))
                 {
-                    mutationToResultMap[i] = new List<ICoverageRunResult>();
+                    value = [];
+                    mutationToResultMap[i] = value;
                 }
 
-                mutationToResultMap[i].Add(coverageRunResult);
+                value.Add(coverageRunResult);
             }
 
             if (failedTests.GetIdentifiers().Contains(coverageRunResult.TestId))
