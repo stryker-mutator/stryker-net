@@ -5,10 +5,6 @@
     <File Path="../azure-pipelines.yml" />
     <File Path="../integration-tests.ps1" />
     <File Path="../README.md" />
-    <File Path="../docs/technical-reference/fsharp/classes.md" />
-    <File Path="../docs/technical-reference/fsharp/current-state.md" />
-    <File Path="../docs/technical-reference/fsharp/packages.md" />
-    <File Path="../docs/technical-reference/fsharp/_category_.yml" />
     <File Path="../docs/technical-reference/introduction.md" />
     <File Path="../docs/technical-reference/mutant-schemata.md" />
     <File Path="../docs/technical-reference/Mutation Orchestration Design.md" />

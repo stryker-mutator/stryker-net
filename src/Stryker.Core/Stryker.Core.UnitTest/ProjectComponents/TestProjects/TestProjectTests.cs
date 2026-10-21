@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
@@ -69,8 +71,9 @@ public class TestProjectTests
     {
         // Arrange
         var fileSystem = new MockFileSystem();
-        var rootPath = Path.Combine("c", "TestProject");
-        var filePath = Path.Combine(rootPath, "ExampleTestFilePreprocessorSymbols.cs");
+        var path = fileSystem.Path;
+        var rootPath = path.Combine("c", "TestProject");
+        var filePath = path.Combine(rootPath, "ExampleTestFilePreprocessorSymbols.cs");
         fileSystem.AddDirectory(rootPath);
 
         var testProjectAnalyzerResultMock = TestHelper.SetupProjectAnalyzerResult(
@@ -78,7 +81,7 @@ public class TestProjectTests
             sourceFiles: new string[] { filePath },
             preprocessorSymbols: new string[] { "NET6_0_OR_GREATER" }
         );
-        var file = File.ReadAllText(Path.Combine(".", "TestResources", "ExampleTestFilePreprocessorSymbols.cs"));
+        var file = File.ReadAllText(path.Combine(".", "TestResources", "ExampleTestFilePreprocessorSymbols.cs"));
         fileSystem.AddFile(filePath, new MockFileData(file));
 
         // Act
@@ -87,5 +90,62 @@ public class TestProjectTests
         // Assert
         var nodes = testProject.TestFiles.First().SyntaxTree.GetRoot().DescendantNodes();
         testProject.TestFiles.First().SyntaxTree.GetRoot().DescendantNodes().Where(n => n is MethodDeclarationSyntax).Count().ShouldBe(4);
+    }
+
+    [TestMethod]
+    public void ConstructorResolvesRelativeSourceFilesFromProjectDirectory()
+    {
+        var fileSystem = new MockFileSystem();
+        var path = fileSystem.Path;
+        var projectPath =  path.GetFullPath(path.Combine("repo", "tests", "Tests.fsproj"));
+        var relativeSourcePath = path.Combine("SimulationSetup", "Tests.fs");
+        var expectedSourcePath = path.Combine("repo", "tests", relativeSourcePath);
+        fileSystem.AddFile(expectedSourcePath, new MockFileData("module Tests"));
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            projectFilePath: projectPath,
+            sourceFiles: [relativeSourcePath]);
+
+        var sut = new TestProject(fileSystem, analyzerResult.Object);
+
+        sut.TestFiles.Single().FilePath.ShouldBe(path.GetFullPath(expectedSourcePath));
+    }
+
+    [TestMethod]
+    public void HandlesNonCSharpProject()
+    {
+        var fileSystem = new MockFileSystem();
+        var path = fileSystem.Path;
+        var projectPath =  path.GetFullPath(path.Combine("repo", "tests", "Tests.fsproj"));
+        var relativeSourcePath = path.Combine("SimulationSetup", "Tests.fs");
+        var expectedSourcePath = path.Combine("repo", "tests", relativeSourcePath);
+        fileSystem.AddFile(expectedSourcePath, new MockFileData("module Tests"));
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            projectFilePath: projectPath,
+            sourceFiles: [relativeSourcePath],
+            properties: new Dictionary<string, string>{["Language"]="F#"});
+
+        var sut = new TestProject(fileSystem, analyzerResult.Object);
+
+        sut.TestFiles.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void TestProject_UsesProjectLanguageVersion()
+    {
+        var fileSystem = new MockFileSystem();
+        var rootPath = Path.Combine("c", "TestProject");
+        var filePath = Path.Combine(rootPath, "ExampleTestFileA.cs");
+        fileSystem.AddDirectory(rootPath);
+        fileSystem.AddFile(filePath, new MockFileData(File.ReadAllText(Path.Combine(".", "TestResources", "ExampleTestFileA.cs"))));
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            properties: new() { ["LangVersion"] = "7.3" },
+            references: [],
+            sourceFiles: [filePath]);
+        analyzerResult.Setup(x => x.GetProperty("LangVersion")).Returns("7.3");
+
+        var testProject = new TestProject(fileSystem, analyzerResult.Object);
+
+        var parseOptions = testProject.TestFiles.Single().SyntaxTree.Options.ShouldBeOfType<CSharpParseOptions>();
+        parseOptions.SpecifiedLanguageVersion.ShouldBe(LanguageVersion.CSharp7_3);
     }
 }

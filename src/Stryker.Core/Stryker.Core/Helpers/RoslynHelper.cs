@@ -29,6 +29,22 @@ internal static class RoslynHelper
         node.IsAStringExpression() || model.GetTypeInfo(node).Type?.SpecialType == SpecialType.System_String;
 
     /// <summary>
+    /// Checks if a node bears directives or comments
+    /// </summary>
+    /// <param name="node">node to check</param>
+    /// <returns>true if the node has significant trivia</returns>
+    public static bool HasSignificantTrivia(this SyntaxNode node) =>
+        node.GetLeadingTrivia().ContainsSignificantTrivia()
+        || node.GetTrailingTrivia().ContainsSignificantTrivia();
+
+    private static bool ContainsSignificantTrivia(this SyntaxTriviaList list) =>
+        list.Any(t => t.IsKind(SyntaxKind.SingleLineCommentTrivia)
+                      || t.IsKind(SyntaxKind.MultiLineCommentTrivia)
+                      || t.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia)
+                      || t.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia)
+                      || t.IsDirective);
+
+    /// <summary>
     /// Check if an expression contains a declaration
     /// </summary>
     /// <param name="node">expression to check</param>

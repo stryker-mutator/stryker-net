@@ -32,14 +32,16 @@ public static class AssertionExtensions
     {
         var isSame = actual.IsEquivalentTo(expected);
 
-        if (!isSame)
+        if (isSame)
         {
-            var diff = ScanDiff(actual.GetRoot(), expected.GetRoot());
-
-            Console.WriteLine(string.Join(Environment.NewLine, diff));
-
-            throw new ShouldAssertException("The actual syntax tree is not equivalent to the expected syntax tree. See the differences above.");
+            return;
         }
+
+        var diff = ScanDiff(actual.GetRoot(), expected.GetRoot());
+
+        Console.WriteLine(string.Join(Environment.NewLine, diff));
+
+        throw new ShouldAssertException($"The actual syntax tree is not equivalent to the expected syntax tree. See the differences above.{Environment.NewLine}Actual:{Environment.NewLine}{actual.GetRoot()}");
     }
 
     private static List<string> ScanDiff(SyntaxNode actual, SyntaxNode expected)
@@ -88,17 +90,6 @@ public static class AssertionExtensions
         {
             throw new ShouldAssertException($@"The expected file was not written to disk, or not to the right location.
 
-Expected: ""{expectedFilePath}"".
-
-Files found:
-{string.Join($", {Environment.NewLine}", fileSystem.AllFiles)}");
-        }
-    }
-    public static void ShouldNotContainFile(this MockFileSystem fileSystem, string expectedFilePath)
-    {
-        if (fileSystem.FileExists(expectedFilePath))
-        {
-            throw new ShouldAssertException($@"This file should not exist there.
 Expected: ""{expectedFilePath}"".
 
 Files found:
