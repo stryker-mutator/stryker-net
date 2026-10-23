@@ -109,7 +109,7 @@ not expose this option, so `test-case-filter` cannot be used with them.
 
 ### `mutate` &lt;`glob[]`&gt;
 
-Default: `*`  
+Default: `**/*`  
 Command line: `[-m|--mutate] "**/*Services.cs" -m "!**/*.Generated.cs"`  
 Config file: `"mutate": ['**/*Services.cs', '!**/*.Generated.cs']`
 
@@ -290,7 +290,7 @@ If HTML and/or JSON reporting is being used you can use this option to change th
 
 ### `additional-timeout` &lt;`number`&gt;
 
-Default: `3000`  
+Default: `10000`  
 Command line: `N/A`  
 Config file: `"additional-timeout": 1000`
 
@@ -308,7 +308,7 @@ If you have a lot of timeouts you might need to increase the additional timeout.
 
 ### `timeout-ratio` &lt;`number`&gt;
 
-Default: `1.5`  
+Default: `2`  
 Command line: `N/A`  
 Config file: `"timeout-ratio": 2.0`
 
