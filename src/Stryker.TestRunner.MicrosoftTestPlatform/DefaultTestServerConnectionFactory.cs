@@ -50,7 +50,7 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
 
     public ITestServerProcess StartProcess(string assembly, int port, Dictionary<string, string?> environmentVariables)
     {
-        var arguments = BuildArguments(assembly, port);
+        var (targetFilePath, arguments) = BuildCommand(assembly, port);
         Stream outputStream;
         PipeTarget outputPipe;
 
@@ -72,36 +72,49 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
             outputPipe = PipeTarget.Null;
         }
 
-        var cliProcess = Cli.Wrap("dotnet")
-            .WithWorkingDirectory(Path.GetDirectoryName(assembly) ?? string.Empty)
-            .WithArguments(arguments)
-            .WithEnvironmentVariables(environmentVariables)
-            .WithStandardOutputPipe(outputPipe)
-            .WithStandardErrorPipe(outputPipe)
-            .ExecuteAsync();
+        CommandTask<CommandResult> cliProcess;
+        try
+        {
+            cliProcess = Cli.Wrap(targetFilePath)
+                .WithWorkingDirectory(Path.GetDirectoryName(assembly) ?? string.Empty)
+                .WithArguments(arguments)
+                .WithEnvironmentVariables(environmentVariables)
+                .WithStandardOutputPipe(outputPipe)
+                .WithStandardErrorPipe(outputPipe)
+                .ExecuteAsync();
+        }
+        catch
+        {
+            outputStream.Dispose();
+            throw;
+        }
 
         return new CliTestServerProcess(cliProcess, outputStream);
     }
 
-    internal string[] BuildArguments(string assembly, int port)
+    internal (string TargetFilePath, string[] Arguments) BuildCommand(string assembly, int port)
     {
-        List<string> arguments = [assembly, .. MtpServerConnector.BuildInProcessServerArguments(port)];
+        List<string> arguments = [.. MtpServerConnector.BuildInProcessServerArguments(port)];
 
-        if (_testCaseFilter is null)
+        if (_testCaseFilter is not null)
         {
-            return [.. arguments];
+            if (!_supportsTestCaseFilter(assembly))
+            {
+                throw new InputException(
+                    $"The test application '{Path.GetFileName(assembly)}' does not support 'test-case-filter' with Microsoft Testing Platform.",
+                    "Use a test framework version that registers the '--filter' option, or remove 'test-case-filter' from the Stryker configuration.");
+            }
+
+            arguments.AddRange(["--filter", _testCaseFilter]);
         }
 
-        if (!_supportsTestCaseFilter(assembly))
-        {
-            throw new InputException(
-                $"The test application '{Path.GetFileName(assembly)}' does not support 'test-case-filter' with Microsoft Testing Platform.",
-                "Use a test framework version that registers the '--filter' option, or remove 'test-case-filter' from the Stryker configuration.");
-        }
-
-        arguments.AddRange(["--filter", _testCaseFilter]);
-        return [.. arguments];
+        return BuildCommand(assembly, arguments);
     }
+
+    private static (string TargetFilePath, string[] Arguments) BuildCommand(string assembly, IEnumerable<string> arguments) =>
+        string.Equals(Path.GetExtension(assembly), ".exe", StringComparison.OrdinalIgnoreCase)
+            ? (assembly, [.. arguments])
+            : ("dotnet", [assembly, .. arguments]);
 
     internal static bool HelpListsTestCaseFilter(string helpOutput) =>
         helpOutput
@@ -129,9 +142,10 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
 
         try
         {
-            var helpProcess = Cli.Wrap("dotnet")
+            var (targetFilePath, arguments) = BuildCommand(assembly, ["--help"]);
+            var helpProcess = Cli.Wrap(targetFilePath)
                 .WithWorkingDirectory(Path.GetDirectoryName(assembly) ?? string.Empty)
-                .WithArguments([assembly, "--help"])
+                .WithArguments(arguments)
                 .WithValidation(CommandResultValidation.None)
                 .WithStandardOutputPipe(PipeTarget.ToStringBuilder(standardOutput))
                 .WithStandardErrorPipe(PipeTarget.ToStringBuilder(standardError))
