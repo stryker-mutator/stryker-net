@@ -44,7 +44,31 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         _runnerFactory = runnerFactory ?? new DefaultRunnerFactory();
         _logger.LogWarning("The Microsoft Test Platform testrunner is currently in preview. Results should be verified since this feature is still being tested.");
 
+        if (options.OptimizationMode == OptimizationModes.None)
+        {
+            // With the reached-signal retest, every mode with coverage data now detects mutants hidden by
+            // reused-host static state; only "off" has no coverage data, so the retest cannot be gated there.
+            _logger.LogInformation(
+                "Coverage analysis {Mode} has no coverage data, so mutants hidden by reused-host static state cannot be detected and can survive.",
+                DescribeCoverageAnalysisMode(options.OptimizationMode));
+        }
+
         Initialize();
+    }
+
+    internal static string DescribeCoverageAnalysisMode(OptimizationModes mode)
+    {
+        if (mode == OptimizationModes.None)
+        {
+            return "off";
+        }
+
+        if (mode.HasFlag(OptimizationModes.SkipUncoveredMutants))
+        {
+            return "all";
+        }
+
+        return mode.ToString();
     }
 
     public void ResetTestProcesses()
@@ -365,10 +389,22 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 
         _disposed = true;
 
+        var retested = 0;
+        var killed = 0;
         foreach (var runner in _allRunners)
         {
+            var (runnerRetested, runnerKilled) = runner.RetestStatistics;
+            retested += runnerRetested;
+            killed += runnerKilled;
             runner.Dispose();
         }
+
+        if (retested > 0)
+        {
+            _logger.LogInformation("{Count} mutant(s) retested on a fresh host because reused-host state hid them; {Killed} killed",
+                retested, killed);
+        }
+
         _runnerAvailableHandler.Dispose();
     }
 }

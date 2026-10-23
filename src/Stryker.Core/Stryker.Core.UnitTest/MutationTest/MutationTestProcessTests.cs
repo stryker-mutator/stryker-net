@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -22,6 +24,11 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.TestRunner.Results;
+using Stryker.TestRunner.Tests;
+using Stryker.TestRunner.VsTest;
+using static Stryker.Abstractions.Testing.ITestRunner;
+using VsTestRunner = Stryker.Abstractions.Options.TestRunner;
 
 namespace Stryker.Core.UnitTest.MutationTest;
 
@@ -460,5 +467,277 @@ public class MutationTestProcessTests : TestBase
         Mock.Get(reporter).VerifyNoOtherCalls();
         Mock.Get(mutationTestExecutor).VerifyNoOtherCalls();
         result.Result.MutationScore.ShouldBe(double.NaN);
+    }
+
+    [TestMethod]
+    public void OnMutantTested_ShouldBeThreadSafe()
+    {
+        var reporterMock = new Mock<IReporter>();
+        var target = new MutationTestProcess(Mock.Of<IMutationTestExecutor>(), Mock.Of<ICoverageAnalyser>(), Mock.Of<IMutationProcess>(), TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        target.Initialize(Input, new StrykerOptions(), reporterMock.Object);
+
+        var reportedMutants = new HashSet<IMutant>();
+        var mutant = new Mutant { Id = 1, ResultStatus = MutantStatus.Killed };
+        var method = target.GetType().GetMethod("OnMutantTested", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        Parallel.For(0, 1000, new ParallelOptions { MaxDegreeOfParallelism = 10 }, _ =>
+        {
+            method!.Invoke(target, [mutant, reportedMutants]);
+        });
+
+        reportedMutants.Count.ShouldBe(1);
+        reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Once);
+    }
+
+    [TestMethod]
+    public void OnMutantTested_ShouldSkipPendingWithoutReporting()
+    {
+        var reporterMock = new Mock<IReporter>();
+        var target = new MutationTestProcess(Mock.Of<IMutationTestExecutor>(), Mock.Of<ICoverageAnalyser>(), Mock.Of<IMutationProcess>(), TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        target.Initialize(Input, new StrykerOptions(), reporterMock.Object);
+
+        var reportedMutants = new HashSet<IMutant>();
+        var mutant = new Mutant { Id = 1, ResultStatus = MutantStatus.Pending };
+        var method = target.GetType().GetMethod("OnMutantTested", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        method!.Invoke(target, [mutant, reportedMutants]);
+
+        reportedMutants.ShouldBeEmpty();
+        reporterMock.Verify(x => x.OnMutantTested(It.IsAny<IMutant>()), Times.Never);
+    }
+
+    [TestMethod]
+    public void OnMutantTested_ShouldReportEachMutantOnlyOnce()
+    {
+        var reporterMock = new Mock<IReporter>();
+        var target = new MutationTestProcess(Mock.Of<IMutationTestExecutor>(), Mock.Of<ICoverageAnalyser>(), Mock.Of<IMutationProcess>(), TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        target.Initialize(Input, new StrykerOptions(), reporterMock.Object);
+
+        var reportedMutants = new HashSet<IMutant>();
+        var mutant = new Mutant { Id = 1, ResultStatus = MutantStatus.Killed };
+        var method = target.GetType().GetMethod("OnMutantTested", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        method!.Invoke(target, [mutant, reportedMutants]);
+        method.Invoke(target, [mutant, reportedMutants]);
+
+        reportedMutants.Count.ShouldBe(1);
+        reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task TestAsync_WithVsTestRunner_AndHighConcurrency_ReportsEachMutantOnce()
+    {
+        var scenario = new FullRunScenario();
+        scenario.CreateMutants(1, 2, 3);
+        scenario.CreateTests(1, 2, 3);
+        scenario.DeclareCoverageForMutant(1);
+        scenario.DeclareCoverageForMutant(2);
+        scenario.DeclareCoverageForMutant(3);
+        scenario.SetMode(OptimizationModes.None);
+
+        var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+        Folder.Add(new CsharpFileLeaf()
+        {
+            SourceCode = SourceFile,
+            Mutants = scenario.GetMutants()
+        });
+
+        var reporterMock = new Mock<IReporter>();
+        reporterMock.Setup(x => x.OnMutantTested(It.IsAny<IMutant>()));
+
+        var mutationExecutor = new MutationTestExecutor(TestLoggerFactory.CreateLogger<MutationTestExecutor>());
+        mutationExecutor.TestRunner = scenario.GetTestRunnerMock().Object;
+
+        var options = new StrykerOptions
+        {
+            ProjectPath = basePath,
+            Concurrency = 8,
+            OptimizationMode = OptimizationModes.None,
+            TestRunner = VsTestRunner.VsTest
+        };
+        Input.InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500));
+
+        var target = new MutationTestProcess(
+            mutationExecutor,
+            Mock.Of<ICoverageAnalyser>(),
+            Mock.Of<IMutationProcess>(),
+            TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        target.Initialize(Input, options, reporterMock.Object);
+
+        await target.TestAsync(scenario.GetMutants());
+
+        reporterMock.Verify(x => x.OnMutantTested(It.IsAny<IMutant>()), Times.Exactly(3));
+    }
+
+    [TestMethod]
+    public async Task TestAsync_WithVsTestRunner_WhenUpdateHandlerRunsTwice_ReportsEachMutantOnce()
+    {
+        var scenario = new FullRunScenario();
+        scenario.CreateMutants(1);
+        scenario.CreateTests(1);
+        scenario.DeclareCoverageForMutant(1);
+        scenario.SetMode(OptimizationModes.None);
+
+        var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+        Folder.Add(new CsharpFileLeaf()
+        {
+            SourceCode = SourceFile,
+            Mutants = scenario.GetMutants()
+        });
+
+        var runnerMock = scenario.GetTestRunnerMock();
+        runnerMock.Setup(x => x.TestMultipleMutantsAsync(
+                It.IsAny<IProjectAndTests>(),
+                It.IsAny<ITimeoutValueCalculator>(),
+                It.IsAny<IReadOnlyList<IMutant>>(),
+                It.IsAny<TestUpdateHandler>()))
+            .Callback((
+                IProjectAndTests _,
+                ITimeoutValueCalculator _,
+                IReadOnlyList<IMutant> mutants,
+                TestUpdateHandler update) =>
+            {
+                foreach (var mutant in mutants)
+                {
+                    update(mutants, TestIdentifierList.NoTest(), TestIdentifierList.EveryTest(), TestIdentifierList.NoTest());
+                    update(mutants, TestIdentifierList.NoTest(), TestIdentifierList.EveryTest(), TestIdentifierList.NoTest());
+                }
+            })
+            .ReturnsAsync(scenario.GetInitialRunResult() as ITestRunResult);
+
+        var reporterMock = new Mock<IReporter>();
+        reporterMock.Setup(x => x.OnMutantTested(It.IsAny<IMutant>()));
+
+        var mutationExecutor = new MutationTestExecutor(TestLoggerFactory.CreateLogger<MutationTestExecutor>());
+        mutationExecutor.TestRunner = runnerMock.Object;
+
+        var options = new StrykerOptions
+        {
+            ProjectPath = basePath,
+            Concurrency = 1,
+            OptimizationMode = OptimizationModes.None,
+            TestRunner = VsTestRunner.VsTest
+        };
+        Input.InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500));
+
+        var target = new MutationTestProcess(
+            mutationExecutor,
+            Mock.Of<ICoverageAnalyser>(),
+            Mock.Of<IMutationProcess>(),
+            TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        target.Initialize(Input, options, reporterMock.Object);
+
+        await target.TestAsync(scenario.GetMutants());
+
+        reporterMock.Verify(x => x.OnMutantTested(It.IsAny<IMutant>()), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task TestAsync_WithMicrosoftTestPlatformRunner_AndHighConcurrency_ReportsEachMutantOnce()
+    {
+        var scenario = new FullRunScenario();
+        scenario.CreateMutants(1, 2, 3);
+        scenario.CreateTests(1, 2, 3);
+        scenario.DeclareCoverageForMutant(1);
+        scenario.DeclareCoverageForMutant(2);
+        scenario.DeclareCoverageForMutant(3);
+        scenario.SetMode(OptimizationModes.None);
+
+        var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+        Folder.Add(new CsharpFileLeaf()
+        {
+            SourceCode = SourceFile,
+            Mutants = scenario.GetMutants()
+        });
+
+        var reporterMock = new Mock<IReporter>();
+        reporterMock.Setup(x => x.OnMutantTested(It.IsAny<IMutant>()));
+
+        var mutationExecutor = new MutationTestExecutor(TestLoggerFactory.CreateLogger<MutationTestExecutor>());
+        mutationExecutor.TestRunner = scenario.GetTestRunnerMock().Object;
+
+        var options = new StrykerOptions
+        {
+            ProjectPath = basePath,
+            Concurrency = 8,
+            OptimizationMode = OptimizationModes.None,
+            TestRunner = VsTestRunner.MicrosoftTestPlatform
+        };
+        Input.InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500));
+
+        var target = new MutationTestProcess(
+            mutationExecutor,
+            Mock.Of<ICoverageAnalyser>(),
+            Mock.Of<IMutationProcess>(),
+            TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        target.Initialize(Input, options, reporterMock.Object);
+
+        await target.TestAsync(scenario.GetMutants());
+
+        reporterMock.Verify(x => x.OnMutantTested(It.IsAny<IMutant>()), Times.Exactly(3));
+    }
+
+    [TestMethod]
+    public async Task TestAsync_WhenUpdateHandlerRunsConcurrently_ReportsEachMutantOnce()
+    {
+        var scenario = new FullRunScenario();
+        scenario.CreateMutants(1, 2, 3);
+        scenario.CreateTests(1, 2, 3);
+        scenario.DeclareCoverageForMutant(1);
+        scenario.DeclareCoverageForMutant(2);
+        scenario.DeclareCoverageForMutant(3);
+        scenario.SetMode(OptimizationModes.None);
+
+        var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+        Folder.Add(new CsharpFileLeaf()
+        {
+            SourceCode = SourceFile,
+            Mutants = scenario.GetMutants()
+        });
+
+        var runnerMock = scenario.GetTestRunnerMock();
+        runnerMock.Setup(x => x.TestMultipleMutantsAsync(
+                It.IsAny<IProjectAndTests>(),
+                It.IsAny<ITimeoutValueCalculator>(),
+                It.IsAny<IReadOnlyList<IMutant>>(),
+                It.IsAny<TestUpdateHandler>()))
+            .Callback((
+                IProjectAndTests _,
+                ITimeoutValueCalculator _,
+                IReadOnlyList<IMutant> mutants,
+                TestUpdateHandler update) =>
+            {
+                Parallel.ForEach(mutants, _ =>
+                {
+                    update(mutants, TestIdentifierList.NoTest(), TestIdentifierList.EveryTest(), TestIdentifierList.NoTest());
+                });
+            })
+            .ReturnsAsync(scenario.GetInitialRunResult() as ITestRunResult);
+
+        var reporterMock = new Mock<IReporter>();
+        reporterMock.Setup(x => x.OnMutantTested(It.IsAny<IMutant>()));
+
+        var mutationExecutor = new MutationTestExecutor(TestLoggerFactory.CreateLogger<MutationTestExecutor>());
+        mutationExecutor.TestRunner = runnerMock.Object;
+
+        var options = new StrykerOptions
+        {
+            ProjectPath = basePath,
+            Concurrency = 1,
+            OptimizationMode = OptimizationModes.None,
+            TestRunner = VsTestRunner.VsTest
+        };
+        Input.InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500));
+
+        var target = new MutationTestProcess(
+            mutationExecutor,
+            Mock.Of<ICoverageAnalyser>(),
+            Mock.Of<IMutationProcess>(),
+            TestLoggerFactory.CreateLogger<MutationTestProcess>());
+        target.Initialize(Input, options, reporterMock.Object);
+
+        await target.TestAsync(scenario.GetMutants());
+
+        reporterMock.Verify(x => x.OnMutantTested(It.IsAny<IMutant>()), Times.Exactly(3));
     }
 }
