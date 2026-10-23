@@ -15,11 +15,14 @@ internal sealed class AssemblyTestServer : IDisposable
     private readonly ILogger _logger;
     private readonly string _runnerId;
     private readonly ITestServerConnectionFactory _connectionFactory;
+    private readonly TimeSpan _shutdownTimeout;
     private ITestServerListener? _listener;
     private ITestServerProcess? _process;
     private ITestingPlatformClient? _client;
     private bool _isInitialized;
+    private bool _requestFailed;
     private bool _disposed;
+    internal static readonly TimeSpan ShutdownTimeout = TimeSpan.FromSeconds(5);
 
     public AssemblyTestServer(
         string assembly,
@@ -27,16 +30,20 @@ internal sealed class AssemblyTestServer : IDisposable
         ILogger logger,
         string runnerId,
         IStrykerOptions? options = null,
-        ITestServerConnectionFactory? connectionFactory = null)
+        ITestServerConnectionFactory? connectionFactory = null,
+        TimeSpan? shutdownTimeout = null)
     {
         _assembly = assembly;
         _environmentVariables = environmentVariables;
         _logger = logger;
         _runnerId = runnerId;
         _connectionFactory = connectionFactory ?? new DefaultTestServerConnectionFactory(options);
+        _shutdownTimeout = shutdownTimeout ?? ShutdownTimeout;
     }
 
     public bool IsInitialized => _isInitialized;
+    internal int? ProcessId => _process?.ProcessHandle.Id;
+    internal IReadOnlyCollection<TestNodeUpdate> LastRunResults { get; private set; } = [];
 
     /// <summary>
     /// True when the server has been initialized and its underlying process is still running.
@@ -44,13 +51,18 @@ internal sealed class AssemblyTestServer : IDisposable
     /// <see cref="StackOverflowException"/>) leaves <see cref="IsInitialized"/> true while the
     /// process is gone; this flag detects that so the server can be recreated instead of reused.
     /// </summary>
-    public bool IsAlive => _isInitialized && !_disposed && _process is { HasExited: false };
+    public bool IsAlive => _isInitialized && !_requestFailed && !_disposed && _process is { HasExited: false };
 
     public async Task<bool> StartAsync(CancellationToken cancellationToken = default)
     {
-        if (_isInitialized)
+        if (_isInitialized && !_requestFailed)
         {
             return true;
+        }
+
+        if (_process is not null)
+        {
+            await StopAsync(force: true).ConfigureAwait(false);
         }
 
         try
@@ -69,7 +81,8 @@ internal sealed class AssemblyTestServer : IDisposable
             if (completedTask == connectionTimeout)
             {
                 _logger.LogDebug("{RunnerId}: Timeout waiting for test server connection for {Assembly}", _runnerId, _assembly);
-                await StopAsync().ConfigureAwait(false);
+                await StopAsync(force: true).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
                 return false;
             }
 
@@ -93,18 +106,22 @@ internal sealed class AssemblyTestServer : IDisposable
 
             await _client.InitializeAsync(cancellationToken).ConfigureAwait(false);
             _isInitialized = true;
+            _requestFailed = false;
 
             _logger.LogDebug("{RunnerId}: Test server started successfully for {Assembly}", _runnerId, _assembly);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
-            await StopAsync().ConfigureAwait(false);
+            _logger.LogDebug(ex, "{RunnerId}: Failed to start test server for {Assembly}", _runnerId, _assembly);
+            await StopAsync(force: true).ConfigureAwait(false);
             throw;
         }
     }
 
-    public async Task<List<TestNode>> DiscoverTestsAsync()
+    public Task<List<TestNode>> DiscoverTestsAsync() => DiscoverTestsAsync(CancellationToken.None);
+
+    public async Task<List<TestNode>> DiscoverTestsAsync(CancellationToken cancellationToken)
     {
         if (!_isInitialized || _client is null)
         {
@@ -113,11 +130,20 @@ internal sealed class AssemblyTestServer : IDisposable
 
         List<TestNodeUpdate> discoveredResults = [];
 
-        await _client.DiscoverTestsAsync(updates =>
+        try
         {
-            discoveredResults.AddRange(updates);
-            return Task.CompletedTask;
-        }).ConfigureAwait(false);
+            await _client.DiscoverTestsAsync(updates =>
+            {
+                discoveredResults.AddRange(updates);
+                return Task.CompletedTask;
+            }, cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            _requestFailed = true;
+            await StopAsync(force: true).ConfigureAwait(false);
+            throw;
+        }
 
         return discoveredResults
             .Where(x => x.Node.ExecutionState is TestNodeStates.Discovered)
@@ -131,54 +157,98 @@ internal sealed class AssemblyTestServer : IDisposable
         return results;
     }
 
-    public async Task<(List<TestNodeUpdate> Results, bool TimedOut)> RunTestsAsync(TestNode[]? testsToRun, TimeSpan? timeout)
+    public async Task<(List<TestNodeUpdate> Results, bool TimedOut)> RunTestsAsync(
+        TestNode[]? testsToRun,
+        TimeSpan? timeout,
+        Func<IReadOnlyCollection<TestNodeUpdate>, bool>? shouldBail = null,
+        CancellationToken cancellationToken = default)
     {
+        LastRunResults = [];
         if (!_isInitialized || _client is null)
         {
             throw new InvalidOperationException("Server not initialized. Call StartAsync first.");
         }
 
-        var testResults = new System.Collections.Concurrent.ConcurrentBag<TestNodeUpdate>();
+        using var timeoutSource = new CancellationTokenSource();
+        if (timeout.HasValue)
+        {
+            timeoutSource.CancelAfter(timeout.Value);
+        }
+        using var bailSource = new CancellationTokenSource();
+        using var requestSource = CancellationTokenSource.CreateLinkedTokenSource(
+            timeoutSource.Token, bailSource.Token, cancellationToken);
+        var selectedIds = testsToRun?.Select(test => test.Uid).ToHashSet();
+        var testResults = new Dictionary<string, TestNodeUpdate>();
 
         Func<TestNodeUpdate[], Task> onUpdate = updates =>
         {
             foreach (var update in updates)
             {
-                testResults.Add(update);
+                if (selectedIds is not null && !selectedIds.Contains(update.Node.Uid))
+                {
+                    continue;
+                }
+
+                if (testResults.TryGetValue(update.Node.Uid, out var previous)
+                    && ((previous.Node.RetryAttempt ?? 0) > (update.Node.RetryAttempt ?? 0)
+                        || previous.Node.RetryAttempt == update.Node.RetryAttempt
+                        && previous.Node.RetryIsSuperseded == false && update.Node.RetryIsSuperseded != false))
+                {
+                    continue;
+                }
+                testResults[update.Node.Uid] = update;
+            }
+
+            if (!requestSource.IsCancellationRequested && shouldBail?.Invoke(testResults.Values.ToArray()) == true)
+            {
+                bailSource.Cancel();
             }
             return Task.CompletedTask;
         };
 
-        if (timeout.HasValue)
-        {
-            using var cancellationTokenSource = new CancellationTokenSource(timeout.Value);
-            try
-            {
-                await _client.RunTestsAsync(onUpdate, testsToRun, cancellationTokenSource.Token).ConfigureAwait(false);
-                return (testResults.ToList(), false);
-            }
-            catch (OperationCanceledException ex) when (cancellationTokenSource.IsCancellationRequested)
-            {
-                _logger.LogDebug(ex, "{RunnerId}: Test run RPC call timed out for {Assembly}", _runnerId, _assembly);
-                return (testResults.ToList(), true);
-            }
-            catch
-            {
-                ThrowIfHostCrashed();
-                throw;
-            }
-        }
-
         try
         {
-            await _client.RunTestsAsync(onUpdate, testsToRun).ConfigureAwait(false);
-            return (testResults.ToList(), false);
+            await _client.RunTestsAsync(onUpdate, testsToRun, requestSource.Token).ConfigureAwait(false);
+        }
+        catch (TestHostTerminationException)
+        {
+            _requestFailed = true;
+            throw;
+        }
+        catch (OperationCanceledException) when (requestSource.IsCancellationRequested)
+        {
+            _requestFailed = true;
+            // The official client cancels its wait before server execution has stopped. Only verified
+            // process termination permits the runner to change its shared active-mutant control file.
+            await StopAsync(force: true).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
         }
         catch
         {
+            _requestFailed = true;
+            LastRunResults = testResults.Values.Where(update => update.Node.RetryIsSuperseded != true
+                && !TestNodeStates.IsCancellation(update.Node.ExecutionState)).ToArray();
             ThrowIfHostCrashed();
             throw;
         }
+
+        var stopped = requestSource.IsCancellationRequested;
+        if (stopped && _process is not null)
+        {
+            await StopAsync(force: true).ConfigureAwait(false);
+        }
+        cancellationToken.ThrowIfCancellationRequested();
+        var results = testResults.Values
+            .Where(update => update.Node.RetryIsSuperseded != true
+                && (!stopped || !TestNodeStates.IsCancellation(update.Node.ExecutionState)))
+            .ToList();
+        LastRunResults = results;
+        var timedOut = timeoutSource.IsCancellationRequested && !bailSource.IsCancellationRequested;
+        if (timedOut)
+        {
+            _logger.LogDebug("{RunnerId}: Test run timed out for {Assembly}; cancelled host discarded.", _runnerId, _assembly);
+        }
+        return (results, timedOut);
     }
 
     /// <summary>
@@ -203,47 +273,91 @@ internal sealed class AssemblyTestServer : IDisposable
 
     public async Task StopAsync(bool force = false)
     {
-        if (force)
-        {
-            _logger.LogDebug("{RunnerId}: Force-killing test server process for {Assembly}", _runnerId, _assembly);
-            _process?.ProcessHandle.Kill();
-        }
-        else if (_client is not null)
-        {
-            try
-            {
-                // Bound both the exit notification and process shutdown so cleanup cannot hang indefinitely.
-                var timeout = TimeSpan.FromSeconds(30);
-                await _client.ExitAsync().WaitAsync(timeout).ConfigureAwait(false);
-                // Coverage data must be flushed before disposing resources
-                await _client.WaitServerProcessExitAsync().WaitAsync(timeout).ConfigureAwait(false);
-            }
-            catch (TimeoutException exception)
-            {
-                _logger.LogWarning(exception, "{RunnerId}: Test server process for {Assembly} did not exit within the expected time. Killing forcefully.", _runnerId, _assembly);
-                _process?.ProcessHandle.Kill();
-            }
-            catch (Exception exception)
-            {
-                _logger.LogWarning(exception, "{RunnerId}: Test server process for {Assembly} could not be stopped gracefully.", _runnerId, _assembly);
-            }
-        }
-
-        _listener?.Stop();
-        _listener?.Dispose();
-        _listener = null;
-        _client?.Dispose();
-        _client = null;
+        var requestFailed = _requestFailed;
+        _requestFailed = true;
+        var process = _process;
         try
         {
-            _process?.Dispose();
+            if (force || requestFailed)
+            {
+                _logger.LogDebug("{RunnerId}: Force-killing test server process for {Assembly}", _runnerId, _assembly);
+                process?.ProcessHandle.Kill();
+            }
+            else if (_client is not null)
+            {
+                try
+                {
+                    // Bound both the exit notification and process shutdown so cleanup cannot hang indefinitely.
+                    var timeout = TimeSpan.FromSeconds(30);
+                    await _client.ExitAsync().WaitAsync(timeout).ConfigureAwait(false);
+                    // Coverage data must be flushed before disposing resources
+                    await _client.WaitServerProcessExitAsync().WaitAsync(timeout).ConfigureAwait(false);
+                }
+                catch (TimeoutException exception)
+                {
+                    _logger.LogWarning(exception, "{RunnerId}: Test server process for {Assembly} did not exit within the expected time. Killing forcefully.", _runnerId, _assembly);
+                    _process?.ProcessHandle.Kill();
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogWarning(exception, "{RunnerId}: Test server process for {Assembly} could not be stopped gracefully.", _runnerId, _assembly);
+                    process?.ProcessHandle.Kill();
+                }
+            }
+            else if (process is { HasExited: false })
+            {
+                process.ProcessHandle.Kill();
+            }
+
+            if (process is not null)
+            {
+                try
+                {
+                    await process.WaitForExitAsync().WaitAsync(_shutdownTimeout).ConfigureAwait(false);
+                }
+                catch (Exception exception) when (process.HasExited)
+                {
+                    // CliWrap reports a nonzero host exit as a fault even when termination succeeded.
+                    _logger.LogDebug(exception, "{RunnerId}: Test server process for {Assembly} exited during shutdown.", _runnerId, _assembly);
+                }
+                if (!process.HasExited)
+                {
+                    throw new TestHostTerminationException(
+                        $"The test host for {_assembly} has not terminated. Its mutant control file cannot be reused.",
+                        new TimeoutException());
+                }
+            }
         }
-        catch (Exception)
+        catch (InvalidOperationException exception) when (process is { HasExited: true })
         {
-            // Process disposal can fail if kill/cleanup didn't complete in time
+            _logger.LogDebug(exception, "{RunnerId}: Test server process for {Assembly} exited while shutdown was requested.", _runnerId, _assembly);
         }
-        _process = null;
-        _isInitialized = false;
+        catch (Exception exception) when (process is { HasExited: false } && exception is not TestHostTerminationException)
+        {
+            throw new TestHostTerminationException(
+                $"The test host for {_assembly} could not be terminated. Mutation testing cannot safely continue.", exception);
+        }
+        finally
+        {
+            _listener?.Stop();
+            _listener?.Dispose();
+            _listener = null;
+            _client?.Dispose();
+            _client = null;
+            if (process is null || process.HasExited)
+            {
+                try
+                {
+                    _process?.Dispose();
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogWarning(exception, "{RunnerId}: Failed to dispose the stopped test process for {Assembly}.", _runnerId, _assembly);
+                }
+                _process = null;
+            }
+            _isInitialized = false;
+        }
     }
 
     public void Dispose()
@@ -253,7 +367,7 @@ internal sealed class AssemblyTestServer : IDisposable
             return;
         }
 
-        _disposed = true;
         StopAsync().GetAwaiter().GetResult();
+        _disposed = true;
     }
 }
