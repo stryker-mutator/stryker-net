@@ -1,3 +1,4 @@
+using System;
 using Stryker.Abstractions.Testing;
 
 namespace Stryker.Abstractions;
@@ -6,6 +7,12 @@ public interface IMutant : IReadOnlyMutant
 {
     new int Id { get; set; }
     new Mutation Mutation { get; set; }
+    /// <inheritdoc />
+    new TimeSpan? TestDuration { get; set; }
+    /// <inheritdoc />
+    new long? HitCount { get; set; }
+    /// <inheritdoc />
+    new long? HitLimit { get; set; }
     new MutantStatus ResultStatus { get; set; }
     new string ResultStatusReason { get; set; }
     new ITestIdentifiers CoveringTests { get; set; }
