@@ -43,6 +43,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
     private GeneratorDriver _generatorDriver;
     private Compilation _compilation;
     private readonly IEnumerable<SyntaxTree> _originalSyntaxTrees;
+    private readonly List<string> _problems = [];
     private bool _needToRunGenerators;
 
     public CsharpCompilingProcess(MutationTestInput input,
@@ -59,6 +60,8 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
 
     private string AssemblyName =>
         _input.SourceProjectInfo.AnalyzerResult.GetAssemblyName();
+
+    public IEnumerable<string> Problems => _problems;
 
     /// <summary>
     /// Compiles the given input onto the memory stream
@@ -191,9 +194,10 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
             originalSyntaxTrees,
             analyzerResult.LoadReferences(),
             analyzerResult.GetCompilationOptions());
+        _problems.Clear();
         // create the driver for source generators
         _generatorDriver = CSharpGeneratorDriver
-            .Create(analyzerResult.GetSourceGenerators(_logger),
+            .Create(analyzerResult.GetSourceGenerators(_logger, _problems),
                 parseOptions: analyzerResult.GetParseOptions(),
                 additionalTexts:[..analyzerResult.GetAdditionalTexts()],
                 optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult));
