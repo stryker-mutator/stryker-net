@@ -995,7 +995,11 @@ public class MicrosoftTestingPlatformRunnerTests
             => _discovered = discovered;
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null)
+            string assembly,
+            ITimeoutValueCalculator? timeoutCalc,
+            IReadOnlyList<IMutant>? mutants = null,
+            Func<TestNode, bool>? testUidFilter = null,
+            CancellationToken cancellationToken = default)
             => Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>(
                 (new TestRunResult(false, "simulated test host crash"), false, _discovered));
     }
@@ -1145,7 +1149,11 @@ public class MicrosoftTestingPlatformRunnerTests
             => _perAssembly = perAssembly;
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null)
+            string assembly,
+            ITimeoutValueCalculator? timeoutCalc,
+            IReadOnlyList<IMutant>? mutants = null,
+            Func<TestNode, bool>? testUidFilter = null,
+            CancellationToken cancellationToken = default)
         {
             var (result, discovered) = _perAssembly[assembly];
             return Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>((result, false, discovered));
@@ -1203,6 +1211,52 @@ public class MicrosoftTestingPlatformRunnerTests
         // Assert
         exception.Message.ShouldContain("/nonexistent/assembly.dll");
         exception.Details.ShouldNotBeNullOrEmpty();
+    }
+
+    [TestMethod, Timeout(1000)]
+    public async Task DiscoverTestsAsync_ShouldPropagateCancellation()
+    {
+        const string assembly = "test.dll";
+        var factory = new Mock<ITestServerConnectionFactory>();
+        var listener = new Mock<ITestServerListener>();
+        var process = new Mock<ITestServerProcess>();
+        var client = new Mock<ITestingPlatformClient>();
+        var processHandle = Mock.Of<IProcessHandle>();
+        using var tcpClient = new TcpClient();
+
+        factory.Setup(f => f.CreateListener()).Returns((listener.Object, 12345));
+        factory.Setup(f => f.StartProcess(assembly, 12345, It.IsAny<Dictionary<string, string?>>()))
+            .Returns(process.Object);
+        factory.Setup(f => f.CreateClient(tcpClient, processHandle, It.IsAny<ILogger>()))
+            .Returns(client.Object);
+        listener.Setup(l => l.AcceptConnectionAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(tcpClient);
+        process.SetupGet(p => p.ProcessHandle).Returns(processHandle);
+        process.SetupGet(p => p.HasExited).Returns(false);
+        process.Setup(p => p.WaitForExitAsync()).Returns(new TaskCompletionSource().Task);
+        client.Setup(c => c.InitializeAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        client.Setup(c => c.DiscoverTestsAsync(
+                It.IsAny<Func<TestNodeUpdate[], Task>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(new TaskCompletionSource().Task);
+
+        using var server = new AssemblyTestServer(
+            assembly,
+            new Dictionary<string, string?>(),
+            NullLogger.Instance,
+            "test-runner",
+            connectionFactory: factory.Object);
+        (await server.StartAsync()).ShouldBeTrue();
+
+        using var runner = CreateRunner();
+        runner._assemblyServers[assembly] = server;
+        using var cancellationTokenSource = new CancellationTokenSource();
+
+        var discovery = runner.DiscoverTestsAsync(assembly, cancellationTokenSource.Token);
+        cancellationTokenSource.Cancel();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => discovery);
     }
 
     [TestMethod, Timeout(1000)]
@@ -1884,7 +1938,11 @@ public class MicrosoftTestingPlatformRunnerTests
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null)
+            string assembly,
+            ITimeoutValueCalculator? timeoutCalc,
+            IReadOnlyList<IMutant>? mutants = null,
+            Func<TestNode, bool>? testUidFilter = null,
+            CancellationToken cancellationToken = default)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
             var result = new TestRunResult(
@@ -1911,7 +1969,11 @@ public class MicrosoftTestingPlatformRunnerTests
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null)
+            string assembly,
+            ITimeoutValueCalculator? timeoutCalc,
+            IReadOnlyList<IMutant>? mutants = null,
+            Func<TestNode, bool>? testUidFilter = null,
+            CancellationToken cancellationToken = default)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
             var result = new TestRunResult(

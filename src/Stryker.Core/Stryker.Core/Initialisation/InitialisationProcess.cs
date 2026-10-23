@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
@@ -23,8 +24,11 @@ public interface IInitialisationProcess
 
     void BuildProjects(IStrykerOptions options, RelatedSourceProjectsInfo projects);
 
-    Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
-        RelatedSourceProjectsInfo projects, ITestRunner runner);
+    Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(
+        IStrykerOptions options,
+        RelatedSourceProjectsInfo projects,
+        ITestRunner runner,
+        CancellationToken cancellationToken = default);
 }
 
 public class InitialisationProcess(
@@ -77,12 +81,19 @@ public class InitialisationProcess(
         }
     }
 
-    public async Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
+    public async Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(
+        IStrykerOptions options,
         RelatedSourceProjectsInfo projects,
-        ITestRunner runner)
+        ITestRunner runner,
+        CancellationToken cancellationToken = default)
     {
         var prepareProjects = projects.SourceProjectInfos.Select(info =>
-            PrepareProjectAsync(options, info, runner, projects.SourceProjectInfos.Count == 1));
+            PrepareProjectAsync(
+                options,
+                info,
+                runner,
+                projects.SourceProjectInfos.Count == 1,
+                cancellationToken));
         var preparations = await Task.WhenAll(prepareProjects);
         var inputs = preparations.OfType<ReadyProject>().Select(project => project.Input).ToList();
         if (preparations.Length > 0 && preparations.All(project => project is SkippedByTestCaseFilter))
@@ -94,9 +105,13 @@ public class InitialisationProcess(
     }
 
     private async Task<IProjectPreparation> PrepareProjectAsync(IStrykerOptions options, SourceProjectInfo projectInfo,
-        ITestRunner testRunner, bool throwIfFails)
+        ITestRunner testRunner, bool throwIfFails, CancellationToken cancellationToken)
     {
-        var hasDiscoveredTests = await DiscoverTestsAsync(options, projectInfo, testRunner);
+        var hasDiscoveredTests = await DiscoverTestsAsync(
+            options,
+            projectInfo,
+            testRunner,
+            cancellationToken);
         var hasTestCaseFilter = !string.IsNullOrWhiteSpace(options.TestCaseFilter);
         if (!hasDiscoveredTests && hasTestCaseFilter && projectInfo.TestProjectsInfo.AnalyzerResults.Any())
         {
@@ -110,7 +125,11 @@ public class InitialisationProcess(
         testRunner.GetTests(projectInfo).Count,
         projectInfo.AnalyzerResult.ProjectFilePath);
 
-        var result = await _initialTestProcess.InitialTestAsync(options, projectInfo, testRunner);
+        var result = await _initialTestProcess.InitialTestAsync(
+            options,
+            projectInfo,
+            testRunner,
+            cancellationToken);
 
         if (result.Result.SessionTimedOut || result.Result.SessionHadRuntimeIssue || !result.Result.TimedOutTests.IsEmpty)
         {
@@ -175,12 +194,19 @@ public class InitialisationProcess(
                 ("Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter", "MSTest.TestAdapter")
     };
 
-    private async Task<bool> DiscoverTestsAsync(IStrykerOptions options, SourceProjectInfo projectInfo, ITestRunner testRunner)
+    private async Task<bool> DiscoverTestsAsync(
+        IStrykerOptions options,
+        SourceProjectInfo projectInfo,
+        ITestRunner testRunner,
+        CancellationToken cancellationToken)
     {
         var hasDiscoveredTests = false;
         foreach (var testProject in projectInfo.TestProjectsInfo.AnalyzerResults)
         {
-            if (await testRunner.DiscoverTestsAsync(testProject.GetAssemblyPath()))
+            cancellationToken.ThrowIfCancellationRequested();
+            if (await testRunner.DiscoverTestsAsync(
+                    testProject.GetAssemblyPath(),
+                    cancellationToken))
             {
                 hasDiscoveredTests = true;
                 continue;

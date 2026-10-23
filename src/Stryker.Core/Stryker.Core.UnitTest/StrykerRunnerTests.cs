@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -133,6 +135,7 @@ public class StrykerRunnerTests : TestBase
 
         mutationTestProcessMock.Setup(x => x.FilterMutants());
         mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
+        mutationTestProcessMock.Setup(x => x.Restore());
 
         reporterFactoryMock.Setup(x => x.Create(It.IsAny<StrykerOptions>(), It.IsAny<IGitInfoProvider>())).Returns(reporterMock.Object);
 
@@ -152,6 +155,180 @@ public class StrykerRunnerTests : TestBase
         reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<IMutant>>()), Times.Never);
         reporterMock.Verify(x => x.OnMutantTested(It.IsAny<IMutant>()), Times.Never);
         reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()), Times.Once);
+        mutationTestProcessMock.Verify(x => x.Restore(), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task DiscoverMutantsShouldNotExecuteMutationTests()
+    {
+        var projectOrchestratorMock = new Mock<IProjectOrchestrator>(MockBehavior.Strict);
+        var mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
+        var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
+        var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
+        var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
+        var mutant = new Mutant { Id = 1, ResultStatus = MutantStatus.Pending };
+        var file = new CsharpFileLeaf
+        {
+            FullPath = "C:/test/Test.cs",
+            Mutants = [mutant]
+        };
+        var folder = new FolderComposite { FullPath = "C:/test" };
+        folder.Add(file);
+        var mutationTestInput = new MutationTestInput
+        {
+            SourceProjectInfo = new SourceProjectInfo(
+                TestHelper.SetupProjectAnalyzerResult(references: []).Object,
+                new TestProjectsInfo(null))
+            {
+                ProjectContents = folder
+            }
+        };
+        inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
+        {
+            ProjectPath = "C:/test",
+            LogOptions = new LogOptions(),
+            OptimizationMode = OptimizationModes.SkipUncoveredMutants
+        });
+        projectOrchestratorMock
+            .Setup(x => x.MutateProjectsAsync(
+                It.IsAny<StrykerOptions>(),
+                reporterMock.Object,
+                It.IsAny<ITestRunner>()))
+            .ReturnsAsync([mutationTestProcessMock.Object]);
+        mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
+        mutationTestProcessMock.Setup(x => x.FilterMutants());
+        mutationTestProcessMock.Setup(x => x.Restore());
+        reporterMock.Setup(x => x.OnMutantsCreated(folder, It.IsAny<TestProjectsInfo>()))
+            .Callback(() => mutant.ResultStatus.ShouldBe(MutantStatus.Ignored));
+        projectOrchestratorMock.Setup(x => x.Dispose());
+        var target = new StrykerRunner(
+            reporterFactoryMock.Object,
+            projectOrchestratorMock.Object,
+            TestLoggerFactory.CreateLogger<StrykerRunner>());
+
+        await target.DiscoverMutantsAsync(inputsMock.Object, reporterMock.Object, (_, _) => false);
+
+        mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Never);
+        mutationTestProcessMock.Verify(x => x.TestAsync(It.IsAny<IEnumerable<IMutant>>()), Times.Never);
+        mutationTestProcessMock.Verify(x => x.Restore(), Times.Once);
+        reporterMock.Verify(x => x.OnMutantsCreated(folder, It.IsAny<TestProjectsInfo>()), Times.Once);
+        projectOrchestratorMock.Verify(x => x.Dispose(), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task MutationTestCancellationShouldForwardTokenAndRestoreAssemblies()
+    {
+        var projectOrchestratorMock = new Mock<IProjectOrchestrator>(MockBehavior.Strict);
+        var mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
+        var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
+        var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
+        var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var mutant = new Mutant { Id = 1, ResultStatus = MutantStatus.Pending };
+        var file = new CsharpFileLeaf
+        {
+            FullPath = "C:/test/Test.cs",
+            Mutants = [mutant]
+        };
+        var folder = new FolderComposite { FullPath = "C:/test" };
+        folder.Add(file);
+        var mutationTestInput = new MutationTestInput
+        {
+            SourceProjectInfo = new SourceProjectInfo(
+                TestHelper.SetupProjectAnalyzerResult(references: []).Object,
+                new TestProjectsInfo(null))
+            {
+                ProjectContents = folder
+            }
+        };
+        inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
+        {
+            ProjectPath = "C:/test",
+            LogOptions = new LogOptions(),
+            OptimizationMode = OptimizationModes.None
+        });
+        projectOrchestratorMock
+            .Setup(x => x.MutateProjectsAsync(
+                It.IsAny<StrykerOptions>(),
+                reporterMock.Object,
+                null,
+                cancellationTokenSource.Token))
+            .ReturnsAsync([mutationTestProcessMock.Object]);
+        mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
+        mutationTestProcessMock.Setup(x => x.FilterMutants());
+        mutationTestProcessMock
+            .Setup(x => x.TestAsync(
+                It.IsAny<IEnumerable<IMutant>>(),
+                cancellationTokenSource.Token))
+            .ThrowsAsync(new OperationCanceledException(cancellationTokenSource.Token));
+        mutationTestProcessMock.Setup(x => x.Restore());
+        reporterMock.Setup(x => x.OnMutantsCreated(folder, It.IsAny<TestProjectsInfo>()));
+        reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()));
+        projectOrchestratorMock.Setup(x => x.Dispose());
+        var target = new StrykerRunner(
+            reporterFactoryMock.Object,
+            projectOrchestratorMock.Object,
+            TestLoggerFactory.CreateLogger<StrykerRunner>());
+
+        await Should.ThrowAsync<OperationCanceledException>(() => target.RunMutationTestAsync(
+            inputsMock.Object,
+            reporterMock.Object,
+            (_, _) => true,
+            cancellationTokenSource.Token));
+
+        mutationTestProcessMock.Verify(x => x.TestAsync(
+            It.IsAny<IEnumerable<IMutant>>(),
+            cancellationTokenSource.Token), Times.Once);
+        mutationTestProcessMock.Verify(x => x.Restore(), Times.Once);
+        projectOrchestratorMock.Verify(x => x.Dispose(), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task DiscoveryCancellationShouldStopPreparationAndDisposeTheOrchestrator()
+    {
+        var projectOrchestratorMock = new Mock<IProjectOrchestrator>(MockBehavior.Strict);
+        var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
+        var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
+        var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var preparationStarted = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
+        {
+            ProjectPath = "C:/test",
+            LogOptions = new LogOptions(),
+            OptimizationMode = OptimizationModes.None
+        });
+        projectOrchestratorMock
+            .Setup(orchestrator => orchestrator.MutateProjectsAsync(
+                It.IsAny<StrykerOptions>(),
+                reporterMock.Object,
+                null,
+                cancellationTokenSource.Token))
+            .Returns<StrykerOptions, IReporter, ITestRunner, CancellationToken>(
+                async (_, _, _, cancellationToken) =>
+                {
+                    preparationStarted.SetResult();
+                    await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                    return [];
+                });
+        projectOrchestratorMock.Setup(x => x.Dispose());
+        var target = new StrykerRunner(
+            reporterFactoryMock.Object,
+            projectOrchestratorMock.Object,
+            TestLoggerFactory.CreateLogger<StrykerRunner>());
+
+        var discovery = target.DiscoverMutantsAsync(
+            inputsMock.Object,
+            reporterMock.Object,
+            (_, _) => true,
+            cancellationTokenSource.Token);
+        await preparationStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        cancellationTokenSource.Cancel();
+
+        await Should.ThrowAsync<OperationCanceledException>(
+            () => discovery.WaitAsync(TimeSpan.FromSeconds(1)));
+        projectOrchestratorMock.Verify(x => x.Dispose(), Times.Once);
     }
 
     [TestMethod]

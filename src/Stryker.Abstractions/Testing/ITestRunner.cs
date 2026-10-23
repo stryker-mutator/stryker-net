@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Stryker.Abstractions.Options;
 
@@ -21,6 +22,7 @@ public interface ITestRunner : IDisposable
     /// Discovers tests using the configured test-case filter.
     /// </summary>
     /// <param name="assembly">The path to the test assembly to discover tests in.</param>
+    /// <param name="cancellationToken">A token that can cancel test discovery.</param>
     /// <returns>
     /// A task whose result is <see langword="true"/> when discovery completes successfully with tests,
     /// or <see langword="false"/> when discovery completes successfully without tests.
@@ -29,13 +31,22 @@ public interface ITestRunner : IDisposable
     /// Test discovery fails, for example because the test assembly cannot be loaded or the test host fails.
     /// </exception>
     /// <exception cref="OperationCanceledException">Test discovery is canceled.</exception>
-    Task<bool> DiscoverTestsAsync(string assembly);
+    Task<bool> DiscoverTestsAsync(
+        string assembly,
+        CancellationToken cancellationToken = default);
 
     ITestSet GetTests(IProjectAndTests project);
 
-    Task<ITestRunResult> InitialTestAsync(IProjectAndTests project);
+    Task<ITestRunResult> InitialTestAsync(
+        IProjectAndTests project,
+        CancellationToken cancellationToken = default);
 
     IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project);
 
-    Task<ITestRunResult> TestMultipleMutantsAsync(IProjectAndTests project, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler? update);
+    Task<ITestRunResult> TestMultipleMutantsAsync(
+        IProjectAndTests project,
+        ITimeoutValueCalculator? timeoutCalc,
+        IReadOnlyList<IMutant> mutants,
+        TestUpdateHandler? update,
+        CancellationToken cancellationToken = default);
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
@@ -13,8 +14,11 @@ using Spectre.Console;
 using Spectre.Console.Testing;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
 using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
+using Stryker.CLI.MutationServer;
 using Stryker.Configuration;
 using Stryker.Configuration.Options;
 using Stryker.Core;
@@ -39,7 +43,8 @@ public class StrykerCLITests
         _options = new StrykerOptions() { Thresholds = new Thresholds { Break = 0 } };
         _runResults = new StrykerRunResult(_options, 0.3);
         _strykerRunnerMock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>()))
-            .Callback<IStrykerInputs>(c => _inputs = c)
+            .Callback<IStrykerInputs, IReporter, Func<IReadOnlyFileLeaf, IReadOnlyMutant, bool>, CancellationToken>(
+                (inputs, _, _, _) => _inputs = inputs)
             .Returns(Task.FromResult(_runResults))
             .Verifiable();
         _nugetClientMock.Setup(x => x.GetLatestVersionAsync()).Returns(Task.FromResult(new SemanticVersion(10, 0, 0)));
@@ -66,8 +71,37 @@ Usage: Stryker [command] [options]
 
 Options:";
         console.Output.ShouldContain(expected);
+        console.Output.ShouldContain("serve");
         console.Output.ShouldContain("--test-case-filter <expression>");
         console.Output.ShouldContain("Filters out tests");
+    }
+
+    [TestMethod]
+    public async Task ServeShouldStartMutationServerAndForwardArguments()
+    {
+        var mutationServer = new Mock<IMutationServer>(MockBehavior.Strict);
+        mutationServer
+            .Setup(server => server.RunAsync(
+                "stdio",
+                null,
+                "localhost",
+                It.Is<IReadOnlyCollection<string>>(arguments =>
+                    arguments.SequenceEqual(new[] { "--concurrency", "1" })),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var target = new StrykerCli(
+            Mock.Of<IStrykerRunner>(),
+            new ConfigBuilder(),
+            Mock.Of<ILoggingInitializer>(),
+            Mock.Of<IStrykerNugetFeedClient>(),
+            new TestConsole(),
+            Mock.Of<IFileSystem>(),
+            mutationServer.Object);
+
+        var result = await target.RunAsync(["serve", "stdio", "--", "--concurrency", "1"]);
+
+        result.ShouldBe(ExitCodes.Success);
+        mutationServer.VerifyAll();
     }
 
     [TestMethod]

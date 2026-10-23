@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
@@ -13,6 +15,7 @@ using Stryker.Abstractions.Options;
 using Stryker.CLI.Clients;
 using Stryker.CLI.CommandLineConfig;
 using Stryker.CLI.Logging;
+using Stryker.CLI.MutationServer;
 using Stryker.Configuration;
 using Stryker.Configuration.Options;
 using Stryker.Core;
@@ -74,6 +77,7 @@ public class StrykerCli
     private readonly IStrykerNugetFeedClient _nugetClient;
     private readonly IAnsiConsole _console;
     private readonly IFileSystem _fileSystem;
+    private readonly IMutationServer _mutationServer;
 
     public int ExitCode { get; private set; } = ExitCodes.Success;
 
@@ -83,7 +87,8 @@ public class StrykerCli
         ILoggingInitializer loggingInitializer,
         IStrykerNugetFeedClient nugetClient,
         IAnsiConsole console,
-        IFileSystem fileSystem)
+        IFileSystem fileSystem,
+        IMutationServer mutationServer = null)
     {
         _stryker = stryker ?? throw new ArgumentNullException(nameof(stryker));
         _configReader = configReader ?? throw new ArgumentNullException(nameof(configReader));
@@ -91,6 +96,7 @@ public class StrykerCli
         _nugetClient = nugetClient ?? throw new ArgumentNullException(nameof(nugetClient));
         _console = console ?? throw new ArgumentNullException(nameof(console));
         _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+        _mutationServer = mutationServer ?? new UnavailableMutationServer();
     }
 
     /// <summary>
@@ -114,6 +120,7 @@ public class StrykerCli
 
         cmdConfigReader.RegisterCommandLineOptions(app, inputs);
         cmdConfigReader.RegisterInitCommand(app, _fileSystem, inputs, args);
+        RegisterServeCommand(app);
 
         app.OnExecuteAsync(async (cancellationToken) =>
         {
@@ -152,11 +159,60 @@ public class StrykerCli
         }
     }
 
+    private void RegisterServeCommand(CommandLineApplication app)
+    {
+        app.Command("serve", command =>
+        {
+            command.Description = "Starts a mutation server using the Mutation Server Protocol.";
+            command.UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.StopParsingAndCollect;
+
+            var channel = command.Argument<string>("channel", "Transport channel: stdio or socket.");
+            var port = command.Option<int?>("--port <port>", "Port for the socket channel.", CommandOptionType.SingleValue);
+            var address = command.Option<string>("--address <address>", "Address for the socket channel. Defaults to localhost.", CommandOptionType.SingleValue);
+
+            command.OnExecuteAsync(async cancellationToken =>
+            {
+                if (channel.Value is not ("stdio" or "socket"))
+                {
+                    _console.MarkupLine("[Red]The mutation server channel must be 'stdio' or 'socket'.[/]");
+                    return ExitCodes.OtherError;
+                }
+
+                if (channel.Value == "socket" && !port.HasValue())
+                {
+                    _console.MarkupLine("[Red]The --port option is required for the socket channel.[/]");
+                    return ExitCodes.OtherError;
+                }
+
+                await _mutationServer.RunAsync(
+                    channel.Value,
+                    port.ParsedValue,
+                    address.Value() ?? "localhost",
+                    command.RemainingArguments.FirstOrDefault() == "--"
+                        ? command.RemainingArguments.Skip(1).ToArray()
+                        : command.RemainingArguments,
+                    cancellationToken).ConfigureAwait(false);
+                return ExitCodes.Success;
+            });
+        });
+    }
+
     private async Task RunStrykerAsync(IStrykerInputs inputs)
     {
         var result = await _stryker.RunMutationTestAsync(inputs).ConfigureAwait(false);
 
         HandleStrykerRunResult(result);
+    }
+
+    private sealed class UnavailableMutationServer : IMutationServer
+    {
+        public Task RunAsync(
+            string channel,
+            int? port,
+            string address,
+            IReadOnlyCollection<string> serverArguments,
+            CancellationToken cancellationToken)
+            => throw new InvalidOperationException("The mutation server service is not configured.");
     }
 
     private void HandleStrykerRunResult(StrykerRunResult result)
