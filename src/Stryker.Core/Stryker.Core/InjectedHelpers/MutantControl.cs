@@ -16,17 +16,26 @@ namespace Stryker
         private static bool _mutantFilePathCached;
 
         // Memory-mapped view of the mutant-id file used by the MTP runner. The runner writes the active
-        // mutant id (a 4-byte int) to the file between runs; reading it through a memory-mapped view is a
-        // plain memory access (no syscall), so it is cheap enough for the IsActive hot path while still
-        // always reflecting the latest value the runner wrote. The test host process is reused across
-        // mutant runs and has no per-run reset hook, so reading every call (rather than caching) is what
-        // keeps this correct: any cached or event-based scheme would race the start of the next run.
+        // mutant id (a 4-byte int) to the file between runs; the view always reflects the latest value the
+        // runner wrote. The test host process is reused across mutant runs and has no per-run reset hook,
+        // so the id is read on every IsActive call (rather than cached): any cached or event-based scheme
+        // would race the start of the next run.
+        // The read must be a plain memory load: IsActive runs for every mutated expression, from every test
+        // thread. MemoryMappedViewAccessor.ReadInt32 is not one - each call acquires and releases the view's
+        // SafeBuffer (interlocked updates of one shared ref count), which serializes parallel test threads
+        // and made instrumented code run orders of magnitude slower. So the view's address is taken once
+        // (_mutantViewAddress, with a ref on the view handle that is never released: the mapping lives as
+        // long as the process) and read with Marshal.ReadInt32. _mutantMmfReady is volatile so that a thread
+        // seeing it set also sees that address, and the view is set up under _mutantMmfLock so that test
+        // threads arriving together create only one.
         // _mutantMmf / _mutantAccessor are typed as object and initialized to a non-null sentinel only to
-        // root them (and avoid nullable warnings); the accessor is cast back to its real type when read.
+        // root them (and avoid nullable warnings).
         private static object _mutantMmf = new System.Object();
         private static object _mutantAccessor = new System.Object();
-        private static bool _mutantMmfReady;
+        private static System.IntPtr _mutantViewAddress = System.IntPtr.Zero;
+        private static volatile bool _mutantMmfReady;
         private static bool _mutantMmfFailed;
+        private static object _mutantMmfLock = new System.Object();
 
         // Tells this copy of the class apart from the copies of the other mutated assemblies the test
         // host loads; see GetOwningAssemblyDiscriminator. Computed once, so every file this copy writes
@@ -156,7 +165,7 @@ namespace Stryker
                 {
                     try
                     {
-                        mutantId = ((System.IO.MemoryMappedFiles.MemoryMappedViewAccessor)_mutantAccessor).ReadInt32(0);
+                        mutantId = System.Runtime.InteropServices.Marshal.ReadInt32(_mutantViewAddress);
                         return true;
                     }
                     catch
@@ -179,6 +188,20 @@ namespace Stryker
                 return;
             }
 
+            lock (_mutantMmfLock)
+            {
+                if (_mutantMmfReady || _mutantMmfFailed)
+                {
+                    return;
+                }
+
+                CreateMutantMmf();
+            }
+        }
+
+        // Callers hold _mutantMmfLock.
+        private static void CreateMutantMmf()
+        {
             // The runner creates the file (with the initial -1) before the test host starts, so it
             // normally exists on the first call. If it is not there yet, leave things unmapped and retry
             // on a later call rather than giving up permanently.
@@ -207,8 +230,22 @@ namespace Stryker
 
                 System.IO.MemoryMappedFiles.MemoryMappedViewAccessor accessor = mmf.CreateViewAccessor(0, 4, System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read);
 
+                // Take the view's address once; the ref taken here is deliberately never released (see the
+                // field comments), so the address stays valid for the lifetime of the process.
+                bool addedRef = false;
+                accessor.SafeMemoryMappedViewHandle.DangerousAddRef(ref addedRef);
+                if (!addedRef)
+                {
+                    accessor.Dispose();
+                    mmf.Dispose();
+                    _mutantMmfFailed = true;
+                    return;
+                }
+
+                _mutantViewAddress = new System.IntPtr(accessor.SafeMemoryMappedViewHandle.DangerousGetHandle().ToInt64() + accessor.PointerOffset);
                 _mutantMmf = mmf;
                 _mutantAccessor = accessor;
+                // Volatile write: published after the address, see the field comments
                 _mutantMmfReady = true;
             }
             catch
@@ -471,8 +508,10 @@ namespace Stryker
             if (!_mutantFilePathCached || !string.IsNullOrEmpty(_cachedMutantFilePath))
             {
                 int fileMutantId;
-                if (TryReadMutantFromFile(out fileMutantId))
+                if (TryReadMutantFromFile(out fileMutantId) && ActiveMutant != fileMutantId)
                 {
+                    // Only written when the runner switched mutants: an unconditional write on every call
+                    // would bounce this field's cache line between all the test threads running mutated code
                     ActiveMutant = fileMutantId;
                 }
 
