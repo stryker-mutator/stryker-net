@@ -67,7 +67,7 @@ public class CoverageAnalyser : ICoverageAnalyser
                 value.Add(coverageRunResult);
             }
 
-            if (failedTests.GetIdentifiers().Contains(coverageRunResult.TestId))
+            if (failedTests.Contains(coverageRunResult.TestId))
             {
                 // exclude failing tests from the list of all tests
                 continue;
@@ -85,9 +85,8 @@ public class CoverageAnalyser : ICoverageAnalyser
             }
         }
 
-
-        ITestIdentifiers allTest;
-        ITestIdentifiers allTestsExceptTrusted;
+        ITestIdentifierSet allTest;
+        ITestIdentifierSet allTestsExceptTrusted;
         if (!coverage.Any())
         {
             allTest = TestIdentifierList.NoTest();
@@ -106,46 +105,44 @@ public class CoverageAnalyser : ICoverageAnalyser
                 testIds.ExceptWith(failedTests.GetIdentifiers());
                 allTestsExceptTrusted = new TestIdentifierList(testIds);
             }
-
         }
 
         var dubiousTestsList = new TestIdentifierList(dubiousTests);
         foreach (var mutant in mutantsToScan)
         {
-            CoverageForThisMutant(mutant, mutationToResultMap, allTest, allTestsExceptTrusted,
+            CoverageForThisMutant(mutant, mutationToResultMap,allTest, allTestsExceptTrusted,
                 dubiousTestsList, failedTests);
         }
     }
 
     private void CoverageForThisMutant(IMutant mutant,
         IReadOnlyDictionary<int, List<ICoverageRunResult>> mutationToResultMap,
-        ITestIdentifiers everyTest,
-        ITestIdentifiers allTestsGuidsExceptTrusted,
-        ITestIdentifiers dubiousTests,
-        ITestIdentifiers failedTest)
+        ITestIdentifierSet allTests,
+        ITestIdentifierSet allTestsExceptTrusted,
+        ITestIdentifierSet dubiousTests,
+        ITestIdentifierSet failedTest)
     {
         var mutantId = mutant.Id;
         var (resultTingRequirements, testGuids) = ParseResultForThisMutant(mutationToResultMap, mutantId);
 
-        var assessingTests = testGuids.Excluding(failedTest);
         mutant.MustBeTestedInIsolation =
             resultTingRequirements.HasFlag(MutationTestingRequirements.NeedEarlyActivation);
         if (resultTingRequirements.HasFlag(MutationTestingRequirements.AgainstAllTests))
         {
             mutant.CoveringTests = TestIdentifierList.EveryTest();
-            mutant.AssessingTests = everyTest;
+            mutant.AssessingTests = allTests;
         }
         else if (resultTingRequirements.HasFlag(MutationTestingRequirements.Static) || mutant.IsStaticValue)
         {
             // static mutations will be tested against every test, except the one that are trusted not to cover it
-            mutant.CoveringTests = allTestsGuidsExceptTrusted.Merge(testGuids);
-            mutant.AssessingTests = mutant.CoveringTests.Excluding(failedTest);
+            mutant.CoveringTests = allTestsExceptTrusted.Merge(testGuids);
+            mutant.AssessingTests = new TestIdentifierList(mutant.CoveringTests).Excluding(failedTest);
             mutant.IsStaticValue = true;
         }
         else
         {
-            mutant.CoveringTests = testGuids.Merge(dubiousTests);
-            mutant.AssessingTests = mutant.CoveringTests.Excluding(failedTest);
+            mutant.CoveringTests = new TestIdentifierList(testGuids).Merge(dubiousTests);
+            mutant.AssessingTests = new TestIdentifierList(mutant.CoveringTests).Excluding(failedTest);
         }
 
         // assess status according to actual coverage
@@ -174,13 +171,13 @@ public class CoverageAnalyser : ICoverageAnalyser
         IReadOnlyDictionary<int, List<ICoverageRunResult>> mutationToResultMap, int mutantId)
     {
         var resultingRequirements = MutationTestingRequirements.None;
-        if (!mutationToResultMap.ContainsKey(mutantId))
+        if (!mutationToResultMap.TryGetValue(mutantId, out var results))
         {
             return (resultingRequirements, TestIdentifierList.NoTest());
         }
 
         var testGuids = new List<string>();
-        foreach (var coverageRunResult in mutationToResultMap[mutantId])
+        foreach (var coverageRunResult in results)
         {
             testGuids.Add(coverageRunResult.TestId);
             // did this test covered the mutation via some static context?
