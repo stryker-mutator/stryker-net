@@ -53,6 +53,41 @@ public class CoverageAnalyser : ICoverageAnalyser
         var trustedTests = new HashSet<string>();
         var testIds = new HashSet<string>();
 
+        var mutationToResultMap = MutationToResultMap(coverage, failedTests, testIds, dubiousTests, trustedTests);
+
+        ITestIdentifierSet allTest;
+        ITestIdentifierSet allTestsExceptTrusted;
+        if (!coverage.Any())
+        {
+            allTest = TestIdentifierList.NoTest();
+            allTestsExceptTrusted = TestIdentifierList.NoTest();
+        }
+        else
+        {
+            allTest = TestIdentifierList.EveryTest();
+            if (trustedTests.Count == 0 && failedTests.IsEmpty)
+            {
+                allTestsExceptTrusted = TestIdentifierList.EveryTest();
+            }
+            else
+            {
+                testIds.ExceptWith(trustedTests);
+                testIds.ExceptWith(failedTests.GetIdentifiers());
+                allTestsExceptTrusted = new TestIdentifierList(testIds);
+            }
+        }
+
+        var dubiousTestsList = new TestIdentifierList(dubiousTests);
+        foreach (var mutant in mutantsToScan)
+        {
+            CoverageForThisMutant(mutant, mutationToResultMap,allTest, allTestsExceptTrusted,
+                dubiousTestsList, failedTests);
+        }
+    }
+
+    private static Dictionary<int, List<ICoverageRunResult>> MutationToResultMap(IEnumerable<ICoverageRunResult> coverage, TestIdentifierList failedTests, HashSet<string> testIds,
+        HashSet<string> dubiousTests, HashSet<string> trustedTests)
+    {
         var mutationToResultMap = new Dictionary<int, List<ICoverageRunResult>>();
         foreach (var coverageRunResult in coverage)
         {
@@ -85,34 +120,7 @@ public class CoverageAnalyser : ICoverageAnalyser
             }
         }
 
-        ITestIdentifierSet allTest;
-        ITestIdentifierSet allTestsExceptTrusted;
-        if (!coverage.Any())
-        {
-            allTest = TestIdentifierList.NoTest();
-            allTestsExceptTrusted = TestIdentifierList.NoTest();
-        }
-        else
-        {
-            allTest = TestIdentifierList.EveryTest();
-            if (trustedTests.Count == 0 && failedTests.IsEmpty)
-            {
-                allTestsExceptTrusted = TestIdentifierList.EveryTest();
-            }
-            else
-            {
-                testIds.ExceptWith(trustedTests);
-                testIds.ExceptWith(failedTests.GetIdentifiers());
-                allTestsExceptTrusted = new TestIdentifierList(testIds);
-            }
-        }
-
-        var dubiousTestsList = new TestIdentifierList(dubiousTests);
-        foreach (var mutant in mutantsToScan)
-        {
-            CoverageForThisMutant(mutant, mutationToResultMap,allTest, allTestsExceptTrusted,
-                dubiousTestsList, failedTests);
-        }
+        return mutationToResultMap;
     }
 
     private void CoverageForThisMutant(IMutant mutant,
