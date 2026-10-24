@@ -117,7 +117,7 @@ public sealed class VsTestRunner : IDisposable
         void HandleUpdate(IRunResults handler)
         {
             var handlerTestResults = handler.TestResults;
-            var tests = handlerTestResults.Select(p => p.TestCase.Id).Distinct().Count() >= totalCountOfTests
+            ITestIdentifiers tests = handlerTestResults.Select(p => p.TestCase.Id).Distinct().Count() >= totalCountOfTests
                 ? TestIdentifierList.EveryTest()
                 : new WrappedIdentifierEnumeration(handlerTestResults.Select(t => t.TestCase.Id.ToString()));
             var failedTest = new WrappedIdentifierEnumeration(handlerTestResults
@@ -197,7 +197,7 @@ public sealed class VsTestRunner : IDisposable
         // this is needed when the tests list is not stable (mutations can generate variation for theories) and also helps for performance
         // so we assume that if executed at least as much test as have been detected, it means all tests have been executed
         // EXCEPT when no test have been found. Otherwise, an empty test project would transform non-covered mutants to survivors.
-        var ranTests = compressAll && totalCountOfTests > 0 && ranTestsCount >= totalCountOfTests
+        ITestIdentifiers ranTests = compressAll && totalCountOfTests > 0 && ranTestsCount >= totalCountOfTests
             ? TestIdentifierList.EveryTest()
             : new WrappedIdentifierEnumeration(testCases);
         var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(t => t.TestCase.Id.ToString());
@@ -256,8 +256,8 @@ public sealed class VsTestRunner : IDisposable
         foreach (var source in projectAndTests.TestProjectsInfo.AnalyzerResults)
         {
             var testForSource = _context.TestsPerSource[source.GetAssemblyPath()];
-            var testsForAssembly = new TestIdentifierList(tests.GetIdentifiers().Where(id => testForSource.Contains(Guid.Parse(id))));
-            if (!tests.IsEveryTest && testsForAssembly.Count == 0)
+            var testsForAssembly = new TestIdentifierList(tests.GetIdentifiers()?.Where(id => testForSource.Contains(Guid.Parse(id))));
+            if (!tests.IsEveryTest && testsForAssembly.IsEmpty)
             {
                 // skip empty assemblies
                 continue;

@@ -316,7 +316,7 @@ public sealed class VsTestContextInformation : IDisposable
         var dataCollectorSettings = needDataCollector
             ? CoverageCollector.GetVsTestSettings(
                 forCoverage,
-                mutantTestsMap?.Select(e => (e.Key, e.Value.GetIdentifiers().Select(x => Guid.Parse(x)))),
+                mutantTestsMap?.Select(e => (e.Key, e.Value.GetIdentifiers()?.Select(Guid.Parse))),
                 helperNameSpace)
             : string.Empty;
         if (_testFramework.HasFlag(TestFrameworks.NUnit))

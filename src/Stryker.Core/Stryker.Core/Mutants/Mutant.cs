@@ -15,11 +15,11 @@ public class Mutant : IMutant
 
     public MutantStatus ResultStatus { get; set; }
 
-    public ITestIdentifiers CoveringTests { get; set; } = TestIdentifierList.NoTest();
+    public ITestIdentifierSet CoveringTests { get; set; } = TestIdentifierList.NoTest();
 
-    public ITestIdentifiers KillingTests { get; set; } = TestIdentifierList.NoTest();
+    public ITestIdentifierSet KillingTests { get; set; } = TestIdentifierList.NoTest();
 
-    public ITestIdentifiers AssessingTests { get; set; } = TestIdentifierList.EveryTest();
+    public ITestIdentifierSet AssessingTests { get; set; } = TestIdentifierList.EveryTest();
 
     public string ResultStatusReason { get; set; }
 
@@ -36,7 +36,7 @@ public class Mutant : IMutant
         if (AssessingTests.ContainsAny(failedTests))
         {
             ResultStatus = MutantStatus.Killed;
-            KillingTests = AssessingTests.Intersect(failedTests);
+            KillingTests =  new TestIdentifierList(AssessingTests).Intersect(failedTests);
         }
         else if (AssessingTests.ContainsAny(timedOutTests) || sessionTimedOut)
         {
@@ -49,7 +49,7 @@ public class Mutant : IMutant
             ResultStatus = MutantStatus.RuntimeError;
             ResultStatusReason = "The test host crashed or became unreachable while testing this mutant";
         }
-        else if (resultRanTests.IsEveryTest || !resultRanTests.IsEveryTest && AssessingTests.IsIncludedIn(resultRanTests))
+        else if (resultRanTests.IsEveryTest || AssessingTests.IsIncludedIn(resultRanTests))
         {
             ResultStatus = MutantStatus.Survived;
         }

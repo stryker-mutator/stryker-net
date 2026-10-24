@@ -5,7 +5,7 @@ using Stryker.Abstractions.Testing;
 
 namespace Stryker.TestRunner.Tests;
 
-public class TestIdentifierList : ITestIdentifiers
+    public class TestIdentifierList : ITestIdentifierSet
 {
     private readonly HashSet<string>? _identifiers;
 
@@ -14,19 +14,23 @@ public class TestIdentifierList : ITestIdentifiers
 
     private TestIdentifierList() => _identifiers = null;
 
-    public TestIdentifierList(IEnumerable<ITestDescription> testDescriptions) : this(testDescriptions.Select(t => t.Id.ToString()))
+    public TestIdentifierList(IEnumerable<ITestDescription>? testDescriptions) : this(testDescriptions?.Select(t => t.Id.ToString()))
     { }
 
-    public TestIdentifierList(IEnumerable<string> identifiers) => _identifiers = identifiers != null ? new HashSet<string>(identifiers) : null;
+    public TestIdentifierList(IEnumerable<string>? identifiers) => _identifiers = identifiers != null ? new HashSet<string>(identifiers)
+        : null;
+
+    public TestIdentifierList(ITestIdentifiers other) : this(other.GetIdentifiers())
+    { }
 
     public TestIdentifierList(HashSet<string> identifiers) => _identifiers = identifiers;
 
     public TestIdentifierList(params string[] ids) : this((IEnumerable<string>)ids)
     { }
 
-    public static ITestIdentifiers EveryTest() => everyTests;
+    public static ITestIdentifierSet EveryTest() => everyTests;
 
-    public static ITestIdentifiers NoTest() => noTestAtAll;
+    public static ITestIdentifierSet NoTest() => noTestAtAll;
 
     public int Count => _identifiers?.Count ?? 0;
 
@@ -34,16 +38,27 @@ public class TestIdentifierList : ITestIdentifiers
 
     public bool IsEveryTest => _identifiers is null;
 
-    public void AddIdentifier(string identifier)
+    public IEnumerable<string> GetIdentifiers() => _identifiers;
+
+    public bool Contains(string testId) => IsEveryTest || _identifiers?.Contains(testId) is true;
+
+    private static ITestIdentifierSet Convert(ITestIdentifiers other)
+        => other is ITestIdentifierSet set ? set : new TestIdentifierList(other);
+
+    public ITestIdentifierSet Intersect(ITestIdentifiers other)
     {
-        _identifiers?.Add(identifier);
+        if (IsEveryTest)
+        {
+            return Convert(other);
+        }
+        if (other.IsEveryTest)
+        {
+            return this;
+        }
+        var intersection = new HashSet<string>(_identifiers!);
+        intersection.IntersectWith(other.GetIdentifiers());
+        return new TestIdentifierList(intersection);
     }
-
-    public IEnumerable<string> GetIdentifiers() => _identifiers ?? [];
-
-    public bool Contains(string testId) => IsEveryTest || _identifiers?.Contains(testId) is false;
-
-    public ITestIdentifiers Intersect(ITestIdentifiers other) => IsEveryTest ? new TestIdentifierList(other.GetIdentifiers()) : new TestIdentifierList(GetIdentifiers().Intersect(other.GetIdentifiers()));
 
     public bool IsIncludedIn(ITestIdentifiers other) => other.IsEveryTest || _identifiers?.IsSubsetOf(other.GetIdentifiers()) is true;
 
@@ -58,22 +73,26 @@ public class TestIdentifierList : ITestIdentifiers
             return true;
         }
 
-        return GetIdentifiers().Intersect(other.GetIdentifiers()).Any();
+        return _identifiers!.Overlaps(other.GetIdentifiers());
     }
 
-    public ITestIdentifiers Merge(ITestIdentifiers other)
+    public ITestIdentifierSet Merge(ITestIdentifiers other)
     {
         if (IsEveryTest)
         {
             return this;
         }
+        if (other.IsEveryTest)
+        {
+            return Convert(other);
+        }
 
-        var result = new HashSet<string>(_identifiers ?? []);
+        var result = new HashSet<string>(_identifiers!);
         result.UnionWith(other.GetIdentifiers());
         return new TestIdentifierList(result);
     }
 
-    public ITestIdentifiers Excluding(ITestIdentifiers testsToSkip)
+    public ITestIdentifierSet Excluding(ITestIdentifiers testsToSkip)
     {
         if (IsEmpty || testsToSkip.IsEmpty)
         {
