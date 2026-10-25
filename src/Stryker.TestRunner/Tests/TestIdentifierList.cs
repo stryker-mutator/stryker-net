@@ -14,8 +14,6 @@ namespace Stryker.TestRunner.Tests;
 
     private TestIdentifierList() => _identifiers = null;
 
-    public TestIdentifierList(IEnumerable<ITestDescription>? testDescriptions) : this(testDescriptions?.Select(t => t.Id.ToString()))
-    { }
 
     public TestIdentifierList(IEnumerable<string>? identifiers) => _identifiers = identifiers != null ? new HashSet<string>(identifiers)
         : null;
@@ -104,6 +102,6 @@ namespace Stryker.TestRunner.Tests;
             throw new InvalidOperationException("Can't exclude from EveryTest");
         }
 
-        return testsToSkip.IsEveryTest ? NoTest() : new TestIdentifierList(_identifiers.Except(testsToSkip.GetIdentifiers()));
+        return testsToSkip.IsEveryTest ? noTestAtAll : new TestIdentifierList(_identifiers!.Except(testsToSkip.GetIdentifiers()));
     }
 }

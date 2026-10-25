@@ -256,7 +256,7 @@ public sealed class VsTestRunner : IDisposable
         foreach (var source in projectAndTests.TestProjectsInfo.AnalyzerResults)
         {
             var testForSource = _context.TestsPerSource[source.GetAssemblyPath()];
-            var testsForAssembly = new TestIdentifierList(tests.GetIdentifiers()?.Where(id => testForSource.Contains(Guid.Parse(id))));
+            var testsForAssembly = new WrappedIdentifierEnumeration(tests.GetIdentifiers()?.Where(id => testForSource.Contains(Guid.Parse(id)))??[]);
             if (!tests.IsEveryTest && testsForAssembly.IsEmpty)
             {
                 // skip empty assemblies

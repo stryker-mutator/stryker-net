@@ -143,14 +143,16 @@ public class CoverageAnalyser : ICoverageAnalyser
         else if (resultTingRequirements.HasFlag(MutationTestingRequirements.Static) || mutant.IsStaticValue)
         {
             // static mutations will be tested against every test, except the one that are trusted not to cover it
-            mutant.CoveringTests = allTestsExceptTrusted.Merge(testGuids);
-            mutant.AssessingTests = new TestIdentifierList(mutant.CoveringTests).Excluding(failedTest);
+            var mutantCoveringTests = allTestsExceptTrusted.Merge(testGuids);
+            mutant.CoveringTests = mutantCoveringTests;
+            mutant.AssessingTests = mutantCoveringTests.Excluding(failedTest);
             mutant.IsStaticValue = true;
         }
         else
         {
-            mutant.CoveringTests = new TestIdentifierList(testGuids).Merge(dubiousTests);
-            mutant.AssessingTests = new TestIdentifierList(mutant.CoveringTests).Excluding(failedTest);
+            var mutantCoveringTests = new TestIdentifierList(testGuids).Merge(dubiousTests);
+            mutant.CoveringTests = mutantCoveringTests;
+            mutant.AssessingTests = mutantCoveringTests.Excluding(failedTest);
         }
 
         // assess status according to actual coverage
