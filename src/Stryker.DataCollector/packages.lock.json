@@ -34,22 +34,22 @@
       },
       "System.Security.Cryptography.Xml": {
         "type": "Direct",
-        "requested": "[10.0.13, )",
-        "resolved": "10.0.13",
-        "contentHash": "v6/GHhLaHkuN/ISgbKzBeyC7TP7S6Qm/dVyKA+p0ay9nlJyLif+spozjAGclY/FRIv2TC+KNQCo7dSNmupvWtQ==",
+        "requested": "[10.0.14, )",
+        "resolved": "10.0.14",
+        "contentHash": "qpDILpfJvj65+Pvpf5drWq2+mRNSrPffJsRYVQjBmEky+V34W+w2LXDZShq0miitf5qAPKuMAQ3CUaifaS2rrw==",
         "dependencies": {
-          "Microsoft.Bcl.Cryptography": "10.0.13",
+          "Microsoft.Bcl.Cryptography": "10.0.14",
           "System.Memory": "4.6.3",
           "System.Security.AccessControl": "6.0.0",
-          "System.Security.Cryptography.Pkcs": "10.0.13"
+          "System.Security.Cryptography.Pkcs": "10.0.14"
         }
       },
       "Microsoft.Bcl.Cryptography": {
         "type": "Transitive",
-        "resolved": "10.0.13",
-        "contentHash": "6H3QqvjxTgCt4gxVVCJVjo35Zh/gzjw7NXidIx0ghZrgYYMUja/7JJ4g39ynE/OH5YBBbUhlmirGR/AuYpNIuA==",
+        "resolved": "10.0.14",
+        "contentHash": "FiQloJinjQXRpkeHgihmbKnPD8DxJQTmwro5Qa5yHxNULxrIPy9HCEOx1U8F5AwL5WVkAccSI0veFM/iYrttUg==",
         "dependencies": {
-          "System.Formats.Asn1": "10.0.13",
+          "System.Formats.Asn1": "10.0.14",
           "System.Memory": "4.6.3",
           "System.Runtime.CompilerServices.Unsafe": "6.1.2"
         }
@@ -75,8 +75,8 @@
       },
       "System.Formats.Asn1": {
         "type": "Transitive",
-        "resolved": "10.0.13",
-        "contentHash": "uwKFGyJaUQ8xsf+wddv512+UIU1O4reOveom3y0gpQr86P1ReAKcQa/UdOZtg1etTIHgb01/grXp00tgeGBxqA==",
+        "resolved": "10.0.14",
+        "contentHash": "PpCyuuHlcc9Xbs/0lfGZGr3ohlYpyhj7/dA+K3DZe7NSY9WxuLXXCitUq5cVah6Ujgi4Bp8gI7x46fFy6FiTUw==",
         "dependencies": {
           "System.Memory": "4.6.3"
         }
@@ -125,12 +125,12 @@
       },
       "System.Security.Cryptography.Pkcs": {
         "type": "Transitive",
-        "resolved": "10.0.13",
-        "contentHash": "a+EovgC1fBnwdlQ6cn3j4JFBfKqiFaFvoAhjisOoSvazLAcIznaBzPQP0oYnvccmeXfqUH1KebVZOxSeH6rMaw==",
+        "resolved": "10.0.14",
+        "contentHash": "Wz+IgL2xpg8KJ4i2VWj6uz1PmZNu4Q0Ljlwd73P9Vze5NcOBtctLii3itV0PB2MpOqwqDEGfB6RCdv94A4E5yQ==",
         "dependencies": {
-          "Microsoft.Bcl.Cryptography": "10.0.13",
+          "Microsoft.Bcl.Cryptography": "10.0.14",
           "System.Buffers": "4.6.1",
-          "System.Formats.Asn1": "10.0.13",
+          "System.Formats.Asn1": "10.0.14",
           "System.Memory": "4.6.3",
           "System.Runtime.CompilerServices.Unsafe": "6.1.2",
           "System.Security.Cryptography.Cng": "5.0.0"
