@@ -21,10 +21,22 @@ public sealed class IgnoredMethodMutantFilter : IMutantFilter
 
     private readonly SyntaxTriviaRemover _triviaRemover = new();
 
-        public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options) =>
-            options.IgnoredMethods.Any() ?
-                    mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options)) :
-                    mutants;
+    public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options)
+    {
+        if (!options.IgnoredMethods.Any())
+        {
+            return mutants;
+        }
+
+        var kept = mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options));
+        if (!options.IgnoreMethodsEffects)
+        {
+            return kept;
+        }
+
+        var onlyEffect = new IgnoredCallOnlyEffect(node => IsPartOfIgnoredMethodCall(node, options, false));
+        return kept.Where(m => !onlyEffect.IsOnlyEffect(m.Mutation));
+    }
 
     private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, IStrykerOptions options, bool canGoUp = true) => syntaxNode switch
     {
@@ -42,7 +54,8 @@ public sealed class IgnoredMethodMutantFilter : IMutantFilter
 
         // Check if the current node is an object creation syntax (constructor invocation).
         ObjectCreationExpressionSyntax creation => MatchesAnIgnoredMethod(
-            _triviaRemover.Visit(creation.Type) + ".ctor", options),
+            _triviaRemover.Visit(creation.Type) + ".ctor", options)
+            || (canGoUp && IsPartOfIgnoredMethodCall(creation.Parent, options)),
 
         ImplicitObjectCreationExpressionSyntax creation => creation.FirstAncestorOrSelf<VariableDeclarationSyntax>() != null
             && MatchesAnIgnoredMethod(

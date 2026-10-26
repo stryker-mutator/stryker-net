@@ -248,6 +248,11 @@ public class StrykerOptions : IStrykerOptions
     public IEnumerable<Regex> IgnoredMethods { get; init; } = [];
 
     /// <summary>
+    /// Also ignore mutations whose only effect is on whether, or with what arguments, an ignored method is called.
+    /// </summary>
+    public bool IgnoreMethodsEffects { get; init; }
+
+    /// <summary>
     /// Mutations that should not be tested.
     /// </summary>
     public IEnumerable<Mutator> ExcludedMutations { get; init; } = [];

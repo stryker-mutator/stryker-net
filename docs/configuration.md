@@ -422,6 +422,50 @@ Both, method names and constructor names support wildcards.
 }
 ```
 
+### `ignore-methods-effects` &lt;`bool`&gt;
+
+Default: `false`  
+Command line: `N/A`  
+Config file: `"ignore-methods-effects": true`
+
+Also skip mutants outside an ignored method call when their only effect is on whether, or with what arguments, an ignored method is called. Requires [`ignore-methods`](#ignore-methods-string).
+
+```csharp
+// With "ignore-methods": ["Log*"] and "ignore-methods-effects": true
+
+// mutants of `count > 0` are skipped: the branch only logs
+if (count > 0)
+{
+    _logger.LogWarning("{Count} items failed", count);
+}
+
+// mutants of `errors++` and `item.Failed` are skipped: `errors` is only logged
+var errors = 0;
+foreach (var item in items)
+{
+    if (item.Failed)
+    {
+        errors++;
+    }
+}
+_logger.LogWarning("{Errors} items failed", errors);
+
+// mutants of `count > 0` are kept: the branch also returns
+if (count > 0)
+{
+    _logger.LogWarning("{Count} items failed", count);
+    return false;
+}
+```
+
+A mutant is only skipped when it cannot change anything else that runs:
+
+- The affected code may only call ignored methods. It may not create objects, assign anything other than a local that only ignored calls read, `await`, cast, index or divide.
+- A mutated `&&`, `||`, `??` or `?:` may only change whether code without such effects runs.
+- A mutated condition may not make an ignored call run that dereferences something the condition tests for `null`.
+
+This analysis is syntactic. It assumes property getters have no side effects.
+
 ### `output` &lt;`string`&gt;
 
 Default: `null`  
