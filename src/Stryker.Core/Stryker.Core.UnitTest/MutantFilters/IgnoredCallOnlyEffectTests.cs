@@ -36,10 +36,10 @@ public class IgnoredCallOnlyEffectTests : TestBase
     [DataRow("if (_seen.Add(count) && verbose) _logger.LogWarning(\"x\"); return 0;", "_seen.Add(count) && verbose", "Logical", true)]
     [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"x\"); return 0;", "other.Count > 0", "Equality", true)]
     [DataRow("if (flag) { if (verbose) { _logger.LogDebug(\"x\"); } } return 0;", "flag", null, true)]
-    [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(other.Count.ToString()); return 0;", "other.Count > 0", "Equality", true)]
-    [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(other.Count.ToString()); return 0;", "other != null", "Equality", false)]
-    [DataRow("if (other != null || other.Count > 0) _logger.LogWarning(other.Count.ToString()); return 0;", "other.Count > 0", "Equality", false)]
-    [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(other.Count.ToString()); return 0;", "other != null && other.Count > 0", null, false)]
+    [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other.Count > 0", "Equality", true)]
+    [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other != null", "Equality", false)]
+    [DataRow("if (other != null || other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other.Count > 0", "Equality", false)]
+    [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other != null && other.Count > 0", null, false)]
     // a local only logged: the counter, its guard, and a level picked for the log call
     [DataRow("var errors = 0; foreach (var i in list) { if (i < 0) { errors++; } } if (errors > 0) _logger.LogWarning(\"{N}\", errors); return 0;", "errors++", null, true)]
     [DataRow("var errors = 0; foreach (var i in list) { if (i < 0) { errors++; } } if (errors > 0) _logger.LogWarning(\"{N}\", errors); return 0;", "i < 0", null, true)]
@@ -54,7 +54,7 @@ public class IgnoredCallOnlyEffectTests : TestBase
     [DataRow("var total = 0; if (count > 0) { _logger.LogWarning(\"x\"); total++; } return total;", "count > 0", null, false)]
     [DataRow("var total = 0; if (count > 0) { _logger.LogWarning(\"x\"); total++; } return total;", "total++", null, false)]
     [DataRow("var total = 0; total++; Save(total); _logger.LogWarning(\"{T}\", total); return 0;", "total++", null, false)]
-    [DataRow("if (error is not null) _logger.LogWarning(error.Length.ToString()); return 0;", "error is not null", null, false)]
+    [DataRow("if (error is not null) _logger.LogWarning(\"{N}\", error.Length); return 0;", "error is not null", null, false)]
     [DataRow("if (string.IsNullOrEmpty(error)) { } else _logger.LogWarning(error.Trim()); return 0;", "string.IsNullOrEmpty(error)", null, false)]
     [DataRow("if (list.Count > 0) _logger.LogWarning(\"{F}\", list[0]); return 0;", "list.Count > 0", null, false)]
     [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"x\"); return 0;", "other != null", null, false)]
@@ -64,7 +64,26 @@ public class IgnoredCallOnlyEffectTests : TestBase
     [DataRow("var level = Check() ? 1 : 2; _logger.Log(level, \"x\"); return 0;", "Check() ? 1 : 2", "Conditional", false)]
     [DataRow("if (count > 0) _logger.LogWarning(\"x\"); if (count > 0) _state++; return 0;", "_state++", null, false)]
     [DataRow("var n = count + 1; if (n > 0) _logger.LogWarning(\"{N}\", n); return n;", "count + 1", null, false)]
-    [DataRow("var n = count + 1; _logger.LogWarning(\"{N}\", n); return 0;", "count + 1", null, true)]
+    // overflow, division and remainder can throw
+    [DataRow("var n = count + 1; _logger.LogWarning(\"{N}\", n); return 0;", "count + 1", null, false)]
+    [DataRow("checked { var n = int.MaxValue; n--; _logger.LogWarning(\"{N}\", n); } return 0;", "n--", null, false)]
+    [DataRow("decimal total = 0; foreach (var i in list) { total += i; } _logger.LogInformation(\"{T}\", total); return 0;", "total += i", null, false)]
+    [DataRow("var n = 10 / count; _logger.LogWarning(\"{N}\", n); return 0;", "10 / count", null, false)]
+    [DataRow("var n = 10 % count; _logger.LogWarning(\"{N}\", n); return 0;", "10 % count", null, false)]
+    [DataRow("var total = 1; if (flag) { total /= count; } _logger.LogWarning(\"{N}\", total); return 0;", "flag", null, false)]
+    [DataRow("var total = 1; if (flag) { total /= count; } _logger.LogWarning(\"{N}\", total); return 0;", "total /= count", null, false)]
+    [DataRow("var n = 1; n++; _logger.LogWarning(\"{N}\", 1 / n); return 0;", "n++", null, false)]
+    // a null test carried by a local
+    [DataRow("var canLog = error != null; if (canLog) _logger.LogWarning(\"{N}\", error.Length); return 0;", "error != null", null, false)]
+    // ignored calls whose receiver or arguments do something else
+    [DataRow("if (flag) _logger.LogWarning(\"{N}\", ++_state); return 0;", "flag", null, false)]
+    [DataRow("if (flag) _logger.LogWarning(count.ToString()); return 0;", "flag", null, false)]
+    [DataRow("if (flag) _logger.LogWarning(\"n=\" + count); return 0;", "flag", null, true)]
+    [DataRow("var n = 1; n++; _logger.LogWarning(\"{N}\", SaveAndReturn(n)); return 0;", "n++", null, false)]
+    [DataRow("var n = 1; n++; _logger.LogWarning(\"{N}\", _state = n); return 0;", "n++", null, false)]
+    [DataRow("if (flag && UpdateState().IgnoredCheck()) _logger.LogWarning(\"x\"); return 0;", "flag && UpdateState().IgnoredCheck()", "Logical", false)]
+    // a field that shares its name with a local in a nested block
+    [DataRow("{ var _state = 0; _logger.LogWarning(\"{N}\", _state); } _state++; return _state;", "_state++", null, false)]
     public void ShouldOnlyFilterMutantsWhoseOnlyEffectIsAnIgnoredCall(string body, string original, string type, bool filtered)
     {
         var options = BuildOptions(ignoreMethodsEffects: true);
@@ -102,14 +121,15 @@ public class IgnoredCallOnlyEffectTests : TestBase
     private static StrykerOptions BuildOptions(bool ignoreMethodsEffects) => new()
     {
         MutationLevel = MutationLevel.Complete,
-        IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = ["Log*", "BeginScope"] }.Validate(),
+        IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = ["Log*", "BeginScope", "IgnoredCheck"] }.Validate(),
         IgnoreMethodsEffects = ignoreMethodsEffects,
     };
 
     private static List<Mutant> BuildMutants(string body, string original, string type, StrykerOptions options)
     {
         var source = "using System.Collections.Generic; using System.Threading; class C { int _state; HashSet<int> _seen; ILogger _logger;"
-            + " int M(int count, bool flag, bool verbose, string error, List<int> list, List<int> other) { " + body + " } void Save(int n = 0) { } bool Check() => true; }";
+            + " int M(int count, bool flag, bool verbose, string error, List<int> list, List<int> other) { " + body + " } void Save(int n = 0) { } bool Check() => true;"
+            + " int SaveAndReturn(int n) => n; C UpdateState() => this; bool IgnoredCheck() => true; }";
         var tree = CSharpSyntaxTree.ParseText(source);
         var model = CSharpCompilation.Create("t", [tree], [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)])
             .GetSemanticModel(tree);

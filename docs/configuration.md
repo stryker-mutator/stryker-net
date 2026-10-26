@@ -460,11 +460,12 @@ if (count > 0)
 
 A mutant is only skipped when it cannot change anything else that runs:
 
-- The affected code may only call ignored methods. It may not create objects, assign anything other than a local that only ignored calls read, `await`, cast, index or divide.
+- The affected code, including the receiver and arguments of the ignored calls, may only call ignored methods. It may not create objects, assign anything other than a local that only ignored calls read, `await`, cast, index, or do arithmetic other than string concatenation.
+- Only `++`, `--`, `+=`, `-=` and `*=` on an integer local outside a `checked` block count as harmless arithmetic. Arithmetic mutants themselves are never skipped.
 - A mutated `&&`, `||`, `??` or `?:` may only change whether code without such effects runs.
-- A mutated condition may not make an ignored call run that dereferences something the condition tests for `null`.
+- A mutated condition may not make an ignored call run that dereferences something the condition tests for `null`. A local that holds the result of a `null` test is never skipped.
 
-This analysis is syntactic. It assumes property getters have no side effects.
+This analysis is syntactic. It assumes property getters have no side effects and that integer arithmetic outside `checked` blocks does not throw, so do not enable it in projects compiled with `CheckForOverflowUnderflow`.
 
 ### `output` &lt;`string`&gt;
 

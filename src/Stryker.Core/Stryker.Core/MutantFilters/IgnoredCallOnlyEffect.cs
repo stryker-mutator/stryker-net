@@ -13,12 +13,15 @@ namespace Stryker.Core.MutantFilters;
 /// the condition of an <c>if</c> whose branches only call ignored methods, and locals that are only
 /// read by ignored calls (a counter that is logged and nothing else).
 /// Anything that can change other state, throw, or change control flow is never reported.
-/// Assumes property getters are pure and that a receiver the code does not null-test is not null.
+/// Assumes property getters are pure, that a receiver the code does not null-test is not null, and that
+/// integer arithmetic outside a <c>checked</c> block does not throw (no project-wide overflow checking).
 /// </summary>
 internal sealed class IgnoredCallOnlyEffect
 {
+    private static readonly HashSet<string> NoneTested = new(StringComparer.Ordinal);
+
     private readonly Func<SyntaxNode, bool> _isIgnoredCall;
-    private readonly Dictionary<SyntaxNode, HashSet<string>> _deadLocalsByMember = new();
+    private readonly Dictionary<SyntaxNode, Dictionary<string, Local>> _deadLocalsByMember = new();
 
     public IgnoredCallOnlyEffect(Func<SyntaxNode, bool> isIgnoredCall) => _isIgnoredCall = isIgnoredCall;
 
@@ -40,22 +43,19 @@ internal sealed class IgnoredCallOnlyEffect
                 return IsDeadWrite(node, dead);
             case AssignmentExpressionSyntax assignment when mutation.Type == Mutator.Assignment:
                 return IsDeadWrite(node, dead)
-                    && mutation.ReplacementNode is not AssignmentExpressionSyntax
-                    {
-                        RawKind: (int)SyntaxKind.DivideAssignmentExpression or (int)SyntaxKind.ModuloAssignmentExpression
-                    }
-                    && (assignment.Kind() is SyntaxKind.AddAssignmentExpression or SyntaxKind.SubtractAssignmentExpression
-                        || IsSafe(assignment.Right, NullTested(assignment)));
+                    && mutation.ReplacementNode is AssignmentExpressionSyntax replacement
+                    && IsSafeWrite(replacement.Kind(), assignment.Left, assignment, dead);
         }
 
         var nullTested = NullTested(node.FirstAncestorOrSelf<StatementSyntax>());
         return KeepsEvaluation(mutation, nullTested) && FlowsOnlyToIgnoredCalls(node, dead, nullTested);
     }
 
-    // The mutated expression still evaluates exactly what the original did.
+    // The mutated expression still evaluates exactly what the original did, and cannot throw where it did not.
     private bool KeepsEvaluation(Mutation mutation, HashSet<string> nullTested) => mutation.Type switch
     {
-        Mutator.Equality or Mutator.Boolean or Mutator.Unary => true,
+        Mutator.Equality or Mutator.Boolean => true,
+        Mutator.Unary => mutation.OriginalNode.IsKind(SyntaxKind.BitwiseNotExpression),
         Mutator.Logical => mutation.OriginalNode is not BinaryExpressionSyntax
         {
             RawKind: (int)SyntaxKind.LogicalAndExpression or (int)SyntaxKind.LogicalOrExpression
@@ -64,15 +64,11 @@ internal sealed class IgnoredCallOnlyEffect
             && IsSafe(conditional.Condition, nullTested)
             && IsSafe(conditional.WhenTrue, nullTested)
             && IsSafe(conditional.WhenFalse, nullTested),
-        Mutator.Arithmetic => mutation.ReplacementNode is BinaryExpressionSyntax
-        {
-            RawKind: (int)SyntaxKind.AddExpression or (int)SyntaxKind.SubtractExpression or (int)SyntaxKind.MultiplyExpression
-        },
         _ => false,
     };
 
     // Follows the value of node upwards until it lands somewhere only ignored calls observe.
-    private bool FlowsOnlyToIgnoredCalls(SyntaxNode node, HashSet<string> dead, HashSet<string> nullTested)
+    private bool FlowsOnlyToIgnoredCalls(SyntaxNode node, Dictionary<string, Local> dead, HashSet<string> nullTested)
     {
         var current = node;
         while (true)
@@ -83,7 +79,7 @@ internal sealed class IgnoredCallOnlyEffect
                 case ParenthesizedExpressionSyntax:
                 case PrefixUnaryExpressionSyntax
                 {
-                    RawKind: (int)SyntaxKind.LogicalNotExpression or (int)SyntaxKind.UnaryMinusExpression or (int)SyntaxKind.UnaryPlusExpression
+                    RawKind: (int)SyntaxKind.LogicalNotExpression or (int)SyntaxKind.BitwiseNotExpression
                 }:
                 case IsPatternExpressionSyntax:
                 case PatternSyntax and not RecursivePatternSyntax { PositionalPatternClause: not null }:
@@ -103,10 +99,10 @@ internal sealed class IgnoredCallOnlyEffect
                             or SyntaxKind.LessThanExpression or SyntaxKind.LessThanOrEqualExpression
                             or SyntaxKind.GreaterThanExpression or SyntaxKind.GreaterThanOrEqualExpression
                             or SyntaxKind.BitwiseAndExpression or SyntaxKind.BitwiseOrExpression or SyntaxKind.ExclusiveOrExpression
-                            or SyntaxKind.AddExpression or SyntaxKind.SubtractExpression or SyntaxKind.MultiplyExpression
                             or SyntaxKind.IsExpression or SyntaxKind.AsExpression:
                             break;
                         default:
+                            // arithmetic can overflow or divide by zero on the mutated value
                             return false;
                     }
                     break;
@@ -124,7 +120,7 @@ internal sealed class IgnoredCallOnlyEffect
                         && (ifStatement.Else is null || IsInert(ifStatement.Else.Statement, dead, nullTested));
                 case EqualsValueClauseSyntax { Parent: VariableDeclaratorSyntax declarator }:
                     return declarator.Parent?.Parent is LocalDeclarationStatementSyntax
-                        && dead.Contains(declarator.Identifier.ValueText);
+                        && dead.ContainsKey(declarator.Identifier.ValueText);
                 case AssignmentExpressionSyntax assignment when current == assignment.Right:
                     return IsDeadWrite(assignment, dead);
                 default:
@@ -136,13 +132,13 @@ internal sealed class IgnoredCallOnlyEffect
     }
 
     // A statement that, when it runs (or no longer runs), can only change ignored calls.
-    // nullTested is null for removal: an ignored call that no longer runs evaluates nothing.
-    private bool IsInert(StatementSyntax statement, HashSet<string> dead, HashSet<string> nullTested) => statement switch
+    // nullTested is null for removal: an ignored call that no longer runs dereferences nothing.
+    private bool IsInert(StatementSyntax statement, Dictionary<string, Local> dead, HashSet<string> nullTested) => statement switch
     {
         BlockSyntax block => block.Statements.All(s => IsInert(s, dead, nullTested)),
         EmptyStatementSyntax => true,
         ExpressionStatementSyntax { Expression: var expression } when IsIgnoredCall(expression) =>
-            nullTested is null || IsSafeArgument(expression, nullTested),
+            IsSafe(expression is AwaitExpressionSyntax awaited ? awaited.Expression : expression, nullTested ?? NoneTested),
         ExpressionStatementSyntax { Expression: PostfixUnaryExpressionSyntax or PrefixUnaryExpressionSyntax } expressionStatement =>
             IsDeadWrite(expressionStatement.Expression, dead),
         ExpressionStatementSyntax { Expression: AssignmentExpressionSyntax assignment } =>
@@ -151,7 +147,7 @@ internal sealed class IgnoredCallOnlyEffect
         _ => false,
     };
 
-    private bool IsInertIf(IfStatementSyntax ifStatement, HashSet<string> dead, HashSet<string> nullTested)
+    private bool IsInertIf(IfStatementSyntax ifStatement, Dictionary<string, Local> dead, HashSet<string> nullTested)
     {
         var tested = NullTested(ifStatement);
         if (nullTested is not null)
@@ -171,19 +167,35 @@ internal sealed class IgnoredCallOnlyEffect
     }
 
     // `x++;`, `x += y;` or `x = y;` on a local that only ignored calls read.
-    private static bool IsDeadWrite(SyntaxNode write, HashSet<string> dead) =>
+    private static bool IsDeadWrite(SyntaxNode write, Dictionary<string, Local> dead) =>
         write.Parent is ExpressionStatementSyntax && write switch
         {
-            PostfixUnaryExpressionSyntax { RawKind: (int)SyntaxKind.PostIncrementExpression or (int)SyntaxKind.PostDecrementExpression } postfix =>
-                IsDeadName(postfix.Operand, dead),
-            PrefixUnaryExpressionSyntax { RawKind: (int)SyntaxKind.PreIncrementExpression or (int)SyntaxKind.PreDecrementExpression } prefix =>
-                IsDeadName(prefix.Operand, dead),
-            AssignmentExpressionSyntax assignment => IsDeadName(assignment.Left, dead),
+            PostfixUnaryExpressionSyntax postfix => IsSafeWrite(postfix.Kind(), postfix.Operand, write, dead),
+            PrefixUnaryExpressionSyntax prefix => IsSafeWrite(prefix.Kind(), prefix.Operand, write, dead),
+            AssignmentExpressionSyntax assignment => IsSafeWrite(assignment.Kind(), assignment.Left, write, dead),
             _ => false,
         };
 
-    private static bool IsDeadName(ExpressionSyntax expression, HashSet<string> dead) =>
-        expression is IdentifierNameSyntax identifier && dead.Contains(identifier.Identifier.ValueText);
+    // A write of this kind to target cannot throw: arithmetic only on an integer local outside a checked
+    // context, and never division, remainder or a conditional assignment.
+    private static bool IsSafeWrite(SyntaxKind kind, ExpressionSyntax target, SyntaxNode write, Dictionary<string, Local> dead) => kind switch
+    {
+        SyntaxKind.SimpleAssignmentExpression or SyntaxKind.AndAssignmentExpression
+            or SyntaxKind.OrAssignmentExpression or SyntaxKind.ExclusiveOrAssignmentExpression => IsDeadName(target, dead),
+        SyntaxKind.PostIncrementExpression or SyntaxKind.PostDecrementExpression
+            or SyntaxKind.PreIncrementExpression or SyntaxKind.PreDecrementExpression
+            or SyntaxKind.AddAssignmentExpression or SyntaxKind.SubtractAssignmentExpression or SyntaxKind.MultiplyAssignmentExpression =>
+            IsDeadName(target, dead) && dead[((IdentifierNameSyntax)target).Identifier.ValueText].IsInteger && !IsChecked(write),
+        _ => false,
+    };
+
+    private static bool IsDeadName(ExpressionSyntax expression, Dictionary<string, Local> dead) =>
+        expression is IdentifierNameSyntax identifier
+        && dead.TryGetValue(identifier.Identifier.ValueText, out var local)
+        && local.Scope.Span.Contains(identifier.Span);
+
+    private static bool IsChecked(SyntaxNode node) =>
+        node.Ancestors().Any(n => n.IsKind(SyntaxKind.CheckedStatement) || n.IsKind(SyntaxKind.CheckedExpression));
 
     // Evaluating this can neither change state nor throw.
     private bool IsSafe(ExpressionSyntax expression, HashSet<string> nullTested) =>
@@ -193,28 +205,37 @@ internal sealed class IgnoredCallOnlyEffect
             BaseObjectCreationExpressionSyntax or ArrayCreationExpressionSyntax or ImplicitArrayCreationExpressionSyntax
                 or AssignmentExpressionSyntax or AwaitExpressionSyntax or ThrowExpressionSyntax
                 or ElementAccessExpressionSyntax or ElementBindingExpressionSyntax or CastExpressionSyntax
-                or QueryExpressionSyntax or WithExpressionSyntax or PositionalPatternClauseSyntax => false,
+                or QueryExpressionSyntax or WithExpressionSyntax or PositionalPatternClauseSyntax
+                or CheckedExpressionSyntax => false,
             PrefixUnaryExpressionSyntax { RawKind: (int)SyntaxKind.PreIncrementExpression or (int)SyntaxKind.PreDecrementExpression } => false,
+            PrefixUnaryExpressionSyntax { RawKind: (int)SyntaxKind.UnaryMinusExpression } negation => negation.Operand is LiteralExpressionSyntax,
             PostfixUnaryExpressionSyntax
             {
                 RawKind: (int)SyntaxKind.PostIncrementExpression or (int)SyntaxKind.PostDecrementExpression or (int)SyntaxKind.SuppressNullableWarningExpression
             } => false,
-            BinaryExpressionSyntax { RawKind: (int)SyntaxKind.DivideExpression or (int)SyntaxKind.ModuloExpression } => false,
+            BinaryExpressionSyntax binary => binary.Kind() switch
+            {
+                SyntaxKind.AddExpression => IsStringConcatenation(binary),
+                SyntaxKind.SubtractExpression or SyntaxKind.MultiplyExpression or SyntaxKind.DivideExpression or SyntaxKind.ModuloExpression
+                    or SyntaxKind.LeftShiftExpression or SyntaxKind.RightShiftExpression or SyntaxKind.UnsignedRightShiftExpression => false,
+                _ => true,
+            },
             MemberAccessExpressionSyntax access => !nullTested.Contains(Key(access.Expression)),
             _ => true,
         });
 
-    // An ignored call that now runs when it did not: its own arguments must not dereference
-    // what the condition null-tested, index, or cast.
-    private static bool IsSafeArgument(ExpressionSyntax expression, HashSet<string> nullTested) =>
-        expression.DescendantNodesAndSelf().All(n => n switch
-        {
-            ElementAccessExpressionSyntax or CastExpressionSyntax => false,
-            PostfixUnaryExpressionSyntax { RawKind: (int)SyntaxKind.SuppressNullableWarningExpression } suppressed =>
-                !nullTested.Contains(Key(suppressed.Operand)),
-            MemberAccessExpressionSyntax access => !nullTested.Contains(Key(access.Expression)),
-            _ => true,
-        });
+    // Without types, only a concatenation with a string literal is known not to be arithmetic.
+    private static bool IsStringConcatenation(BinaryExpressionSyntax binary) =>
+        binary.IsKind(SyntaxKind.AddExpression) && (IsString(binary.Left) || IsString(binary.Right));
+
+    private static bool IsString(ExpressionSyntax expression) => expression switch
+    {
+        LiteralExpressionSyntax literal => literal.IsKind(SyntaxKind.StringLiteralExpression),
+        InterpolatedStringExpressionSyntax => true,
+        ParenthesizedExpressionSyntax parenthesized => IsString(parenthesized.Expression),
+        BinaryExpressionSyntax binary => IsStringConcatenation(binary),
+        _ => false,
+    };
 
     // Expressions the statement's own expressions test for null; a flipped test dereferences null.
     private static HashSet<string> NullTested(SyntaxNode root)
@@ -321,10 +342,13 @@ internal sealed class IgnoredCallOnlyEffect
         }
     }
 
+    // A local and the block that declares it; only references inside that block are the local.
+    private sealed record Local(SyntaxNode Scope, bool IsInteger, List<IdentifierNameSyntax> References);
+
     // Locals whose value only ever reaches ignored calls: the greatest set where every reference
     // is a statement-level write, an argument of an ignored call, or flows into such a local or
     // into the condition of an if whose branches are inert.
-    private HashSet<string> DeadLocals(SyntaxNode member)
+    private Dictionary<string, Local> DeadLocals(SyntaxNode member)
     {
         if (_deadLocalsByMember.TryGetValue(member, out var cached))
         {
@@ -338,25 +362,74 @@ internal sealed class IgnoredCallOnlyEffect
             .Where(group => group.Count() == 1)
             .Select(group => group.Key)
             .ToHashSet(StringComparer.Ordinal);
-        var candidates = member.DescendantNodes()
+        var dead = member.DescendantNodes()
             .OfType<LocalDeclarationStatementSyntax>()
             .Where(local => local.UsingKeyword.IsKind(SyntaxKind.None) && !local.IsConst
                 && local.Declaration.Type is not RefTypeSyntax && local.Parent is BlockSyntax or SwitchSectionSyntax)
-            .SelectMany(local => local.Declaration.Variables.Select(v => (Name: v.Identifier.ValueText, Scope: local.Parent)))
+            .SelectMany(local => local.Declaration.Variables.Select(variable => (
+                Name: variable.Identifier.ValueText,
+                Local: new Local(local.Parent, IsInteger(local.Declaration.Type, variable),
+                    References(local.Parent, variable.Identifier.ValueText).ToList()))))
             .Where(local => declared.Contains(local.Name))
-            .ToDictionary(local => local.Name, local => References(local.Scope, local.Name).ToList(), StringComparer.Ordinal);
+            .ToDictionary(local => local.Name, local => local.Local, StringComparer.Ordinal);
 
-        var dead = candidates.Keys.ToHashSet(StringComparer.Ordinal);
-        _deadLocalsByMember[member] = dead;
+        // a local that carries a null test keeps guarding a dereference after the test is mutated
+        // (or one computed from such a local), so it is never treated as dead
+        var nullTestCarriers = dead
+            .Where(local => WrittenValues(local.Key, local.Value).Any(value => NullTested(value).Count > 0))
+            .Select(local => local.Key)
+            .ToHashSet(StringComparer.Ordinal);
         bool changed;
         do
         {
-            changed = dead.RemoveWhere(name => !candidates[name].All(reference => IsDeadReference(reference, dead))) > 0;
+            changed = false;
+            foreach (var (name, local) in dead)
+            {
+                if (!nullTestCarriers.Contains(name)
+                    && WrittenValues(name, local).Any(value => value.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
+                        .Any(identifier => nullTestCarriers.Contains(identifier.Identifier.ValueText))))
+                {
+                    nullTestCarriers.Add(name);
+                    changed = true;
+                }
+            }
+        }
+        while (changed);
+
+        foreach (var name in nullTestCarriers)
+        {
+            dead.Remove(name);
+        }
+
+        _deadLocalsByMember[member] = dead;
+        do
+        {
+            var notDead = dead.Where(local => !local.Value.References.All(reference => IsDeadReference(reference, dead))).Select(local => local.Key).ToList();
+            notDead.ForEach(name => dead.Remove(name));
+            changed = notDead.Count > 0;
         }
         while (changed);
 
         return dead;
     }
+
+    private static IEnumerable<ExpressionSyntax> WrittenValues(string name, Local local) =>
+        local.Scope.DescendantNodes().OfType<VariableDeclaratorSyntax>()
+            .Where(declarator => declarator.Identifier.ValueText == name && declarator.Initializer is not null)
+            .Select(declarator => declarator.Initializer.Value)
+            .Concat(local.References
+                .Where(reference => reference.Parent is AssignmentExpressionSyntax assignment && assignment.Left == reference)
+                .Select(reference => ((AssignmentExpressionSyntax)reference.Parent).Right));
+
+    private static bool IsInteger(TypeSyntax type, VariableDeclaratorSyntax variable) => type switch
+    {
+        PredefinedTypeSyntax predefined => predefined.Keyword.Kind() is SyntaxKind.IntKeyword or SyntaxKind.LongKeyword
+            or SyntaxKind.ShortKeyword or SyntaxKind.ByteKeyword or SyntaxKind.SByteKeyword
+            or SyntaxKind.UIntKeyword or SyntaxKind.ULongKeyword or SyntaxKind.UShortKeyword,
+        IdentifierNameSyntax { IsVar: true } => variable.Initializer?.Value is LiteralExpressionSyntax literal
+            && literal.IsKind(SyntaxKind.NumericLiteralExpression) && literal.Token.Value is int or long or uint or ulong,
+        _ => false,
+    };
 
     private static string DeclaredName(SyntaxNode node) => node switch
     {
@@ -382,7 +455,7 @@ internal sealed class IgnoredCallOnlyEffect
                 _ => true,
             });
 
-    private bool IsDeadReference(IdentifierNameSyntax reference, HashSet<string> dead)
+    private bool IsDeadReference(IdentifierNameSyntax reference, Dictionary<string, Local> dead)
     {
         if (IsDeadWrite(reference.Parent, dead) && reference.Parent switch
             {
@@ -393,13 +466,14 @@ internal sealed class IgnoredCallOnlyEffect
             return true;
         }
 
-        // an argument of an ignored call, passed by value
+        // an argument of an ignored call, passed by value, whose evaluation does nothing else
         var argument = reference.FirstAncestorOrSelf<ArgumentSyntax>();
         while (argument is not null)
         {
             if (argument.Parent?.Parent is InvocationExpressionSyntax invocation && _isIgnoredCall(invocation))
             {
-                return reference.FirstAncestorOrSelf<ArgumentSyntax>().RefKindKeyword.IsKind(SyntaxKind.None);
+                return reference.FirstAncestorOrSelf<ArgumentSyntax>().RefKindKeyword.IsKind(SyntaxKind.None)
+                    && IsSafe(argument.Expression, NoneTested);
             }
 
             argument = argument.Parent?.FirstAncestorOrSelf<ArgumentSyntax>();

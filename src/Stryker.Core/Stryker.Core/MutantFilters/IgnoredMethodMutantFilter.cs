@@ -34,9 +34,18 @@ public sealed class IgnoredMethodMutantFilter : IMutantFilter
             return kept;
         }
 
-        var onlyEffect = new IgnoredCallOnlyEffect(node => IsPartOfIgnoredMethodCall(node, options, false));
+        var onlyEffect = new IgnoredCallOnlyEffect(node => IsIgnoredCall(node, options));
         return kept.Where(m => !onlyEffect.IsOnlyEffect(m.Mutation));
     }
+
+    // Only the call itself: unlike IsPartOfIgnoredMethodCall, a receiver of a fluent chain that
+    // ends in an ignored call is not treated as ignored, because it still runs.
+    private bool IsIgnoredCall(SyntaxNode syntaxNode, IStrykerOptions options) => syntaxNode switch
+    {
+        InvocationExpressionSyntax invocation => MatchesAnIgnoredMethod(_triviaRemover.Visit(invocation.Expression).ToString(), options),
+        ConditionalAccessExpressionSyntax conditional => IsIgnoredCall(conditional.WhenNotNull, options),
+        _ => false,
+    };
 
     private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, IStrykerOptions options, bool canGoUp = true) => syntaxNode switch
     {
