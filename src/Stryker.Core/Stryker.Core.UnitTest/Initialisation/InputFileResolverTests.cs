@@ -1437,7 +1437,8 @@ using System.Reflection;
             { "MyProject", sourceProjectManagerMock.Object },
             { "MyProject.UnitTests", testProjectManagerMock.Object }
         };
-        var managerMock = BuildBuildAnalyzerMock(analyzerResults);
+
+        BuildBuildAnalyzerMock(analyzerResults);
 
         var target = BuildTestResolver(fileSystem);
 

@@ -27,6 +27,7 @@ public class ProjectSimulatedBuildWrapper
     private readonly ILogger _logger;
     private readonly StringWriter _buildLogger;
     private string[] _targetFrameworks;
+    private bool? _projectTypeHint = null;
 
     public ProjectSimulatedBuildWrapper(IBuildalyzerProvider buildalyzerProvider,
         string projectFile,
@@ -65,11 +66,6 @@ public class ProjectSimulatedBuildWrapper
         {
             env.GlobalProperties[property.Key] = property.Value;
         }
-        if (!string.IsNullOrEmpty(_msBuildPath))
-        {
-            // we need to forward this path to buildalyzer
-            env.EnvironmentVariables[EnvironmentVariables.MSBUILD_EXE_PATH] = _msBuildPath;
-        }
         if (!string.IsNullOrEmpty(_configuration))
         {
             env.GlobalProperties["Configuration"] = _configuration;
@@ -77,6 +73,11 @@ public class ProjectSimulatedBuildWrapper
         if (!string.IsNullOrEmpty(_platform))
         {
             env.GlobalProperties["Platform"] = _platform;
+        }
+        if (!string.IsNullOrEmpty(_msBuildPath))
+        {
+            // we need to forward this path to buildalyzer
+            env.EnvironmentVariables[EnvironmentVariables.MSBUILD_EXE_PATH] = _msBuildPath;
         }
 
         // we default to design time build unless the property is explicitly set to anything but true
@@ -143,7 +144,14 @@ public class ProjectSimulatedBuildWrapper
     public bool HasValidResults() => _targetFrameworks.Length == 0 ? AnalyzerLastResults.Count>0 && AnalyzerLastResults.All(r => r.IsValid())
         : AnalyzerLastResults.IsValidFor(_targetFrameworks);
 
-    public bool IsTestProject(List<string>? details= null) => AnalyzerLastResults.IsTestProject(true, details);
+    /// <summary>
+    /// Sets a hint for the project type. It will override the internal heuristic.
+    /// </summary>
+    /// <remarks>this method should be used to propagate explicitly declared projects to Stryker.</remarks>
+    /// <param name="isTest"></param>
+    public void ProvideProjectTypeHint(bool isTest) => _projectTypeHint = isTest;
+
+    public bool IsTestProject(List<string>? details= null) => _projectTypeHint ?? AnalyzerLastResults.IsTestProject(true, details);
 
     public bool BuildsAnAssembly() => AnalyzerLastResults.Any(p => p.BuildsAnAssembly());
 

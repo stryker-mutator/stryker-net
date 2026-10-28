@@ -102,9 +102,7 @@ public class InputFileResolver(
         _logger.LogDebug("Analyzing {ProjectsCount} projects.", solutionInfo.ProjectCount);
 
         var mutableProjectsAnalyzerResults = AnalyzeAllNeededProjects(solutionInfo,
-            normalizedProjectUnderTestNameFilter,
-            options,
-            ScanMode.NoScan);
+            options, p => ShouldScanProject(p, ScanMode.NoScan, normalizedProjectUnderTestNameFilter, []));
         // identify target projects and their associated test projects
         var (findMutableAnalyzerResults, orphanedProjects) =
             ExtractMutableProjectTrees(mutableProjectsAnalyzerResults, options);
@@ -151,8 +149,8 @@ public class InputFileResolver(
 
         solution.AddProjects(testProjectFileNames);
         // we analyze test projects
-        var analyzedProjects = AnalyzeAllNeededProjects(solution,
-            normalizedProjectUnderTestNameFilter, options, ScanMode.ScanTestProjectReferences);
+        var analyzedProjects = AnalyzeAllNeededProjects(solution, options,
+            p => ShouldScanProject(p, ScanMode.ScanTestProjectReferences, normalizedProjectUnderTestNameFilter, testProjectFileNames));
         // we match test projects to mutable projects
             var (findMutableAnalyzerResults, orphans) = ExtractMutableProjectTrees(analyzedProjects, options);
 
@@ -308,10 +306,8 @@ public class InputFileResolver(
 
     private ConcurrentBag<ProjectSimulatedBuildWrapper> AnalyzeAllNeededProjects(
         ProjectsTracker solutionInfo,
-        string normalizedProjectUnderTestNameFilter,
-        IStrykerOptions options, ScanMode mode)
+        IStrykerOptions options, Func<ProjectSimulatedBuildWrapper, ScanResult> selector)
     {
-        Func<ProjectSimulatedBuildWrapper, ScanResult> selector = p => ShouldScanProject(p, mode, normalizedProjectUnderTestNameFilter);
         var mutableProjectsAnalyzerResults = new ConcurrentBag<ProjectSimulatedBuildWrapper>();
         var parallelOptions = new ParallelOptions
             { MaxDegreeOfParallelism = options.DiagMode ? 1 : Math.Max(options.Concurrency, 1) };
@@ -354,15 +350,33 @@ public class InputFileResolver(
         KeepAndScanReferences
     }
 
-    private ScanResult ShouldScanProject(ProjectSimulatedBuildWrapper project, ScanMode scanMode, string projectUnderTestNameFilter)
+    private ScanResult ShouldScanProject(ProjectSimulatedBuildWrapper project, ScanMode scanMode,
+        string projectUnderTestNameFilter, IEnumerable<string> testProjects)
     {
+        // if this project has been identified as a test project (through settings)
+        if (testProjects.Contains(project.ProjectFileName))
+        {
+            project.ProvideProjectTypeHint(true);
+            return ScanResult.KeepAndScanReferences;
+        }
+
+        var isTargetProject = projectUnderTestNameFilter != null && project.ProjectFileName.Replace('\\', '/')
+            .Contains(NormalizePath(projectUnderTestNameFilter),
+                StringComparison.InvariantCultureIgnoreCase);
+
         if (projectUnderTestNameFilter != null
             && !project.IsTestProject()
-            && !project.ProjectFileName.Replace('\\', '/')
-                .Contains(NormalizePath(projectUnderTestNameFilter),
-                    StringComparison.InvariantCultureIgnoreCase))
+            && !isTargetProject)
         {
+            // this is not the project we are looking for
             return ScanResult.Discard;
+        }
+
+        if (isTargetProject)
+        {
+            // if this project is the one we are looking for, we flag it as not test
+            // this allows to test for project with test framework references
+            project.ProvideProjectTypeHint(false);
         }
 
         if (scanMode == ScanMode.NoScan
