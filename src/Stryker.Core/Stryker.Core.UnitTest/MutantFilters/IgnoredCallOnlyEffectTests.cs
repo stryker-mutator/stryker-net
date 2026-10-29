@@ -56,6 +56,9 @@ public class IgnoredCallOnlyEffectTests : TestBase
     [DataRow("var ok = other.IsSuccess; if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, false)]
     [DataRow("var found = _seen.TryGetValue(count, out var v); if (found) _logger.LogWarning(\"{N}\", v.Length); return 0;", "found", null, false)]
     [DataRow("var ok = other.IsSuccess; if (ok) _logger.LogWarning(\"x\"); return 0;", "ok", null, true)]
+    [DataRow("var ok = IsValid(other); if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, false)]
+    [DataRow("var ok = IsValid(other); if (ok) _logger.LogWarning(\"x\"); return 0;", "ok", null, true)]
+    [DataRow("if (IsValid(other)) _logger.LogWarning(\"{V}\", other.Value); return 0;", "IsValid(other)", null, false)]
     // anything that also returns, writes state, or can throw stays mutated
     [DataRow("if (count > 0) { _logger.LogWarning(\"x\"); return 1; } return 0;", "count > 0", null, false)]
     [DataRow("if (count > 0) _logger.LogWarning(\"x\"); else Save(); return 0;", "count > 0", null, false)]

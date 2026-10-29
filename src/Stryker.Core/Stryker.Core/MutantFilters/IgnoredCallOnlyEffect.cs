@@ -527,8 +527,8 @@ internal sealed class IgnoredCallOnlyEffect
         return checkedBy;
     }
 
-    // What a written value checks, along its own operands (not into call arguments): the receivers it reads a
-    // member of, the variables it binds, and (Copy) the variables it copies.
+    // What a written value checks: the receivers it reads a member of, what a call it makes reads or binds in
+    // its arguments (`IsValid(r)`, `TryGetValue(k, out var v)`), and (Copy) the variables it copies.
     private static IEnumerable<(bool Copy, string Key)> ValidatedBy(ExpressionSyntax value) => value switch
     {
         IdentifierNameSyntax identifier => [(true, identifier.Identifier.ValueText)],
@@ -539,8 +539,8 @@ internal sealed class IgnoredCallOnlyEffect
         MemberAccessExpressionSyntax access => ValidatedBy(access.Expression).Append((false, Key(access.Expression))),
         ConditionalAccessExpressionSyntax conditional => ValidatedBy(conditional.Expression).Append((false, Key(conditional.Expression))),
         InvocationExpressionSyntax invocation => ValidatedBy(invocation.Expression).Concat(invocation.ArgumentList.Arguments
-            .SelectMany(argument => argument.DescendantNodes().OfType<SingleVariableDesignationSyntax>())
-            .Select(designation => (false, designation.Identifier.ValueText))),
+            .SelectMany(argument => GuardedBy(argument.Expression))
+            .Select(key => (false, key))),
         IsPatternExpressionSyntax pattern => ValidatedBy(pattern.Expression).Append((false, Key(pattern.Expression)))
             .Concat(pattern.Pattern.DescendantNodesAndSelf().OfType<SingleVariableDesignationSyntax>()
                 .Select(designation => (false, designation.Identifier.ValueText))),
