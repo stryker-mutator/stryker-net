@@ -344,7 +344,7 @@ public class InputFileResolver(
         KeepAndScanReferences
     }
 
-    private ScanResult ShouldScanProjectInSingleProjectMode(ProjectSimulatedBuildWrapper project,
+    private static ScanResult ShouldScanProjectInSingleProjectMode(ProjectSimulatedBuildWrapper project,
         string projectUnderTestNameFilter, IEnumerable<string> testProjects)
     {
         // if this project has been identified as a test project (through settings)
@@ -376,7 +376,7 @@ public class InputFileResolver(
         return !project.IsTestProject() ? ScanResult.Keep : ScanResult.KeepAndScanReferences;
     }
 
-    private ScanResult ShouldScanProjectInSolutionMode(ProjectSimulatedBuildWrapper project, string projectUnderTestNameFilter)
+    private static ScanResult ShouldScanProjectInSolutionMode(ProjectSimulatedBuildWrapper project, string projectUnderTestNameFilter)
     {
         var isTargetProject = projectUnderTestNameFilter != null && project.ProjectFileName.Replace('\\', '/')
             .Contains(NormalizePath(projectUnderTestNameFilter),
