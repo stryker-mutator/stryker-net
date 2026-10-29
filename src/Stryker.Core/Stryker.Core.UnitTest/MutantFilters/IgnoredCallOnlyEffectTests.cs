@@ -59,6 +59,10 @@ public class IgnoredCallOnlyEffectTests : TestBase
     [DataRow("var ok = IsValid(other); if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, false)]
     [DataRow("var ok = IsValid(other); if (ok) _logger.LogWarning(\"x\"); return 0;", "ok", null, true)]
     [DataRow("if (IsValid(other)) _logger.LogWarning(\"{V}\", other.Value); return 0;", "IsValid(other)", null, false)]
+    // a guard local built from a shape ValidatedBy does not list still carries what it reads
+    [DataRow("var ok = flag ? IsValid(other) : false; if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, false)]
+    [DataRow("var ok = (bool)other.IsSuccess; if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, false)]
+    [DataRow("var ok = new Validator(other).IsSatisfied; if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, false)]
     // anything that also returns, writes state, or can throw stays mutated
     [DataRow("if (count > 0) { _logger.LogWarning(\"x\"); return 1; } return 0;", "count > 0", null, false)]
     [DataRow("if (count > 0) _logger.LogWarning(\"x\"); else Save(); return 0;", "count > 0", null, false)]

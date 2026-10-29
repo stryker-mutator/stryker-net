@@ -544,7 +544,8 @@ internal sealed class IgnoredCallOnlyEffect
         IsPatternExpressionSyntax pattern => ValidatedBy(pattern.Expression).Append((false, Key(pattern.Expression)))
             .Concat(pattern.Pattern.DescendantNodesAndSelf().OfType<SingleVariableDesignationSyntax>()
                 .Select(designation => (false, designation.Identifier.ValueText))),
-        _ => [],
+        // any other shape (ternary, cast, object creation, ...) checks everything it reads, like GuardedBy
+        _ => GuardedBy(value).Select(key => (false, key)),
     };
 
     private static HashSet<string> With(HashSet<string> tested, IEnumerable<string> more)
