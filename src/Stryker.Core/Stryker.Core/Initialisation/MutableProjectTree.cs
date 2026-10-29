@@ -89,8 +89,11 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
         };
         logger.LogInformation("Project {ProjectPath} overall analysis {Result}.", Path.GetFileName(project.ProjectFileName), statusText);
 
-        if (project.IsTestProject())
-        {}
+        var details = new List<string>();
+        if (project.AnalyzerLastResults.IsTestProject(details))
+        {
+            logger.LogInformation("  is configured as a target but looks like a test project due to: {Details}", string.Join(", ", details));
+        }
 
         if (KnownProblems().Any())
         {

@@ -162,7 +162,7 @@ public class ProjectSimulatedBuildWrapper
             }
             return _projectTypeHint.Value;
         }
-        return AnalyzerLastResults.IsTestProject(true, details);
+        return AnalyzerLastResults.IsTestProject(details);
     }
 
     public bool BuildsAnAssembly() => AnalyzerLastResults.Any(p => p.BuildsAnAssembly());
