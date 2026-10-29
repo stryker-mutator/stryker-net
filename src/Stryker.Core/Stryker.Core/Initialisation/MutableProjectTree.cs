@@ -89,6 +89,9 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
         };
         logger.LogInformation("Project {ProjectPath} overall analysis {Result}.", Path.GetFileName(project.ProjectFileName), statusText);
 
+        if (project.IsTestProject())
+        {}
+
         if (KnownProblems().Any())
         {
             logger.LogWarning("  has some known issues:");
@@ -108,7 +111,6 @@ internal class MutableProjectTree(ProjectSimulatedBuildWrapper project, ILogger 
             logger.LogInformation(!project.AnalyzerLastResults.Any()
                 ? "  simulated build failed early. No details are available."
                 : "  no test project seems to reference this project. If this is a test project, ensure it has the property: <IsTestProject>true</IsTestProject> in its project file.");
-
             return;
         }
         foreach (var target in Targets)

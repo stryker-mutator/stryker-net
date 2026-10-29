@@ -7,7 +7,6 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
@@ -354,11 +353,10 @@ public class InputFileResolver(
             return ScanResult.KeepAndScanReferences;
         }
 
-        var isTargetProject = projectUnderTestNameFilter != null && project.ProjectFileName.Replace('\\', '/')
-            .Contains(NormalizePath(projectUnderTestNameFilter),
-                StringComparison.InvariantCultureIgnoreCase);
+        var isTargetProject = !string.IsNullOrEmpty(projectUnderTestNameFilter) && project.ProjectFileName.Replace('\\', '/')
+            .Contains(projectUnderTestNameFilter, StringComparison.InvariantCultureIgnoreCase);
 
-        if (projectUnderTestNameFilter != null
+        if (!string.IsNullOrEmpty(projectUnderTestNameFilter)
             && !project.IsTestProject()
             && !isTargetProject)
         {
@@ -378,11 +376,10 @@ public class InputFileResolver(
 
     private static ScanResult ShouldScanProjectInSolutionMode(ProjectSimulatedBuildWrapper project, string projectUnderTestNameFilter)
     {
-        var isTargetProject = projectUnderTestNameFilter != null && project.ProjectFileName.Replace('\\', '/')
-            .Contains(NormalizePath(projectUnderTestNameFilter),
-                StringComparison.InvariantCultureIgnoreCase);
+        var isTargetProject = !string.IsNullOrEmpty(projectUnderTestNameFilter) && project.ProjectFileName.Replace('\\', '/')
+            .Contains(projectUnderTestNameFilter, StringComparison.InvariantCultureIgnoreCase);
 
-        if (projectUnderTestNameFilter != null
+        if (!string.IsNullOrEmpty(projectUnderTestNameFilter)
             && !project.IsTestProject()
             && !isTargetProject)
         {

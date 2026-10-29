@@ -151,7 +151,19 @@ public class ProjectSimulatedBuildWrapper
     /// <param name="isTest"></param>
     public void ProvideProjectTypeHint(bool isTest) => _projectTypeHint = isTest;
 
-    public bool IsTestProject(List<string>? details= null) => _projectTypeHint ?? AnalyzerLastResults.IsTestProject(true, details);
+    public bool IsTestProject(List<string>? details= null)
+    {
+        if (_projectTypeHint.HasValue)
+        {
+            if (details != null)
+            {
+                details.Add($"Project is assumed to be a {( _projectTypeHint.Value ? "test project due to configuration (starting project or listed as a test project)"
+                    : "non-test project due to configuration declaring it as target.")} due to.");
+            }
+            return _projectTypeHint.Value;
+        }
+        return AnalyzerLastResults.IsTestProject(true, details);
+    }
 
     public bool BuildsAnAssembly() => AnalyzerLastResults.Any(p => p.BuildsAnAssembly());
 
