@@ -36,7 +36,8 @@ public class IgnoredCallOnlyEffectTests : TestBase
     [DataRow("if (_seen.Add(count) && verbose) _logger.LogWarning(\"x\"); return 0;", "_seen.Add(count) && verbose", "Logical", true)]
     [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"x\"); return 0;", "other.Count > 0", "Equality", true)]
     [DataRow("if (flag) { if (verbose) { _logger.LogDebug(\"x\"); } } return 0;", "flag", null, true)]
-    [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other.Count > 0", "Equality", true)]
+    [DataRow("if (other != null && count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "count > 0", "Equality", true)]
+    [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other.Count > 0", "Equality", false)]
     [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other != null", "Equality", false)]
     [DataRow("if (other != null || other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other.Count > 0", "Equality", false)]
     [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other != null && other.Count > 0", null, false)]
@@ -91,6 +92,11 @@ public class IgnoredCallOnlyEffectTests : TestBase
     // a guard that reads a null test carrier, and a write made under a null test
     [DataRow("var canLog = error != null; if (canLog) _logger.LogWarning(\"{N}\", error.Length); return 0;", "canLog", null, false)]
     [DataRow("var show = true; if (error == null) show = false; if (show) _logger.LogWarning(\"{N}\", error.Length); return 0;", "show", null, false)]
+    [DataRow("if (error == null) verbose = false; if (verbose) _logger.LogWarning(\"{N}\", error.Length); return 0;", "verbose", null, false)]
+    [DataRow("{ var canLog = error != null; if (canLog) _logger.LogWarning(\"{N}\", error.Length); } { var canLog = true; } return 0;", "canLog", null, false)]
+    // a guard that makes a member read or an out variable valid
+    [DataRow("if (_seen.TryGetValue(count, out var v)) _logger.LogWarning(\"{N}\", v.Length); return 0;", "_seen.TryGetValue(count, out var v)", null, false)]
+    [DataRow("if (other.IsSuccess) _logger.LogWarning(\"{N}\", other.Value); return 0;", "other.IsSuccess", null, false)]
     [DataRow("var show = true; if (error == null) show = false; if (show) _logger.LogWarning(\"{N}\", error.Length); return 0;", "false", null, false)]
     // an awaited ignored call is not inert
     [DataRow("if (flag) await _logger.LogWarningAsync(\"x\"); return 0;", "flag", null, false)]

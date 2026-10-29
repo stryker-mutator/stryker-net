@@ -60,11 +60,11 @@ internal sealed class IgnoredCallOnlyEffect
         Mutator.Logical => mutation.OriginalNode is not BinaryExpressionSyntax
         {
             RawKind: (int)SyntaxKind.LogicalAndExpression or (int)SyntaxKind.LogicalOrExpression
-        } binary || IsSafe(binary.Right, nullTested),
+        } binary || IsSafe(binary.Right, With(nullTested, GuardedBy(binary.Left))),
         Mutator.Conditional => mutation.OriginalNode is ConditionalExpressionSyntax conditional
             && IsSafe(conditional.Condition, nullTested)
-            && IsSafe(conditional.WhenTrue, nullTested)
-            && IsSafe(conditional.WhenFalse, nullTested),
+            && IsSafe(conditional.WhenTrue, With(nullTested, GuardedBy(conditional.Condition)))
+            && IsSafe(conditional.WhenFalse, With(nullTested, GuardedBy(conditional.Condition))),
         _ => false,
     };
 
@@ -91,7 +91,7 @@ internal sealed class IgnoredCallOnlyEffect
                     switch (binary.Kind())
                     {
                         case SyntaxKind.LogicalAndExpression or SyntaxKind.LogicalOrExpression or SyntaxKind.CoalesceExpression:
-                            if (current == binary.Left && !IsSafe(binary.Right, nullTested))
+                            if (current == binary.Left && !IsSafe(binary.Right, With(nullTested, GuardedBy(binary.Left))))
                             {
                                 return false;
                             }
@@ -108,8 +108,9 @@ internal sealed class IgnoredCallOnlyEffect
                     }
                     break;
                 case ConditionalExpressionSyntax conditional:
+                    var branchTested = With(nullTested, GuardedBy(conditional.Condition));
                     if (current == conditional.Condition
-                        && !(IsSafe(conditional.WhenTrue, nullTested) && IsSafe(conditional.WhenFalse, nullTested)))
+                        && !(IsSafe(conditional.WhenTrue, branchTested) && IsSafe(conditional.WhenFalse, branchTested)))
                     {
                         return false;
                     }
@@ -121,10 +122,15 @@ internal sealed class IgnoredCallOnlyEffect
                         return false;
                     }
 
+                    // a member read in a branch may only be valid because the condition held (`TryGetValue(.., out var v)`
+                    // then `v.Length`, `IsSuccess` then `.Value`): the then-branch distrusts what the mutated conjunct
+                    // reads or binds, and the else-branch everything the condition does
                     var thenTested = new HashSet<string>(nullTested, StringComparer.Ordinal);
                     thenTested.ExceptWith(ProvenNotNull(ifStatement.Condition, node));
+                    thenTested.UnionWith(Conjuncts(ifStatement.Condition).Where(conjunct => conjunct.Span.OverlapsWith(node.Span)).SelectMany(GuardedBy));
                     return IsInert(ifStatement.Statement, dead, thenTested)
-                        && (ifStatement.Else is null || IsInert(ifStatement.Else.Statement, dead, nullTested));
+                        && (ifStatement.Else is null
+                            || IsInert(ifStatement.Else.Statement, dead, With(nullTested, GuardedBy(ifStatement.Condition))));
                 case EqualsValueClauseSyntax { Parent: VariableDeclaratorSyntax declarator }:
                     return declarator.Parent?.Parent is LocalDeclarationStatementSyntax
                         && dead.ContainsKey(declarator.Identifier.ValueText);
@@ -382,22 +388,24 @@ internal sealed class IgnoredCallOnlyEffect
             .Where(local => declared.Contains(local.Name))
             .ToDictionary(local => local.Name, local => local.Local, StringComparer.Ordinal);
 
-        // a local whose value carries a null test, because it holds one, is written under one, or is
-        // computed from such a local, keeps guarding a dereference after the test is mutated: it is
-        // never treated as dead, and a guard that reads it is never filtered
-        var nullTestCarriers = dead
-            .Where(local => WriteSites(local.Key, local.Value).Any(site => DependsOnNullTest(site, member)))
-            .Select(local => local.Key)
+        // a variable whose value carries a null test, because it holds one, is written under one, or is
+        // computed from such a variable, keeps guarding a dereference after the test is mutated: it is
+        // never treated as dead, and a guard that reads it is never filtered. Every variable the member
+        // writes counts (parameters, fields and repeated names too), matched by name across the member.
+        var writes = member.DescendantNodes().Select(WriteSite).Where(write => write.Name is not null).ToList();
+        var nullTestCarriers = writes
+            .Where(write => DependsOnNullTest(write.Site, member))
+            .Select(write => write.Name)
             .ToHashSet(StringComparer.Ordinal);
         bool changed;
         do
         {
             changed = false;
-            foreach (var (name, local) in dead)
+            foreach (var (name, site) in writes)
             {
                 if (!nullTestCarriers.Contains(name)
-                    && WriteSites(name, local).Any(site => site.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
-                        .Any(identifier => identifier != site && nullTestCarriers.Contains(identifier.Identifier.ValueText))))
+                    && site.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
+                        .Any(identifier => identifier != site && nullTestCarriers.Contains(identifier.Identifier.ValueText)))
                 {
                     nullTestCarriers.Add(name);
                     changed = true;
@@ -424,17 +432,33 @@ internal sealed class IgnoredCallOnlyEffect
         return dead;
     }
 
-    // Where the local gets a value: an initializer, the right side of an assignment, or the operand of `++`/`--`.
-    private static IEnumerable<ExpressionSyntax> WriteSites(string name, Local local) =>
-        local.Scope.DescendantNodes().OfType<VariableDeclaratorSyntax>()
-            .Where(declarator => declarator.Identifier.ValueText == name && declarator.Initializer is not null)
-            .Select(declarator => declarator.Initializer.Value)
-            .Concat(local.References.Select(reference => reference.Parent switch
-            {
-                AssignmentExpressionSyntax assignment when assignment.Left == reference => assignment.Right,
-                PrefixUnaryExpressionSyntax or PostfixUnaryExpressionSyntax => reference,
-                _ => null,
-            }).Where(site => site is not null));
+    // Where a variable gets a value: an initializer, the right side of an assignment, or the operand of `++`/`--`.
+    private static (string Name, ExpressionSyntax Site) WriteSite(SyntaxNode node) => node switch
+    {
+        VariableDeclaratorSyntax { Initializer: { } initializer } declarator => (declarator.Identifier.ValueText, initializer.Value),
+        AssignmentExpressionSyntax { Left: IdentifierNameSyntax target } assignment => (target.Identifier.ValueText, assignment.Right),
+        PrefixUnaryExpressionSyntax { Operand: IdentifierNameSyntax target, RawKind: (int)SyntaxKind.PreIncrementExpression or (int)SyntaxKind.PreDecrementExpression } =>
+            (target.Identifier.ValueText, target),
+        PostfixUnaryExpressionSyntax { Operand: IdentifierNameSyntax target, RawKind: (int)SyntaxKind.PostIncrementExpression or (int)SyntaxKind.PostDecrementExpression } =>
+            (target.Identifier.ValueText, target),
+        _ => (null, null),
+    };
+
+    // What a condition reads or binds; a member read on any of them may depend on the condition holding.
+    private static IEnumerable<string> GuardedBy(SyntaxNode condition) =>
+        condition.DescendantNodesAndSelf().Select(node => node switch
+        {
+            SingleVariableDesignationSyntax designation => designation.Identifier.ValueText,
+            ExpressionSyntax expression => Key(expression),
+            _ => null,
+        }).Where(key => key is not null);
+
+    private static HashSet<string> With(HashSet<string> tested, IEnumerable<string> more)
+    {
+        var combined = new HashSet<string>(tested, StringComparer.Ordinal);
+        combined.UnionWith(more);
+        return combined;
+    }
 
     // The written value holds a null test, or the write is conditional on an expression that tests for null.
     private static bool DependsOnNullTest(ExpressionSyntax site, SyntaxNode member)
