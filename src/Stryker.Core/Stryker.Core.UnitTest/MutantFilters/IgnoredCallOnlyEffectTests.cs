@@ -49,6 +49,13 @@ public class IgnoredCallOnlyEffectTests : TestBase
     [DataRow("var level = flag ? 1 : 2; _logger.Log(level, \"x\"); return 0;", "flag ? 1 : 2", null, true)]
     // a scope's state only reaches the logger
     [DataRow("using var scope = _logger.BeginScope(new Dictionary<string, object> { [\"a\"] = count }); return 0;", "new Dictionary<string, object> { [\"a\"] = count }", null, true)]
+    // an object passed to a call that is only followed by an ignored one is not an ignored argument
+    [DataRow("Fetch(new List<int> { count }).IgnoredCheck(); return 0;", "new List<int> { count }", null, false)]
+    [DataRow("Fetch(new Spec { A = count, B = verbose }).IgnoredCheck(); return 0;", "new Spec { A = count, B = verbose }", null, false)]
+    // a guard that reads a bool copied from a validity check
+    [DataRow("var ok = other.IsSuccess; if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, false)]
+    [DataRow("var found = _seen.TryGetValue(count, out var v); if (found) _logger.LogWarning(\"{N}\", v.Length); return 0;", "found", null, false)]
+    [DataRow("var ok = other.IsSuccess; if (ok) _logger.LogWarning(\"x\"); return 0;", "ok", null, true)]
     // anything that also returns, writes state, or can throw stays mutated
     [DataRow("if (count > 0) { _logger.LogWarning(\"x\"); return 1; } return 0;", "count > 0", null, false)]
     [DataRow("if (count > 0) _logger.LogWarning(\"x\"); else Save(); return 0;", "count > 0", null, false)]

@@ -23,6 +23,7 @@ internal sealed class IgnoredCallOnlyEffect
     private readonly Func<SyntaxNode, bool> _isIgnoredCall;
     private readonly Dictionary<SyntaxNode, Dictionary<string, Local>> _deadLocalsByMember = new();
     private readonly Dictionary<SyntaxNode, HashSet<string>> _nullTestCarriersByMember = new();
+    private readonly Dictionary<SyntaxNode, Dictionary<string, HashSet<string>>> _checkedByWriteOfByMember = new();
 
     public IgnoredCallOnlyEffect(Func<SyntaxNode, bool> isIgnoredCall) => _isIgnoredCall = isIgnoredCall;
 
@@ -60,11 +61,11 @@ internal sealed class IgnoredCallOnlyEffect
         Mutator.Logical => mutation.OriginalNode is not BinaryExpressionSyntax
         {
             RawKind: (int)SyntaxKind.LogicalAndExpression or (int)SyntaxKind.LogicalOrExpression
-        } binary || IsSafe(binary.Right, With(nullTested, GuardedBy(binary.Left))),
+        } binary || IsSafe(binary.Right, With(nullTested, GuardedByIncludingVariables(binary.Left))),
         Mutator.Conditional => mutation.OriginalNode is ConditionalExpressionSyntax conditional
             && IsSafe(conditional.Condition, nullTested)
-            && IsSafe(conditional.WhenTrue, With(nullTested, GuardedBy(conditional.Condition)))
-            && IsSafe(conditional.WhenFalse, With(nullTested, GuardedBy(conditional.Condition))),
+            && IsSafe(conditional.WhenTrue, With(nullTested, GuardedByIncludingVariables(conditional.Condition)))
+            && IsSafe(conditional.WhenFalse, With(nullTested, GuardedByIncludingVariables(conditional.Condition))),
         _ => false,
     };
 
@@ -91,7 +92,7 @@ internal sealed class IgnoredCallOnlyEffect
                     switch (binary.Kind())
                     {
                         case SyntaxKind.LogicalAndExpression or SyntaxKind.LogicalOrExpression or SyntaxKind.CoalesceExpression:
-                            if (current == binary.Left && !IsSafe(binary.Right, With(nullTested, GuardedBy(binary.Left))))
+                            if (current == binary.Left && !IsSafe(binary.Right, With(nullTested, GuardedByIncludingVariables(binary.Left))))
                             {
                                 return false;
                             }
@@ -108,7 +109,7 @@ internal sealed class IgnoredCallOnlyEffect
                     }
                     break;
                 case ConditionalExpressionSyntax conditional:
-                    var branchTested = With(nullTested, GuardedBy(conditional.Condition));
+                    var branchTested = With(nullTested, GuardedByIncludingVariables(conditional.Condition));
                     if (current == conditional.Condition
                         && !(IsSafe(conditional.WhenTrue, branchTested) && IsSafe(conditional.WhenFalse, branchTested)))
                     {
@@ -127,10 +128,10 @@ internal sealed class IgnoredCallOnlyEffect
                     // reads or binds, and the else-branch everything the condition does
                     var thenTested = new HashSet<string>(nullTested, StringComparer.Ordinal);
                     thenTested.ExceptWith(ProvenNotNull(ifStatement.Condition, node));
-                    thenTested.UnionWith(Conjuncts(ifStatement.Condition).Where(conjunct => conjunct.Span.OverlapsWith(node.Span)).SelectMany(GuardedBy));
+                    thenTested.UnionWith(Conjuncts(ifStatement.Condition).Where(conjunct => conjunct.Span.OverlapsWith(node.Span)).SelectMany(GuardedByIncludingVariables));
                     return IsInert(ifStatement.Statement, dead, thenTested)
                         && (ifStatement.Else is null
-                            || IsInert(ifStatement.Else.Statement, dead, With(nullTested, GuardedBy(ifStatement.Condition))));
+                            || IsInert(ifStatement.Else.Statement, dead, With(nullTested, GuardedByIncludingVariables(ifStatement.Condition))));
                 case EqualsValueClauseSyntax { Parent: VariableDeclaratorSyntax declarator }:
                     return declarator.Parent?.Parent is LocalDeclarationStatementSyntax
                         && dead.ContainsKey(declarator.Identifier.ValueText);
@@ -420,6 +421,7 @@ internal sealed class IgnoredCallOnlyEffect
         }
 
         _nullTestCarriersByMember[member] = nullTestCarriers;
+        _checkedByWriteOfByMember[member] = CheckedByWrites(writes, member);
         _deadLocalsByMember[member] = dead;
         do
         {
@@ -452,6 +454,98 @@ internal sealed class IgnoredCallOnlyEffect
             ExpressionSyntax expression => Key(expression),
             _ => null,
         }).Where(key => key is not null);
+
+    // GuardedBy, plus what any variable the condition reads was computed from or written under:
+    // `var found = d.TryGetValue(k, out var v); if (found) ..v.Length` or `var ok = r.IsSuccess; if (ok) ..r.Value`.
+    private IEnumerable<string> GuardedByIncludingVariables(SyntaxNode condition)
+    {
+        var keys = GuardedBy(condition);
+        return _checkedByWriteOfByMember.TryGetValue(condition.FirstAncestorOrSelf<MemberDeclarationSyntax>(), out var checkedBy)
+            ? keys.Concat(condition.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
+                .SelectMany(identifier => checkedBy.TryGetValue(identifier.Identifier.ValueText, out var more) ? more : []))
+            : keys;
+    }
+
+    // For every variable the member writes: the receivers its written values read a member of and the
+    // variables they bind (`r` in `r.IsSuccess`, `v` in `TryGetValue(k, out var v)`), what the conditions
+    // the writes sit under read or bind, and the same for every variable the written values copy.
+    private static Dictionary<string, HashSet<string>> CheckedByWrites(List<(string Name, ExpressionSyntax Site)> writes, SyntaxNode member)
+    {
+        var checkedBy = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+        var copies = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+        foreach (var (name, site) in writes)
+        {
+            if (!checkedBy.TryGetValue(name, out var keys))
+            {
+                checkedBy[name] = keys = new HashSet<string>(StringComparer.Ordinal);
+                copies[name] = new HashSet<string>(StringComparer.Ordinal);
+            }
+
+            if (site.Parent is not (PrefixUnaryExpressionSyntax or PostfixUnaryExpressionSyntax))
+            {
+                foreach (var (copy, key) in ValidatedBy(site))
+                {
+                    (copy ? copies[name] : keys).Add(key);
+                }
+            }
+
+            SyntaxNode onPath = site;
+            foreach (var ancestor in site.Ancestors().TakeWhile(ancestor => ancestor != member))
+            {
+                var condition = ancestor switch
+                {
+                    IfStatementSyntax ifStatement when onPath != ifStatement.Condition => ifStatement.Condition,
+                    WhileStatementSyntax whileStatement when onPath != whileStatement.Condition => whileStatement.Condition,
+                    ConditionalExpressionSyntax conditional when onPath != conditional.Condition => conditional.Condition,
+                    BinaryExpressionSyntax
+                    {
+                        RawKind: (int)SyntaxKind.LogicalAndExpression or (int)SyntaxKind.LogicalOrExpression or (int)SyntaxKind.CoalesceExpression
+                    } binary when onPath == binary.Right => binary.Left,
+                    _ => null,
+                };
+                if (condition is not null)
+                {
+                    keys.UnionWith(GuardedBy(condition));
+                }
+
+                onPath = ancestor;
+            }
+        }
+
+        bool changed;
+        do
+        {
+            changed = false;
+            foreach (var (name, keys) in checkedBy)
+            {
+                var through = copies[name].Where(checkedBy.ContainsKey).SelectMany(copied => checkedBy[copied]).ToList();
+                changed |= through.Count(keys.Add) > 0;
+            }
+        }
+        while (changed);
+
+        return checkedBy;
+    }
+
+    // What a written value checks, along its own operands (not into call arguments): the receivers it reads a
+    // member of, the variables it binds, and (Copy) the variables it copies.
+    private static IEnumerable<(bool Copy, string Key)> ValidatedBy(ExpressionSyntax value) => value switch
+    {
+        IdentifierNameSyntax identifier => [(true, identifier.Identifier.ValueText)],
+        ParenthesizedExpressionSyntax parenthesized => ValidatedBy(parenthesized.Expression),
+        PrefixUnaryExpressionSyntax prefix => ValidatedBy(prefix.Operand),
+        AwaitExpressionSyntax awaited => ValidatedBy(awaited.Expression),
+        BinaryExpressionSyntax binary => ValidatedBy(binary.Left).Concat(ValidatedBy(binary.Right)),
+        MemberAccessExpressionSyntax access => ValidatedBy(access.Expression).Append((false, Key(access.Expression))),
+        ConditionalAccessExpressionSyntax conditional => ValidatedBy(conditional.Expression).Append((false, Key(conditional.Expression))),
+        InvocationExpressionSyntax invocation => ValidatedBy(invocation.Expression).Concat(invocation.ArgumentList.Arguments
+            .SelectMany(argument => argument.DescendantNodes().OfType<SingleVariableDesignationSyntax>())
+            .Select(designation => (false, designation.Identifier.ValueText))),
+        IsPatternExpressionSyntax pattern => ValidatedBy(pattern.Expression).Append((false, Key(pattern.Expression)))
+            .Concat(pattern.Pattern.DescendantNodesAndSelf().OfType<SingleVariableDesignationSyntax>()
+                .Select(designation => (false, designation.Identifier.ValueText))),
+        _ => [],
+    };
 
     private static HashSet<string> With(HashSet<string> tested, IEnumerable<string> more)
     {

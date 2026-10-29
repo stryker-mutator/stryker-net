@@ -43,7 +43,10 @@ public sealed class IgnoredMethodMutantFilter : IMutantFilter
         // Check if the current node is an object creation syntax (constructor invocation).
         ObjectCreationExpressionSyntax creation => MatchesAnIgnoredMethod(
             _triviaRemover.Visit(creation.Type) + ".ctor", options)
-            || (canGoUp && IsPartOfIgnoredMethodCall(creation.Parent, options)),
+            // an argument of an ignored call, like its other arguments; only the directly enclosing call counts,
+            // not one further up a fluent chain such as `Fetch(new Options { .. }).ConfigureAwait(false)`
+            || (canGoUp && creation.Parent is ArgumentSyntax { Parent: ArgumentListSyntax { Parent: InvocationExpressionSyntax invocation } }
+                && MatchesAnIgnoredMethod(_triviaRemover.Visit(invocation.Expression).ToString(), options)),
 
         ImplicitObjectCreationExpressionSyntax creation => creation.FirstAncestorOrSelf<VariableDeclarationSyntax>() != null
             && MatchesAnIgnoredMethod(
