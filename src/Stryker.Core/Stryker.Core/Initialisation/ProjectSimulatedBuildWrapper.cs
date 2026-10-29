@@ -27,7 +27,7 @@ public class ProjectSimulatedBuildWrapper
     private readonly ILogger _logger;
     private readonly StringWriter _buildLogger;
     private string[] _targetFrameworks;
-    private bool? _projectTypeHint = null;
+    private bool? _projectTypeHint;
 
     public ProjectSimulatedBuildWrapper(IBuildalyzerProvider buildalyzerProvider,
         string projectFile,
@@ -202,7 +202,9 @@ public class ProjectSimulatedBuildWrapper
     // use analysis results to identify potential problems with this project
     public IEnumerable<string> IdentifiedProblems()
     {
-        if (AnalyzerLastResults.Any(r => r.Properties.ContainsKey("UseWPF") || r.Properties.ContainsKey("UseWindowsForms")))
+        if (AnalyzerLastResults.Any(r =>
+                (r.Properties.TryGetValue("UseWPF", out var value)  && string.Equals(value, "true", StringComparison.InvariantCultureIgnoreCase))
+                || (r.Properties.TryGetValue("UseWindowsForms", out value)  && string.Equals(value, "true", StringComparison.InvariantCultureIgnoreCase))))
         {
             if (Environment.OSVersion.Platform!=PlatformID.Win32NT
                 && !AnalyzerLastResults.Any(r => r.Properties.TryGetValue("EnableWindowsTargeting", out var enable) && enable.Equals("true", StringComparison.OrdinalIgnoreCase)))
@@ -211,13 +213,13 @@ public class ProjectSimulatedBuildWrapper
                 yield return $"Project {ProjectFileName} is a WPF or Windows Forms project. Please add {PropertyOption("EnableWindowsTargeting", "true")} to the command line to build it on non-Windows platforms.";
             }
             // look for net10+wpf issues
-            if (AnalyzerLastResults.Any(r => r.Properties.TryGetValue("TargetFramework", out var tf) && tf.StartsWith("net10.0", StringComparison.OrdinalIgnoreCase)
-                    && (!r.Properties.TryGetValue(DesignTimeProperty, out var design) || design.Equals("true", StringComparison.OrdinalIgnoreCase)))
-               )
+            if (AnalyzerLastResults.Any(r => r.Properties.TryGetValue("NETCoreSdkVersion", out var tf) && tf.StartsWith("10.0", StringComparison.OrdinalIgnoreCase)
+                    && (!r.Properties.TryGetValue(DesignTimeProperty, out var design) || design.Equals("true", StringComparison.OrdinalIgnoreCase))))
             {
                 yield return $"Project {ProjectFileName} does not support design time build (WPF or Windows Forms project with targeting net 10). Please add {PropertyOption(DesignTimeProperty, "false")} to the command line.";
             }
         }
+
         if (AnalyzerLastResults.Any(r => r.PackageReferences.Keys.Any( name =>  name.Contains("Nerdbank.GitVersioning", StringComparison.OrdinalIgnoreCase)
                                              && (!r.Properties.TryGetValue(DesignTimeProperty, out var design) || design.Equals("true", StringComparison.OrdinalIgnoreCase))) && r.IsSignedAssembly())
                                          && Environment.GetEnvironmentVariable("NBGV_GitEngine") != "Disabled")

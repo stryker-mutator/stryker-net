@@ -198,7 +198,7 @@ public class StrykerInputs(IFileSystem? fileSystem = null)
     // check that the configuration has no blocking error and is consistent (no conflicting options)
     private void CheckConsistency()
     {
-        if (_strykerOptionsCache.IsSolutionContext)
+        if (_strykerOptionsCache!.IsSolutionContext)
         {
             if (_strykerOptionsCache.TestProjects.Any())
             {
@@ -211,9 +211,21 @@ public class StrykerInputs(IFileSystem? fileSystem = null)
             }
         }
 
+        // check that all test projects exist
         foreach (var testProject in _strykerOptionsCache.TestProjects)
         {
             CheckFile( "TestProject", testProject);
+        }
+
+        //check for conflicting options with build properties
+        if (_strykerOptionsCache.BuildProperties.TryGetValue("Configuration", out var configuration) && !string.IsNullOrEmpty(configuration) && _strykerOptionsCache.Configuration!= configuration)
+        {
+            throw new InputException("Cannot specify both Configuration and BuildProperties with different values.");
+        }
+
+        if (_strykerOptionsCache.BuildProperties.TryGetValue("Platform", out var platform) && !string.IsNullOrEmpty(platform) && _strykerOptionsCache.Platform!= platform)
+        {
+            throw new InputException("Cannot specify both Platform and BuildProperties with different values.");
         }
     }
 
