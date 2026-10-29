@@ -21,31 +21,10 @@ public sealed class IgnoredMethodMutantFilter : IMutantFilter
 
     private readonly SyntaxTriviaRemover _triviaRemover = new();
 
-    public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options)
-    {
-        if (!options.IgnoredMethods.Any())
-        {
-            return mutants;
-        }
-
-        var kept = mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options));
-        if (!options.IgnoreMethodsEffects)
-        {
-            return kept;
-        }
-
-        var onlyEffect = new IgnoredCallOnlyEffect(node => IsIgnoredCall(node, options));
-        return kept.Where(m => !onlyEffect.IsOnlyEffect(m.Mutation));
-    }
-
-    // Only the call itself: unlike IsPartOfIgnoredMethodCall, a receiver of a fluent chain that
-    // ends in an ignored call is not treated as ignored, because it still runs.
-    private bool IsIgnoredCall(SyntaxNode syntaxNode, IStrykerOptions options) => syntaxNode switch
-    {
-        InvocationExpressionSyntax invocation => MatchesAnIgnoredMethod(_triviaRemover.Visit(invocation.Expression).ToString(), options),
-        ConditionalAccessExpressionSyntax conditional => IsIgnoredCall(conditional.WhenNotNull, options),
-        _ => false,
-    };
+        public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options) =>
+            options.IgnoredMethods.Any() ?
+                    mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options)) :
+                    mutants;
 
     private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, IStrykerOptions options, bool canGoUp = true) => syntaxNode switch
     {

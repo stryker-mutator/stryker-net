@@ -460,10 +460,13 @@ if (count > 0)
 
 A mutant is only skipped when it cannot change anything else that runs:
 
-- The affected code, including the receiver and arguments of the ignored calls, may only call ignored methods. It may not create objects, assign anything other than a local that only ignored calls read, `await`, cast, index, or do arithmetic other than string concatenation.
+- The affected code, including the receiver and arguments of the ignored calls, may only call ignored methods (`nameof` is allowed). It may not create objects, assign anything other than a local that only ignored calls read, `await` (an awaited ignored call counts too), cast, index, or do arithmetic other than string concatenation.
+- A local only counts as read by ignored calls when their result is discarded, or only disposed by a `using`, as with `using var scope = logger.BeginScope(...)`.
 - Only `++`, `--`, `+=`, `-=` and `*=` on an integer local outside a `checked` block count as harmless arithmetic. Arithmetic mutants themselves are never skipped.
 - A mutated `&&`, `||`, `??` or `?:` may only change whether code without such effects runs.
-- A mutated condition may not make an ignored call run that dereferences something the condition tests for `null`. A local that holds the result of a `null` test is never skipped.
+- A mutated condition may not make an ignored call run that dereferences something the condition tests for `null`. A local that holds a `null` test, is written under one, or is computed from such a local is never skipped, and neither is a condition that reads it.
+
+Mutants skipped this way are reported as ignored with the reason `Removed by ignore-methods-effects filter`, apart from those inside ignored calls (`Removed by method filter`).
 
 This analysis is syntactic. It assumes property getters have no side effects and that integer arithmetic outside `checked` blocks does not throw, so do not enable it in projects compiled with `CheckForOverflowUnderflow`.
 

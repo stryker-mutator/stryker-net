@@ -84,12 +84,24 @@ public class IgnoredCallOnlyEffectTests : TestBase
     [DataRow("if (flag && UpdateState().IgnoredCheck()) _logger.LogWarning(\"x\"); return 0;", "flag && UpdateState().IgnoredCheck()", "Logical", false)]
     // a field that shares its name with a local in a nested block
     [DataRow("{ var _state = 0; _logger.LogWarning(\"{N}\", _state); } _state++; return _state;", "_state++", null, false)]
+    // an ignored call whose result is used
+    [DataRow("var format = \"F0\"; if (flag) { format = \"F4\"; } return Describe(format).Length;", "flag", null, false)]
+    [DataRow("var name = \"a\"; if (flag) { name = \"b\"; } using var scope = _logger.BeginScope(name); return 0;", "flag", null, true)]
+    [DataRow("var name = \"a\"; if (flag) { name = \"b\"; } using (_logger.BeginScope(name)) { } return 0;", "flag", null, true)]
+    // a guard that reads a null test carrier, and a write made under a null test
+    [DataRow("var canLog = error != null; if (canLog) _logger.LogWarning(\"{N}\", error.Length); return 0;", "canLog", null, false)]
+    [DataRow("var show = true; if (error == null) show = false; if (show) _logger.LogWarning(\"{N}\", error.Length); return 0;", "show", null, false)]
+    [DataRow("var show = true; if (error == null) show = false; if (show) _logger.LogWarning(\"{N}\", error.Length); return 0;", "false", null, false)]
+    // an awaited ignored call is not inert
+    [DataRow("if (flag) await _logger.LogWarningAsync(\"x\"); return 0;", "flag", null, false)]
+    // nameof is a constant
+    [DataRow("if (flag) _logger.LogWarning(\"{P}\", nameof(count)); return 0;", "flag", null, true)]
     public void ShouldOnlyFilterMutantsWhoseOnlyEffectIsAnIgnoredCall(string body, string original, string type, bool filtered)
     {
         var options = BuildOptions(ignoreMethodsEffects: true);
         var mutants = BuildMutants(body, original, type, options);
 
-        var kept = new IgnoredMethodMutantFilter().FilterMutants(mutants, null, options).ToList();
+        var kept = Filter(mutants, options);
 
         foreach (var mutant in mutants)
         {
@@ -113,15 +125,35 @@ public class IgnoredCallOnlyEffectTests : TestBase
         var options = BuildOptions(ignoreMethodsEffects: false);
         var mutants = BuildMutants(body, original, null, options);
 
-        var kept = new IgnoredMethodMutantFilter().FilterMutants(mutants, null, options).ToList();
+        var kept = Filter(mutants, options);
 
         kept.ShouldBe(mutants);
     }
 
+    [TestMethod]
+    public void ShouldReportEffectSkipsUnderTheirOwnReason()
+    {
+        var options = BuildOptions(ignoreMethodsEffects: true);
+        var guard = BuildMutants("if (count > 0) _logger.LogWarning(\"{N}\", count); return 0;", "count > 0", null, options);
+        var argument = BuildMutants("_logger.LogWarning(\"{N}\", count > 0); return 0;", "count > 0", null, options);
+        var filter = new BroadcastMutantFilter([new IgnoredMethodMutantFilter(), new IgnoreMethodsEffectsMutantFilter()]);
+
+        filter.FilterMutants([.. guard, .. argument], null, options).ShouldBeEmpty();
+
+        guard.ShouldAllBe(mutant => mutant.ResultStatusReason == "Removed by ignore-methods-effects filter");
+        argument.ShouldAllBe(mutant => mutant.ResultStatusReason == "Removed by method filter");
+    }
+
+    private static List<Mutant> Filter(List<Mutant> mutants, StrykerOptions options) =>
+        new IgnoreMethodsEffectsMutantFilter()
+            .FilterMutants(new IgnoredMethodMutantFilter().FilterMutants(mutants, null, options), null, options)
+            .Cast<Mutant>()
+            .ToList();
+
     private static StrykerOptions BuildOptions(bool ignoreMethodsEffects) => new()
     {
         MutationLevel = MutationLevel.Complete,
-        IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = ["Log*", "BeginScope", "IgnoredCheck"] }.Validate(),
+        IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = ["Log*", "BeginScope", "IgnoredCheck", "Describe"] }.Validate(),
         IgnoreMethodsEffects = ignoreMethodsEffects,
     };
 
@@ -129,7 +161,7 @@ public class IgnoredCallOnlyEffectTests : TestBase
     {
         var source = "using System.Collections.Generic; using System.Threading; class C { int _state; HashSet<int> _seen; ILogger _logger;"
             + " int M(int count, bool flag, bool verbose, string error, List<int> list, List<int> other) { " + body + " } void Save(int n = 0) { } bool Check() => true;"
-            + " int SaveAndReturn(int n) => n; C UpdateState() => this; bool IgnoredCheck() => true; }";
+            + " int SaveAndReturn(int n) => n; C UpdateState() => this; bool IgnoredCheck() => true; string Describe(string format) => format; }";
         var tree = CSharpSyntaxTree.ParseText(source);
         var model = CSharpCompilation.Create("t", [tree], [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)])
             .GetSemanticModel(tree);

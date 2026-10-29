@@ -22,6 +22,7 @@ internal sealed class IgnoredCallOnlyEffect
 
     private readonly Func<SyntaxNode, bool> _isIgnoredCall;
     private readonly Dictionary<SyntaxNode, Dictionary<string, Local>> _deadLocalsByMember = new();
+    private readonly Dictionary<SyntaxNode, HashSet<string>> _nullTestCarriersByMember = new();
 
     public IgnoredCallOnlyEffect(Func<SyntaxNode, bool> isIgnoredCall) => _isIgnoredCall = isIgnoredCall;
 
@@ -114,6 +115,12 @@ internal sealed class IgnoredCallOnlyEffect
                     }
                     break;
                 case IfStatementSyntax ifStatement when current == ifStatement.Condition:
+                    // a guard that reads a null test carrier may be all that stands between a log call and a null
+                    if (ReadsNullTestCarrier(ifStatement.Condition, node))
+                    {
+                        return false;
+                    }
+
                     var thenTested = new HashSet<string>(nullTested, StringComparer.Ordinal);
                     thenTested.ExceptWith(ProvenNotNull(ifStatement.Condition, node));
                     return IsInert(ifStatement.Statement, dead, thenTested)
@@ -137,8 +144,9 @@ internal sealed class IgnoredCallOnlyEffect
     {
         BlockSyntax block => block.Statements.All(s => IsInert(s, dead, nullTested)),
         EmptyStatementSyntax => true,
+        // an awaited ignored call is not inert: awaiting can throw or yield
         ExpressionStatementSyntax { Expression: var expression } when IsIgnoredCall(expression) =>
-            IsSafe(expression is AwaitExpressionSyntax awaited ? awaited.Expression : expression, nullTested ?? NoneTested),
+            IsSafe(expression, nullTested ?? NoneTested),
         ExpressionStatementSyntax { Expression: PostfixUnaryExpressionSyntax or PrefixUnaryExpressionSyntax } expressionStatement =>
             IsDeadWrite(expressionStatement.Expression, dead),
         ExpressionStatementSyntax { Expression: AssignmentExpressionSyntax assignment } =>
@@ -160,11 +168,8 @@ internal sealed class IgnoredCallOnlyEffect
             && (ifStatement.Else is null || IsInert(ifStatement.Else.Statement, dead, nullTested is null ? null : tested));
     }
 
-    private bool IsIgnoredCall(ExpressionSyntax expression)
-    {
-        var call = expression is AwaitExpressionSyntax awaited ? awaited.Expression : expression;
-        return call is InvocationExpressionSyntax or ConditionalAccessExpressionSyntax && _isIgnoredCall(call);
-    }
+    private bool IsIgnoredCall(ExpressionSyntax expression) =>
+        expression is InvocationExpressionSyntax or ConditionalAccessExpressionSyntax && _isIgnoredCall(expression);
 
     // `x++;`, `x += y;` or `x = y;` on a local that only ignored calls read.
     private static bool IsDeadWrite(SyntaxNode write, Dictionary<string, Local> dead) =>
@@ -199,9 +204,9 @@ internal sealed class IgnoredCallOnlyEffect
 
     // Evaluating this can neither change state nor throw.
     private bool IsSafe(ExpressionSyntax expression, HashSet<string> nullTested) =>
-        expression is null || expression.DescendantNodesAndSelf().All(n => n switch
+        expression is null || expression.DescendantNodesAndSelf(n => !IsNameOf(n)).All(n => n switch
         {
-            InvocationExpressionSyntax => _isIgnoredCall(n),
+            InvocationExpressionSyntax => _isIgnoredCall(n) || IsNameOf(n),
             BaseObjectCreationExpressionSyntax or ArrayCreationExpressionSyntax or ImplicitArrayCreationExpressionSyntax
                 or AssignmentExpressionSyntax or AwaitExpressionSyntax or ThrowExpressionSyntax
                 or ElementAccessExpressionSyntax or ElementBindingExpressionSyntax or CastExpressionSyntax
@@ -223,6 +228,10 @@ internal sealed class IgnoredCallOnlyEffect
             MemberAccessExpressionSyntax access => !nullTested.Contains(Key(access.Expression)),
             _ => true,
         });
+
+    // nameof(...) parses as an invocation but is a compile-time constant; nothing inside it is evaluated.
+    private static bool IsNameOf(SyntaxNode node) =>
+        node is InvocationExpressionSyntax { Expression: IdentifierNameSyntax { Identifier.ValueText: "nameof" }, ArgumentList.Arguments.Count: 1 };
 
     // Without types, only a concatenation with a string literal is known not to be arithmetic.
     private static bool IsStringConcatenation(BinaryExpressionSyntax binary) =>
@@ -373,10 +382,11 @@ internal sealed class IgnoredCallOnlyEffect
             .Where(local => declared.Contains(local.Name))
             .ToDictionary(local => local.Name, local => local.Local, StringComparer.Ordinal);
 
-        // a local that carries a null test keeps guarding a dereference after the test is mutated
-        // (or one computed from such a local), so it is never treated as dead
+        // a local whose value carries a null test, because it holds one, is written under one, or is
+        // computed from such a local, keeps guarding a dereference after the test is mutated: it is
+        // never treated as dead, and a guard that reads it is never filtered
         var nullTestCarriers = dead
-            .Where(local => WrittenValues(local.Key, local.Value).Any(value => NullTested(value).Count > 0))
+            .Where(local => WriteSites(local.Key, local.Value).Any(site => DependsOnNullTest(site, member)))
             .Select(local => local.Key)
             .ToHashSet(StringComparer.Ordinal);
         bool changed;
@@ -386,8 +396,8 @@ internal sealed class IgnoredCallOnlyEffect
             foreach (var (name, local) in dead)
             {
                 if (!nullTestCarriers.Contains(name)
-                    && WrittenValues(name, local).Any(value => value.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
-                        .Any(identifier => nullTestCarriers.Contains(identifier.Identifier.ValueText))))
+                    && WriteSites(name, local).Any(site => site.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
+                        .Any(identifier => identifier != site && nullTestCarriers.Contains(identifier.Identifier.ValueText))))
                 {
                     nullTestCarriers.Add(name);
                     changed = true;
@@ -401,6 +411,7 @@ internal sealed class IgnoredCallOnlyEffect
             dead.Remove(name);
         }
 
+        _nullTestCarriersByMember[member] = nullTestCarriers;
         _deadLocalsByMember[member] = dead;
         do
         {
@@ -413,13 +424,62 @@ internal sealed class IgnoredCallOnlyEffect
         return dead;
     }
 
-    private static IEnumerable<ExpressionSyntax> WrittenValues(string name, Local local) =>
+    // Where the local gets a value: an initializer, the right side of an assignment, or the operand of `++`/`--`.
+    private static IEnumerable<ExpressionSyntax> WriteSites(string name, Local local) =>
         local.Scope.DescendantNodes().OfType<VariableDeclaratorSyntax>()
             .Where(declarator => declarator.Identifier.ValueText == name && declarator.Initializer is not null)
             .Select(declarator => declarator.Initializer.Value)
-            .Concat(local.References
-                .Where(reference => reference.Parent is AssignmentExpressionSyntax assignment && assignment.Left == reference)
-                .Select(reference => ((AssignmentExpressionSyntax)reference.Parent).Right));
+            .Concat(local.References.Select(reference => reference.Parent switch
+            {
+                AssignmentExpressionSyntax assignment when assignment.Left == reference => assignment.Right,
+                PrefixUnaryExpressionSyntax or PostfixUnaryExpressionSyntax => reference,
+                _ => null,
+            }).Where(site => site is not null));
+
+    // The written value holds a null test, or the write is conditional on an expression that tests for null.
+    private static bool DependsOnNullTest(ExpressionSyntax site, SyntaxNode member)
+    {
+        if (NullTested(site).Count > 0)
+        {
+            return true;
+        }
+
+        SyntaxNode onPath = site;
+        foreach (var ancestor in site.Ancestors().TakeWhile(ancestor => ancestor != member))
+        {
+            if (ancestor.ChildNodes().Any(guard => guard != onPath && guard is not StatementSyntax
+                && (NullTested(guard).Count > 0 || guard.DescendantNodesAndSelf().Any(n => n.IsKind(SyntaxKind.NullLiteralExpression)))))
+            {
+                return true;
+            }
+
+            onPath = ancestor;
+        }
+
+        return false;
+    }
+
+    private bool ReadsNullTestCarrier(ExpressionSyntax condition, SyntaxNode mutated) =>
+        _nullTestCarriersByMember.TryGetValue(mutated.FirstAncestorOrSelf<MemberDeclarationSyntax>(), out var carriers)
+        && condition.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>().Any(identifier => carriers.Contains(identifier.Identifier.ValueText));
+
+    // The ignored call's result is thrown away, or only disposed by a using that nothing else reads.
+    private static bool IsResultDiscarded(InvocationExpressionSyntax invocation, SyntaxNode member)
+    {
+        SyntaxNode call = invocation.Parent is ConditionalAccessExpressionSyntax conditional && conditional.WhenNotNull == invocation
+            ? conditional
+            : invocation;
+        return call.Parent switch
+        {
+            ExpressionStatementSyntax => true,
+            UsingStatementSyntax usingStatement => usingStatement.Expression == call,
+            EqualsValueClauseSyntax { Parent: VariableDeclaratorSyntax declarator } =>
+                declarator.Parent?.Parent is LocalDeclarationStatementSyntax { UsingKeyword.RawKind: (int)SyntaxKind.UsingKeyword }
+                    or UsingStatementSyntax
+                && !member.DescendantNodes().OfType<IdentifierNameSyntax>().Any(identifier => identifier.Identifier.ValueText == declarator.Identifier.ValueText),
+            _ => false,
+        };
+    }
 
     private static bool IsInteger(TypeSyntax type, VariableDeclaratorSyntax variable) => type switch
     {
@@ -466,14 +526,15 @@ internal sealed class IgnoredCallOnlyEffect
             return true;
         }
 
-        // an argument of an ignored call, passed by value, whose evaluation does nothing else
+        // an argument of an ignored call whose result is discarded, passed by value, whose evaluation does nothing else
         var argument = reference.FirstAncestorOrSelf<ArgumentSyntax>();
         while (argument is not null)
         {
             if (argument.Parent?.Parent is InvocationExpressionSyntax invocation && _isIgnoredCall(invocation))
             {
                 return reference.FirstAncestorOrSelf<ArgumentSyntax>().RefKindKeyword.IsKind(SyntaxKind.None)
-                    && IsSafe(argument.Expression, NoneTested);
+                    && IsSafe(argument.Expression, NoneTested)
+                    && IsResultDiscarded(invocation, reference.FirstAncestorOrSelf<MemberDeclarationSyntax>());
             }
 
             argument = argument.Parent?.FirstAncestorOrSelf<ArgumentSyntax>();
