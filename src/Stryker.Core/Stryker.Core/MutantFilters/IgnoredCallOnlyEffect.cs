@@ -545,7 +545,8 @@ internal sealed class IgnoredCallOnlyEffect
             .Concat(pattern.Pattern.DescendantNodesAndSelf().OfType<SingleVariableDesignationSyntax>()
                 .Select(designation => (false, designation.Identifier.ValueText))),
         // any other shape (ternary, cast, object creation, ...) checks everything it reads, like GuardedBy
-        _ => GuardedBy(value).Select(key => (false, key)),
+        _ => GuardedBy(value).Select(key => (false, key)).Concat(value.DescendantNodesAndSelf()
+            .OfType<IdentifierNameSyntax>().Select(identifier => (true, identifier.Identifier.ValueText))),
     };
 
     private static HashSet<string> With(HashSet<string> tested, IEnumerable<string> more)
