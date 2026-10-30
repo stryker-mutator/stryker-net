@@ -22,7 +22,8 @@ internal sealed class IgnoredCallOnlyEffect
 
     private readonly Func<SyntaxNode, bool> _isIgnoredCall;
     private readonly Dictionary<SyntaxNode, Dictionary<string, Local>> _deadLocalsByMember = new();
-    private readonly Dictionary<SyntaxNode, HashSet<string>> _nullTestCarriersByMember = new();
+    private readonly Dictionary<SyntaxNode, Dictionary<string, HashSet<string>>> _nullTestCarriersByMember = new();
+    private readonly Dictionary<SyntaxNode, List<(string Name, ExpressionSyntax Site)>> _writesByMember = new();
     private readonly Dictionary<SyntaxNode, Dictionary<string, HashSet<string>>> _checkedByWriteOfByMember = new();
 
     public IgnoredCallOnlyEffect(Func<SyntaxNode, bool> isIgnoredCall) => _isIgnoredCall = isIgnoredCall;
@@ -117,11 +118,9 @@ internal sealed class IgnoredCallOnlyEffect
                     }
                     break;
                 case IfStatementSyntax ifStatement when current == ifStatement.Condition:
-                    // a guard that reads a null test carrier may be all that stands between a log call and a null
-                    if (ReadsNullTestCarrier(ifStatement.Condition, node))
-                    {
-                        return false;
-                    }
+                    // a guard that reads a null test carrier may be all that stands between a log call and a null:
+                    // neither branch may dereference what the carrier tested, or anything that may hold it
+                    var carried = CarriedNullTests(ifStatement.Condition, node) ?? NoneTested;
 
                     // a member read in a branch may only be valid because the condition held (`TryGetValue(.., out var v)`
                     // then `v.Length`, `IsSuccess` then `.Value`): the then-branch distrusts what the mutated conjunct
@@ -129,9 +128,10 @@ internal sealed class IgnoredCallOnlyEffect
                     var thenTested = new HashSet<string>(nullTested, StringComparer.Ordinal);
                     thenTested.ExceptWith(ProvenNotNull(ifStatement.Condition, node));
                     thenTested.UnionWith(Conjuncts(ifStatement.Condition).Where(conjunct => conjunct.Span.OverlapsWith(node.Span)).SelectMany(GuardedByIncludingVariables));
+                    thenTested.UnionWith(carried);
                     return IsInert(ifStatement.Statement, dead, thenTested)
                         && (ifStatement.Else is null
-                            || IsInert(ifStatement.Else.Statement, dead, With(nullTested, GuardedByIncludingVariables(ifStatement.Condition))));
+                            || IsInert(ifStatement.Else.Statement, dead, With(With(nullTested, GuardedByIncludingVariables(ifStatement.Condition)), carried)));
                 case EqualsValueClauseSyntax { Parent: VariableDeclaratorSyntax declarator }:
                     return declarator.Parent?.Parent is LocalDeclarationStatementSyntax
                         && dead.ContainsKey(declarator.Identifier.ValueText);
@@ -151,14 +151,17 @@ internal sealed class IgnoredCallOnlyEffect
     {
         BlockSyntax block => block.Statements.All(s => IsInert(s, dead, nullTested)),
         EmptyStatementSyntax => true,
-        // an awaited ignored call is not inert: awaiting can throw or yield
-        ExpressionStatementSyntax { Expression: var expression } when IsIgnoredCall(expression) =>
-            IsSafe(expression, nullTested ?? NoneTested),
+        // an awaited ignored call is not inert: awaiting can throw or yield. Its arguments may throw (a log
+        // argument dereferencing what the flipped guard no longer proves): only the log line can fail then
+        ExpressionStatementSyntax { Expression: var expression } when IsIgnoredCall(expression) => IsPure(expression),
         ExpressionStatementSyntax { Expression: PostfixUnaryExpressionSyntax or PrefixUnaryExpressionSyntax } expressionStatement =>
             IsDeadWrite(expressionStatement.Expression, dead),
         ExpressionStatementSyntax { Expression: AssignmentExpressionSyntax assignment } =>
             IsDeadWrite(assignment, dead) && IsSafe(assignment.Right, nullTested ?? NullTested(assignment)),
         IfStatementSyntax ifStatement => IsInertIf(ifStatement, dead, nullTested),
+        // `var issues = list.Except(..).ToList();` built only for the log line next to it
+        LocalDeclarationStatementSyntax declaration => declaration.Declaration.Variables.All(variable =>
+            dead.ContainsKey(variable.Identifier.ValueText) && IsPure(variable.Initializer?.Value)),
         _ => false,
     };
 
@@ -170,7 +173,7 @@ internal sealed class IgnoredCallOnlyEffect
             tested.UnionWith(nullTested);
         }
 
-        return IsSafe(ifStatement.Condition, tested)
+        return IsPure(ifStatement.Condition)
             && IsInert(ifStatement.Statement, dead, nullTested is null ? null : tested)
             && (ifStatement.Else is null || IsInert(ifStatement.Else.Statement, dead, nullTested is null ? null : tested));
     }
@@ -235,6 +238,12 @@ internal sealed class IgnoredCallOnlyEffect
             MemberAccessExpressionSyntax access => !nullTested.Contains(Key(access.Expression)),
             _ => true,
         });
+
+    // Evaluating this cannot change state, though it may throw. Calls are taken to be reads.
+    private static bool IsPure(ExpressionSyntax expression) =>
+        expression is null || !expression.DescendantNodesAndSelf().Any(n => n is AssignmentExpressionSyntax or AwaitExpressionSyntax or ThrowExpressionSyntax
+            or PrefixUnaryExpressionSyntax { RawKind: (int)SyntaxKind.PreIncrementExpression or (int)SyntaxKind.PreDecrementExpression }
+            or PostfixUnaryExpressionSyntax { RawKind: (int)SyntaxKind.PostIncrementExpression or (int)SyntaxKind.PostDecrementExpression });
 
     // nameof(...) parses as an invocation but is a compile-time constant; nothing inside it is evaluated.
     private static bool IsNameOf(SyntaxNode node) =>
@@ -390,37 +399,67 @@ internal sealed class IgnoredCallOnlyEffect
             .ToDictionary(local => local.Name, local => local.Local, StringComparer.Ordinal);
 
         // a variable whose value carries a null test, because it holds one, is written under one, or is
-        // computed from such a variable, keeps guarding a dereference after the test is mutated: it is
-        // never treated as dead, and a guard that reads it is never filtered. Every variable the member
-        // writes counts (parameters, fields and repeated names too), matched by name across the member.
+        // computed from such a variable, keeps guarding a dereference after the test is mutated: a guard or
+        // ignored-call argument that reads it never dereferences what it tested, and when a test is one
+        // NullTested cannot name (null), it is never dead and a guard that reads it is never filtered. Every
+        // variable the member writes counts (parameters, fields and repeated names too), matched by name across the member.
         var writes = member.DescendantNodes().Select(WriteSite).Where(write => write.Name is not null).ToList();
-        var nullTestCarriers = writes
-            .Where(write => DependsOnNullTest(write.Site, member))
-            .Select(write => write.Name)
-            .ToHashSet(StringComparer.Ordinal);
+        var nullTestCarriers = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+        foreach (var (name, site) in writes)
+        {
+            var (depends, tested) = NullTestsOf(site, member);
+            if (depends)
+            {
+                var known = nullTestCarriers.TryGetValue(name, out var earlier);
+                nullTestCarriers[name] = tested is null || (known && earlier is null) ? null : With(earlier ?? NoneTested, tested);
+            }
+        }
+
         bool changed;
         do
         {
             changed = false;
             foreach (var (name, site) in writes)
             {
-                if (!nullTestCarriers.Contains(name)
-                    && site.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
-                        .Any(identifier => identifier != site && nullTestCarriers.Contains(identifier.Identifier.ValueText)))
+                foreach (var source in site.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
+                    .Where(identifier => identifier != site && nullTestCarriers.ContainsKey(identifier.Identifier.ValueText))
+                    .Select(identifier => nullTestCarriers[identifier.Identifier.ValueText]))
                 {
-                    nullTestCarriers.Add(name);
-                    changed = true;
+                    var known = nullTestCarriers.TryGetValue(name, out var tested);
+                    if (known && tested is null)
+                    {
+                        break;
+                    }
+
+                    if (source is null)
+                    {
+                        nullTestCarriers[name] = null;
+                        changed = true;
+                        break;
+                    }
+
+                    if (!known)
+                    {
+                        nullTestCarriers[name] = tested = new HashSet<string>(StringComparer.Ordinal);
+                        changed = true;
+                    }
+
+                    changed |= source.ToList().Count(tested.Add) > 0;
                 }
             }
         }
         while (changed);
 
-        foreach (var name in nullTestCarriers)
+        foreach (var (name, tested) in nullTestCarriers)
         {
-            dead.Remove(name);
+            if (tested is null)
+            {
+                dead.Remove(name);
+            }
         }
 
         _nullTestCarriersByMember[member] = nullTestCarriers;
+        _writesByMember[member] = writes;
         _checkedByWriteOfByMember[member] = CheckedByWrites(writes, member);
         _deadLocalsByMember[member] = dead;
         do
@@ -456,10 +495,11 @@ internal sealed class IgnoredCallOnlyEffect
         }).Where(key => key is not null);
 
     // GuardedBy, plus what any variable the condition reads was computed from or written under:
-    // `var found = d.TryGetValue(k, out var v); if (found) ..v.Length` or `var ok = r.IsSuccess; if (ok) ..r.Value`.
+    // `var found = d.TryGetValue(k, out var v); if (found) ..v.Length` or `var ok = r.IsSuccess; if (ok) ..r.Value`,
+    // and what the null test carriers it reads tested.
     private IEnumerable<string> GuardedByIncludingVariables(SyntaxNode condition)
     {
-        var keys = GuardedBy(condition);
+        var keys = GuardedBy(condition).Concat(CarriedNullTests(condition, condition) ?? []);
         return _checkedByWriteOfByMember.TryGetValue(condition.FirstAncestorOrSelf<MemberDeclarationSyntax>(), out var checkedBy)
             ? keys.Concat(condition.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
                 .SelectMany(identifier => checkedBy.TryGetValue(identifier.Identifier.ValueText, out var more) ? more : []))
@@ -556,32 +596,76 @@ internal sealed class IgnoredCallOnlyEffect
         return combined;
     }
 
-    // The written value holds a null test, or the write is conditional on an expression that tests for null.
-    private static bool DependsOnNullTest(ExpressionSyntax site, SyntaxNode member)
+    // Whether the written value holds a null test, or the write is conditional on an expression that tests for
+    // null, and what those tests test; Tested is null when a guard mentions null in a way NullTested does not name.
+    private static (bool Depends, HashSet<string> Tested) NullTestsOf(ExpressionSyntax site, SyntaxNode member)
     {
-        if (NullTested(site).Count > 0)
-        {
-            return true;
-        }
-
+        var tested = NullTested(site);
+        var depends = tested.Count > 0;
+        var unknown = false;
         SyntaxNode onPath = site;
         foreach (var ancestor in site.Ancestors().TakeWhile(ancestor => ancestor != member))
         {
-            if (ancestor.ChildNodes().Any(guard => guard != onPath && guard is not StatementSyntax
-                && (NullTested(guard).Count > 0 || guard.DescendantNodesAndSelf().Any(n => n.IsKind(SyntaxKind.NullLiteralExpression)))))
+            foreach (var guard in ancestor.ChildNodes().Where(guard => guard != onPath && guard is not StatementSyntax))
             {
-                return true;
+                var guardTested = NullTested(guard);
+                depends |= guardTested.Count > 0;
+                tested.UnionWith(guardTested);
+                if (guard.DescendantNodesAndSelf().Any(n => n.IsKind(SyntaxKind.NullLiteralExpression)
+                    && n.Parent is not (BinaryExpressionSyntax { RawKind: (int)SyntaxKind.EqualsExpression or (int)SyntaxKind.NotEqualsExpression }
+                        or ConstantPatternSyntax)))
+                {
+                    depends = true;
+                    unknown = true;
+                }
             }
 
             onPath = ancestor;
         }
 
-        return false;
+        return (depends, unknown ? null : tested);
     }
 
-    private bool ReadsNullTestCarrier(ExpressionSyntax condition, SyntaxNode mutated) =>
-        _nullTestCarriersByMember.TryGetValue(mutated.FirstAncestorOrSelf<MemberDeclarationSyntax>(), out var carriers)
-        && condition.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>().Any(identifier => carriers.Contains(identifier.Identifier.ValueText));
+    // What the null test carriers a guard reads tested, plus every variable written from one of those values
+    // (`var e = error;`); null when one of them carries a test NullTested cannot name.
+    private HashSet<string> CarriedNullTests(SyntaxNode condition, SyntaxNode mutated)
+    {
+        var member = mutated.FirstAncestorOrSelf<MemberDeclarationSyntax>();
+        var tested = new HashSet<string>(StringComparer.Ordinal);
+        if (!_nullTestCarriersByMember.TryGetValue(member, out var carriers))
+        {
+            return tested;
+        }
+
+        foreach (var identifier in condition.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>())
+        {
+            if (carriers.TryGetValue(identifier.Identifier.ValueText, out var carried))
+            {
+                if (carried is null)
+                {
+                    return null;
+                }
+
+                tested.UnionWith(carried);
+            }
+        }
+
+        bool changed;
+        do
+        {
+            changed = false;
+            foreach (var (name, site) in tested.Count == 0 ? [] : _writesByMember[member])
+            {
+                if (!tested.Contains(name) && site.DescendantNodesAndSelf().OfType<ExpressionSyntax>().Any(read => tested.Contains(Key(read))))
+                {
+                    changed |= tested.Add(name);
+                }
+            }
+        }
+        while (changed);
+
+        return tested;
+    }
 
     // The ignored call's result is thrown away, or only disposed by a using that nothing else reads.
     private static bool IsResultDiscarded(InvocationExpressionSyntax invocation, SyntaxNode member)
@@ -653,7 +737,8 @@ internal sealed class IgnoredCallOnlyEffect
             if (argument.Parent?.Parent is InvocationExpressionSyntax invocation && _isIgnoredCall(invocation))
             {
                 return reference.FirstAncestorOrSelf<ArgumentSyntax>().RefKindKeyword.IsKind(SyntaxKind.None)
-                    && IsSafe(argument.Expression, NoneTested)
+                    && CarriedNullTests(argument.Expression, reference) is { } carried
+                    && IsSafe(argument.Expression, carried)
                     && IsResultDiscarded(invocation, reference.FirstAncestorOrSelf<MemberDeclarationSyntax>());
             }
 

@@ -28,7 +28,8 @@ public class IgnoredCallOnlyEffectTests : TestBase
     // body: statements of `int M(int count, bool flag, bool verbose, string error, List<int> list, List<int> other)`;
     // original: the mutated node's text; type: the mutator, or null for every mutant of that node
     [TestMethod]
-    // a guard whose branches only log
+    // a guard whose branches only log. A log argument that throws once the guard flips (`other.Value` after
+    // `IsSuccess`, `error.Length` after a null test) is accepted: only the log line fails. One that writes state is not.
     [DataRow("if (count > 0) _logger.LogWarning(\"{N}\", count); return 0;", "count > 0", null, true)]
     [DataRow("if (flag) _logger.LogInformation(\"on\"); else _logger.LogWarning(\"off\"); return 0;", "flag", null, true)]
     [DataRow("if (flag && verbose) { _logger.LogInformation(\"x\"); } return 0;", "flag && verbose", null, true)]
@@ -37,42 +38,47 @@ public class IgnoredCallOnlyEffectTests : TestBase
     [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"x\"); return 0;", "other.Count > 0", "Equality", true)]
     [DataRow("if (flag) { if (verbose) { _logger.LogDebug(\"x\"); } } return 0;", "flag", null, true)]
     [DataRow("if (other != null && count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "count > 0", "Equality", true)]
-    [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other.Count > 0", "Equality", false)]
+    [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other.Count > 0", "Equality", true)]
     [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other != null", "Equality", false)]
-    [DataRow("if (other != null || other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other.Count > 0", "Equality", false)]
-    [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other != null && other.Count > 0", null, false)]
+    [DataRow("if (other != null || other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other.Count > 0", "Equality", true)]
+    [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other != null && other.Count > 0", "Boolean", true)]
+    [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"{N}\", other.Count); return 0;", "other != null && other.Count > 0", "Logical", false)]
     // a local only logged: the counter, its guard, and a level picked for the log call
     [DataRow("var errors = 0; foreach (var i in list) { if (i < 0) { errors++; } } if (errors > 0) _logger.LogWarning(\"{N}\", errors); return 0;", "errors++", null, true)]
     [DataRow("var errors = 0; foreach (var i in list) { if (i < 0) { errors++; } } if (errors > 0) _logger.LogWarning(\"{N}\", errors); return 0;", "i < 0", null, true)]
     [DataRow("var errors = 0; foreach (var i in list) { if (i < 0) { errors++; } } if (errors > 0) _logger.LogWarning(\"{N}\", errors); return 0;", "{ errors++; }", null, true)]
     [DataRow("var total = 0; foreach (var i in list) { total += i; } _logger.LogInformation(\"{T}\", total); return 0;", "total += i", null, true)]
     [DataRow("var level = flag ? 1 : 2; _logger.Log(level, \"x\"); return 0;", "flag ? 1 : 2", null, true)]
+    // a local built only for the log line beside it
+    [DataRow("if (count > 0) { var issues = list.Where(i => i < 0).ToList(); _logger.LogWarning(\"{I}\", issues); } return 0;", "count > 0", null, true)]
+    [DataRow("if (count > 0) { var next = ++_state; _logger.LogWarning(\"{I}\", next); } return 0;", "count > 0", null, false)]
+    [DataRow("if (count > 0) { var issues = list.Count; _state = issues; _logger.LogWarning(\"{I}\", issues); } return 0;", "count > 0", null, false)]
     // a scope's state only reaches the logger
     [DataRow("using var scope = _logger.BeginScope(new Dictionary<string, object> { [\"a\"] = count }); return 0;", "new Dictionary<string, object> { [\"a\"] = count }", null, true)]
     // an object passed to a call that is only followed by an ignored one is not an ignored argument
     [DataRow("Fetch(new List<int> { count }).IgnoredCheck(); return 0;", "new List<int> { count }", null, false)]
     [DataRow("Fetch(new Spec { A = count, B = verbose }).IgnoredCheck(); return 0;", "new Spec { A = count, B = verbose }", null, false)]
     // a guard that reads a bool copied from a validity check
-    [DataRow("var ok = other.IsSuccess; if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, false)]
-    [DataRow("var found = _seen.TryGetValue(count, out var v); if (found) _logger.LogWarning(\"{N}\", v.Length); return 0;", "found", null, false)]
+    [DataRow("var ok = other.IsSuccess; if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, true)]
+    [DataRow("var found = _seen.TryGetValue(count, out var v); if (found) _logger.LogWarning(\"{N}\", v.Length); return 0;", "found", null, true)]
     [DataRow("var ok = other.IsSuccess; if (ok) _logger.LogWarning(\"x\"); return 0;", "ok", null, true)]
-    [DataRow("var ok = IsValid(other); if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, false)]
+    [DataRow("var ok = IsValid(other); if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, true)]
     [DataRow("var ok = IsValid(other); if (ok) _logger.LogWarning(\"x\"); return 0;", "ok", null, true)]
-    [DataRow("if (IsValid(other)) _logger.LogWarning(\"{V}\", other.Value); return 0;", "IsValid(other)", null, false)]
+    [DataRow("if (IsValid(other)) _logger.LogWarning(\"{V}\", other.Value); return 0;", "IsValid(other)", null, true)]
     // a guard local built from a shape ValidatedBy does not list still carries what it reads
-    [DataRow("var ok = flag ? IsValid(other) : false; if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, false)]
-    [DataRow("var ok = (bool)other.IsSuccess; if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, false)]
-    [DataRow("var ok = new Validator(other).IsSatisfied; if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, false)]
-    [DataRow("var found = _seen.TryGetValue(count, out var v); var ok = flag ? found : false; if (ok) _logger.LogWarning(\"{N}\", v.Length); return 0;", "ok", null, false)]
+    [DataRow("var ok = flag ? IsValid(other) : false; if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, true)]
+    [DataRow("var ok = (bool)other.IsSuccess; if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, true)]
+    [DataRow("var ok = new Validator(other).IsSatisfied; if (ok) _logger.LogWarning(\"{V}\", other.Value); return 0;", "ok", null, true)]
+    [DataRow("var found = _seen.TryGetValue(count, out var v); var ok = flag ? found : false; if (ok) _logger.LogWarning(\"{N}\", v.Length); return 0;", "ok", null, true)]
     // anything that also returns, writes state, or can throw stays mutated
     [DataRow("if (count > 0) { _logger.LogWarning(\"x\"); return 1; } return 0;", "count > 0", null, false)]
     [DataRow("if (count > 0) _logger.LogWarning(\"x\"); else Save(); return 0;", "count > 0", null, false)]
     [DataRow("var total = 0; if (count > 0) { _logger.LogWarning(\"x\"); total++; } return total;", "count > 0", null, false)]
     [DataRow("var total = 0; if (count > 0) { _logger.LogWarning(\"x\"); total++; } return total;", "total++", null, false)]
     [DataRow("var total = 0; total++; Save(total); _logger.LogWarning(\"{T}\", total); return 0;", "total++", null, false)]
-    [DataRow("if (error is not null) _logger.LogWarning(\"{N}\", error.Length); return 0;", "error is not null", null, false)]
-    [DataRow("if (string.IsNullOrEmpty(error)) { } else _logger.LogWarning(error.Trim()); return 0;", "string.IsNullOrEmpty(error)", null, false)]
-    [DataRow("if (list.Count > 0) _logger.LogWarning(\"{F}\", list[0]); return 0;", "list.Count > 0", null, false)]
+    [DataRow("if (error is not null) _logger.LogWarning(\"{N}\", error.Length); return 0;", "error is not null", null, true)]
+    [DataRow("if (string.IsNullOrEmpty(error)) { } else _logger.LogWarning(error.Trim()); return 0;", "string.IsNullOrEmpty(error)", null, true)]
+    [DataRow("if (list.Count > 0) _logger.LogWarning(\"{F}\", list[0]); return 0;", "list.Count > 0", null, true)]
     [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"x\"); return 0;", "other != null", null, false)]
     [DataRow("if (other != null && other.Count > 0) _logger.LogWarning(\"x\"); return 0;", "other != null && other.Count > 0", "Logical", false)]
     [DataRow("if (verbose && _seen.Add(count)) _logger.LogWarning(\"x\"); return 0;", "verbose && _seen.Add(count)", "Logical", false)]
@@ -90,10 +96,10 @@ public class IgnoredCallOnlyEffectTests : TestBase
     [DataRow("var total = 1; if (flag) { total /= count; } _logger.LogWarning(\"{N}\", total); return 0;", "total /= count", null, false)]
     [DataRow("var n = 1; n++; _logger.LogWarning(\"{N}\", 1 / n); return 0;", "n++", null, false)]
     // a null test carried by a local
-    [DataRow("var canLog = error != null; if (canLog) _logger.LogWarning(\"{N}\", error.Length); return 0;", "error != null", null, false)]
+    [DataRow("var canLog = error != null; if (canLog) _logger.LogWarning(\"{N}\", error.Length); return 0;", "error != null", null, true)]
     // ignored calls whose receiver or arguments do something else
     [DataRow("if (flag) _logger.LogWarning(\"{N}\", ++_state); return 0;", "flag", null, false)]
-    [DataRow("if (flag) _logger.LogWarning(count.ToString()); return 0;", "flag", null, false)]
+    [DataRow("if (flag) _logger.LogWarning(count.ToString()); return 0;", "flag", null, true)]
     [DataRow("if (flag) _logger.LogWarning(\"n=\" + count); return 0;", "flag", null, true)]
     [DataRow("var n = 1; n++; _logger.LogWarning(\"{N}\", SaveAndReturn(n)); return 0;", "n++", null, false)]
     [DataRow("var n = 1; n++; _logger.LogWarning(\"{N}\", _state = n); return 0;", "n++", null, false)]
@@ -105,14 +111,30 @@ public class IgnoredCallOnlyEffectTests : TestBase
     [DataRow("var name = \"a\"; if (flag) { name = \"b\"; } using var scope = _logger.BeginScope(name); return 0;", "flag", null, true)]
     [DataRow("var name = \"a\"; if (flag) { name = \"b\"; } using (_logger.BeginScope(name)) { } return 0;", "flag", null, true)]
     // a guard that reads a null test carrier, and a write made under a null test
-    [DataRow("var canLog = error != null; if (canLog) _logger.LogWarning(\"{N}\", error.Length); return 0;", "canLog", null, false)]
-    [DataRow("var show = true; if (error == null) show = false; if (show) _logger.LogWarning(\"{N}\", error.Length); return 0;", "show", null, false)]
-    [DataRow("if (error == null) verbose = false; if (verbose) _logger.LogWarning(\"{N}\", error.Length); return 0;", "verbose", null, false)]
-    [DataRow("{ var canLog = error != null; if (canLog) _logger.LogWarning(\"{N}\", error.Length); } { var canLog = true; } return 0;", "canLog", null, false)]
+    [DataRow("var canLog = error != null; if (canLog) _logger.LogWarning(\"{N}\", error.Length); return 0;", "canLog", null, true)]
+    [DataRow("var show = true; if (error == null) show = false; if (show) _logger.LogWarning(\"{N}\", error.Length); return 0;", "show", null, true)]
+    [DataRow("if (error == null) verbose = false; if (verbose) _logger.LogWarning(\"{N}\", error.Length); return 0;", "verbose", null, true)]
+    [DataRow("{ var canLog = error != null; if (canLog) _logger.LogWarning(\"{N}\", error.Length); } { var canLog = true; } return 0;", "canLog", null, true)]
+    // a guard on a null test carrier whose branches dereference nothing it tested
+    [DataRow("var isLong = error is { Length: > 10 } || other is { Count: > 10 }; if (isLong) _logger.LogDebug(\"{N}\", count); Save(isLong ? 1 : 0); return 0;", "isLong", null, true)]
+    [DataRow("var canLog = error != null; if (canLog) _logger.LogWarning(\"{N}\", list.Count); return 0;", "canLog", null, true)]
+    [DataRow("var isLong = error is { Length: > 10 } || other is { Count: > 10 }; if (isLong) _logger.LogDebug(\"{N}\", other.Count); return 0;", "isLong", null, true)]
+    [DataRow("var canLog = error != null; if (canLog) { } else _logger.LogWarning(\"{N}\", error.Length); return 0;", "canLog", null, true)]
+    [DataRow("var canLog = error != null; var copy = error; if (canLog) _logger.LogWarning(\"{N}\", copy.Length); return 0;", "canLog", null, true)]
+    [DataRow("var canLog = error != null; var ok = canLog && flag; if (ok) _logger.LogWarning(\"{N}\", error.Length); return 0;", "ok", null, true)]
+    [DataRow("var show = true; if (error == null) show = false; if (show) _logger.LogWarning(\"{N}\", list.Count); return 0;", "show", null, true)]
+    [DataRow("var show = true; if (Pick(null)) show = false; if (show) _logger.LogWarning(\"{N}\", list.Count); return 0;", "show", null, true)]
+    // a counter written under a null test, read only by a guard or a log call that dereferences nothing it tested
+    [DataRow("var missing = 0; foreach (var i in list) { if (error == null) { missing++; continue; } } if (missing > 0) _logger.LogWarning(\"{N}\", missing); return 0;", "missing++", null, true)]
+    [DataRow("var missing = 0; if (error == null) missing++; _logger.LogWarning(\"{N}\", missing); return 0;", "missing++", null, true)]
+    [DataRow("var missing = 0; if (error == null) missing++; if (missing == 0) _logger.LogWarning(\"{N}\", error.Length); return 0;", "missing++", null, true)]
+    [DataRow("var missing = 0; if (error == null) missing++; _logger.LogWarning(\"{N}\", missing == 0 ? error.Length : 0); return 0;", "missing++", null, false)]
+    [DataRow("var missing = 0; if (error == null) missing++; var none = missing == 0; if (none) _logger.LogWarning(\"{N}\", error.Length); return 0;", "missing++", null, true)]
+    [DataRow("var missing = 0; if (Pick(null)) missing++; if (missing > 0) _logger.LogWarning(\"{N}\", missing); return 0;", "missing++", null, false)]
     // a guard that makes a member read or an out variable valid
-    [DataRow("if (_seen.TryGetValue(count, out var v)) _logger.LogWarning(\"{N}\", v.Length); return 0;", "_seen.TryGetValue(count, out var v)", null, false)]
-    [DataRow("if (other.IsSuccess) _logger.LogWarning(\"{N}\", other.Value); return 0;", "other.IsSuccess", null, false)]
-    [DataRow("var show = true; if (error == null) show = false; if (show) _logger.LogWarning(\"{N}\", error.Length); return 0;", "false", null, false)]
+    [DataRow("if (_seen.TryGetValue(count, out var v)) _logger.LogWarning(\"{N}\", v.Length); return 0;", "_seen.TryGetValue(count, out var v)", null, true)]
+    [DataRow("if (other.IsSuccess) _logger.LogWarning(\"{N}\", other.Value); return 0;", "other.IsSuccess", null, true)]
+    [DataRow("var show = true; if (error == null) show = false; if (show) _logger.LogWarning(\"{N}\", error.Length); return 0;", "false", null, true)]
     // an awaited ignored call is not inert
     [DataRow("if (flag) await _logger.LogWarningAsync(\"x\"); return 0;", "flag", null, false)]
     // nameof is a constant
