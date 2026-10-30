@@ -33,15 +33,13 @@ public class DefaultTestServerConnectionFactoryTests
     }
 
     [TestMethod]
-    public void BuildArguments_ShouldRejectFilter_WhenTestApplicationDoesNotSupportIt()
+    public void BuildArguments_ShouldLeaveFilterToStryker_WhenTestApplicationDoesNotSupportIt()
     {
         var factory = CreateFactory("FullyQualifiedName~UnitTests", _ => false);
 
-        var exception = Should.Throw<InputException>(() => factory.BuildArguments("tests.dll", 1234));
+        var arguments = factory.BuildArguments("tests.dll", 1234);
 
-        exception.Message.ShouldContain("tests.dll");
-        exception.Message.ShouldContain("does not support");
-        exception.Details.ShouldContain("--filter");
+        arguments.ShouldBe(["tests.dll", .. MtpServerConnector.BuildInProcessServerArguments(1234)]);
     }
 
     [TestMethod]

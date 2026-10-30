@@ -92,14 +92,13 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
             return [.. arguments];
         }
 
-        if (!_supportsTestCaseFilter(assembly))
+        // Without '--filter' the runner applies the filter itself to the discovered tests
+        // (see MicrosoftTestingPlatformRunner.GetStrykerSideFilter).
+        if (_supportsTestCaseFilter(assembly))
         {
-            throw new InputException(
-                $"The test application '{Path.GetFileName(assembly)}' does not support 'test-case-filter' with Microsoft Testing Platform.",
-                "Use a test framework version that registers the '--filter' option, or remove 'test-case-filter' from the Stryker configuration.");
+            arguments.AddRange(["--filter", _testCaseFilter]);
         }
 
-        arguments.AddRange(["--filter", _testCaseFilter]);
         return [.. arguments];
     }
 
@@ -110,7 +109,7 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
             .Any(line => line.Equals("--filter", StringComparison.Ordinal) ||
                          line.StartsWith("--filter ", StringComparison.Ordinal));
 
-    private static bool SupportsTestCaseFilter(string assembly)
+    internal static bool SupportsTestCaseFilter(string assembly)
     {
         var fullAssemblyPath = Path.GetFullPath(assembly);
         return TestCaseFilterSupport
