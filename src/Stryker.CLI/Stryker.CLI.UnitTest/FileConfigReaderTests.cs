@@ -91,6 +91,7 @@ public class FileConfigReaderTests
         actualInputs.DisableBailInput.SuppliedInput.ShouldBe(true);
         actualInputs.IgnoreMutationsInput.SuppliedInput.ShouldContain("linq.FirstOrDefault");
         actualInputs.IgnoredMethodsInput.SuppliedInput.ShouldContain("Log*");
+        actualInputs.IgnoreMethodsEffectsInput.SuppliedInput.ShouldNotBeNull().ShouldBeTrue();
         actualInputs.TestCaseFilterInput.SuppliedInput.ShouldBe("(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1");
         actualInputs.DashboardUrlInput.SuppliedInput.ShouldBe("https://alternative-stryker-dashboard.io");
         actualInputs.S3BucketNameInput.SuppliedInput.ShouldBe("my-bucket");
@@ -142,6 +143,7 @@ public class FileConfigReaderTests
         actualInputs.DisableBailInput.SuppliedInput.ShouldBe(true);
         actualInputs.IgnoreMutationsInput.SuppliedInput.ShouldContain("linq.FirstOrDefault");
         actualInputs.IgnoredMethodsInput.SuppliedInput.ShouldContain("Log*");
+        actualInputs.IgnoreMethodsEffectsInput.SuppliedInput.ShouldNotBeNull().ShouldBeTrue();
         actualInputs.TestCaseFilterInput.SuppliedInput.ShouldBe("(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1");
         actualInputs.DashboardUrlInput.SuppliedInput.ShouldBe("https://alternative-stryker-dashboard.io");
         actualInputs.S3BucketNameInput.SuppliedInput.ShouldBe("my-bucket");

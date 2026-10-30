@@ -74,6 +74,7 @@ public static class FileConfigReader
         inputs.DashboardUrlInput.SuppliedInput = config.DashboardUrl;
         inputs.IgnoreMutationsInput.SuppliedInput = config.IgnoreMutations;
         inputs.IgnoredMethodsInput.SuppliedInput = config.IgnoreMethods;
+        inputs.IgnoreMethodsEffectsInput.SuppliedInput = config.IgnoreMethodsEffects;
 
         inputs.ReportFileNameInput.SuppliedInput = config.ReportFileName;
         inputs.BreakOnInitialTestFailureInput.SuppliedInput = config.BreakOnInitialTestFailure;
