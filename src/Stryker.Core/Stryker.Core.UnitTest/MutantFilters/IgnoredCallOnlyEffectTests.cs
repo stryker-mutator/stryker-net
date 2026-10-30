@@ -200,6 +200,34 @@ public class IgnoredCallOnlyEffectTests : TestBase
             .Cast<Mutant>()
             .ToList();
 
+    // a receiver-qualified pattern matches `logger?.Log*` too, and no longer matches a bare helper named Log*
+    [TestMethod]
+    [DataRow("if (flag) _logger?.LogWarning(\"x\"); return 0;", "flag", true)]
+    [DataRow("_logger?.LogWarning(\"{N}\", count > 0); return 0;", "count > 0", true)]
+    [DataRow("if (flag) _logger.LogWarning(\"x\"); return 0;", "flag", true)]
+    [DataRow("if (flag) LogAndSave(); return 0;", "flag", false)]
+    public void ShouldMatchReceiverQualifiedPatterns(string body, string original, bool filtered)
+    {
+        var options = new StrykerOptions
+        {
+            MutationLevel = MutationLevel.Complete,
+            IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = ["*logger*.Log*"] }.Validate(),
+            IgnoreMethodsEffects = true,
+        };
+        var mutants = BuildMutants(body, original, null, options);
+
+        var kept = Filter(mutants, options);
+
+        if (filtered)
+        {
+            kept.ShouldBeEmpty();
+        }
+        else
+        {
+            kept.ShouldBe(mutants);
+        }
+    }
+
     private static StrykerOptions BuildOptions(bool ignoreMethodsEffects) => new()
     {
         MutationLevel = MutationLevel.Complete,

@@ -34,10 +34,17 @@ public sealed class IgnoreMethodsEffectsMutantFilter : IMutantFilter
     // ends in an ignored call is not treated as ignored, because it still runs.
     private static bool IsIgnoredCall(SyntaxNode syntaxNode, IStrykerOptions options) => syntaxNode switch
     {
-        InvocationExpressionSyntax invocation => options.IgnoredMethods.Any(r => r.IsMatch(WithoutTrivia(invocation.Expression))),
+        InvocationExpressionSyntax invocation => options.IgnoredMethods.Any(r => r.IsMatch(CallName(invocation))),
         ConditionalAccessExpressionSyntax conditional => IsIgnoredCall(conditional.WhenNotNull, options),
         _ => false,
     };
+
+    // `logger?.LogWarning(..)` names its method `.LogWarning`; prefix the receiver, as IgnoredMethodMutantFilter does.
+    private static string CallName(InvocationExpressionSyntax invocation) =>
+        invocation.Expression is MemberBindingExpressionSyntax
+        && invocation.Parent is ConditionalAccessExpressionSyntax conditional && conditional.WhenNotNull == invocation
+            ? WithoutTrivia(conditional.Expression) + WithoutTrivia(invocation.Expression)
+            : WithoutTrivia(invocation.Expression);
 
     private static string WithoutTrivia(SyntaxNode node) => string.Concat(node.DescendantTokens().Select(token => token.Text));
 }
