@@ -796,6 +796,28 @@ public class MicrosoftTestingPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
+    [DataRow(null, 500d)]
+    [DataRow(-1d, 500d)]
+    [DataRow(double.NaN, 500d)]
+    [DataRow(double.PositiveInfinity, 500d)]
+    [DataRow(0d, 0d)]
+    public void BuildTestRunResult_FallsBackToTheAverage_WhenTheReportedDurationIsMissingOrInvalid(double? reported, double expectedMilliseconds)
+    {
+        var test = new TestNode("test", "test", "test", TestNodeStates.Passed, DurationMilliseconds: reported);
+        var other = new TestNode("other", "other", "test", TestNodeStates.Passed);
+        _testDescriptions[test.Uid] = new MtpTestDescription(test);
+        _testDescriptions[other.Uid] = new MtpTestDescription(other);
+        using var runner = CreateRunner();
+
+        runner.BuildTestRunResult(
+            [new TestNodeUpdate(test, "root"), new TestNodeUpdate(other, "root")],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromSeconds(1));
+
+        _testDescriptions[test.Uid].InitialRunTime.ShouldBe(TimeSpan.FromMilliseconds(expectedMilliseconds));
+    }
+
+    [TestMethod, Timeout(1000)]
     public void BuildTestRunResult_FailedState_IsReportedAsFailing()
     {
         using var runner = CreateRunner();
