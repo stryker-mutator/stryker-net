@@ -971,6 +971,42 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         result.TestId.ShouldBe("test-1", "the result must stay attributable to the test that was asked for");
     }
 
+    [TestMethod]
+    [DataRow(TestNodeStates.Passed, TestNodeStates.Passed)]
+    [DataRow(TestNodeStates.Failed, TestNodeStates.Failed)]
+    [DataRow(TestNodeStates.Error, TestNodeStates.Error)]
+    [DataRow(TestNodeStates.InProgress, null)]
+    public void GetIsolatedOutcome_ReturnsTheFinishedStateOfTheCapturedTest(string state, string? expected)
+    {
+        var test = new TestNode("test-1", "Test1", "test", TestNodeStates.Discovered);
+        TestNodeUpdate[] results =
+        [
+            new(test with { ExecutionState = TestNodeStates.InProgress }, "root"),
+            new(test with { ExecutionState = state }, "root"),
+            new(new TestNode("test-2", "Test2", "test", TestNodeStates.Passed), "root"),
+        ];
+
+        MicrosoftTestingPlatformRunner.GetIsolatedOutcome(results, test).ShouldBe(expected);
+    }
+
+    [TestMethod]
+    [DataRow(TestNodeStates.Passed, TestNodeStates.Failed, TestNodeStates.Failed)]
+    [DataRow(TestNodeStates.Failed, TestNodeStates.Passed, TestNodeStates.Failed)]
+    [DataRow(TestNodeStates.Passed, TestNodeStates.TimedOut, TestNodeStates.TimedOut)]
+    [DataRow(TestNodeStates.TimedOut, TestNodeStates.Error, TestNodeStates.Error)]
+    [DataRow(TestNodeStates.Passed, TestNodeStates.Passed, TestNodeStates.Passed)]
+    public void GetIsolatedOutcome_WithSeveralRowsForOneUid_ReportsTheWorst(string first, string second, string expected)
+    {
+        var test = new TestNode("test-1", "Test1", "test", TestNodeStates.Discovered);
+        TestNodeUpdate[] results =
+        [
+            new(test with { ExecutionState = first }, "root"),
+            new(test with { ExecutionState = second }, "root"),
+        ];
+
+        MicrosoftTestingPlatformRunner.GetIsolatedOutcome(results, test).ShouldBe(expected);
+    }
+
     [TestMethod, Timeout(5000)]
     public async Task RunSingleTestForCoverageInIsolatedProcessAsync_ShouldDiscardCoverageLeftByAnEarlierTest()
     {
