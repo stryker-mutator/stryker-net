@@ -1,3 +1,6 @@
+using Moq;
+using Microsoft.Extensions.Logging;
+using System.Net.Sockets;
 using System.IO.MemoryMappedFiles;
 using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
@@ -969,6 +972,161 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         result.Confidence.ShouldBe(CoverageConfidence.Dubious);
         result.MutationsCovered.ShouldBeEmpty();
         result.TestId.ShouldBe("test-1", "the result must stay attributable to the test that was asked for");
+    }
+
+    [TestMethod, Timeout(10000)]
+    public async Task RunSingleTestForCoverageInIsolatedProcessAsync_RetriesOnAFreshHost_AndKeepsOnlyThePassingAttempt()
+    {
+        const string assembly = "/test/isolated-retry.dll";
+        var test = new TestNode("test-1", "Test1", "test", TestNodeStates.Discovered);
+        string coverageFilePath = null!;
+        var hosts = 0;
+        var factory = CreateHostFactory(assembly, () =>
+        {
+            hosts++;
+            // the first host records coverage and then fails, the second one passes
+            return hosts == 1
+                ? (TestNodeStates.Failed, "1,2,3;")
+                : (TestNodeStates.Passed, "4,5;");
+        }, () => coverageFilePath);
+        using var runner = new MicrosoftTestingPlatformRunner(
+            720, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance)
+        {
+            ConnectionFactory = factory
+        };
+        runner.SetCoverageMode(true);
+        coverageFilePath = runner.GetCoverageFilePath(assembly);
+
+        try
+        {
+            var result = await runner.RunSingleTestForCoverageInIsolatedProcessAsync(assembly, test, "test-1");
+
+            hosts.ShouldBe(2);
+            result.Confidence.ShouldBe(CoverageConfidence.Exact);
+            result.MutationsCovered.ShouldBe([4, 5], ignoreOrder: true);
+        }
+        finally
+        {
+            DeleteFileIfExists(coverageFilePath);
+        }
+    }
+
+    [TestMethod, Timeout(10000)]
+    [DataRow(TestNodeStates.Failed)]
+    [DataRow(TestNodeStates.InProgress)]
+    public async Task RunSingleTestForCoverageInIsolatedProcessAsync_ReturnsDubious_AfterTwoUncleanAttempts(string state)
+    {
+        const string assembly = "/test/isolated-dubious.dll";
+        var test = new TestNode("test-1", "Test1", "test", TestNodeStates.Discovered);
+        string coverageFilePath = null!;
+        var hosts = 0;
+        var factory = CreateHostFactory(assembly, () =>
+        {
+            hosts++;
+            return (state, "1,2,3;");
+        }, () => coverageFilePath);
+        using var runner = new MicrosoftTestingPlatformRunner(
+            721, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance)
+        {
+            ConnectionFactory = factory
+        };
+        runner.SetCoverageMode(true);
+        coverageFilePath = runner.GetCoverageFilePath(assembly);
+
+        try
+        {
+            var result = await runner.RunSingleTestForCoverageInIsolatedProcessAsync(assembly, test, "test-1");
+
+            hosts.ShouldBe(2);
+            result.Confidence.ShouldBe(CoverageConfidence.Dubious);
+            result.MutationsCovered.ShouldBeEmpty();
+        }
+        finally
+        {
+            DeleteFileIfExists(coverageFilePath);
+        }
+    }
+
+    private static void DeleteFileIfExists(string? path)
+    {
+        if (path is not null && File.Exists(path))
+        {
+            File.Delete(path);
+        }
+    }
+
+    // Each started host runs the requested test with the state the callback picks, writing the coverage it
+    // returns to the assembly's coverage file, as the injected MutantControl does on exit.
+    private static ITestServerConnectionFactory CreateHostFactory(
+        string assembly, Func<(string State, string Coverage)> nextHost, Func<string> coverageFilePath)
+    {
+        var factory = new Mock<ITestServerConnectionFactory>();
+        factory.Setup(x => x.CreateListener()).Returns(() =>
+        {
+            var listener = new Mock<ITestServerListener>();
+            listener.Setup(x => x.AcceptConnectionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new TcpClient());
+            return (listener.Object, 12345);
+        });
+        factory.Setup(x => x.StartProcess(assembly, 12345, It.IsAny<Dictionary<string, string?>>())).Returns(() =>
+        {
+            var process = new Mock<ITestServerProcess>();
+            process.Setup(x => x.WaitForExitAsync()).Returns(new TaskCompletionSource().Task);
+            process.SetupGet(x => x.HasExited).Returns(false);
+            process.SetupGet(x => x.ProcessHandle).Returns(new Mock<IProcessHandle>().Object);
+            return process.Object;
+        });
+        factory.Setup(x => x.CreateClient(It.IsAny<TcpClient>(), It.IsAny<IProcessHandle>(), It.IsAny<ILogger>())).Returns(() =>
+        {
+            var (state, coverage) = nextHost();
+            var client = new Mock<ITestingPlatformClient>();
+            client.Setup(x => x.InitializeAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            client.Setup(x => x.ExitAsync(It.IsAny<bool>())).Returns(Task.CompletedTask);
+            client.Setup(x => x.WaitServerProcessExitAsync()).ReturnsAsync(0);
+            client.Setup(x => x.RunTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<TestNode[]?>(), It.IsAny<CancellationToken>()))
+                .Returns<Func<TestNodeUpdate[], Task>, TestNode[]?, CancellationToken>((callback, tests, _) =>
+                {
+                    File.WriteAllText(coverageFilePath(), coverage);
+                    return callback([new TestNodeUpdate(tests![0] with { ExecutionState = state }, "root")]);
+                });
+            return client.Object;
+        });
+        return factory.Object;
+    }
+
+    [TestMethod]
+    [DataRow(TestNodeStates.Passed, TestNodeStates.Passed)]
+    [DataRow(TestNodeStates.Failed, TestNodeStates.Failed)]
+    [DataRow(TestNodeStates.Error, TestNodeStates.Error)]
+    [DataRow(TestNodeStates.InProgress, null)]
+    public void GetIsolatedOutcome_ReturnsTheFinishedStateOfTheCapturedTest(string state, string? expected)
+    {
+        var test = new TestNode("test-1", "Test1", "test", TestNodeStates.Discovered);
+        TestNodeUpdate[] results =
+        [
+            new(test with { ExecutionState = TestNodeStates.InProgress }, "root"),
+            new(test with { ExecutionState = state }, "root"),
+            new(new TestNode("test-2", "Test2", "test", TestNodeStates.Passed), "root"),
+        ];
+
+        MicrosoftTestingPlatformRunner.GetIsolatedOutcome(results, test).ShouldBe(expected);
+    }
+
+    [TestMethod]
+    [DataRow(TestNodeStates.Passed, TestNodeStates.Failed, TestNodeStates.Failed)]
+    [DataRow(TestNodeStates.Failed, TestNodeStates.Passed, TestNodeStates.Failed)]
+    [DataRow(TestNodeStates.Passed, TestNodeStates.TimedOut, TestNodeStates.TimedOut)]
+    [DataRow(TestNodeStates.TimedOut, TestNodeStates.Error, TestNodeStates.Error)]
+    [DataRow(TestNodeStates.Passed, TestNodeStates.Passed, TestNodeStates.Passed)]
+    public void GetIsolatedOutcome_WithSeveralRowsForOneUid_ReportsTheWorst(string first, string second, string expected)
+    {
+        var test = new TestNode("test-1", "Test1", "test", TestNodeStates.Discovered);
+        TestNodeUpdate[] results =
+        [
+            new(test with { ExecutionState = first }, "root"),
+            new(test with { ExecutionState = second }, "root"),
+        ];
+
+        MicrosoftTestingPlatformRunner.GetIsolatedOutcome(results, test).ShouldBe(expected);
     }
 
     [TestMethod, Timeout(5000)]

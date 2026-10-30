@@ -51,6 +51,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     private string RunnerId => $"MtpRunner-{_id}";
 
     /// <summary>
+    /// Starts and connects the test hosts; null uses the default process-based factory. Exposed for unit testing.
+    /// </summary>
+    internal ITestServerConnectionFactory? ConnectionFactory { get; init; }
+
+    /// <summary>
     /// Path of the mutant-id control file this runner shares with its test hosts. Exposed for unit testing.
     /// </summary>
     internal string MutantFilePath => _mutantFilePath;
@@ -729,52 +734,88 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         string assembly, TestNode test, string testId)
     {
         var coverageFilePath = GetCoverageFilePath(assembly);
+        var outcome = "no attempt";
 
-        try
+        // Coverage is only trusted at Exact confidence when the test itself passed: a test that fails or
+        // stops early records only the code it reached before that point. A test can fail in isolation
+        // although it passed the initial run (e.g. it relies on state another test set up), so it gets
+        // a second attempt on a fresh host before it falls back to Dubious.
+        const int maxCaptureAttempts = 2;
+        for (var attempt = 1; attempt <= maxCaptureAttempts; attempt++)
         {
-            // Discard any server left over from a previous isolated test (or another mode) so this
-            // test starts in a fresh process rather than one that already ran other code.
-            await DiscardServerAsync(assembly).ConfigureAwait(false);
-
-            // Clear what an earlier test left on disk. Coverage files are written per mutated assembly,
-            // so a host that does not load one of them never rewrites its file, and reading it would
-            // credit this test with the earlier one's coverage - at Exact confidence, which the pool
-            // trusts enough to drop mutants no test covers. A single shared file gave this for free,
-            // since every host rewrote it whole.
-            foreach (var staleCoverageFilePath in EnumerateCoverageFiles(coverageFilePath))
+            try
             {
-                DeleteFileIfExists(staleCoverageFilePath);
-            }
-
-            var server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
-            var (_, timedOut) = await server.RunTestsAsync(new[] { test }, CalculateSingleTestTimeout(test)).ConfigureAwait(false);
-            if (timedOut)
-            {
-                _logger.LogWarning(
-                    "{RunnerId}: Test run timed out while capturing isolated coverage for {TestId}; marking as Dubious",
-                    RunnerId, testId);
+                // Discard any server left over from a previous isolated test (or another mode) so this
+                // test starts in a fresh process rather than one that already ran other code.
                 await DiscardServerAsync(assembly).ConfigureAwait(false);
-                return CoverageRunResult.Create(testId, CoverageConfidence.Dubious,
-                    Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
+
+                // Clear what an earlier test left on disk. Coverage files are written per mutated assembly,
+                // so a host that does not load one of them never rewrites its file, and reading it would
+                // credit this test with the earlier one's coverage - at Exact confidence, which the pool
+                // trusts enough to drop mutants no test covers. A single shared file gave this for free,
+                // since every host rewrote it whole.
+                foreach (var staleCoverageFilePath in EnumerateCoverageFiles(coverageFilePath))
+                {
+                    DeleteFileIfExists(staleCoverageFilePath);
+                }
+
+                var server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
+                var (results, timedOut) = await server.RunTestsAsync(new[] { test }, CalculateSingleTestTimeout(test)).ConfigureAwait(false);
+                if (timedOut)
+                {
+                    outcome = "a timeout";
+                    await DiscardServerAsync(assembly).ConfigureAwait(false);
+                }
+                else
+                {
+                    // Stop gracefully (not force) so the injected MutantControl's ProcessExit handler flushes
+                    // this test's (and only this test's) coverage to file before the process goes away.
+                    await server.StopAsync().ConfigureAwait(false);
+
+                    var state = GetIsolatedOutcome(results, test);
+                    if (state is not null && !TestNodeStates.IsFailure(state) && !TestNodeStates.IsTimeout(state))
+                    {
+                        var (covered, _) = ReadCoverageForHandedOutPath(coverageFilePath, assembly);
+                        return CoverageRunResult.Create(testId, CoverageConfidence.Exact, covered, Array.Empty<int>(), Array.Empty<int>());
+                    }
+
+                    outcome = state ?? "no result";
+                }
+            }
+            catch (Exception ex)
+            {
+                outcome = "an error";
+                _logger.LogDebug(ex, "{RunnerId}: Failed to capture isolated coverage for {TestId}", RunnerId, testId);
+                await DiscardServerAsync(assembly).ConfigureAwait(false);
             }
 
-            // Stop gracefully (not force) so the injected MutantControl's ProcessExit handler flushes
-            // this test's (and only this test's) coverage to file before the process goes away.
-            await server.StopAsync().ConfigureAwait(false);
-
-            var (covered, _) = ReadCoverageForHandedOutPath(coverageFilePath, assembly);
-            return CoverageRunResult.Create(testId, CoverageConfidence.Exact, covered, Array.Empty<int>(), Array.Empty<int>());
+            _logger.LogDebug(
+                "{RunnerId}: Isolated coverage capture for {TestId} ended with {Outcome} (attempt {Attempt}/{MaxAttempts})",
+                RunnerId, testId, outcome, attempt, maxCaptureAttempts);
         }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex,
-                "{RunnerId}: Failed to capture isolated coverage for {TestId}; marking as Dubious",
-                RunnerId, testId);
 
-            await DiscardServerAsync(assembly).ConfigureAwait(false);
-            return CoverageRunResult.Create(testId, CoverageConfidence.Dubious,
-                Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
-        }
+        _logger.LogWarning(
+            "{RunnerId}: Isolated coverage capture for {TestName} ended with {Outcome} twice; marking as Dubious",
+            RunnerId, test.DisplayName, outcome);
+        return CoverageRunResult.Create(testId, CoverageConfidence.Dubious,
+            Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
+    }
+
+    /// <summary>
+    /// Returns the final state the isolated run reported for <paramref name="test"/>, or null when it
+    /// reported none. Parameterized tests can report several rows under one uid, so a failure or timeout
+    /// in any row outranks a pass in another.
+    /// </summary>
+    internal static string? GetIsolatedOutcome(IEnumerable<TestNodeUpdate> results, TestNode test)
+    {
+        var finished = results.Select(r => r.Node)
+            .Where(n => n.Uid == test.Uid && TestNodeStates.IsFinished(n.ExecutionState))
+            .Select(n => n.ExecutionState)
+            .ToList();
+
+        return finished.FirstOrDefault(TestNodeStates.IsFailure)
+            ?? finished.FirstOrDefault(TestNodeStates.IsTimeout)
+            ?? finished.LastOrDefault();
     }
 
     private async Task<AssemblyTestServer> GetOrCreateServerAsync(string assembly)
@@ -804,7 +845,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         }
 
         var environmentVariables = BuildEnvironmentVariables(assembly);
-        var server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options);
+        var server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options, ConnectionFactory);
 
         var started = await server.StartAsync().ConfigureAwait(false);
         if (!started)
