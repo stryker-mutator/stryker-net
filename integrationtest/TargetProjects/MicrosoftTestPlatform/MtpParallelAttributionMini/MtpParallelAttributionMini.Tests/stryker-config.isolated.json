@@ -1,0 +1,12 @@
+{
+  "stryker-config": {
+    "test-runner": "mtp",
+    "reporters": [
+      "Progress",
+      "Json"
+    ],
+    "project": "MtpParallelAttributionMini.csproj",
+    "configuration": "Release",
+    "coverage-analysis": "perTestInIsolation"
+  }
+}
