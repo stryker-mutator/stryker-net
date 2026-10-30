@@ -1,7 +1,10 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Shouldly;
+using Spectre.Console.Testing;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Configuration.Options;
@@ -250,6 +253,77 @@ public class DashboardReporterTests : TestBase
         reporter.OnAllMutantsTested(mutationTree, It.IsAny<TestProjectsInfo>());
 
         // Assert
+        dashboardClientMock.Verify(d => d.PublishFinished());
+    }
+
+    [TestMethod]
+    public void ShouldPrintReportUriWhenAllMutantsTested()
+    {
+        var options = new StrykerOptions
+        {
+            DashboardApiKey = "Access_Token",
+            ProjectName = "github.com/JohnDoe/project",
+            ProjectVersion = "version/human/readable",
+            Reporters = new[] { Reporter.Dashboard }
+        };
+        var console = new TestConsole();
+        var mockProcess = new Mock<IWebbrowserOpener>();
+        var dashboardClientMock = new Mock<IDashboardClient>();
+        dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable", false))
+            .Returns(Task.FromResult("https://dashboard.com/report"));
+
+        var reporter = new DashboardReporter(options, dashboardClientMock.Object, console: console, browser: mockProcess.Object);
+
+        reporter.OnAllMutantsTested(ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
+
+        console.Output.ShouldContain("Your report has been uploaded at:");
+        console.Output.ShouldContain("https://dashboard.com/report");
+        mockProcess.VerifyNoOtherCalls();
+    }
+
+    [TestMethod]
+    public void ShouldLogErrorWhenReportUploadFailsAfterAllMutantsTested()
+    {
+        var options = new StrykerOptions
+        {
+            DashboardApiKey = "Access_Token",
+            ProjectName = "github.com/JohnDoe/project",
+            ProjectVersion = "version/human/readable",
+            Reporters = new[] { Reporter.Dashboard }
+        };
+        var loggerMock = new Mock<ILogger<DashboardReporter>>();
+        var dashboardClientMock = new Mock<IDashboardClient>();
+        dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable", false))
+            .Returns(Task.FromResult<string>(null));
+
+        var reporter = new DashboardReporter(options, dashboardClientMock.Object, loggerMock.Object, new TestConsole(), new Mock<IWebbrowserOpener>().Object);
+
+        reporter.OnAllMutantsTested(ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
+
+        loggerMock.Verify(LogLevel.Error, "Uploading to stryker dashboard failed...");
+    }
+
+    [TestMethod]
+    public void ShouldNotPrintReportUriAgainWhenAllMutantsTestedInRealTimeMode()
+    {
+        var options = new StrykerOptions
+        {
+            DashboardApiKey = "Access_Token",
+            ProjectName = "github.com/JohnDoe/project",
+            ProjectVersion = "version/human/readable",
+            Reporters = new[] { Reporter.Dashboard, Reporter.RealTimeDashboard }
+        };
+        var console = new TestConsole();
+        var dashboardClientMock = new Mock<IDashboardClient>();
+        dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable", false))
+            .Returns(Task.FromResult("https://dashboard.com/report"));
+
+        var reporter = new DashboardReporter(options, dashboardClientMock.Object, console: console, browser: new Mock<IWebbrowserOpener>().Object);
+
+        reporter.OnAllMutantsTested(ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
+
+        // the link was already printed by OnMutantsCreated in real-time mode
+        console.Output.ShouldNotContain("https://dashboard.com/report");
         dashboardClientMock.Verify(d => d.PublishFinished());
     }
 }
