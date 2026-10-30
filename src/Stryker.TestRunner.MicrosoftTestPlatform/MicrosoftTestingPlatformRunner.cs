@@ -48,7 +48,15 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     private readonly HashSet<string> _initializedPerTestFiles = new();
     private readonly Dictionary<string, int> _perTestEpochCounters = new();
 
+    private TestCaseFilterExpression? _strykerSideFilter;
+
     private string RunnerId => $"MtpRunner-{_id}";
+
+    /// <summary>
+    /// Whether a test application applies <c>test-case-filter</c> itself through the MTP <c>--filter</c> option.
+    /// Exposed for unit testing.
+    /// </summary>
+    internal Func<string, bool> SupportsNativeTestCaseFilter { get; init; } = DefaultTestServerConnectionFactory.SupportsTestCaseFilter;
 
     /// <summary>
     /// Path of the mutant-id control file this runner shares with its test hosts. Exposed for unit testing.
@@ -845,6 +853,14 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         {
             var server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
             var tests = await server.DiscoverTestsAsync().ConfigureAwait(false);
+            var filter = GetStrykerSideFilter(assembly);
+            if (filter is not null)
+            {
+                var discoveredCount = tests.Count;
+                tests = tests.Where(filter.Matches).ToList();
+                _logger.LogDebug("{RunnerId}: test-case-filter selected {SelectedCount} of {DiscoveredCount} tests in {Assembly}",
+                    RunnerId, tests.Count, discoveredCount, assembly);
+            }
 
             lock (_discoveryLock)
             {
@@ -866,6 +882,21 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             _logger.LogError(ex, "{RunnerId}: Failed to discover tests in {Assembly}", RunnerId, assembly);
             throw new InputException($"Test discovery failed for assembly '{assembly}'.", ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Returns the filter Stryker applies to the discovered tests of <paramref name="assembly"/>, or null
+    /// when no test-case-filter is configured or the test application applies it through '--filter'.
+    /// </summary>
+    internal TestCaseFilterExpression? GetStrykerSideFilter(string assembly)
+    {
+        var filter = _options?.TestCaseFilter;
+        if (string.IsNullOrWhiteSpace(filter) || SupportsNativeTestCaseFilter(assembly))
+        {
+            return null;
+        }
+
+        return _strykerSideFilter ??= TestCaseFilterExpression.Parse(filter);
     }
 
     internal List<TestNode>? GetDiscoveredTests(string assembly)
@@ -1223,6 +1254,15 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                     {
                         tests = assemblyTests;
                     }
+                }
+
+                if (tests is not { Count: > 0 } && GetStrykerSideFilter(assembly) is not null)
+                {
+                    // Without a test list the host would run every test, ignoring the test-case-filter.
+                    // An empty list means nothing in this assembly matched, so there is nothing to run.
+                    return tests is null
+                        ? (new TestRunResult(false, $"No discovered tests for {Path.GetFileName(assembly)}; refusing to run tests outside the test-case-filter."), false)
+                        : (BuildTestRunResult([], 0, TimeSpan.Zero), false);
                 }
 
                 var testsToRun = tests?.Where(t => testUidFilter is null || testUidFilter(t)).ToArray();
