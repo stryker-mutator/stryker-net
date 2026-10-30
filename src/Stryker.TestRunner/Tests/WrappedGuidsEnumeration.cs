@@ -27,6 +27,11 @@ public class WrappedIdentifierEnumeration : ITestIdentifiers
 
     public static ITestIdentifiers MergeList(ITestIdentifiers a, ITestIdentifiers b)
     {
+        if (a.IsEveryTest || b.IsEveryTest)
+        {
+            return TestIdentifierList.EveryTest();
+        }
+
         if (a.GetIdentifiers() is null)
         {
             return b;
@@ -37,7 +42,7 @@ public class WrappedIdentifierEnumeration : ITestIdentifiers
 
     public IEnumerable<string> GetIdentifiers() => _identifiers;
 
-    public ITestIdentifiers Intersect(ITestIdentifiers other) => IsEveryTest ? new WrappedIdentifierEnumeration(other.GetIdentifiers()) : new WrappedIdentifierEnumeration(_identifiers.Intersect(other.GetIdentifiers()));
+    public ITestIdentifiers Intersect(ITestIdentifiers other) => other.IsEveryTest ? new WrappedIdentifierEnumeration(_identifiers) : new WrappedIdentifierEnumeration(_identifiers.Intersect(other.GetIdentifiers()));
 
     public ITestIdentifiers Excluding(ITestIdentifiers testsToSkip) => throw new NotImplementedException();
 }
