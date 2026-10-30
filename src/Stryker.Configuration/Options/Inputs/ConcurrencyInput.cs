@@ -21,6 +21,7 @@ Reasons you might want to lower this setting:
     {
         logger ??= ApplicationLogging.LoggerFactory.CreateLogger<ConcurrencyInput>();
 
+        int effectiveConcurrency;
         if (SuppliedInput is null)
         {
             if (Environment.ProcessorCount < 1)
@@ -28,27 +29,31 @@ Reasons you might want to lower this setting:
                 logger.LogWarning("Processor count is not reported by the system, using concurrency of 1. Set a concurrency to remove this warning.");
             }
 
-            return Default.Value;
+            effectiveConcurrency = Default.Value;
         }
-
-        if (SuppliedInput < 1)
+        else
         {
-            throw new InputException("Concurrency must be at least 1.");
+            if (SuppliedInput < 1)
+            {
+                throw new InputException("Concurrency must be at least 1.");
+            }
+
+            effectiveConcurrency = SuppliedInput.Value;
+
+            if (SuppliedInput > Default)
+            {
+                logger.LogWarning("Using a concurrency of {Concurrency} which is more than recommended {SafeConcurrencyCount} for normal system operation. " +
+                    "This might have an impact on performance.", SuppliedInput, Default);
+            }
         }
 
-        if (SuppliedInput > Default)
-        {
-            logger.LogWarning("Using a concurrency of {Concurrency} which is more than recommended {SafeConcurrencyCount} for normal system operation. " +
-                "This might have an impact on performance.", SuppliedInput, Default);
-        }
+        logger.LogInformation("Stryker will use a max of {Concurrency} parallel testsessions.", effectiveConcurrency);
 
-        logger.LogInformation("Stryker will use a max of {Concurrency} parallel testsessions.", SuppliedInput.Value);
-
-        if (SuppliedInput is 1)
+        if (effectiveConcurrency is 1)
         {
             logger.LogWarning("Stryker is running in single threaded mode due to concurrency being set to 1.");
         }
 
-        return SuppliedInput.Value;
+        return effectiveConcurrency;
     }
 }
