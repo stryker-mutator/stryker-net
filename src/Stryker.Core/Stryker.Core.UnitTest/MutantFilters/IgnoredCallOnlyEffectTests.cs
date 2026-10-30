@@ -49,6 +49,13 @@ public class IgnoredCallOnlyEffectTests : TestBase
     [DataRow("var errors = 0; foreach (var i in list) { if (i < 0) { errors++; } } if (errors > 0) _logger.LogWarning(\"{N}\", errors); return 0;", "{ errors++; }", null, true)]
     [DataRow("var total = 0; foreach (var i in list) { total += i; } _logger.LogInformation(\"{T}\", total); return 0;", "total += i", null, true)]
     [DataRow("var level = flag ? 1 : 2; _logger.Log(level, \"x\"); return 0;", "flag ? 1 : 2", null, true)]
+    // a write hidden in a call or a nested condition that throws is not just the log line failing
+    [DataRow("if (flag) _logger.LogWarning(\"{N}\", Interlocked.Increment(ref _state)); return _state;", "flag", null, false)]
+    [DataRow("if (count > 0) { var n = Interlocked.Increment(ref _state); _logger.LogWarning(\"{N}\", n); } return 0;", "count > 0", null, false)]
+    [DataRow("if (flag) _logger.LogWarning(\"{N}\", Pick(list)); return 0;", "flag", null, false)]
+    [DataRow("if (flag) _logger.LogWarning(\"{N}\", new Validator(other)); return 0;", "flag", null, false)]
+    [DataRow("if (error != null) { if (error.Length > 0) _logger.LogWarning(\"x\"); } return 0;", "error != null", null, false)]
+    [DataRow("if (flag) _logger.LogWarning(\"{L}\", string.Join(\", \", list.Where(i => i > 0))); return 0;", "flag", null, true)]
     // a local built only for the log line beside it
     [DataRow("if (count > 0) { var issues = list.Where(i => i < 0).ToList(); _logger.LogWarning(\"{I}\", issues); } return 0;", "count > 0", null, true)]
     [DataRow("if (count > 0) { var next = ++_state; _logger.LogWarning(\"{I}\", next); } return 0;", "count > 0", null, false)]

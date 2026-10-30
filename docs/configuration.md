@@ -464,12 +464,12 @@ A mutant is only skipped when it cannot change anything else that runs:
 - A local only counts as read by ignored calls when their result is discarded, or only disposed by a `using`, as with `using var scope = logger.BeginScope(...)`.
 - Only `++`, `--`, `+=`, `-=` and `*=` on an integer local outside a `checked` block count as harmless arithmetic. Arithmetic mutants themselves are never skipped.
 - A mutated `&&`, `||`, `??` or `?:` may only change whether code without such effects runs.
-- Inside a branch that only runs ignored calls, their arguments may also call other methods, create objects, cast, index and do arithmetic, and a local declared there only for those calls may be initialised the same way. They still may not assign, `++`, `--` or `await`. Such an argument may throw once a mutated condition lets the branch run (`error.Length` after a `null` test, `result.Value` after `IsSuccess`); only the ignored call fails then, so the mutant is skipped.
+- Inside a branch that only runs ignored calls, their arguments may also cast, index, do arithmetic and call methods that only read (`ToString`, `string.Join`, LINQ queries and similar, without `ref` or `out` arguments), and a local declared there only for those calls may be initialised the same way. They still may not call other methods, create objects, assign, `++`, `--` or `await`, and a nested condition in the branch is checked as strictly as the code around it. Such an argument may throw once a mutated condition lets the branch run (`error.Length` after a `null` test, `result.Value` after `IsSuccess`); only the ignored call fails then, so the mutant is skipped.
 - A mutated condition whose own evaluation can throw where the original did not, such as `x != null && x.Count > 0` mutated to `||`, is never skipped.
 
 Mutants skipped this way are reported as ignored with the reason `Removed by ignore-methods-effects filter`, apart from those inside ignored calls (`Removed by method filter`).
 
-This analysis is syntactic. It assumes property getters, and methods called in the arguments of ignored calls, have no side effects and that integer arithmetic outside `checked` blocks does not throw, so do not enable it in projects compiled with `CheckForOverflowUnderflow`.
+This analysis is syntactic. It assumes property getters have no side effects, and takes the read-only methods above by name and that integer arithmetic outside `checked` blocks does not throw, so do not enable it in projects compiled with `CheckForOverflowUnderflow`.
 
 ### `output` &lt;`string`&gt;
 

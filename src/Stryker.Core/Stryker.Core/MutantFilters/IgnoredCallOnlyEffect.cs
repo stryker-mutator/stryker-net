@@ -173,7 +173,7 @@ internal sealed class IgnoredCallOnlyEffect
             tested.UnionWith(nullTested);
         }
 
-        return IsPure(ifStatement.Condition)
+        return IsSafe(ifStatement.Condition, tested)
             && IsInert(ifStatement.Statement, dead, nullTested is null ? null : tested)
             && (ifStatement.Else is null || IsInert(ifStatement.Else.Statement, dead, nullTested is null ? null : tested));
     }
@@ -239,11 +239,38 @@ internal sealed class IgnoredCallOnlyEffect
             _ => true,
         });
 
-    // Evaluating this cannot change state, though it may throw. Calls are taken to be reads.
-    private static bool IsPure(ExpressionSyntax expression) =>
-        expression is null || !expression.DescendantNodesAndSelf().Any(n => n is AssignmentExpressionSyntax or AwaitExpressionSyntax or ThrowExpressionSyntax
-            or PrefixUnaryExpressionSyntax { RawKind: (int)SyntaxKind.PreIncrementExpression or (int)SyntaxKind.PreDecrementExpression }
-            or PostfixUnaryExpressionSyntax { RawKind: (int)SyntaxKind.PostIncrementExpression or (int)SyntaxKind.PostDecrementExpression });
+    // Evaluating this cannot change state, though it may throw: ignored calls, and a few calls that only read.
+    private bool IsPure(ExpressionSyntax expression) =>
+        expression is null || expression.DescendantNodesAndSelf(n => !IsNameOf(n)).All(n => n switch
+        {
+            InvocationExpressionSyntax invocation => _isIgnoredCall(invocation) || IsNameOf(invocation)
+                || (ReadOnlyCalls.Contains(CalledName(invocation)) && invocation.ArgumentList.Arguments.All(argument => argument.RefKindKeyword.IsKind(SyntaxKind.None))),
+            BaseObjectCreationExpressionSyntax or ArrayCreationExpressionSyntax or ImplicitArrayCreationExpressionSyntax
+                or AssignmentExpressionSyntax or AwaitExpressionSyntax or ThrowExpressionSyntax or WithExpressionSyntax => false,
+            PrefixUnaryExpressionSyntax { RawKind: (int)SyntaxKind.PreIncrementExpression or (int)SyntaxKind.PreDecrementExpression } => false,
+            PostfixUnaryExpressionSyntax { RawKind: (int)SyntaxKind.PostIncrementExpression or (int)SyntaxKind.PostDecrementExpression } => false,
+            _ => true,
+        });
+
+    // Methods that only read their receiver and arguments, as far as a call site can tell without types.
+    private static readonly HashSet<string> ReadOnlyCalls = new(StringComparer.Ordinal)
+    {
+        "ToString", "GetType", "Equals", "GetHashCode", "CompareTo",
+        "Join", "Format", "Concat", "IsNullOrEmpty", "IsNullOrWhiteSpace", "Trim", "TrimStart", "TrimEnd", "Substring",
+        "StartsWith", "EndsWith", "Contains", "IndexOf", "ToUpperInvariant", "ToLowerInvariant", "Replace", "Split",
+        "Select", "SelectMany", "Where", "OrderBy", "OrderByDescending", "ThenBy", "ThenByDescending", "GroupBy",
+        "Distinct", "DistinctBy", "Except", "Intersect", "Union", "Take", "Skip", "Count", "LongCount", "Any", "All",
+        "Sum", "Min", "Max", "Average", "First", "FirstOrDefault", "Last", "LastOrDefault", "Single", "SingleOrDefault",
+        "ToList", "ToArray", "ToHashSet", "ToDictionary", "ToLookup", "AsEnumerable",
+    };
+
+    private static string CalledName(InvocationExpressionSyntax invocation) => invocation.Expression switch
+    {
+        MemberAccessExpressionSyntax access => access.Name.Identifier.ValueText,
+        MemberBindingExpressionSyntax binding => binding.Name.Identifier.ValueText,
+        SimpleNameSyntax name => name.Identifier.ValueText,
+        _ => "",
+    };
 
     // nameof(...) parses as an invocation but is a compile-time constant; nothing inside it is evaluated.
     private static bool IsNameOf(SyntaxNode node) =>
