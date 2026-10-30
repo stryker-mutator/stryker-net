@@ -213,6 +213,26 @@ Available options:
 
 The MTP test runner is a modern alternative that provides better performance in certain scenarios and supports newer testing frameworks like TUnit. However, it's still in preview and may have limitations compared to the VsTest runner.
 
+MTP stops remaining work once Stryker has conclusively assessed the mutant, unless
+`disable-bail` is enabled. Failures from initially failing tests or superseded retry
+attempts do not trigger an early kill. During a running assembly, early cancellation
+requires explicit final retry metadata (`retry.is-superseded: false`); otherwise
+Stryker waits for that assembly to finish before deciding whether to skip later
+assemblies. Older or custom frameworks can therefore bail less frequently.
+Ordinary unannotated MSTest outcomes also use this fallback: in a single-assembly
+suite they do not provide in-assembly bail savings.
+
+The current MTP source client does not guarantee that a cancelled request has
+finished executing on the server. Stryker discards cancelled hosts and confirms
+their termination before switching mutants; the next run starts a fresh host.
+Timeouts are distinct from deliberate bail, and partial runs only report tests
+whose final outcomes were actually received.
+
+Embedding applications can pass a `CancellationToken` to the concrete MTP pool's
+discovery, initial-test and mutation-test overloads. Caller cancellation propagates
+as cancellation after host disposal, rather than being reported as a mutant timeout.
+The existing `ITestRunner` interface and CLI cancellation wiring are unchanged.
+
 ### `mutation-level` &lt;`level`&gt;
 
 Default: `Standard`  

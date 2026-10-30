@@ -231,6 +231,182 @@ public class TestingPlatformClientTests
         _mtpClient.Verify(sourceClient => sourceClient.Dispose(), Times.Once);
     }
 
+    [TestMethod]
+    public async Task RunTestsAsync_PreservesRetryFinalityMetadata()
+    {
+        var update = CreateUpdate();
+        var properties = new Dictionary<string, object?>(update.Node)
+        {
+            ["retry.attempt"] = 2L,
+            ["retry.is-superseded"] = false
+        };
+        _mtpClient.Setup(source => source.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => RaiseUpdates(new MtpTestNodeUpdate(properties, "parent")))
+            .ReturnsAsync(new MtpRunResult([]));
+
+        TestNode? received = null;
+        using var client = CreateClient();
+        await client.RunTestsAsync(updates =>
+        {
+            received = updates.Single().Node;
+            return Task.CompletedTask;
+        });
+
+        received.ShouldNotBeNull();
+        received.RetryAttempt.ShouldBe(2);
+        received.RetryIsSuperseded.ShouldBe(false);
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_RejectsCompletedAndForeignRunUpdates()
+    {
+        var firstRun = Guid.NewGuid();
+        var secondRun = Guid.NewGuid();
+        var invocation = 0;
+        _mtpClient.Setup(source => source.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() =>
+            {
+                if (++invocation == 1)
+                {
+                    RaiseUpdatesForRun(firstRun, CreateUpdate("first"));
+                    return;
+                }
+                RaiseUpdatesForRun(firstRun, CreateUpdate("stale", executionState: TestNodeStates.Failed));
+                RaiseUpdatesForRun(secondRun, CreateUpdate("second"));
+                RaiseUpdatesForRun(Guid.NewGuid(), CreateUpdate("foreign", executionState: TestNodeStates.Failed));
+                RaiseUpdatesForRun(secondRun, CreateUpdate("third"));
+            })
+            .ReturnsAsync(new MtpRunResult([]));
+
+        using var client = CreateClient();
+        await client.RunTestsAsync(_ => Task.CompletedTask);
+        var received = new List<string>();
+        await client.RunTestsAsync(updates =>
+        {
+            received.AddRange(updates.Select(update => update.Node.Uid));
+            return Task.CompletedTask;
+        });
+
+        received.ShouldBe(["second", "third"]);
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_CancelledRequest_CannotReuseConnection()
+    {
+        _mtpClient.Setup(source => source.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        using var client = CreateClient();
+        await Assert.ThrowsAsync<OperationCanceledException>(() => client.RunTestsAsync(_ => Task.CompletedTask));
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => client.RunTestsAsync(_ => Task.CompletedTask));
+
+        _mtpClient.Verify(source => source.RunTestsAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_Cancellation_StillAwaitsAlreadyDispatchedCallbacks()
+    {
+        var callbackCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _mtpClient.Setup(source => source.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => RaiseUpdates(CreateUpdate()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        using var client = CreateClient();
+        var run = client.RunTestsAsync(_ => callbackCompletion.Task);
+        run.IsCompleted.ShouldBeFalse();
+        callbackCompletion.SetResult();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => run);
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_CallbackFailure_IsSurfacedAndPoisonsConnection()
+    {
+        _mtpClient.Setup(source => source.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => RaiseUpdates(CreateUpdate()))
+            .ReturnsAsync(new MtpRunResult([]));
+
+        using var client = CreateClient();
+        var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            () => client.RunTestsAsync(_ => throw new InvalidOperationException("callback failed")));
+        exception.Message.ShouldBe("callback failed");
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => client.RunTestsAsync(_ => Task.CompletedTask));
+        _mtpClient.Verify(source => source.RunTestsAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_EmptyRunId_DoesNotPoisonFollowingRequests()
+    {
+        _mtpClient.Setup(source => source.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => RaiseUpdatesForRun(Guid.Empty, CreateUpdate()))
+            .ReturnsAsync(new MtpRunResult([]));
+        using var client = CreateClient();
+        var received = 0;
+        for (var run = 0; run < 2; run++)
+        {
+            await client.RunTestsAsync(updates =>
+            {
+                received += updates.Length;
+                return Task.CompletedTask;
+            });
+        }
+        received.ShouldBe(2);
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_SequencesCallbacksWithoutBlockingNotificationDispatch()
+    {
+        var firstStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseFirst = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var dispatched = 0;
+        var runId = Guid.NewGuid();
+        _mtpClient.Setup(source => source.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() =>
+            {
+                RaiseUpdatesForRun(runId, CreateUpdate("first"));
+                dispatched++;
+                RaiseUpdatesForRun(runId, CreateUpdate("second"));
+                dispatched++;
+            })
+            .ReturnsAsync(new MtpRunResult([]));
+        var received = new List<string>();
+        using var client = CreateClient();
+        var run = client.RunTestsAsync(async updates =>
+        {
+            var uid = updates.Single().Node.Uid;
+            received.Add(uid);
+            if (uid == "first")
+            {
+                firstStarted.SetResult();
+                await releaseFirst.Task;
+            }
+        });
+        await firstStarted.Task;
+        dispatched.ShouldBe(2);
+        received.ShouldBe(["first"]);
+        run.IsCompleted.ShouldBeFalse();
+        releaseFirst.SetResult();
+        await run;
+        received.ShouldBe(["first", "second"]);
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_CallbackFault_DoesNotReplaceRequestCancellation()
+    {
+        _mtpClient.Setup(source => source.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => RaiseUpdates(CreateUpdate()))
+            .ThrowsAsync(new OperationCanceledException());
+        using var client = CreateClient();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            () => client.RunTestsAsync(_ => throw new IOException("reporter failed")));
+    }
+
+    private void RaiseUpdatesForRun(Guid runId, params MtpTestNodeUpdate[] updates)
+        => _mtpClient.Raise(
+            client => client.TestNodesUpdated += null,
+            new MtpTestNodeUpdateEventArgs(runId, updates));
+
     private void RaiseUpdates(params MtpTestNodeUpdate[] updates)
         => _mtpClient.Raise(
             client => client.TestNodesUpdated += null,

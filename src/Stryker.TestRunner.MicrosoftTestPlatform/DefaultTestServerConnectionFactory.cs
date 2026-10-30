@@ -200,7 +200,7 @@ internal sealed class DefaultTestServerConnectionFactory : ITestServerConnection
         private readonly ProcessHandle _processHandle = new(commandTask, outputStream);
 
         public Task WaitForExitAsync() => commandTask.Task;
-        public bool HasExited => commandTask.Task.IsCompleted;
+        public bool HasExited => _processHandle.HasExited;
         public IProcessHandle ProcessHandle => _processHandle;
 
         public void Dispose()
