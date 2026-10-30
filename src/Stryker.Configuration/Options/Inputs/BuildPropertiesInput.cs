@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.Build.Logging.StructuredLogger;
 using Stryker.Abstractions.Exceptions;
 
@@ -21,9 +22,10 @@ public class BuildPropertiesInput: Input<IEnumerable<string>>
         }
         foreach (var block in SuppliedInput)
         {
-            var inName = true;
-            var name = string.Empty;
-            var value = string.Empty;
+            var index = 0;
+            var parts = new StringBuilder[2];
+            parts[0] = new StringBuilder();
+            parts[1] = new StringBuilder();
             var inQuotes = false;
             foreach (var car in block)
             {
@@ -34,53 +36,36 @@ public class BuildPropertiesInput: Input<IEnumerable<string>>
                 }
                 if (inQuotes)
                 {
-                    if (inName)
-                    {
-                        name += car;
-                    }
-                    else
-                    {
-                        value += car;
-                    }
+                    parts[index].Append(car);
                 }
                 else
                 {
-                    if (car=='=')
+                    switch (car)
                     {
-                        if (!inName)
-                        {
+                        case '=' when index != 0:
                             throw new InputException($"Invalid build property format: '{block}'. Expected format is 'key=value'.");
-                        }
-                        inName = false;
-                        continue;
-                    }
-                    if (car==';')
-                    {
-                        if (inName)
-                        {
+                        case '=':
+                            index = 1;
+                            continue;
+                        case ';' when index == 0:
                             throw new InputException($"Invalid build property format: '{block}'. Expected format is 'key=value'.");
-                        }
-                        result[name.TrimQuotes()] = value.TrimQuotes();
-                        name = string.Empty;
-                        value = string.Empty;
-                        inName = true;
-                    }
-                    else
-                    {
-                        if (inName)
-                        {
-                            name += car;
-                        }
-                        else
-                        {
-                            value += car;
-                        }
+                        case ';':
+                            result[parts[0].ToString()] = parts[1].ToString();
+                            index = 0;
+                            break;
+                        default:
+                            parts[index].Append(car);
+                            break;
                     }
                 }
             }
-            if (!string.IsNullOrEmpty(name))
+            if (parts[0].Length > 0 && parts[1].Length > 0)
             {
-                result[name.TrimQuotes()] = value.TrimQuotes();
+                result[parts[0].ToString()] = parts[1].ToString();
+            }
+            else if (parts[0].Length > 0 || parts[1].Length > 0)
+            {
+                throw new InputException($"Invalid build property format: '{block}'. Expected format is 'key=value'.");
             }
         }
         return result;
