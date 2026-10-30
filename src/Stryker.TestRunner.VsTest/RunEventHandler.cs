@@ -74,6 +74,17 @@ public sealed class RunEventHandler : ITestRunEventsHandler
 
     public bool Failed { get; private set; }
 
+    public bool HasCompleted
+    {
+        get
+        {
+            lock (_lck)
+            {
+                return _completed;
+            }
+        }
+    }
+
     public RunEventHandler(IDictionary<Guid, VsTestDescription> vsTests, ILogger logger, string runnerId)
     {
         _vsTests = vsTests;

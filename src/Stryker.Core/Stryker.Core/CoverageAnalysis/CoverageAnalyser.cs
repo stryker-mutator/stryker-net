@@ -11,6 +11,9 @@ namespace Stryker.Core.CoverageAnalysis;
 
 public class CoverageAnalyser : ICoverageAnalyser
 {
+    private const long HitLimitMultiplier = 100;
+    private const long MinimumHitLimit = 1000;
+
     private readonly ILogger<CoverageAnalyser> _logger;
 
     public CoverageAnalyser(ILogger<CoverageAnalyser> logger)
@@ -38,6 +41,8 @@ public class CoverageAnalyser : ICoverageAnalyser
         {
             mutant.CoveringTests = TestIdentifierList.EveryTest();
             mutant.AssessingTests = TestIdentifierList.EveryTest();
+            mutant.HitCount = null;
+            mutant.HitLimit = null;
         }
     }
 
@@ -136,6 +141,8 @@ public class CoverageAnalyser : ICoverageAnalyser
             mutant.AssessingTests = testGuids.Merge(dubiousTests).Excluding(failedTest);
         }
 
+        (mutant.HitCount, mutant.HitLimit) = CalculateHitCountAndLimit(mutant, mutationToResultMap);
+
         // assess status according to actual coverage
         if (mutant.CoveringTests.IsEmpty && mutant.ResultStatus == MutantStatus.Pending)
         {
@@ -156,6 +163,42 @@ public class CoverageAnalyser : ICoverageAnalyser
                 "Mutant {MutantId} will be tested against ({TestCases}) tests.", mutant.Id,
                 mutant.AssessingTests.IsEveryTest ? "all" : mutant.AssessingTests.Count);
         }
+    }
+
+    private static (long? HitCount, long? HitLimit) CalculateHitCountAndLimit(IMutant mutant,
+        IReadOnlyDictionary<int, List<ICoverageRunResult>> mutationToResultMap)
+    {
+        if (!mutationToResultMap.TryGetValue(mutant.Id, out var coverageResults))
+        {
+            return (null, null);
+        }
+
+        long totalHits = 0;
+        var hasHitCounts = false;
+        foreach (var coverageResult in coverageResults)
+        {
+            if (!mutant.AssessingTests.IsEveryTest &&
+                !mutant.AssessingTests.GetIdentifiers().Contains(coverageResult.TestId))
+            {
+                continue;
+            }
+
+            if (coverageResult.MutationHitCounts.TryGetValue(mutant.Id, out var hitCount))
+            {
+                totalHits += hitCount;
+                hasHitCounts = true;
+            }
+        }
+
+        if (!hasHitCounts)
+        {
+            return (null, null);
+        }
+
+        var scaledLimit = totalHits > long.MaxValue / HitLimitMultiplier
+            ? long.MaxValue
+            : totalHits * HitLimitMultiplier;
+        return (totalHits, Math.Max(scaledLimit, MinimumHitLimit));
     }
 
     private static (MutationTestingRequirements, ITestIdentifiers) ParseResultForThisMutant(

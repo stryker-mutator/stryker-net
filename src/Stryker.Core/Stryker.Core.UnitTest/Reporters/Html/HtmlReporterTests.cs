@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.IO.Abstractions.TestingHelpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -10,6 +11,7 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Configuration.Options;
 using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Html.RealTime;
@@ -127,6 +129,10 @@ public class HtmlReporterTests : TestBase
         };
         var reporter = new HtmlReporter(options, mockFileSystem, browser: mockProcess.Object, mutantHandler: _handlerMock.Object);
         var mutationTree = ReportTestHelper.CreateProjectWith();
+        var mutant = ((FolderComposite)mutationTree).GetAllFiles().First().Mutants.First();
+        mutant.TestDuration = TimeSpan.FromMilliseconds(1234);
+        mutant.HitCount = 8;
+        mutant.HitLimit = 1000;
 
         reporter.OnAllMutantsTested(mutationTree, It.IsAny<TestProjectsInfo>());
         var reportPath = Path.Combine(options.ReportPath, "mutation-report.html");
@@ -136,6 +142,10 @@ public class HtmlReporterTests : TestBase
         fileContents.ShouldContain(@"""thresholds"":{");
         fileContents.ShouldContain(@"""high"":80");
         fileContents.ShouldContain(@"""low"":60");
+        fileContents.ShouldContain(@"""duration"":1234");
+        fileContents.ShouldContain("Duration: 1234 ms");
+        fileContents.ShouldContain("HitCount: 8");
+        fileContents.ShouldContain("HitLimit: 1000");
     }
 
     [TestMethod]

@@ -32,12 +32,16 @@ namespace Stryker.DataCollector
 
         private Action<string> _logger;
         private readonly IDictionary<string, int> _mutantTestedBy = new Dictionary<string, int>();
+        private readonly IDictionary<int, long> _mutantHitLimits = new Dictionary<int, long>();
 
         private string _controlClassName;
         private Type _mutantControlType;
         private FieldInfo _activeMutantField;
+        private FieldInfo _hitLimitField;
+        private MethodInfo _resetHits;
 
         private MethodInfo _getCoverageData;
+        private MethodInfo _getCoverageHitCounts;
         private IList<int> _mutationCoveredOutsideTests;
         private DefaultTraceListener _defaultTraceListener;
         private ThrowingListener _throwingListener;
@@ -48,6 +52,7 @@ namespace Stryker.DataCollector
 <Configuration>{1}</Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
 
         public const string PropertyName = "Stryker.Coverage";
+        public const string HitCountsPropertyName = "Stryker.Coverage.Hits";
         public const string OutOfTestsPropertyName = "Stryker.Coverage.OutOfTests";
         public const string CoverageLog = "CoverageLog";
 
@@ -55,7 +60,8 @@ namespace Stryker.DataCollector
 
         public static string GetVsTestSettings(bool needCoverage,
             IEnumerable<(int mutant, IEnumerable<Guid> coveringTests)> mutantTestsMap,
-            string helperNameSpace)
+            string helperNameSpace,
+            IReadOnlyDictionary<int, long> mutantHitLimits = null)
         {
             var codeBase = typeof(CoverageCollector).GetTypeInfo().Assembly.Location;
             var qualifiedName = typeof(CoverageCollector).AssemblyQualifiedName;
@@ -78,8 +84,9 @@ namespace Stryker.DataCollector
             {
                 foreach (var (mutant, coveringTests) in mutantTestsMap)
                 {
-                    configuration.AppendFormat("<Mutant id='{0}' tests='{1}'/>", mutant,
-                        coveringTests == null ? "" : string.Join(",", coveringTests));
+                    configuration.AppendFormat("<Mutant id='{0}' tests='{1}' hitLimit='{2}'/>", mutant,
+                        coveringTests == null ? "" : string.Join(",", coveringTests),
+                        mutantHitLimits != null && mutantHitLimits.TryGetValue(mutant, out var hitLimit) ? hitLimit : 0);
                 }
             }
 
@@ -156,22 +163,41 @@ namespace Stryker.DataCollector
                 return;
             }
             _activeMutantField = _mutantControlType.GetField("ActiveMutant");
+            _hitLimitField = _mutantControlType.GetField("HitLimit");
+            _resetHits = _mutantControlType.GetMethod("ResetHits");
             var coverageControlField = _mutantControlType.GetField("CaptureCoverage");
             _getCoverageData = _mutantControlType.GetMethod("GetCoverageData");
+            _getCoverageHitCounts = _mutantControlType.GetMethod("GetCoverageHitCounts");
             if (_coverageOn)
             {
                 coverageControlField.SetValue(null, true);
             }
 
             _activeMutantField.SetValue(null, _activeMutation);
+            if (_hitLimitField != null)
+            {
+                _hitLimitField.SetValue(null, _mutantHitLimits.TryGetValue(_activeMutation, out var hitLimit) ? hitLimit : 0L);
+                _resetHits?.Invoke(null, null);
+            }
         }
 
         private void SetActiveMutation(string id)
         {
-            _activeMutation = GetActiveMutantForThisTest(id);
+            var activeMutation = GetActiveMutantForThisTest(id);
+            var activeMutationChanged = _activeMutation != activeMutation;
+            _activeMutation = activeMutation;
             if (_activeMutantField != null)
             {
                 _activeMutantField.SetValue(null, _activeMutation);
+            }
+
+            if (_hitLimitField != null)
+            {
+                _hitLimitField.SetValue(null, _mutantHitLimits.TryGetValue(_activeMutation, out var hitLimit) ? hitLimit : 0L);
+                if (activeMutationChanged)
+                {
+                    _resetHits?.Invoke(null, null);
+                }
             }
         }
 
@@ -213,11 +239,14 @@ namespace Stryker.DataCollector
         private void ParseTestMapping(XmlNodeList testMapping)
         {
             var mutations = new HashSet<int>();
+            _mutantHitLimits.Clear();
             for (var i = 0; i < testMapping.Count; i++)
             {
                 var current = testMapping[i];
                 var id = int.Parse(current.Attributes["id"].Value);
                 var tests = current.Attributes["tests"].Value;
+                var hitLimitValue = current.Attributes["hitLimit"]?.Value;
+                _mutantHitLimits[id] = long.TryParse(hitLimitValue, out var hitLimit) ? hitLimit : 0;
                 mutations.Add(id);
                 if (string.IsNullOrEmpty(tests))
                 {
@@ -274,6 +303,7 @@ namespace Stryker.DataCollector
             {
                 // no test covered any mutations, so the controller was never properly initialized
                 _dataSink.SendData(dataCollectionContext, PropertyName, ";");
+                _dataSink.SendData(dataCollectionContext, HitCountsPropertyName, string.Empty);
                 _dataSink.SendData(dataCollectionContext, CoverageLog, $"Test {dataCollectionContext.TestCase.DisplayName} endend. No mutant covered so far.");
                 return;
             }
@@ -281,10 +311,12 @@ namespace Stryker.DataCollector
             var testCoverageInfo = new TestCoverageInfo(
                 covered[0],
                 covered[1],
-                _mutationCoveredOutsideTests);
+                _mutationCoveredOutsideTests,
+                RetrieveCoverageHitCounts());
 
             var coverData = testCoverageInfo.GetCoverageAsString();
             _dataSink.SendData(dataCollectionContext, PropertyName, coverData);
+            _dataSink.SendData(dataCollectionContext, HitCountsPropertyName, testCoverageInfo.GetHitCountsAsString());
             if (!testCoverageInfo.HasLeakedMutations)
             {
                 return;
@@ -299,9 +331,13 @@ namespace Stryker.DataCollector
         public IList<int>[] RetrieveCoverData()
             => (IList<int>[])_getCoverageData?.Invoke(null, new object[] { });
 
+        private IDictionary<int, int> RetrieveCoverageHitCounts()
+            => (IDictionary<int, int>)_getCoverageHitCounts?.Invoke(null, new object[] { }) ?? new Dictionary<int, int>();
+
         private void CaptureCoverageOutsideTests()
         {
             var covered = RetrieveCoverData();
+            RetrieveCoverageHitCounts();
             if (covered?[0] != null)
             {
                 _mutationCoveredOutsideTests =
@@ -318,16 +354,21 @@ namespace Stryker.DataCollector
             private readonly IList<int> _coveredMutations;
             private readonly IList<int> _coveredStaticMutations;
             private readonly IList<int> _leakedMutationsFromPreviousTest;
+            private readonly IDictionary<int, int> _mutationHitCounts;
 
             public TestCoverageInfo(IList<int> coveredMutations,
-                IList<int> coveredStaticMutations, IList<int> leakedMutationsFromPreviousTest)
+                IList<int> coveredStaticMutations, IList<int> leakedMutationsFromPreviousTest,
+                IDictionary<int, int> mutationHitCounts)
             {
                 _coveredMutations = coveredMutations;
                 _coveredStaticMutations = coveredStaticMutations;
                 _leakedMutationsFromPreviousTest = leakedMutationsFromPreviousTest;
+                _mutationHitCounts = mutationHitCounts;
             }
 
             public string GetCoverageAsString() => string.Join(",", _coveredMutations) + ";" + string.Join(",", _coveredStaticMutations);
+
+            public string GetHitCountsAsString() => string.Join(",", _mutationHitCounts.Select(hitCount => hitCount.Key + ":" + hitCount.Value));
 
             public bool HasLeakedMutations => (_leakedMutationsFromPreviousTest?.Count ?? 0) > 0;
 

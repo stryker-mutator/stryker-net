@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
@@ -90,18 +91,18 @@ public class MutationTestProcess : IMutationTestProcess
         await Parallel.ForEachAsync(mutantGroups, parallelOptions, async (mutants, cancellationToken) =>
         {
             var reportedMutants = new HashSet<IMutant>();
+            var testDurations = mutants.ToDictionary(mutant => mutant, _ => Stopwatch.StartNew());
 
             await _mutationTestExecutor.TestAsync(Input.SourceProjectInfo, mutants,
                 Input.InitialTestRun.TimeoutValueCalculator,
                 (testedMutants, tests, ranTests, outTests) =>
-                    TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants)).ConfigureAwait(false);
-
-            OnMutantsTested(mutants, reportedMutants);
+            TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants, testDurations)).ConfigureAwait(false);
+            OnMutantsTested(mutants, reportedMutants, testDurations);
         }).ConfigureAwait(false);
     }
 
     private bool TestUpdateHandler(IEnumerable<IMutant> testedMutants, ITestIdentifiers failedTests, ITestIdentifiers ranTests,
-        ITestIdentifiers timedOutTest, ISet<IMutant> reportedMutants)
+        ITestIdentifiers timedOutTest, ISet<IMutant> reportedMutants, IReadOnlyDictionary<IMutant, Stopwatch> testDurations)
     {
         var testsFailingInitially = Input.InitialTestRun.Result.FailingTests.GetIdentifiers().ToHashSet();
         var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
@@ -120,15 +121,18 @@ public class MutationTestProcess : IMutationTestProcess
             if (mutant.ResultStatus == MutantStatus.Pending)
             {
                 continueTestRun = true; // Not all mutants in this group were tested so we continue
+                continue;
             }
 
+            StopTestDuration(mutant, testDurations[mutant]);
             OnMutantTested(mutant, reportedMutants); // Report on mutant that has been tested
         }
 
         return continueTestRun;
     }
 
-    private void OnMutantsTested(IEnumerable<IMutant> mutants, ISet<IMutant> reportedMutants)
+    private void OnMutantsTested(IEnumerable<IMutant> mutants, ISet<IMutant> reportedMutants,
+        IReadOnlyDictionary<IMutant, Stopwatch> testDurations)
     {
         foreach (var mutant in mutants)
         {
@@ -136,9 +140,19 @@ public class MutationTestProcess : IMutationTestProcess
             {
                 _logger.LogWarning("Mutation {Id} was not fully tested.", mutant.Id);
             }
+            else
+            {
+                StopTestDuration(mutant, testDurations[mutant]);
+            }
 
             OnMutantTested(mutant, reportedMutants);
         }
+    }
+
+    private static void StopTestDuration(IMutant mutant, Stopwatch stopwatch)
+    {
+        stopwatch.Stop();
+        mutant.TestDuration = stopwatch.Elapsed;
     }
 
     private void OnMutantTested(IMutant mutant, ISet<IMutant> reportedMutants)

@@ -302,6 +302,20 @@ Stryker calculates the timeout **per mutant**, based on the time the tests cover
 
 Where `coveringTestsTime` is the estimated run time of the tests covering the mutant(s) being tested (based on the initial test run) and `initialTestRunTime` is the test framework initialization time measured during the initial test run.
 
+When coverage analysis records execution counts, Stryker also stops an active
+mutant early if it executes its mutation site more than 100 times its baseline
+count. The limit has a minimum of 1,000 hits to avoid overly small limits for
+mutation sites that are rarely executed. Stryker reports the mutant as `Timeout`.
+This check is disabled when coverage counts are unavailable, and the time-based
+timeout above remains the fallback.
+
+The hit limit only detects runaway execution that repeatedly passes through the
+active mutation site, such as a mutated loop condition or recursive call. It may
+not catch an unmutated loop that becomes infinite because of a value changed
+earlier by the mutation. A legitimate execution exceeding the limit can also be
+reported as a timeout; the 1,000-hit minimum reduces that risk but does not
+eliminate it.
+
 If you have a lot of timeouts you might need to increase the additional timeout. If you have a lot of endless loops causing a long mutation testrun you might want to decrease the additional timeout. Only decrease the additional timeout if you are certain that the mutations are endless loops.
 
 *\* Timeout is in milliseconds.*
