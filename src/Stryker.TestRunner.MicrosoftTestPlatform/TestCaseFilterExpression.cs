@@ -133,7 +133,13 @@ internal sealed class TestCaseFilterExpression
             var start = _position;
             while (_position < filter.Length && filter[_position] is not ('&' or '|' or ')' or '('))
             {
-                _position += filter[_position] == '\\' && _position + 1 < filter.Length ? 2 : 1;
+                if (filter[_position] == '\\' && _position + 1 >= filter.Length)
+                {
+                    // a dangling escape would otherwise turn into a literal backslash and silently change the match
+                    throw Invalid(filter, "'\\' at the end escapes nothing; write '\\\\' for a backslash");
+                }
+
+                _position += filter[_position] == '\\' ? 2 : 1;
             }
 
             var text = filter[start.._position].Trim();

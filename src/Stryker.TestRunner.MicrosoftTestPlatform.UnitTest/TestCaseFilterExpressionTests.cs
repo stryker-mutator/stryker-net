@@ -50,6 +50,8 @@ public class TestCaseFilterExpressionTests
     [DataRow("Name=x)")]
     [DataRow("Name=x|")]
     [DataRow("Name=x&&Name=y")]
+    [DataRow(@"FullyQualifiedName!~Slow\")]
+    [DataRow(@"(Name=x\)")]
     public void Parse_RejectsInvalidFilters(string filter)
     {
         Should.Throw<InputException>(() => TestCaseFilterExpression.Parse(filter));

@@ -165,6 +165,28 @@ public class MicrosoftTestingPlatformRunnerTests
         client.Verify(x => x.RunTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<TestNode[]?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    [TestMethod]
+    public async Task RunAssemblyTestsInternalAsync_RunsNothing_WhenNoTestInTheAssemblyMatchesTheFilter()
+    {
+        const string Assembly = "/test/run-empty.dll";
+        var options = new Mock<IStrykerOptions>();
+        options.SetupGet(x => x.TestCaseFilter).Returns("FullyQualifiedName~Fast");
+        using var runner = new MicrosoftTestingPlatformRunner(0, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock,
+            NullLogger.Instance, options.Object)
+        {
+            SupportsNativeTestCaseFilter = _ => false
+        };
+        var client = await AddDiscoveryServerAsync(runner, Assembly);
+        _testsByAssembly[Assembly] = [];
+
+        var (result, timedOut) = await runner.RunAssemblyTestsInternalAsync(Assembly, testUidFilter: null);
+
+        timedOut.ShouldBeFalse();
+        result.FailingTests.IsEmpty.ShouldBeTrue();
+        result.ExecutedTests.IsEmpty.ShouldBeTrue();
+        client.Verify(x => x.RunTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<TestNode[]?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     private static async Task<Mock<ITestingPlatformClient>> AddDiscoveryServerAsync(MicrosoftTestingPlatformRunner runner, string assembly)
     {
         var client = new Mock<ITestingPlatformClient>();

@@ -1256,10 +1256,13 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                     }
                 }
 
-                if (tests is null && GetStrykerSideFilter(assembly) is not null)
+                if (tests is not { Count: > 0 } && GetStrykerSideFilter(assembly) is not null)
                 {
-                    // Running without a test list would run every test, ignoring the test-case-filter.
-                    return (new TestRunResult(false, $"No discovered tests for {Path.GetFileName(assembly)}; refusing to run tests outside the test-case-filter."), false);
+                    // Without a test list the host would run every test, ignoring the test-case-filter.
+                    // An empty list means nothing in this assembly matched, so there is nothing to run.
+                    return tests is null
+                        ? (new TestRunResult(false, $"No discovered tests for {Path.GetFileName(assembly)}; refusing to run tests outside the test-case-filter."), false)
+                        : (BuildTestRunResult([], 0, TimeSpan.Zero), false);
                 }
 
                 var testsToRun = tests?.Where(t => testUidFilter is null || testUidFilter(t)).ToArray();
