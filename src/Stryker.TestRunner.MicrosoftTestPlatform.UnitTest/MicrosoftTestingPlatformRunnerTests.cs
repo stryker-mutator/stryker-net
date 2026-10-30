@@ -777,6 +777,25 @@ public class MicrosoftTestingPlatformRunnerTests
         new(new TestNode(uid, uid, "test", state), ParentUid: "root");
 
     [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_UsesEachTestDurationForItsTimeout()
+    {
+        var slow = new TestNode("slow", "slow", "test", TestNodeStates.Passed, DurationMilliseconds: 31_000);
+        var fast = new TestNode("fast", "fast", "test", TestNodeStates.Passed, DurationMilliseconds: 1);
+        _testDescriptions[slow.Uid] = new MtpTestDescription(slow);
+        _testDescriptions[fast.Uid] = new MtpTestDescription(fast);
+        using var runner = CreateRunner();
+
+        runner.BuildTestRunResult(
+            [new TestNodeUpdate(slow, "root"), new TestNodeUpdate(fast, "root")],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromSeconds(32));
+
+        _testDescriptions[slow.Uid].InitialRunTime.ShouldBe(TimeSpan.FromSeconds(31));
+        _testDescriptions[fast.Uid].InitialRunTime.ShouldBe(TimeSpan.FromMilliseconds(1));
+        runner.CalculateSingleTestTimeout(slow).ShouldBe(TimeSpan.FromSeconds(46.5));
+    }
+
+    [TestMethod, Timeout(1000)]
     public void BuildTestRunResult_FailedState_IsReportedAsFailing()
     {
         using var runner = CreateRunner();
