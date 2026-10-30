@@ -185,7 +185,7 @@ public class InitialisationProcess(
                 name = id;
             }
 
-            // Failing tests are left out of mutant assessment, so name them: mutants only they cover end up NoCoverage.
+            // Failing tests are left out of mutant assessment, so name them: mutants only they cover are reported Survived.
             _logger.LogWarning("Unmeasured test (failed the initial test run): {TestName}", name);
         }
     }
