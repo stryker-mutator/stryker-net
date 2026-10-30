@@ -200,7 +200,9 @@ public class ProjectSimulatedBuildWrapper
     private static string PropertyOption(string propertyName, string value) => $"-P {propertyName}={value}";
 
     // use analysis results to identify potential problems with this project
-    public IEnumerable<string> IdentifiedProblems()
+    public IEnumerable<string> IdentifiedProblems() => DetectNetFrameworkProblems().Union(DetectGitVersioning());
+
+    private IEnumerable<string> DetectNetFrameworkProblems()
     {
         if (AnalyzerLastResults.Any(r =>
                 (r.Properties.TryGetValue("UseWPF", out var value)  && string.Equals(value, "true", StringComparison.InvariantCultureIgnoreCase))
@@ -219,10 +221,13 @@ public class ProjectSimulatedBuildWrapper
                 yield return $"Project {ProjectFileName} does not support design time build (WPF or Windows Forms project with targeting net 10). Please add {PropertyOption(DesignTimeProperty, "false")} to the command line.";
             }
         }
+    }
 
+    private IEnumerable<string> DetectGitVersioning()
+    {
         if (AnalyzerLastResults.Any(r => r.PackageReferences.Keys.Any( name =>  name.Contains("Nerdbank.GitVersioning", StringComparison.OrdinalIgnoreCase)
-                                             && (!r.Properties.TryGetValue(DesignTimeProperty, out var design) || design.Equals("true", StringComparison.OrdinalIgnoreCase))) && r.IsSignedAssembly())
-                                         && Environment.GetEnvironmentVariable("NBGV_GitEngine") != "Disabled")
+                && (!r.Properties.TryGetValue(DesignTimeProperty, out var design) || design.Equals("true", StringComparison.OrdinalIgnoreCase))) && r.IsSignedAssembly())
+            && Environment.GetEnvironmentVariable("NBGV_GitEngine") != "Disabled")
         {
             yield return $"Project {ProjectFileName} uses GitVersioning package and is a signed assembly. Please add {PropertyOption("DesignTimeBuild", "false")} to the command line.";
         }

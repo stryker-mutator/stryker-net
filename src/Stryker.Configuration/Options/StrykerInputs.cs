@@ -143,9 +143,9 @@ public class StrykerInputs(IFileSystem? fileSystem = null)
             DiagMode = DiagModeInput.Validate(),
             MsBuildPath = MsBuildPathInput.Validate(_fileSystem),
             SolutionPath = SolutionInput.Validate(basePath, _fileSystem),
+            BuildProperties = BuildPropertiesInput.Validate(),
             Configuration = ConfigurationInput.Validate(),
             TargetFramework = TargetFrameworkInput.Validate(),
-            BuildProperties = BuildPropertiesInput.Validate(),
             Thresholds = new Thresholds
             {
                 High = ThresholdHighInput.Validate(ThresholdLowInput.SuppliedInput),
@@ -220,12 +220,12 @@ public class StrykerInputs(IFileSystem? fileSystem = null)
         //check for conflicting options with build properties
         if (_strykerOptionsCache.BuildProperties.TryGetValue("Configuration", out var configuration) && !string.IsNullOrEmpty(configuration) && _strykerOptionsCache.Configuration!= configuration)
         {
-            throw new InputException("Cannot specify both Configuration and BuildProperties with different values.");
+            throw new InputException("Please use the configuration option instead of defining the Configuration build property");
         }
 
         if (_strykerOptionsCache.BuildProperties.TryGetValue("Platform", out var platform) && !string.IsNullOrEmpty(platform) && _strykerOptionsCache.Platform!= platform)
         {
-            throw new InputException("Cannot specify both Platform and BuildProperties with different values.");
+            throw new InputException("Please use the configuration option to select the platform instead of defining the Platform build property");
         }
     }
 

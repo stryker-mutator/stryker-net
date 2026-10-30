@@ -37,35 +37,30 @@ public class BuildPropertiesInput: Input<IEnumerable<string>>
                 if (inQuotes)
                 {
                     parts[index].Append(car);
+                    continue;
                 }
-                else
+
+                switch (car)
                 {
-                    switch (car)
-                    {
-                        case '=' when index != 0:
-                            throw new InputException($"Invalid build property format: '{block}'. Expected format is 'key=value'.");
-                        case '=':
-                            index = 1;
-                            continue;
-                        case ';' when index == 0:
-                            throw new InputException($"Invalid build property format: '{block}'. Expected format is 'key=value'.");
-                        case ';':
-                            result[parts[0].ToString()] = parts[1].ToString();
-                            index = 0;
-                            break;
-                        default:
-                            parts[index].Append(car);
-                            break;
-                    }
+                    case '=' when index != 0:
+                        throw new InputException($"Invalid build property format: '{block}'. Expected format is 'key=value'.");
+                    case '=':
+                        index = 1;
+                        continue;
+                    case ';':
+                        result[parts[0].ToString()] = parts[1].ToString();
+                        index = 0;
+                        parts[0].Clear();
+                        parts[1].Clear();
+                        break;
+                    default:
+                        parts[index].Append(car);
+                        break;
                 }
             }
-            if (parts[0].Length > 0 && parts[1].Length > 0)
+            if (parts[0].Length > 0)
             {
                 result[parts[0].ToString()] = parts[1].ToString();
-            }
-            else if (parts[0].Length > 0 || parts[1].Length > 0)
-            {
-                throw new InputException($"Invalid build property format: '{block}'. Expected format is 'key=value'.");
             }
         }
         return result;
