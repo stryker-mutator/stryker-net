@@ -51,6 +51,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     private string RunnerId => $"MtpRunner-{_id}";
 
     /// <summary>
+    /// Starts and connects the test hosts; null uses the default process-based factory. Exposed for unit testing.
+    /// </summary>
+    internal ITestServerConnectionFactory? ConnectionFactory { get; init; }
+
+    /// <summary>
     /// Path of the mutant-id control file this runner shares with its test hosts. Exposed for unit testing.
     /// </summary>
     internal string MutantFilePath => _mutantFilePath;
@@ -840,7 +845,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         }
 
         var environmentVariables = BuildEnvironmentVariables(assembly);
-        var server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options);
+        var server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options, ConnectionFactory);
 
         var started = await server.StartAsync().ConfigureAwait(false);
         if (!started)
