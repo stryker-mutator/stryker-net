@@ -777,6 +777,47 @@ public class MicrosoftTestingPlatformRunnerTests
         new(new TestNode(uid, uid, "test", state), ParentUid: "root");
 
     [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_UsesEachTestDurationForItsTimeout()
+    {
+        var slow = new TestNode("slow", "slow", "test", TestNodeStates.Passed, DurationMilliseconds: 31_000);
+        var fast = new TestNode("fast", "fast", "test", TestNodeStates.Passed, DurationMilliseconds: 1);
+        _testDescriptions[slow.Uid] = new MtpTestDescription(slow);
+        _testDescriptions[fast.Uid] = new MtpTestDescription(fast);
+        using var runner = CreateRunner();
+
+        runner.BuildTestRunResult(
+            [new TestNodeUpdate(slow, "root"), new TestNodeUpdate(fast, "root")],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromSeconds(32));
+
+        _testDescriptions[slow.Uid].InitialRunTime.ShouldBe(TimeSpan.FromSeconds(31));
+        _testDescriptions[fast.Uid].InitialRunTime.ShouldBe(TimeSpan.FromMilliseconds(1));
+        runner.CalculateSingleTestTimeout(slow).ShouldBe(TimeSpan.FromSeconds(46.5));
+    }
+
+    [TestMethod, Timeout(1000)]
+    [DataRow(null, 500d)]
+    [DataRow(-1d, 500d)]
+    [DataRow(double.NaN, 500d)]
+    [DataRow(double.PositiveInfinity, 500d)]
+    [DataRow(0d, 0d)]
+    public void BuildTestRunResult_FallsBackToTheAverage_WhenTheReportedDurationIsMissingOrInvalid(double? reported, double expectedMilliseconds)
+    {
+        var test = new TestNode("test", "test", "test", TestNodeStates.Passed, DurationMilliseconds: reported);
+        var other = new TestNode("other", "other", "test", TestNodeStates.Passed);
+        _testDescriptions[test.Uid] = new MtpTestDescription(test);
+        _testDescriptions[other.Uid] = new MtpTestDescription(other);
+        using var runner = CreateRunner();
+
+        runner.BuildTestRunResult(
+            [new TestNodeUpdate(test, "root"), new TestNodeUpdate(other, "root")],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromSeconds(1));
+
+        _testDescriptions[test.Uid].InitialRunTime.ShouldBe(TimeSpan.FromMilliseconds(expectedMilliseconds));
+    }
+
+    [TestMethod, Timeout(1000)]
     public void BuildTestRunResult_FailedState_IsReportedAsFailing()
     {
         using var runner = CreateRunner();
