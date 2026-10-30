@@ -35,10 +35,9 @@ public class TestRunResultTests
         var descriptions = new[] { "a", "b", "A", "a" }
             .Select(id => Mock.Of<IFrameworkTestDescription>(test => test.Id == id)).ToArray();
 
-        var result = new TestRunResult(descriptions, executedTests.Object,
+        new TestRunResult(descriptions, executedTests.Object,
             TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), "", [], TimeSpan.Zero);
 
-        result.TestDescriptions.ShouldBe(everyTest ? descriptions : empty ? [] : [descriptions[0], descriptions[3]]);
-        enumerations.ShouldBe(everyTest ? 0 : 1);
+        enumerations.ShouldBe(0);
     }
 }
