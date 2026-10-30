@@ -54,4 +54,14 @@ public class BuildPropertiesInputShould : TestBase
         result.ShouldContainKey("DESIGNTIME");
         result["DESIGNTIME"].ShouldBe("fa lse");
     }
+
+    [TestMethod]
+    public void HandleSemiColonInValue()
+    {
+        var target = new BuildPropertiesInput { SuppliedInput = ["DESIGNTIME=\"yes;fast\";custom=42"]};
+        var result = target.Validate();
+        result.Count.ShouldBe(2);
+        result.ShouldContainKey("DESIGNTIME");
+        result["DESIGNTIME"].ShouldBe("yes;fast");
+    }
 }

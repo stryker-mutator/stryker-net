@@ -1,4 +1,4 @@
-using System;
+
 using System.Collections.Generic;
 using Microsoft.Build.Logging.StructuredLogger;
 using Stryker.Abstractions.Exceptions;
@@ -15,16 +15,72 @@ public class BuildPropertiesInput: Input<IEnumerable<string>>
     public Dictionary<string, string> Validate()
     {
         var result = new Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
-        foreach (var block in SuppliedInput ?? Default)
+        if (SuppliedInput == null)
         {
-            foreach (var input in block.Split(';', StringSplitOptions.RemoveEmptyEntries|StringSplitOptions.TrimEntries))
+            return result;
+        }
+        foreach (var block in SuppliedInput)
+        {
+            var inName = true;
+            var name = string.Empty;
+            var value = string.Empty;
+            var inQuotes = false;
+            foreach (var car in block)
             {
-                var parts = input.Split('=', 2);
-                if (parts.Length != 2)
+                if (car=='"')
                 {
-                    throw new InputException($"Invalid build property format: '{input}'. Expected format is 'key=value'.");
+                    inQuotes = !inQuotes;
+                    continue;
                 }
-                result[parts[0]] = parts[1].TrimQuotes();
+                if (inQuotes)
+                {
+                    if (inName)
+                    {
+                        name += car;
+                    }
+                    else
+                    {
+                        value += car;
+                    }
+                }
+                else
+                {
+                    if (car=='=')
+                    {
+                        if (!inName)
+                        {
+                            throw new InputException($"Invalid build property format: '{block}'. Expected format is 'key=value'.");
+                        }
+                        inName = false;
+                        continue;
+                    }
+                    if (car==';')
+                    {
+                        if (inName)
+                        {
+                            throw new InputException($"Invalid build property format: '{block}'. Expected format is 'key=value'.");
+                        }
+                        result[name.TrimQuotes()] = value.TrimQuotes();
+                        name = string.Empty;
+                        value = string.Empty;
+                        inName = true;
+                    }
+                    else
+                    {
+                        if (inName)
+                        {
+                            name += car;
+                        }
+                        else
+                        {
+                            value += car;
+                        }
+                    }
+                }
+            }
+            if (!string.IsNullOrEmpty(name))
+            {
+                result[name.TrimQuotes()] = value.TrimQuotes();
             }
         }
         return result;
