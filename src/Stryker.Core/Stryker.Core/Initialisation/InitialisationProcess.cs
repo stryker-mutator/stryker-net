@@ -132,7 +132,13 @@ public class InitialisationProcess(
                 throw new InputException("Initial testrun has failing tests.", result.Result.ResultMessage);
             }
 
-            if (throwIfFails && (double)failingTestsCount / result.Result.ExecutedTests.Count >= .5)
+            var tests = testRunner.GetTests(projectInfo);
+            // A run of the whole suite reports its executed tests as EveryTest, whose Count is 0,
+            // so the ratio has to be taken against the discovered tests instead.
+            var executedTestsCount = result.Result.ExecutedTests.IsEveryTest
+                ? tests.Count
+                : result.Result.ExecutedTests.Count;
+            if (throwIfFails && (executedTestsCount == 0 || (double)failingTestsCount / executedTestsCount >= .5))
             {
                 throw new InputException("Initial testrun has more than 50% failing tests.",
                         result.Result.ResultMessage);
@@ -141,6 +147,7 @@ public class InitialisationProcess(
             _logger.LogWarning(
                 "{FailingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.",
                 failingTestsCount);
+            LogFailingTests(tests, result.Result.FailingTests);
         }
 
         if (!result.Result.ExecutedTests.IsEmpty || !throwIfFails)
@@ -162,6 +169,25 @@ public class InitialisationProcess(
 
         var message = $"No test result reported. Make sure your test project contains tests and is compatible with {runnerName}.";
         throw new InputException(string.Join(Environment.NewLine, projectInfo.Warnings.Prepend(message)));
+    }
+
+    private void LogFailingTests(ITestSet tests, ITestIdentifiers failingTests)
+    {
+        foreach (var id in failingTests.GetIdentifiers())
+        {
+            string name;
+            try
+            {
+                name = tests[id].Name;
+            }
+            catch (KeyNotFoundException)
+            {
+                name = id;
+            }
+
+            // Failing tests are left out of mutant assessment, so name them: mutants only they cover end up NoCoverage.
+            _logger.LogWarning("Unmeasured test (failed the initial test run): {TestName}", name);
+        }
     }
 
     private void LogFilteredProject(SourceProjectInfo projectInfo) =>
