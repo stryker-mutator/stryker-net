@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions.Testing;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Utilities;
 using Stryker.Utilities.Buildalyzer;
@@ -23,13 +22,13 @@ public class TestProjectsInfoTests : TestBase
     public void ShouldGenerateInjectionPath()
     {
         var sourceProjectAnalyzerResults = TestHelper.SetupProjectAnalyzerResult(
-                properties: new Dictionary<string, string>() {
+                properties: new Dictionary<string, string> {
                     { "TargetDir", "/app/bin/Debug/" },
                     { "TargetFileName", "AppToTest.dll" }
                 }).Object;
 
         var testProjectAnalyzerResults = TestHelper.SetupProjectAnalyzerResult(
-                properties: new Dictionary<string, string>() {
+                properties: new Dictionary<string, string> {
                     { "TargetDir", "/test/bin/Debug/" },
                     { "TargetFileName", "TestName.dll" }
                 }).Object;
@@ -55,12 +54,12 @@ public class TestProjectsInfoTests : TestBase
         fileSystem.AddFile(fileAPath, new MockFileData(fileA));
         fileSystem.AddFile(fileBPath, new MockFileData(fileB));
         var testProjectAnalyzerResultAMock = TestHelper.SetupProjectAnalyzerResult(
-            references: Array.Empty<string>(),
-            sourceFiles: new string[] { fileAPath }
+            references: [],
+            sourceFiles: [fileAPath]
         );
         var testProjectAnalyzerResultBMock = TestHelper.SetupProjectAnalyzerResult(
-            references: Array.Empty<string>(),
-            sourceFiles: new string[] { fileBPath }
+            references: [],
+            sourceFiles: [fileBPath]
         );
 
         var testProjectA = new TestProject(fileSystem, testProjectAnalyzerResultAMock.Object);
@@ -102,12 +101,12 @@ public class TestProjectsInfoTests : TestBase
         var fileA = File.ReadAllText(Path.Combine(".", "TestResources", "ExampleTestFileA.cs"));
         fileSystem.AddFile(fileAPath, new MockFileData(fileA));
         var testProjectAnalyzerResultAMock = TestHelper.SetupProjectAnalyzerResult(
-            references: Array.Empty<string>(),
-            sourceFiles: new string[] { fileAPath }
+            references: [],
+            sourceFiles: [fileAPath]
         );
         var testProjectAnalyzerResultBMock = TestHelper.SetupProjectAnalyzerResult(
-            references: Array.Empty<string>(),
-            sourceFiles: new string[] { fileAPath }
+            references: [],
+            sourceFiles: [fileAPath]
         );
 
         var testProjectA = new TestProject(fileSystem, testProjectAnalyzerResultAMock.Object);
@@ -141,6 +140,10 @@ public class TestProjectsInfoTests : TestBase
         // Arrange
         var fileSystem = Mock.Of<IFileSystem>(MockBehavior.Strict);
         var file = Mock.Of<IFile>(MockBehavior.Strict);
+        var mock = new MockFileSystem();
+        Mock.Get(fileSystem).Setup(f => f.Path).Returns(mock.Path);
+        Mock.Get(fileSystem).Setup(f => f.Directory).Returns(mock.Directory);
+
         Mock.Get(fileSystem).Setup(f => f.File).Returns(file);
 
         var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -181,15 +184,18 @@ public class TestProjectsInfoTests : TestBase
         var fileSystem = Mock.Of<IFileSystem>(MockBehavior.Strict);
         var file = Mock.Of<IFile>(MockBehavior.Strict);
         Mock.Get(fileSystem).Setup(f => f.File).Returns(file);
+        var mock = new MockFileSystem();
+        Mock.Get(fileSystem).Setup(f => f.Path).Returns(mock.Path);
+        Mock.Get(fileSystem).Setup(f => f.Directory).Returns(mock.Directory);
 
         var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                properties: new Dictionary<string, string>() {
+                properties: new Dictionary<string, string> {
                     { "TargetDir", "/app/bin/Debug/" },
                     { "TargetFileName", "AppToTest.dll" }
                 }).Object;
 
         var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                properties: new Dictionary<string, string>() {
+                properties: new Dictionary<string, string> {
                     { "TargetDir", "/test/bin/Debug/" },
                     { "TargetFileName", "TestName.dll" }
                 }).Object;
@@ -216,19 +222,21 @@ public class TestProjectsInfoTests : TestBase
     [TestMethod]
     public void RestoreOriginalAssembly_IgnoreIfBackupCopyFails()
     {
-        // Arrange
         var fileSystem = Mock.Of<IFileSystem>(MockBehavior.Strict);
         var file = Mock.Of<IFile>(MockBehavior.Strict);
         Mock.Get(fileSystem).Setup(f => f.File).Returns(file);
+        var mock = new MockFileSystem();
+        Mock.Get(fileSystem).Setup(f => f.Path).Returns(mock.Path);
+        Mock.Get(fileSystem).Setup(f => f.Directory).Returns(mock.Directory);
 
         var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-            properties: new Dictionary<string, string>() {
+            properties: new Dictionary<string, string> {
                 { "TargetDir", "/app/bin/Debug/" },
                 { "TargetFileName", "AppToTest.dll" }
             }).Object;
 
         var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-            properties: new Dictionary<string, string>() {
+            properties: new Dictionary<string, string> {
                 { "TargetDir", "/test/bin/Debug/" },
                 { "TargetFileName", "TestName.dll" }
             }).Object;
@@ -275,6 +283,11 @@ public class TestProjectsInfoTests : TestBase
                     { "TargetFileName", "TestName.dll" }
                 }).Object;
 
+        Mock.Get(directory).Setup(d => d.Exists(sourceProjectAnalyzerResult.GetAssemblyDirectoryPath())).Returns(true);
+        var mock = new MockFileSystem();
+        Mock.Get(fileSystem).Setup(f => f.Path).Returns(mock.Path);
+        Mock.Get(directory).Setup(d => d.GetCurrentDirectory()).Returns(mock.Directory.GetCurrentDirectory());
+
         var testProject = new TestProject(fileSystem, testProjectAnalyzerResult);
         var testProjectsInfo = new TestProjectsInfo(fileSystem, NullLogger<TestProjectsInfo>.Instance)
         {
@@ -283,8 +296,6 @@ public class TestProjectsInfoTests : TestBase
 
         var injectionPath = TestProjectsInfo.GetInjectionFilePath(testProjectAnalyzerResult, sourceProjectAnalyzerResult);
         var backupPath = injectionPath + ".stryker-unchanged";
-
-        Mock.Get(directory).Setup(d => d.Exists(sourceProjectAnalyzerResult.GetAssemblyDirectoryPath())).Returns(true);
 
         Mock.Get(file).Setup(f => f.Exists(injectionPath)).Returns(true);
         Mock.Get(file).Setup(f => f.Exists(backupPath)).Returns(false);

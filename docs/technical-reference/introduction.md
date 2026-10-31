@@ -16,7 +16,6 @@ Our long term goals are:
   * .NET Core 1.0+
   * .NET 5+
   * C#
-  * F#
 * Be a blazing fast mutation test framework
 * Have the most detailed reporting experience for tracking down bugs
 

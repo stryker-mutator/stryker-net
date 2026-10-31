@@ -195,7 +195,6 @@ You can start by looking at `CSharpMutantOrchestrator.BuildOrchestratorList()` t
 These classes are responsible for the general structure of the orchestration phases and/or are used as parent classes to other, more specific, orchestrators.
 #### CsharpMutantOrchestrator
 Not an orchestrator per se. This is the starting point for mutating C# source files. It aggregates the configured mutators and stores mutations are they are generated. It inherits from `BaseMutantOrchestrator<T,TU>` which implements the base logic needed by the overall workflow.
-Note that there is an `FsharpMutantOrchestrator` class for a future support of F#.
 - `MutantPlacer Placer`: this property stores the `MutantPlacer` instance that should be used for code injection
 - `SyntaxNode Mutate(...)`: mutates an entire syntax tree
 - `GetHandler(...)`: returns the appropriate orchestrator for a given syntax node

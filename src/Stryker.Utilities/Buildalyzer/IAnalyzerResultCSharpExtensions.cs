@@ -34,25 +34,23 @@ public static class IAnalyzerResultCSharpExtensions
         return compilationOptions;
     }
 
-    public static CSharpParseOptions GetParseOptions(this IAnalyzerResult analyzerResult, IStrykerOptions options) =>
-        new CSharpParseOptions(
-            GetLanguageVersion(analyzerResult, options),
-            DocumentationMode.None,
-            preprocessorSymbols: analyzerResult.PreprocessorSymbols
-        ).WithFeatures(ExtractCSharpFeatures(analyzerResult));
-
-
-    private static LanguageVersion GetLanguageVersion(this IAnalyzerResult analyzerResult, IStrykerOptions options)
+    public static CSharpParseOptions GetParseOptions(this IAnalyzerResult analyzerResult)
     {
-        if (options.LanguageVersion != LanguageVersion.Default)
-        {
-            return options.LanguageVersion;
-        }
+        var parseOptions = new CSharpParseOptions(
+            documentationMode: DocumentationMode.None,
+            preprocessorSymbols: analyzerResult.PreprocessorSymbols);
         var version = analyzerResult.GetProperty("LangVersion");
-        return !string.IsNullOrWhiteSpace(version) && LanguageVersionFacts.TryParse(version, out var parsedVersion)
-            ? parsedVersion
-            : LanguageVersion.Default;
+        if (!string.IsNullOrWhiteSpace(version) && LanguageVersionFacts.TryParse(version, out var parsedVersion))
+        {
+            parseOptions = parseOptions.WithLanguageVersion(parsedVersion);
+        }
+
+        return parseOptions.WithFeatures(ExtractCSharpFeatures(analyzerResult));
     }
+
+    public static CSharpParseOptions GetParseOptions(this IAnalyzerResult analyzerResult, IStrykerOptions _) =>
+        analyzerResult.GetParseOptions();
+
     /// <summary>
     /// The Features MSBuild property is an internal Roslyn mechanism that passes a key-value dictionary directly to CSharpParseOptions.WithFeatures().
     /// It is not publicly documented by Microsoft as it is primarily intended for internal compiler development.

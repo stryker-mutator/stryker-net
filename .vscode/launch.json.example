@@ -52,6 +52,16 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "EmptyTestProject vstest",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-cli",
+            "program": "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/bin/Debug/Stryker.CLI.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/integrationtest/TargetProjects/NetCore/EmptyTestProject",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "MTP.UnitTests.MSTest",
             "type": "coreclr",
             "request": "launch",
@@ -99,6 +109,16 @@
             "program": "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/bin/Debug/Stryker.CLI.dll",
             "args": ["--test-runner=mtp", "--solution=./MicrosoftTestPlatform.slnx"],
             "cwd": "${workspaceFolder}/integrationtest/TargetProjects",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "MTP.EmptyTestProject",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-cli",
+            "program": "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/bin/Debug/Stryker.CLI.dll",
+            "args": ["--test-runner=mtp"],
+            "cwd": "${workspaceFolder}/integrationtest/TargetProjects/MicrosoftTestPlatform/EmptyTestProject",
             "console": "integratedTerminal"
         },
         {

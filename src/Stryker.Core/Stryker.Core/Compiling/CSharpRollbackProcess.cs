@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Exceptions;
 using Stryker.Core.Helpers;
 using Stryker.Core.Mutants;
 using Stryker.Utilities.Logging;
@@ -25,7 +24,7 @@ public interface ICompilationContent
 public interface ICSharpRollbackProcess
 {
     IEnumerable<int>? RollbackMutationsInError(ICompilationContent wrapper, ImmutableArray<Diagnostic> diagnostics,
-        Mode mode, bool devMode);
+        Mode mode, bool diagMode);
 
     enum Mode
     {
@@ -43,7 +42,8 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
     private List<int> RollBackedIds { get; } = [];
     private ILogger Logger { get; } = ApplicationLogging.LoggerFactory.CreateLogger<CSharpRollbackProcess>();
 
-    public IEnumerable<int>? RollbackMutationsInError(ICompilationContent wrapper, ImmutableArray<Diagnostic> diagnostics, ICSharpRollbackProcess.Mode mode, bool devMode)
+    public IEnumerable<int>? RollbackMutationsInError(ICompilationContent wrapper, ImmutableArray<Diagnostic> diagnostics,
+        ICSharpRollbackProcess.Mode mode, bool diagMode)
     {
         // match the diagnostics with their syntax trees
         var syntaxTreeMapping =
@@ -66,7 +66,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         {
             var originalTree = syntaxTreeMap.Key;
             Logger.LogDebug("RollBacking mutations from {FilePath}.", originalTree.FilePath);
-            if (devMode)
+            if (diagMode)
             {
                 DumpBuildErrors(syntaxTreeMap);
                 Logger.LogTrace("source {OriginalTree}", originalTree);
@@ -167,13 +167,13 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
     {
         var rollbackRoot = originalTree.GetRoot();
         // find all if statements to remove
-        var brokenMutations =
-            IdentifyMutationsAndFlagForRollback(diagnosticInfo, rollbackRoot, mode, out var diagnostics);
+        var brokenMutations = mode == ICSharpRollbackProcess.Mode.LastChance ? [] :
+            IdentifyMutationsAndFlagForRollback(diagnosticInfo, rollbackRoot, mode);
 
         if (brokenMutations.Count == 0)
         {
             // we were unable to identify any mutation that could have caused the build issue(s)
-            brokenMutations = ScanForSuspiciousMutations(diagnostics, rollbackRoot);
+            brokenMutations = ScanForSuspiciousMutations(diagnosticInfo, rollbackRoot);
         }
 
         return RollTheseMutationsBack(rollbackRoot, brokenMutations);
@@ -207,7 +207,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
     }
 
     // identify mutations that may have caused compilation errors
-    private Collection<SyntaxNode> ScanForSuspiciousMutations(Diagnostic[] diagnostics, SyntaxNode rollbackRoot)
+    private Collection<SyntaxNode> ScanForSuspiciousMutations(IEnumerable<Diagnostic> diagnostics, SyntaxNode rollbackRoot)
     {
         var suspiciousMutations = new Collection<SyntaxNode>();
         foreach (var diagnostic in diagnostics)
@@ -259,35 +259,33 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         };
 
     private Collection<SyntaxNode> IdentifyMutationsAndFlagForRollback(IEnumerable<Diagnostic> diagnosticInfo,
-        SyntaxNode rollbackRoot, ICSharpRollbackProcess.Mode mode, out Diagnostic[] diagnostics)
+        SyntaxNode rollbackRoot, ICSharpRollbackProcess.Mode mode)
     {
         var brokenMutations = new Collection<SyntaxNode>();
-        diagnostics = diagnosticInfo as Diagnostic[] ?? diagnosticInfo.ToArray();
-        foreach (var diagnostic in diagnostics)
+        foreach (var diagnostic in diagnosticInfo)
         {
             var brokenMutation = rollbackRoot.FindNode(diagnostic.Location.SourceSpan);
-            // handles uninitialized variables
-            if (diagnostic.Id is "CS0165" or "CS0177")
+            switch (diagnostic.Id)
             {
-                var identifierText = ExtractIdentifier(diagnostic, brokenMutation);
-                if (!string.IsNullOrEmpty(identifierText)
-                    && ScanErasingMutation(
-                        x => x.AssignsThis(identifierText), brokenMutation, brokenMutations, mode))
+                // handles uninitialized variables
+                case "CS0165" or "CS0177":
                 {
-                    continue;
+                    if (FindMutationCausingUninitializedVariableError(mode, diagnostic, brokenMutation, brokenMutations))
+                    {
+                        continue;
+                    }
+                    break;
                 }
-            }
-            // handles missing return statement
-            else if (diagnostic.Id is "CS0161")
-            {
-                if (brokenMutation is MethodDeclarationSyntax methodDeclarationSyntax)
+                // handles missing return statement
+                case "CS0161":
                 {
-                    // CS0161 implies a block body
-                    brokenMutation = methodDeclarationSyntax.Body!.Statements.Last();
-                }
-                if (ScanErasingMutation(x => x is ReturnStatementSyntax, brokenMutation, brokenMutations, mode))
-                {
-                    continue;
+                    if (FindMutationCausingFailToReturnValue(mode, brokenMutations, ref brokenMutation))
+                    {
+                        continue;
+                    }
+
+                    // we failed to find a candidate mutation
+                    break;
                 }
             }
             // general case, assume the diagnostic location is within the mutation.
@@ -295,7 +293,42 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
         }
 
         return brokenMutations;
+        // check if the node allows an early exit
     }
+
+    private bool FindMutationCausingFailToReturnValue(ICSharpRollbackProcess.Mode mode, Collection<SyntaxNode> brokenMutations, ref SyntaxNode brokenMutation)
+    {
+        if (brokenMutation is MethodDeclarationSyntax methodDeclarationSyntax)
+        {
+            // CS0161 applies to a block, we force the location to its last statement
+            brokenMutation = methodDeclarationSyntax.Body!.Statements.Last();
+        }
+
+        if (ScanErasingMutation(IsEarlyExit, brokenMutation, brokenMutations, mode))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool FindMutationCausingUninitializedVariableError(ICSharpRollbackProcess.Mode mode, Diagnostic diagnostic, SyntaxNode brokenMutation,
+        Collection<SyntaxNode> brokenMutations)
+    {
+        var identifierText = ExtractIdentifier(diagnostic, brokenMutation);
+        // starting from the method's end we look for any mutation that erases either
+        // a return statement, a throw expression or an assignment to the variable in question
+        if (!string.IsNullOrEmpty(identifierText)
+            && ScanErasingMutation(x => IsEarlyExit(x) || x.AssignsThis(identifierText),
+                brokenMutation, brokenMutations, mode))
+        {
+            return true;
+        }
+        // we failed to find a candidate mutation
+        return false;
+    }
+
+    private static bool IsEarlyExit(SyntaxNode x) => x is ReturnStatementSyntax or ThrowStatementSyntax;
 
     private bool ScanErasingMutation(Func<SyntaxNode, bool> predicate,
         SyntaxNode brokenMutation, Collection<SyntaxNode> brokenMutations, ICSharpRollbackProcess.Mode mode)
@@ -307,7 +340,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             foreach (var previous in brokenMutation.GetPreviousSiblings().Reverse())
             {
                 var mutations = MutantPlacer.GetMutationsEngines(previous);
-                // we check if a mutation hides
+                // we check if a mutation hides a syntax node matching the predicate
                 foreach (var node in mutations.Where(entry => !brokenMutations.Contains(entry.node)
                                                               && entry.engine.Erases(entry.node, predicate)).
                              Select(entry => entry.node))
@@ -318,6 +351,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                         // remove only one in normal mode
                         return true;
                     }
+                    // otherwise, remove all found
                 }
             }
             // we reached where we are

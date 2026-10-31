@@ -1,4 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.IO.MemoryMappedFiles;
 using System.Linq;
+using System.Reflection;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -7,7 +14,9 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Configuration;
 using Stryker.Configuration.Options;
+using Stryker.Core.Compiling;
 using Stryker.Core.Mutants;
+using Stryker.Core.UnitTest.Compiling;
 
 namespace Stryker.Core.UnitTest.Mutants;
 
@@ -761,9 +770,19 @@ if(StrykerNamespace.MutantControl.IsActive(2)){for (var i = Method(true); ; i--)
     }
 
     [TestMethod]
+    public void ShouldConstructorInvokingOutVar()
+    {
+        var source = @"public TestClass(string value): base(int.TryParse(value, out var parsed) && parsed == 1){}";
+        var expected =
+            @"public TestClass(string value): base(int.TryParse(value, out var parsed) && (StrykerNamespace.MutantControl.IsActive(1)?parsed != 1:parsed == 1)){}";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
     public void ShouldMutateExpressionBodiedStaticConstructor()
     {
-        var source = @"static Test()  => (true && SomeOtherMethod(out var x)) ? x : 5;";
+        var source = "static Test()  => (true && SomeOtherMethod(out var x)) ? x : 5;";
         var expected =
             @"static Test()  {using(new StrykerNamespace.MutantContext()){if(StrykerNamespace.MutantControl.IsActive(1)){(false?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(0)){(true?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(2)){(true || SomeOtherMethod(out var x)) ? x : 5;}else{((StrykerNamespace.MutantControl.IsActive(3)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}}}}";
 

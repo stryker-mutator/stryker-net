@@ -172,6 +172,7 @@ public static class IAnalyzerResultExtensions
         };
 
     private static readonly string[] KnownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit", "nunit"];
+    private static readonly string[] UnityTestAssemblyReferences = ["nunit.framework", "UnityEngine.TestRunner"];
 
     /// <summary>
     /// checks if an analyzer result is valid
@@ -201,6 +202,14 @@ public static class IAnalyzerResultExtensions
 
     public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
 
+    /// <summary>
+    /// Checks whether an analysis result references the assemblies that identify a Unity test assembly.
+    /// </summary>
+    public static bool IsUnityTestProject(this IAnalyzerResult analyzerResult) =>
+        UnityTestAssemblyReferences.All(reference =>
+            analyzerResult.References?.Any(path =>
+                string.Equals(Path.GetFileNameWithoutExtension(path), reference, StringComparison.OrdinalIgnoreCase)) == true);
+
     private static bool IsTestProject(this IAnalyzerResult analyzerResult)
     {
         // if 'IsTestingPlatformApplication' is defined and true, this is a test project
@@ -218,6 +227,11 @@ public static class IAnalyzerResultExtensions
         }
 
         if (Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n)))
+        {
+            return true;
+        }
+
+        if (analyzerResult.IsUnityTestProject())
         {
             return true;
         }

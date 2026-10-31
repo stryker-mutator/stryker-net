@@ -129,7 +129,9 @@ public sealed class SolutionFileShould
             Path.Combine(solutionPath, "MicrosoftTestPlatform", "UnitTests.XUnit", "UnitTests.XUnit.csproj"),
             Path.Combine(solutionPath, "MicrosoftTestPlatform", "UnitTests.NUnit", "UnitTests.NUnit.csproj"),
             Path.Combine(solutionPath, "MicrosoftTestPlatform", "UnitTests.TUnit", "UnitTests.TUnit.csproj"),
+            Path.Combine(solutionPath, "MicrosoftTestPlatform", "EmptyTestProject", "EmptyTestProject.csproj"),
         };
+
         solution.GetProjects("Debug").ShouldBe(expectedProjects, ignoreOrder: true);
 
         var projectsWithDetails = solution.GetProjectsWithDetails("Debug").ToList();
