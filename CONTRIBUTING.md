@@ -39,11 +39,20 @@ how to move forward.
 3. Ensure the pipeline passes:
     1. Unit tests are green
    2. Integration tests are green
-   3. There is no blocking SONAR issues
+   3. There are no blocking SONAR issues
 4. We can help you if you have trouble dealing with test or Sonar issues, please add a comment to the PR and we will help you out.
 5. Once the pipeline is green, we will review your PR and provide feedback. 
-6. We recommand you try to keep your PR up to date with the main branch, so we can merge it as soon as possible.
+6. We recommend you try to keep your PR up to date with the main branch, so we can merge it as soon as possible.
 Please be patient, we are a small team and have limited time to review PRs.
+
+#### Running tests
+- **Unit tests**: 
+  run unit tests using `dotnet test src/Stryker.vstest.slnf` (VsTest context) and `dotnet test src/Stryker.mtp.slnf` 
+(Microsoft Test Platform context)
+ 
+-- **Integration tests**: 
+  run integration tests using `integration-tests.ps1`. Note that the CI pipeline runs integration tests on Windows,
+MacOS and Linux.
 
 ### Review policy
 When reviewing a PR, we concentrate on:
@@ -71,8 +80,7 @@ a maintainer.
 - Please ensure your AI contributions remain terse and not too verbose. This will slow down integration
 - Please take the time to **discuss** with maintainers during review and refrain from using AI for fast turn around on 
 feedback. We want to ensure the quality of the codebase and that you understand the code you are contributing.
-- AI can act as a multiplier force for abusive behavior, such as pressuring maintainers to address issues/merge PR.
-
+- AI can act as a multiplier force for abusive behavior, such as pressuring maintainers to address issues/merge PR. Please monitor your usage and/or agents in that regard.
 
 
 ## Working locally on Stryker
