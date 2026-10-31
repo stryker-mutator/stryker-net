@@ -198,7 +198,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             var success = false;
             IEnumerable<string> projectReferences = [];
             var properties = GetSourceProjectDefaultProperties();
-            var sourceProjectAnalyzerMock = BuildProjectAnalyzerMock(csprojPathName, sourceFiles, properties, null, ["net4.5"], () => success, projectReferences).Object;
+            var sourceProjectAnalyzerMock = BuildProjectAnalyzerMock(csprojPathName, sourceFiles, properties, null, frameworks: ["net4.5"], success: () => success, rawReferences: projectReferences).Object;
 
             var testProjectAnalyzerMock = TestProjectAnalyzerMock(testCsprojPathName, csprojPathName, ["net4.5"]).Object;
             // The analyzer finds two projects
