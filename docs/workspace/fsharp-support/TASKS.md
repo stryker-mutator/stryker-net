@@ -146,8 +146,8 @@ classDiagram
 - `CsharpMutation_NeutralFields_MatchRoslynNodeLocationAndText`
 **Verify**: `dotnet test src/Stryker.vstest.slnf -c Debug`
 **Acceptance criteria**:
-- [ ] Every C#-produced `Mutation` has non-null `Location`, `OriginalText`, `ReplacementText`
-- [ ] Full unit suite green
+- [x] Every C#-produced `Mutation` has non-null `Location`, `OriginalText`, `ReplacementText`
+- [x] Full unit suite green
 **Depends on**: (none)
 **Time-box**: ~75 min
 

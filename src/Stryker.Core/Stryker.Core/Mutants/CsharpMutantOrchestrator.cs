@@ -145,6 +145,9 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
             foreach (var mutation in mutator.Mutate(current, semanticModel, Options))
             {
                 mutation.OriginalNode = current;
+                mutation.Location = MutationLocation.FromRoslyn(current);
+                mutation.OriginalText = current.ToString();
+                mutation.ReplacementText = mutation.ReplacementNode.ToString();
                 var newMutant = CreateNewMutant(mutation, context);
                 // Skip if the mutant is a duplicate
                 if (IsMutantDuplicate(newMutant, mutation))
