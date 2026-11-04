@@ -49,7 +49,10 @@ internal static class FsharpRollback
                 foreach (var drop in dropped)
                 {
                     active[leaf].Remove(drop);
-                    rolledBack.Add(drop.MutantId);
+                    if (!drop.IsTrackValue)
+                    {
+                        rolledBack.Add(drop.MutantId);
+                    }
                 }
             }
 

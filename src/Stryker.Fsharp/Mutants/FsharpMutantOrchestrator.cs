@@ -72,7 +72,11 @@ internal sealed class FsharpMutantOrchestrator(string helperNamespace, IEnumerab
             index++;
             builder.Append(source, cursor, splice.Range.StartOffset - cursor);
             var (wrapped, wrappedPlaced) = ComposeOne(source, splice, ordered, ref index, helperNamespace);
-            placed.Add(new PlacedSplice(splice.MutantId, builder.Length, builder.Length + wrapped.Length));
+            if (!splice.IsTrackValue)
+            {
+                placed.Add(new PlacedSplice(splice.MutantId, builder.Length, builder.Length + wrapped.Length));
+            }
+
             placed.AddRange(wrappedPlaced.Select(p => Shift(p, builder.Length)));
             builder.Append(wrapped);
             cursor = splice.Range.EndOffset;
@@ -86,6 +90,13 @@ internal sealed class FsharpMutantOrchestrator(string helperNamespace, IEnumerab
     {
         var firstChild = index;
         var (original, originalPlaced) = Compose(source, splice.Range.StartOffset, splice.Range.EndOffset, ordered, ref index, helperNamespace);
+        if (splice.IsTrackValue)
+        {
+            // the explicit delegate type keeps F# inference happy; the wrapped text is not a mutant, so it is not placed
+            var trackPrefix = $"{helperNamespace}.StaticValueTracker.Track(System.Func<_>(fun () -> ";
+            return (trackPrefix + original + "))", originalPlaced.Select(p => Shift(p, trackPrefix.Length)).ToList());
+        }
+
         var (mutated, mutatedPlaced) = ComposeMutated(source, splice, ordered.GetRange(firstChild, index - firstChild), helperNamespace);
 
         var prefix = $"(if {helperNamespace}.MutantControl.IsActive {splice.MutantId} then ";
@@ -146,7 +157,7 @@ internal sealed class FsharpMutantOrchestrator(string helperNamespace, IEnumerab
                 case SynModuleDecl.Let let:
                     foreach (var binding in let.bindings)
                     {
-                        VisitExpression(binding.expr, file, mutants);
+                        VisitModuleBinding(binding, file, mutants);
                     }
 
                     break;
@@ -159,6 +170,33 @@ internal sealed class FsharpMutantOrchestrator(string helperNamespace, IEnumerab
             }
         }
     }
+
+    /// <summary>
+    /// A module-level value (<c>let x = ...</c>) is built once, by the module's static initialiser, so its mutants are
+    /// static: flagged, and the expression is wrapped to report what runs while it is built. Functions are left alone.
+    /// </summary>
+    private void VisitModuleBinding(SynBinding binding, FsharpFileLeaf file, List<Mutant> mutants)
+    {
+        var firstMutant = mutants.Count;
+        var firstSplice = file.Splices.Count;
+        VisitExpression(binding.expr, file, mutants);
+        if (mutants.Count == firstMutant || IsFunction(binding))
+        {
+            return;
+        }
+
+        foreach (var mutant in mutants.Skip(firstMutant))
+        {
+            mutant.IsStaticValue = true;
+        }
+
+        var range = FsharpLocations.ToLocation(binding.expr.Range, file.SourceCode);
+        // listed before the mutant splices, which may share its range: the wrapper must be the outer one
+        file.Splices.Insert(firstSplice, TextSplice.TrackValue(range, file.SourceCode.Substring(range.StartOffset, range.EndOffset - range.StartOffset)));
+    }
+
+    private static bool IsFunction(SynBinding binding) =>
+        binding.headPat is SynPat.LongIdent { argPats: SynArgPats.Pats { pats: { IsEmpty: false } } };
 
     private void VisitExpression(SynExpr expression, FsharpFileLeaf file, List<Mutant> mutants)
     {

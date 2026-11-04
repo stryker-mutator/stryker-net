@@ -24,7 +24,8 @@ internal static class FsharpHelperAssembly
             .Select(path => (MetadataReference)MetadataReference.CreateFromFile(path));
         var compilation = CSharpCompilation.Create(
             $"{injector.HelperNamespace}.StrykerHelpers",
-            injector.GetHelpersSyntaxTreesToInject(CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Latest)),
+            injector.GetHelpersSyntaxTreesToInject(CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Latest))
+                .Append(StaticValueTrackerTree(injector, CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Latest))),
             references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release));
 
@@ -38,6 +39,15 @@ internal static class FsharpHelperAssembly
 
         return stream.ToArray();
     }
+
+    /// <summary>
+    /// <c>MutantContext</c> is internal to the helper assembly; this public entry point lets mutated F# code
+    /// use <c>TrackValue</c> to mark the evaluation of module-level values as static.
+    /// </summary>
+    private static SyntaxTree StaticValueTrackerTree(CodeInjection injector, CSharpParseOptions options) =>
+        CSharpSyntaxTree.ParseText(
+            $"namespace {injector.HelperNamespace} {{ public static class StaticValueTracker {{ public static T Track<T>(System.Func<T> builder) => MutantContext.TrackValue(builder); }} }}",
+            options, path: "StaticValueTracker.cs");
 
     /// <summary>
     /// Lists the helper assembly in every <c>*.deps.json</c> of a test output directory. Hosts that have a

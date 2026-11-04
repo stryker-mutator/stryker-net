@@ -323,8 +323,10 @@ classDiagram
 - `FsharpModuleValue_Mutant_DetectedAsStatic`
 **Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
-- [ ] Uncovered mutant ends NoCoverage, covered one Killed/Survived
-- [ ] Module-value mutant flagged static (or tracked) — assertion on mutant metadata
+- [x] Uncovered mutant ends NoCoverage, covered one Killed/Survived
+- [x] Module-value mutant flagged static (or tracked) — assertion on mutant metadata
+- Delta: the NoCoverage proof drives the real helper (`CaptureCoverage`/`GetCoverageData`) and the runner-agnostic `CoverageAnalyser` with a mocked `ITestRunner`. The covered mutant stays Pending (to be tested), Killed/Survived needs the live runner: task 16.
+- Delta: module values are both flagged `IsStaticValue` and wrapped in a public `StaticValueTracker.Track` (helper-side shim over the internal `MutantContext.TrackValue`).
 **Depends on**: task 8
 **Time-box**: ~90 min
 
