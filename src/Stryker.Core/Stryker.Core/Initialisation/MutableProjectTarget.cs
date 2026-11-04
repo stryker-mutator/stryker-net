@@ -6,6 +6,7 @@ using System.Linq;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -45,6 +46,11 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
         return true;
     }
 
+    private static string LanguageNotEnabledMessage(Language language, string projectPath) =>
+        language == Language.Fsharp
+            ? $"F# support is experimental and not yet enabled. Project '{projectPath}' cannot be mutated."
+            : $"Project '{projectPath}' uses a language Stryker cannot mutate ({language}). Only C# projects can be mutated.";
+
     /// <summary>
     /// Builds a <see cref="SourceProjectInfo"/> instance describing a project its associated test project(s)
     /// </summary>
@@ -64,7 +70,7 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
         var builder = language == Language.Csharp
             ? new CsharpProjectComponentsBuilder(targetProjectInfo, options, FoldersToExclude, logger,
                 fileSystem)
-            : throw new NotSupportedException($"Language not supported: {language}");
+            : throw new InputException(LanguageNotEnabledMessage(language, ProjectTarget.ProjectFilePath));
 
         var inputFiles = builder.Build();
         builder.InjectHelpers(inputFiles);

@@ -127,8 +127,8 @@ classDiagram
 - `BuildSourceProjectInfo_FsharpProject_ThrowsInputException_WithProjectPath` — unit, `InputFileResolverTests` style
 **Verify**: `dotnet test src/Stryker.Core/Stryker.Core.UnitTest -c Debug --filter FullyQualifiedName~InputFileResolver`
 **Acceptance criteria**:
-- [ ] F# source project → `InputException` naming the project path
-- [ ] Message no longer claims "not supported", points at experimental status
+- [x] F# source project → `InputException` naming the project path
+- [x] Message no longer claims "not supported", points at experimental status
 **Depends on**: (none)
 **Time-box**: ~30 min
 
