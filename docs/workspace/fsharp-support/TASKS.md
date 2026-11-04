@@ -396,8 +396,8 @@ classDiagram
 - `CollectionMutator_ReportCount_OnFixtureFile`
 **Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
-- [ ] Table replacements exact for all three modules; fixture count matches
-- [ ] Unmapped functions untouched
+- [x] Table replacements exact for all three modules; fixture count matches
+- [x] Unmapped functions untouched
 **Depends on**: task 12
 **Time-box**: ~60 min
 

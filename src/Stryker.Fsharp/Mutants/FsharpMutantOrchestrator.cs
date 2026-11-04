@@ -14,7 +14,7 @@ namespace Stryker.Fsharp.Mutants;
 /// </summary>
 internal sealed class FsharpMutantOrchestrator(string helperNamespace, IEnumerable<IFsharpMutator>? mutators = null, MutationLevel mutationLevel = MutationLevel.Complete)
 {
-    private readonly IReadOnlyList<IFsharpMutator> _mutators = [.. (mutators ?? [new BooleanMutator(), new ArithmeticOperatorMutator(), new EqualityOperatorMutator(), new StringLiteralMutator()]).Where(m => m.MutationLevel <= mutationLevel)];
+    private readonly IReadOnlyList<IFsharpMutator> _mutators = [.. (mutators ?? [new BooleanMutator(), new ArithmeticOperatorMutator(), new EqualityOperatorMutator(), new StringLiteralMutator(), new CollectionFunctionMutator()]).Where(m => m.MutationLevel <= mutationLevel)];
     private int _nextId;
 
     /// <summary>Mutates one file: attaches mutants and splices to the leaf. Returns the mutant count.</summary>
