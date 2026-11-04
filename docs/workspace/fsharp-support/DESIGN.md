@@ -89,7 +89,8 @@ injected `IsActive` call would surface in the expression tree and change semanti
 - **Test-to-mutant source linking for F# test projects** — already tolerated (empty
   `TestFiles`, `TestProject.cs:33-37`); linking is an optimisation, not a correctness need.
 - **Porting every C# mutator** — the C# set took years; FR6 defines the floor, the ADR'd
-  mechanism makes additions cheap.
+  mechanism makes additions cheap. The per-mutator verdicts (5 floor, 5 wave-2 ports,
+  6 later, 10 n/a of 26) live in [mutator-portability.md](./mutator-portability.md).
 - **F#-specific mutators** (pipe removal, pattern-match case deletion) — valuable later;
   excluded to bound scope.
 - **Shared/multi-targeted project edge cases** — follow the C# behaviour where free.
