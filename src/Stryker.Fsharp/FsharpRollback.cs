@@ -69,7 +69,7 @@ internal static class FsharpRollback
         return candidates.FirstOrDefault(l => string.Equals(l.FullPath, path, StringComparison.OrdinalIgnoreCase));
     }
 
-    /// <summary>The splice whose final range in the mutated text contains the start of the diagnostic.</summary>
+    /// <summary>The innermost splice whose final range in the mutated text contains the start of the diagnostic.</summary>
     private static PlacedSplice? EnclosingSplice(FSharpDiagnostic error, AppliedSplices applied)
     {
         var lineStarts = FsharpLocations.LineStarts(applied.Text);
@@ -79,7 +79,7 @@ internal static class FsharpRollback
         }
 
         var offset = lineStarts[error.StartLine - 1] + error.StartColumn;
-        return applied.Placed.FirstOrDefault(p => p.StartOffset <= offset && offset < p.EndOffset);
+        return applied.Placed.Where(p => p.StartOffset <= offset && offset < p.EndOffset).OrderBy(p => p.EndOffset - p.StartOffset).FirstOrDefault();
     }
 
     private static GeneralStrykerException Fatal(string reason, FsharpCompileResult result)

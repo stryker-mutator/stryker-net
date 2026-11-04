@@ -101,6 +101,67 @@ public class FsharpRollbackTests
             compiler.Compile(new Dictionary<string, string>(overrides) { [Path.Combine(project.Directory, "B.fs")] = "module B\nlet two : int = \"no\"\n" });
     }
 
+    [TestMethod]
+    public void Orchestrator_ManyMutantsOneFile_SingleCompileSucceeds()
+    {
+        const string source = "module Lib\nlet calc () = 10 + 5\nlet flag () = if true then 1 else 2\nlet other () = if false then 3 else 4\n";
+        using var project = new TempFsharpProject(("Lib.fs", source));
+        var leaf = FsharpParse.Leaf(source, Path.Combine(project.Directory, "Lib.fs"));
+        new FsharpMutantOrchestrator(Ns).Mutate(leaf).ShouldBe(2);
+        // nested pair, hand-crafted: outer 10 + 5 -> 10 * 5, inner 5 -> 7
+        leaf.Splices.Add(NestedSplice(leaf, source, "10 + 5", 100, "10 * 5"));
+        leaf.Splices.Add(NestedSplice(leaf, source, "5", 101, "7"));
+        var compiler = new Compiler(project);
+        var compiles = 0;
+        var text = FsharpMutantOrchestrator.ApplySplices(source, leaf.Splices, Ns);
+
+        var result = FsharpRollback.Run([leaf], Ns, overrides => { compiles++; return compiler.Compile(overrides); });
+
+        compiles.ShouldBe(1);
+        result.RolledBackIds.ShouldBeEmpty();
+        text.ShouldContain("IsActive 101");
+        int Run(string fn, int id) => Call(result.Compiled.Assembly, project, fn, id);
+        Run("calc", -1).ShouldBe(15, "neither: original");
+        Run("calc", 100).ShouldBe(50, "outer only: outer mutation with inner original");
+        Run("calc", 101).ShouldBe(17, "inner only: inner mutation");
+        Run("calc", 0).ShouldBe(15);
+        Run("flag", -1).ShouldBe(1);
+        Run("flag", 0).ShouldBe(2);
+        Run("other", -1).ShouldBe(4);
+        Run("other", 1).ShouldBe(3);
+    }
+
+    [TestMethod]
+    public void Rollback_ErrorInsideNestedSplice_MapsToInnermostSplice()
+    {
+        const string source = "module Lib\nlet calc () = 10 + 5\n";
+        using var project = new TempFsharpProject(("Lib.fs", source));
+        var leaf = FsharpParse.Leaf(source, Path.Combine(project.Directory, "Lib.fs"));
+        leaf.Splices.Add(NestedSplice(leaf, source, "10 + 5", 0, "10 * 5"));
+        leaf.Splices.Add(NestedSplice(leaf, source, "5", 1, "\"oops\""));
+        var compiler = new Compiler(project);
+
+        // report an error inside the inner guard of the outer mutated branch, which is also inside the outer splice
+        FsharpCompileResult ErrorInsideInner(IReadOnlyDictionary<string, string> overrides)
+        {
+            var text = overrides.GetValueOrDefault(leaf.FullPath);
+            return text != null && text.Contains("IsActive 1")
+                ? new FsharpCompileResult(false, [], [Error(leaf.FullPath, 2, text.Split('\n')[1].IndexOf("IsActive 1", StringComparison.Ordinal))])
+                : compiler.Compile(overrides);
+        }
+
+        var result = FsharpRollback.Run([leaf], Ns, ErrorInsideInner);
+
+        result.RolledBackIds.Distinct().ShouldBe([1]);
+        Call(result.Compiled.Assembly, project, "calc", activeMutant: 0).ShouldBe(50, "the outer mutant survives");
+    }
+
+    private static TextSplice NestedSplice(FsharpFileLeaf leaf, string source, string text, int id, string mutated)
+    {
+        var start = source.LastIndexOf(text, StringComparison.Ordinal);
+        return new TextSplice(id, FsharpLocations.ToLocation(RangeOf(source, start, text.Length, leaf.FullPath), source), text, mutated);
+    }
+
     private static FsharpFileLeaf LeafWithSplices(TempFsharpProject project, string source, string fileName, params (string Original, string Mutated, int Id)[] splices)
     {
         var leaf = FsharpParse.Leaf(source, Path.Combine(project.Directory, fileName));

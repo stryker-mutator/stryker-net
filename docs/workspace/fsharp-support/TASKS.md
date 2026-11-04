@@ -305,8 +305,8 @@ classDiagram
 - `Orchestrator_ManyMutantsOneFile_SingleCompileSucceeds`
 **Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
-- [ ] Exact spliced text matches the specified nesting form
-- [ ] One compilation carries all mutants
+- [x] Exact spliced text matches the specified nesting form
+- [x] One compilation carries all mutants
 **Depends on**: task 8
 **Time-box**: ~60 min
 

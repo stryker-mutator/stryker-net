@@ -78,4 +78,48 @@ public class FsharpMutantOrchestratorTests
         FsharpMutantOrchestrator.ApplySplices(source, leaf.Splices, Ns).ShouldBe(
             "module M\nlet f () = if (if StrykerTest.MutantControl.IsActive 0 then false else true) then (if StrykerTest.MutantControl.IsActive 1 then true else false) else (if StrykerTest.MutantControl.IsActive 2 then false else true)\n");
     }
+
+    [TestMethod]
+    public void Orchestrator_NestedMutants_SpliceInnerFirst_ExactText()
+    {
+        const string source = "module M\nlet f a = a || true\n";
+        var outer = SpliceOf(source, "a || true", 0, "a && true");
+        var inner = SpliceOf(source, "true", 1, "false");
+
+        var expected = "module M\nlet f a = (if StrykerTest.MutantControl.IsActive 0 then a && (if StrykerTest.MutantControl.IsActive 1 then false else true) else a || (if StrykerTest.MutantControl.IsActive 1 then false else true))\n";
+        FsharpMutantOrchestrator.ApplySplices(source, [inner, outer], Ns).ShouldBe(expected);
+        FsharpMutantOrchestrator.ApplySplices(source, [outer, inner], Ns).ShouldBe(expected);
+    }
+
+    [TestMethod]
+    public void Orchestrator_NestedMutants_PlacedInnermostFirstInEveryBranch()
+    {
+        const string source = "module M\nlet f a = a || true\n";
+        var applied = FsharpMutantOrchestrator.ApplySplicesTracked(source, [SpliceOf(source, "a || true", 0, "a && true"), SpliceOf(source, "true", 1, "false")], Ns);
+
+        foreach (var placed in applied.Placed)
+        {
+            applied.Text[placed.StartOffset].ShouldBe('(');
+            applied.Text[placed.EndOffset - 1].ShouldBe(')');
+        }
+
+        applied.Placed.Count(p => p.MutantId == 1).ShouldBe(2, "the inner splice sits in both branches of the outer one");
+        var outerPlaced = applied.Placed.Single(p => p.MutantId == 0);
+        applied.Placed.Where(p => p.MutantId == 1).ShouldAllBe(p => p.StartOffset > outerPlaced.StartOffset && p.EndOffset < outerPlaced.EndOffset);
+    }
+
+    [TestMethod]
+    public void Orchestrator_PartiallyOverlappingSplices_AreRejected()
+    {
+        const string source = "module M\nlet f a = a || true\n";
+
+        Should.Throw<InvalidOperationException>(() => FsharpMutantOrchestrator.ApplySplices(source,
+            [SpliceOf(source, "a ||", 0, "a &&"), SpliceOf(source, "|| true", 1, "&& false")], Ns));
+    }
+
+    internal static TextSplice SpliceOf(string source, string text, int id, string mutated)
+    {
+        var start = source.LastIndexOf(text, StringComparison.Ordinal);
+        return new TextSplice(id, new MutationLocation("/proj/M.fs", 1, 1, 1, 1, start, start + text.Length), text, mutated);
+    }
 }

@@ -34,40 +34,108 @@ internal sealed class FsharpMutantOrchestrator(string helperNamespace, IEnumerab
         return mutants.Count;
     }
 
-    /// <summary>Applies splices right-to-left by offset so earlier ranges stay valid.</summary>
+    /// <summary>Applies splices inner-first; see <see cref="ApplySplicesTracked"/>.</summary>
     public static string ApplySplices(string source, IEnumerable<TextSplice> splices, string helperNamespace) =>
         ApplySplicesTracked(source, splices, helperNamespace).Text;
 
     /// <summary>
-    /// Same as <see cref="ApplySplices"/>, and also returns where each spliced text lands in the result:
-    /// every splice shifts all later ones by the length it added, accumulated left to right.
+    /// Applies splices and returns where each wrapped text lands in the result. Splices may nest: a splice
+    /// contained in another is applied first, so the outer splice wraps text that already carries the inner guard,
+    /// in its original branch and, where the mutated text preserves the inner original text, in its mutated branch.
+    /// Siblings are applied right-to-left by offset. Partially overlapping splices are rejected.
     /// </summary>
     public static AppliedSplices ApplySplicesTracked(string source, IEnumerable<TextSplice> splices, string helperNamespace)
     {
-        var ordered = splices.OrderBy(s => s.Range.StartOffset).ToList();
-        var result = new StringBuilder(source);
-        foreach (var splice in Enumerable.Reverse(ordered))
-        {
-            var length = splice.Range.EndOffset - splice.Range.StartOffset;
-            result.Remove(splice.Range.StartOffset, length);
-            result.Insert(splice.Range.StartOffset, Wrap(splice, helperNamespace));
-        }
-
-        var shift = 0;
-        var placed = new List<PlacedSplice>();
-        foreach (var splice in ordered)
-        {
-            var wrappedLength = Wrap(splice, helperNamespace).Length;
-            var start = splice.Range.StartOffset + shift;
-            placed.Add(new PlacedSplice(splice.MutantId, start, start + wrappedLength));
-            shift += wrappedLength - (splice.Range.EndOffset - splice.Range.StartOffset);
-        }
-
-        return new AppliedSplices(result.ToString(), placed);
+        var ordered = Order(splices);
+        var index = 0;
+        var (text, placed) = Compose(source, 0, source.Length, ordered, ref index, helperNamespace);
+        return new AppliedSplices(text, placed);
     }
 
-    private static string Wrap(TextSplice splice, string helperNamespace) =>
-        $"(if {helperNamespace}.MutantControl.IsActive {splice.MutantId} then {splice.MutatedText} else {splice.OriginalText})";
+    private static List<TextSplice> Order(IEnumerable<TextSplice> splices) =>
+        splices.OrderBy(s => s.Range.StartOffset).ThenByDescending(s => s.Range.EndOffset).ToList();
+
+    /// <summary>Text of source[start..end) with every splice found there applied; placements are relative to that text.</summary>
+    private static (string Text, List<PlacedSplice> Placed) Compose(string source, int start, int end, List<TextSplice> ordered, ref int index, string helperNamespace)
+    {
+        var builder = new StringBuilder();
+        var placed = new List<PlacedSplice>();
+        var cursor = start;
+        while (index < ordered.Count && ordered[index].Range.StartOffset < end)
+        {
+            var splice = ordered[index];
+            if (splice.Range.StartOffset < cursor || splice.Range.EndOffset > end)
+            {
+                throw new InvalidOperationException($"Mutant {splice.MutantId} partially overlaps another mutant range");
+            }
+
+            index++;
+            builder.Append(source, cursor, splice.Range.StartOffset - cursor);
+            var (wrapped, wrappedPlaced) = ComposeOne(source, splice, ordered, ref index, helperNamespace);
+            placed.Add(new PlacedSplice(splice.MutantId, builder.Length, builder.Length + wrapped.Length));
+            placed.AddRange(wrappedPlaced.Select(p => Shift(p, builder.Length)));
+            builder.Append(wrapped);
+            cursor = splice.Range.EndOffset;
+        }
+
+        builder.Append(source, cursor, end - cursor);
+        return (builder.ToString(), placed);
+    }
+
+    private static (string Wrapped, List<PlacedSplice> Placed) ComposeOne(string source, TextSplice splice, List<TextSplice> ordered, ref int index, string helperNamespace)
+    {
+        var firstChild = index;
+        var (original, originalPlaced) = Compose(source, splice.Range.StartOffset, splice.Range.EndOffset, ordered, ref index, helperNamespace);
+        var (mutated, mutatedPlaced) = ComposeMutated(source, splice, ordered.GetRange(firstChild, index - firstChild), helperNamespace);
+
+        var prefix = $"(if {helperNamespace}.MutantControl.IsActive {splice.MutantId} then ";
+        const string separator = " else ";
+        var originalStart = prefix.Length + mutated.Length + separator.Length;
+        var placed = mutatedPlaced.Select(p => Shift(p, prefix.Length))
+            .Concat(originalPlaced.Select(p => Shift(p, originalStart)))
+            .ToList();
+        return (prefix + mutated + separator + original + ")", placed);
+    }
+
+    /// <summary>
+    /// The mutated text with each contained splice re-applied where the mutated text preserves that splice's
+    /// original source text (first occurrence after the previous one). A part the mutation discards carries no inner guard.
+    /// </summary>
+    private static (string Text, List<PlacedSplice> Placed) ComposeMutated(string source, TextSplice splice, List<TextSplice> contained, string helperNamespace)
+    {
+        var builder = new StringBuilder();
+        var placed = new List<PlacedSplice>();
+        var cursor = 0;
+        var consumedUntil = int.MinValue;
+        foreach (var child in contained)
+        {
+            if (child.Range.StartOffset < consumedUntil)
+            {
+                continue; // nested deeper: composed with its direct parent
+            }
+
+            consumedUntil = child.Range.EndOffset;
+            var originalSlice = source.Substring(child.Range.StartOffset, child.Range.EndOffset - child.Range.StartOffset);
+            var found = splice.MutatedText.IndexOf(originalSlice, cursor, StringComparison.Ordinal);
+            if (found < 0)
+            {
+                continue;
+            }
+
+            builder.Append(splice.MutatedText, cursor, found - cursor);
+            var subtree = Order(contained.Where(c => c.Range.StartOffset >= child.Range.StartOffset && c.Range.EndOffset <= child.Range.EndOffset));
+            var index = 0;
+            var (text, childPlaced) = Compose(source, child.Range.StartOffset, child.Range.EndOffset, subtree, ref index, helperNamespace);
+            placed.AddRange(childPlaced.Select(p => Shift(p, builder.Length)));
+            builder.Append(text);
+            cursor = found + originalSlice.Length;
+        }
+
+        builder.Append(splice.MutatedText, cursor, splice.MutatedText.Length - cursor);
+        return (builder.ToString(), placed);
+    }
+
+    private static PlacedSplice Shift(PlacedSplice placed, int by) => placed with { StartOffset = placed.StartOffset + by, EndOffset = placed.EndOffset + by };
 
     private void VisitDeclarations(IEnumerable<SynModuleDecl> declarations, FsharpFileLeaf file, List<Mutant> mutants)
     {
