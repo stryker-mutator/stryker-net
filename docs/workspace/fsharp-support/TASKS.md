@@ -429,7 +429,7 @@ classDiagram
 **Tests**: n/a — `manual: documentation`
 **Verify**: `manual: review docs render`
 **Acceptance criteria**:
-- [ ] Docs updated; discussion draft saved in the workspace
+- [x] Docs updated; discussion draft saved in the workspace
 **Depends on**: task 16
 **Time-box**: ~60 min
 
