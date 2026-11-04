@@ -4,28 +4,25 @@ Design: [DESIGN.md](./DESIGN.md)
 
 ## Analysis
 
-Build: `dotnet.exe build src/Stryker.slnx -c Debug` — baseline run at pre-flight
-Test: `dotnet.exe test src/Stryker.vstest.slnf -c Debug` — baseline run at pre-flight
-MTP tests: `dotnet.exe test -c Debug` run from `src/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest` (own global.json)
+Build: `dotnet build src/Stryker.slnx -c Debug` — baseline run at pre-flight
+Test: `dotnet test src/Stryker.vstest.slnf -c Debug` — baseline run at pre-flight
+MTP tests: `dotnet test -c Debug` run from `src/Stryker.TestRunner.MicrosoftTestPlatform.UnitTest` (own global.json)
 Integration: `pwsh ./integration-tests.ps1` (packs CLI 0.0.0-localdev, runs category via env `CATEGORY`/`RUNTIME`, validates with the ValidationProject)
 Lint: `.editorconfig` enforced by build; no separate lint command
 
-**WSL note**: this machine has no Linux `dotnet`; use `dotnet.exe` (Windows interop,
-SDK 10.0.402) or run from a Windows shell.
+**WSL note**: use the Linux `dotnet` (`/usr/bin/dotnet`, SDK 10.0.114). Do not mix with
+Windows `dotnet.exe` on this checkout — each OS rewrites `obj/` restore artifacts.
 Lock files: restore runs with `RestorePackagesWithLockFile`; new projects need
-`packages.lock.json` generated (`dotnet.exe restore --force-evaluate` unlocked) or CI restore fails.
+`packages.lock.json` generated (`dotnet restore --force-evaluate` unlocked) or CI restore fails.
 
 ### Known-failing tests
 
-Baseline (pre-flight run, this machine): `Stryker.Core.UnitTest` 1629/1641, 11 failed; all other projects green.
+Baseline (pre-flight, Linux dotnet): `Stryker.Core.UnitTest` 1625/1641, 1 failed,
+15 skipped (Windows-only); all other projects green.
 
 | Test | Reason | Action |
 |---|---|---|
-| `ClearTextReporter_ShouldPrint{OnReportDone,KilledMutation,SurvivedMutation}` (3) | multi-line expected literals compiled with LF (WSL checkout) vs `Environment.NewLine` CRLF at runtime — environment, green in CI | ignore; sessions compare failure *names* against this list, any new name = regression |
-| `ClearTextTreeReporter_ShouldPrint{FullTree,OnReportDone,KilledMutation,SurvivedMutation}` (4) | same LF/CRLF cause — **task 3 touches this reporter**: guard is "same 7 reporter failures, none new" | compare names |
-| `ShouldHaveHelpText` | same LF/CRLF cause | ignore |
-| `ShouldThrowWhenMultipleSolutionFilesAreDiscovered`, `ShouldThrowStrykerInputExceptionOnTwoProjectFiles_AndNoTestProjectFileSpecified` | message/line-ending comparison, same cause | ignore |
-| `ShouldPickFirstNugetPath` | mocked `where.exe` output split on `Environment.NewLine`, literal has LF — same cause | ignore |
+| `MarkdownSummaryReporter_ShouldOutputSummaryLocationToTheConsole` | Spectre.Console green-span count 3 vs 2 — terminal-dependent console rendering, pre-existing | ignore; any *other* failure name = regression |
 
 ### Domain model
 
@@ -128,7 +125,7 @@ classDiagram
 - `Program.cs` already renders `InputException` cleanly — no CLI change
 **Tests**:
 - `BuildSourceProjectInfo_FsharpProject_ThrowsInputException_WithProjectPath` — unit, `InputFileResolverTests` style
-**Verify**: `dotnet.exe test src/Stryker.Core/Stryker.Core.UnitTest -c Debug --filter FullyQualifiedName~InputFileResolver`
+**Verify**: `dotnet test src/Stryker.Core/Stryker.Core.UnitTest -c Debug --filter FullyQualifiedName~InputFileResolver`
 **Acceptance criteria**:
 - [ ] F# source project → `InputException` naming the project path
 - [ ] Message no longer claims "not supported", points at experimental status
@@ -147,7 +144,7 @@ classDiagram
 **Tests**:
 - `MutationLocation_FromRoslynSpan_Is1Based` — span (0,0) → line 1, column 1
 - `CsharpMutation_NeutralFields_MatchRoslynNodeLocationAndText`
-**Verify**: `dotnet.exe test src/Stryker.vstest.slnf -c Debug`
+**Verify**: `dotnet test src/Stryker.vstest.slnf -c Debug`
 **Acceptance criteria**:
 - [ ] Every C#-produced `Mutation` has non-null `Location`, `OriginalText`, `ReplacementText`
 - [ ] Full unit suite green
@@ -165,7 +162,7 @@ classDiagram
 **Tests**:
 - `JsonMutant_UsesNeutralLocation` — JsonReporter test without a Roslyn fixture
 - existing suites green
-**Verify**: `dotnet.exe test src/Stryker.vstest.slnf -c Debug`
+**Verify**: `dotnet test src/Stryker.vstest.slnf -c Debug`
 **Acceptance criteria**:
 - [ ] None of the 6 sites references `SyntaxNode`
 - [ ] Zero mutant-count/report behaviour change (suite green)
@@ -184,7 +181,7 @@ classDiagram
 **Tests**:
 - `IgnoredMethodFilter_NonCsharpMutation_IsNotFiltered`
 - existing suites green
-**Verify**: `dotnet.exe test src/Stryker.vstest.slnf -c Debug`
+**Verify**: `dotnet test src/Stryker.vstest.slnf -c Debug`
 **Acceptance criteria**:
 - [ ] `Mutation` (base) has no Roslyn member
 - [ ] Full unit suite green
@@ -204,7 +201,7 @@ classDiagram
 **Tests**:
 - `ServiceProvider_FsharpProject_ResolvesFsharpMutationProcess` — DI resolution test
 - `ServiceProvider_CsharpProject_ResolvesCsharpMutationProcess` — regression guard
-**Verify**: `dotnet.exe build src/Stryker.slnx -c Debug && dotnet.exe list src/Stryker.slnx package --vulnerable --include-transitive`
+**Verify**: `dotnet build src/Stryker.slnx -c Debug && dotnet list src/Stryker.slnx package --vulnerable --include-transitive`
 **Acceptance criteria**:
 - [ ] `Stryker.Core.csproj` has no FCS reference (direct or transitive)
 - [ ] Vulnerability scan reports nothing
@@ -223,7 +220,7 @@ classDiagram
 **Tests**:
 - `FsharpComponentsBuilder_BuildsLeaves_InCompileItemOrder` — MockFileSystem, shuffled directory order vs ordered compile items
 - `FsharpComponentsBuilder_SkipsUnparseableFile_WithWarning`
-**Verify**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug`
+**Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
 - [ ] Leaves ordered exactly as compile items
 - [ ] Each leaf has `SourceCode` + `ParseTree` populated
@@ -242,7 +239,7 @@ classDiagram
 **Tests**:
 - `FsharpCompile_UnmutatedProject_ProducesLoadableAssembly` — temp project fixture
 - `FsharpCompile_OverwritesTestOutput_AndBackupExists`
-**Verify**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug`
+**Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
 - [ ] Compiled assembly has same name/version as original and loads
 - [ ] Backup file present; restore returns the original
@@ -265,7 +262,7 @@ classDiagram
 - `Orchestrator_SplicesSingleMutant_ParenthesisedWithId` — unit, exact spliced text
 - `Orchestrator_Quotation_YieldsNoMutants` — unit, `<@ true @>` produces zero mutants
 - `FsharpSkeleton_EndToEnd_ReportsKilledMutant` — drives `MutationTestProcess` on a temp F# project (pattern: `ProjectOrchestratorTests`)
-**Verify**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug && dotnet.exe test src/Stryker.vstest.slnf -c Debug`
+**Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug && dotnet test src/Stryker.vstest.slnf -c Debug`
 **Acceptance criteria**:
 - [ ] JSON report: 1 mutant, status Killed, `language: "fs"`, 1-based span matching the literal
 - [ ] Original assembly restored after the run
@@ -285,7 +282,7 @@ classDiagram
 - `Rollback_DiagnosticInsideSplice_MarksMutantBuildError`
 - `Rollback_UnmappedDiagnostic_DropsFileMutants`
 - `Rollback_AlwaysFailingSplice_BoundedRetries`
-**Verify**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug`
+**Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
 - [ ] Report: BuildError for the broken mutant, Killed/Survived for the rest
 - [ ] Retry bound proven by the always-failing test
@@ -302,7 +299,7 @@ classDiagram
 **Tests**:
 - `Orchestrator_NestedMutants_SpliceInnerFirst_ExactText`
 - `Orchestrator_ManyMutantsOneFile_SingleCompileSucceeds`
-**Verify**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug`
+**Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
 - [ ] Exact spliced text matches the specified nesting form
 - [ ] One compilation carries all mutants
@@ -320,7 +317,7 @@ classDiagram
 **Tests**:
 - `FsharpCoverage_PerTest_UncoveredMutantIsNoCoverage` — e2e-style as task 8's
 - `FsharpModuleValue_Mutant_DetectedAsStatic`
-**Verify**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug`
+**Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
 - [ ] Uncovered mutant ends NoCoverage, covered one Killed/Survived
 - [ ] Module-value mutant flagged static (or tracked) — assertion on mutant metadata
@@ -339,7 +336,7 @@ classDiagram
 **Tests**:
 - `ArithmeticMutator_Addition_YieldsSubtraction` (+ pairwise cases) — exact-text units
 - `ArithmeticMutator_ReportCount_OnFixtureFile` — count asserted
-**Verify**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug`
+**Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
 - [ ] Pairwise replacements exact; fixture count matches
 **Depends on**: tasks 9, 10
@@ -355,7 +352,7 @@ classDiagram
 **Tests**:
 - `EqualityMutator_Equals_YieldsNotEquals` (+ table cases) — exact-text units
 - `EqualityMutator_ReportCount_OnFixtureFile`
-**Verify**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug`
+**Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
 - [ ] Table replacements exact; fixture count matches
 **Depends on**: task 12
@@ -372,7 +369,7 @@ classDiagram
 **Tests**:
 - `StringMutator_NonEmptyLiteral_YieldsEmpty` / `StringMutator_EmptyLiteral_YieldsStrykerWasHere`
 - `StringMutator_LiteralAttribute_IsSkipped`
-**Verify**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug`
+**Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
 - [ ] Literal cases exact; `[<Literal>]` untouched
 **Depends on**: task 12
@@ -435,31 +432,31 @@ classDiagram
 ### Session 1 — Seams: clean error + neutral Mutation (~4 h)
 Tasks: 1, 2, 3, 4
 **Skills**: `software-engineer`, `tdd`
-**Checkpoint**: `dotnet.exe test src/Stryker.vstest.slnf -c Debug`
+**Checkpoint**: `dotnet test src/Stryker.vstest.slnf -c Debug`
 **Commit point**: yes — one commit per task
 
 ### Session 2 — Package + component tree (~3 h)
 Tasks: 5, 6
 **Skills**: `software-engineer`, `tdd`
-**Checkpoint**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug && dotnet.exe list src/Stryker.slnx package --vulnerable --include-transitive`
+**Checkpoint**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug && dotnet list src/Stryker.slnx package --vulnerable --include-transitive`
 **Commit point**: yes
 
 ### Session 3 — Compile + walking skeleton (~3 h)
 Tasks: 7, 8
 **Skills**: `software-engineer`, `tdd`
-**Checkpoint**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug && dotnet.exe test src/Stryker.vstest.slnf -c Debug`
+**Checkpoint**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug && dotnet test src/Stryker.vstest.slnf -c Debug`
 **Commit point**: yes
 
 ### Session 4 — Robustness: rollback, splicing, coverage (~4 h)
 Tasks: 9, 10, 11
 **Skills**: `software-engineer`, `tdd`
-**Checkpoint**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug && dotnet.exe test src/Stryker.vstest.slnf -c Debug`
+**Checkpoint**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug && dotnet test src/Stryker.vstest.slnf -c Debug`
 **Commit point**: yes
 
 ### Session 5 — Mutator floor (~3.75 h)
 Tasks: 12, 13, 14, 15
 **Skills**: `software-engineer`, `tdd`
-**Checkpoint**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug`
+**Checkpoint**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Commit point**: yes
 
 ### Session 6 — Integration, CI, docs (~2.5 h)
