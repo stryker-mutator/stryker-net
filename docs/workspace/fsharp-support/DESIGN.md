@@ -52,11 +52,17 @@ JSON/HTML reports show F# source with correct 1-based spans and `language: "fs"`
 
 ### <a id="fr6"></a>FR6 — Initial mutator set
 At least: boolean literal, arithmetic binary operators, equality/comparison operators,
-string literals. The set is extensible through the same registration pattern as C#.
+string literals, and collection functions — the F# analogue of the C# LINQ mutator,
+mapping module functions instead of extension methods (`l.Select(x => x)` ≡
+`l |> Seq.map (fun x -> x)`), e.g. `Seq.min`↔`Seq.max`, `Seq.head`↔`Seq.last`, with
+`List`/`Array` variants. The set is extensible through the same registration pattern as C#.
 
 ### <a id="fr7"></a>FR7 — Graceful degradation
-C#-only features (ignored-method filter, LINQ filter, baseline node-matching, test-to-mutant
-linking) log a clear "not supported for F#" message instead of throwing.
+C#-only features (ignored-method filter, baseline node-matching, test-to-mutant linking)
+log a clear "not supported for F#" message instead of throwing. The
+`ExcludeLinqExpressionFilter` concern gets a real F# analogue instead of degradation:
+the orchestrator never splices inside quotations (`SynExpr.Quote`, `<@ … @>`), where an
+injected `IsActive` call would surface in the expression tree and change semantics.
 
 ## Non-Functional Requirements
 

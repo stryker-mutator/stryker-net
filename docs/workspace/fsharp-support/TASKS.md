@@ -256,12 +256,14 @@ classDiagram
 **Types**: `BooleanMutator` (F#), `IFsharpMutator`, `FsharpMutantOrchestrator`, `TextSplice`; `FsharpMutationProcess` goes from stub to real
 **Constraints**:
 - [ADR mutation-mechanism](./adrs/mutation-mechanism.md): splice `(if <ns>.MutantControl.IsActive <id> then <m> else <o>)`, always parenthesised
+- Orchestrator never descends into `SynExpr.Quote` subtrees (`<@ … @>`) — an injected `IsActive` call would surface in the expression tree ([FR7](./DESIGN.md#fr7)); covered by `Orchestrator_Quotation_YieldsNoMutants`
 - Helper: compile existing C# `MutantControl`/`MutantContext` sources (randomised namespace from `CodeInjection`) with Roslyn into `<ns>.StrykerHelpers.dll`, write next to test output, reference it in the F# compile — runners' reflection contract unchanged (`CoverageCollector.cs:146-167`)
 - Report: `SourceFile.Language = "fs"` for F# leaves (`SourceFile.cs:26-27`), spans from `MutationLocation` ([FR5](./DESIGN.md#fr5))
 - Task 1's `InputException` gate removed here
 **Tests**:
 - `BooleanMutator_TrueLiteral_YieldsFalseReplacement` — unit
 - `Orchestrator_SplicesSingleMutant_ParenthesisedWithId` — unit, exact spliced text
+- `Orchestrator_Quotation_YieldsNoMutants` — unit, `<@ true @>` produces zero mutants
 - `FsharpSkeleton_EndToEnd_ReportsKilledMutant` — drives `MutationTestProcess` on a temp F# project (pattern: `ProjectOrchestratorTests`)
 **Verify**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug && dotnet.exe test src/Stryker.vstest.slnf -c Debug`
 **Acceptance criteria**:
@@ -376,7 +378,27 @@ classDiagram
 **Depends on**: task 12
 **Time-box**: ~60 min
 
-### 15. F# integration target + CI ([FR1](./DESIGN.md#fr1), [NFR2](./DESIGN.md#nfr2), [NFR3](./DESIGN.md#nfr3))
+### 15. Collection function mutator ([FR6](./DESIGN.md#fr6))
+**Goal**: `Seq`/`List`/`Array` module calls mutate as the F# analogue of the C# LINQ mutator (`l.Select(x => x)` ≡ `l |> Seq.map (fun x -> x)`).
+**Slice**: collection-function mutants appear and are tested, end to end through the report count
+**Fit**: closed
+**Types**: `CollectionFunctionMutator` (F#)
+**Constraints**:
+- Match long idents `Seq.head`, `List.min`, … (`SynExpr.App` over `SynExpr.LongIdent`); replace the function-name text only
+- Mapping: the [docs/mutations.md](../../mutations.md) linq table where an F# module function equivalent exists — at least `min`↔`max`, `head`↔`last`, `sortBy`↔`sortByDescending`, `sort`↔`sortDescending`, `tryHead`↔`tryLast`, each for `Seq`/`List`/`Array`; pairs without an equivalent are skipped
+- C#-style extension-method LINQ on F# code (`l.Select(...)`) is out of scope — log once at debug
+- `MutationLevel` copies the C# linq mutator's level
+**Tests**:
+- `CollectionMutator_SeqHead_YieldsSeqLast` (+ table cases across Seq/List/Array) — exact-text units
+- `CollectionMutator_ReportCount_OnFixtureFile`
+**Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
+**Acceptance criteria**:
+- [ ] Table replacements exact for all three modules; fixture count matches
+- [ ] Unmapped functions untouched
+**Depends on**: task 12
+**Time-box**: ~60 min
+
+### 16. F# integration target + CI ([FR1](./DESIGN.md#fr1), [NFR2](./DESIGN.md#nfr2), [NFR3](./DESIGN.md#nfr3))
 **Goal**: A real F# target project (two order-dependent files, F# xunit tests) runs in the integration matrix with exact mutant counts.
 **Slice**: whole — project + script case + validation fact + matrix entry only mean anything together
 **Fit**: closed
@@ -389,10 +411,10 @@ classDiagram
 **Acceptance criteria**:
 - [ ] Integration run green locally with pinned counts
 - [ ] Existing C# categories' counts unchanged ([NFR2](./DESIGN.md#nfr2))
-**Depends on**: tasks 11, 13, 14
+**Depends on**: tasks 11, 13, 14, 15
 **Time-box**: ~90 min
 
-### 16. Docs + upstream proposal ([FR1](./DESIGN.md#fr1))
+### 17. Docs + upstream proposal ([FR1](./DESIGN.md#fr1))
 **Goal**: User docs mark F# support experimental with the supported mutator list; a maintainer-facing summary (removal reason answered: NFR1 gate + package isolation; `Stryker.Abstractions` breaking change noted) is drafted for a GitHub discussion.
 **Slice**: whole — documentation
 **Fit**: closed
@@ -405,7 +427,7 @@ classDiagram
 **Verify**: `manual: review docs render`
 **Acceptance criteria**:
 - [ ] Docs updated; discussion draft saved in the workspace
-**Depends on**: task 15
+**Depends on**: task 16
 **Time-box**: ~60 min
 
 ## Sessions
@@ -434,14 +456,14 @@ Tasks: 9, 10, 11
 **Checkpoint**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug && dotnet.exe test src/Stryker.vstest.slnf -c Debug`
 **Commit point**: yes
 
-### Session 5 — Mutator floor (~2.75 h)
-Tasks: 12, 13, 14
+### Session 5 — Mutator floor (~3.75 h)
+Tasks: 12, 13, 14, 15
 **Skills**: `software-engineer`, `tdd`
 **Checkpoint**: `dotnet.exe test src/Stryker.Fsharp.UnitTest -c Debug`
 **Commit point**: yes
 
 ### Session 6 — Integration, CI, docs (~2.5 h)
-Tasks: 15, 16
+Tasks: 16, 17
 **Skills**: `software-engineer`, `tdd`
 **Checkpoint**: `CATEGORY=fsharp RUNTIME=netcore pwsh ./integration-tests.ps1`
 **Commit point**: yes
