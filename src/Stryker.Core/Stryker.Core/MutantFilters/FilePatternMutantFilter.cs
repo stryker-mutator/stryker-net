@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis.Text;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
@@ -39,14 +40,15 @@ public class FilePatternMutantFilter : IMutantFilter
 
             bool MatchesPattern(IFilePattern pattern)
             {
-                // if we do not have the original node, we cannot exclude the mutation according to its location
-                if (mutant.Mutation.OriginalNode == null)
+                // if we do not have the location, we cannot exclude the mutation according to it
+                if (mutant.Mutation.Location == null)
                 {
                     return false;
                 }
+                var span = TextSpan.FromBounds(mutant.Mutation.Location.StartOffset, mutant.Mutation.Location.EndOffset);
                 // We check both the full and the relative path to allow for relative paths.
-                return pattern.IsMatch(file.FullPath, mutant.Mutation.OriginalNode.Span) ||
-                       pattern.IsMatch(file.RelativePath, mutant.Mutation.OriginalNode.Span);
+                return pattern.IsMatch(file.FullPath, span) ||
+                       pattern.IsMatch(file.RelativePath, span);
             }
         }
     }

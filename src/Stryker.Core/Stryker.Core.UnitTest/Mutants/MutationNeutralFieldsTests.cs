@@ -16,13 +16,15 @@ public class MutationNeutralFieldsTests : MutantOrchestratorTestsBase
     {
         var span = new FileLinePositionSpan("file.cs", new LinePositionSpan(new LinePosition(0, 0), new LinePosition(2, 4)));
 
-        var location = MutationLocation.FromRoslyn(span);
+        var location = MutationLocation.FromRoslyn(span, 0, 10);
 
         location.FilePath.ShouldBe("file.cs");
         location.StartLine.ShouldBe(1);
         location.StartColumn.ShouldBe(1);
         location.EndLine.ShouldBe(3);
         location.EndColumn.ShouldBe(5);
+        location.StartOffset.ShouldBe(0);
+        location.EndOffset.ShouldBe(10);
     }
 
     [TestMethod]

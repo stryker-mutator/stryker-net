@@ -22,6 +22,9 @@ public static class ReportTestHelper
         {
             OriginalNode = originalNode,
             ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+            Location = MutationLocation.FromRoslyn(originalNode),
+            OriginalText = originalNode.ToString(),
+            ReplacementText = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right).ToString(),
             DisplayName = "This name should display",
             Type = Mutator.Arithmetic
         };

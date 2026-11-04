@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using Stryker.Abstractions;
 using Stryker.Configuration.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
@@ -65,7 +66,7 @@ namespace ExtraProject.XUnit
             new LinePosition(2, 2),
             new LinePosition(4, 5));
 
-        var jsonMutantLocation = new Core.Reporters.Json.Location(lineSpan);
+        var jsonMutantLocation = new Core.Reporters.Json.Location(MutationLocation.FromRoslyn(lineSpan, 0, 0));
 
         jsonMutantLocation.Start.Line.ShouldBe(3);
         jsonMutantLocation.Start.Column.ShouldBe(3);

@@ -55,7 +55,13 @@ public class FilePatternMutantFilterTests : TestBase
             SyntaxTriviaList.Empty);
 
         var mutant = new Mutant
-        { Mutation = new Mutation { OriginalNode = SyntaxFactory.IdentifierName(syntaxToken) } };
+        {
+            Mutation = new Mutation
+            {
+                OriginalNode = SyntaxFactory.IdentifierName(syntaxToken),
+                Location = new MutationLocation("", 1, 1, 1, 1, spanStart, spanEnd)
+            }
+        };
 
         var sut = new FilePatternMutantFilter(options);
 

@@ -38,6 +38,9 @@ public class RealTimeMutantHandlerTest : TestBase
                 DisplayName = "test mutation",
                 OriginalNode = SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal("A"))),
                 ReplacementNode = SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal("B"))),
+                Location = new MutationLocation("", 1, 1, 1, 4, 0, 3),
+                OriginalText = "\"A\"",
+                ReplacementText = "\"B\"",
             },
             ResultStatus = MutantStatus.Killed,
         };
@@ -90,6 +93,9 @@ public class RealTimeMutantHandlerTest : TestBase
                 DisplayName = "test mutation",
                 OriginalNode = SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal("A"))),
                 ReplacementNode = SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal("B"))),
+                Location = new MutationLocation("", 1, 1, 1, 4, 0, 3),
+                OriginalText = "\"A\"",
+                ReplacementText = "\"B\"",
             },
             ResultStatus = MutantStatus.Killed,
         };

@@ -34,6 +34,8 @@ classDiagram
         +int StartColumn  %% 1-based
         +int EndLine
         +int EndColumn
+        +int StartOffset  %% 0-based char offset, FilePattern/block containment
+        +int EndOffset
     }
     class Mutation {
         +MutationLocation Location
@@ -88,7 +90,7 @@ classDiagram
 
 | Type / Fn | Stability | Addresses | Notes |
 |---|---|---|---|
-| `MutationLocation` | published | [FR5](./DESIGN.md#fr5) | in `Stryker.Abstractions` (NuGet-published) — additive only |
+| `MutationLocation` | published | [FR5](./DESIGN.md#fr5) | in `Stryker.Abstractions` (NuGet-published) — additive only; task 3 added `StartOffset`/`EndOffset` (char offsets) for `FilePattern` and block-containment matching |
 | `Mutation` (neutral fields) | published | [FR5](./DESIGN.md#fr5), [FR7](./DESIGN.md#fr7) | [ADR](./adrs/mutation-location-abstraction.md); additive, then `OriginalNode` moves to `CsharpMutation` (breaking for `Stryker.Abstractions` consumers — release-noted) |
 | `CsharpMutation` | published | [FR7](./DESIGN.md#fr7) | carries Roslyn nodes for C#-only filters |
 | `TextSplice` | internal | [FR2](./DESIGN.md#fr2), [FR3](./DESIGN.md#fr3) | [ADR](./adrs/mutation-mechanism.md) |
@@ -164,8 +166,8 @@ classDiagram
 - existing suites green
 **Verify**: `dotnet test src/Stryker.vstest.slnf -c Debug`
 **Acceptance criteria**:
-- [ ] None of the 6 sites references `SyntaxNode`
-- [ ] Zero mutant-count/report behaviour change (suite green)
+- [x] None of the 6 sites references `SyntaxNode`
+- [x] Zero mutant-count/report behaviour change (suite green)
 **Depends on**: task 2
 **Time-box**: ~75 min
 

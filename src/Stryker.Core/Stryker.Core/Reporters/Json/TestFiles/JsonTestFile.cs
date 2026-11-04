@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -33,7 +34,7 @@ public class JsonTestFile : IJsonTestFile
             Tests.Add(new JsonTest(test.Id.ToString())
             {
                 Name = test.Name,
-                Location = new Location(test.Node.GetLocation().GetMappedLineSpan())
+                Location = new Location(MutationLocation.FromRoslyn(test.Node))
             });
         }
     }

@@ -48,6 +48,7 @@ public void SomeMethod()
             Mutation = new Mutation
             {
                 OriginalNode = blockNode,
+                Location = MutationLocation.FromRoslyn(blockNode),
                 Type = Mutator.Block,
             }
         };
@@ -56,6 +57,7 @@ public void SomeMethod()
             Mutation = new Mutation
             {
                 OriginalNode = binaryExpressionNode,
+                Location = MutationLocation.FromRoslyn(binaryExpressionNode),
             }
         };
 
@@ -85,6 +87,7 @@ public void SomeMethod()
             Mutation = new Mutation
             {
                 OriginalNode = blockNode,
+                Location = MutationLocation.FromRoslyn(blockNode),
                 Type = Mutator.Block,
             }
         };
