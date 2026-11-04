@@ -55,6 +55,7 @@ Equality mutations belong to the `Basic` mutation level, as in C#. See [mutation
 - Only `.fs` project sources are mutated. `.fsx` scripts and `.fsi` signature files are not supported.
 - Test files are not linked to source locations for F# test projects.
 - Interpolated strings are skipped.
+- The walker does not descend into tuples, array and list literals, records, type members, or `do` expressions. Stryker generates no mutants inside them yet.
 - LINQ extension methods (`xs.Where(...)`) are not matched. Only the `Seq`, `List`, and `Array` module functions are.
 - The helper assembly Stryker injects is not strong-name signed. Signed F# projects are untested.
 - F#-specific mutators, such as pipe removal, are future work.

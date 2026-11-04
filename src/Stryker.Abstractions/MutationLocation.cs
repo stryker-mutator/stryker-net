@@ -16,7 +16,7 @@ public sealed record MutationLocation(
     int EndOffset)
 {
     /// <summary>
-    /// Converts a Roslyn span (0-based) to a 1-based location. This is the only place the offset is applied.
+    /// Converts a Roslyn span (0-based) to a 1-based location. This is the only place the offset is applied for Roslyn; the F# compiler has its own conversion (FsharpLocations).
     /// </summary>
     public static MutationLocation FromRoslyn(FileLinePositionSpan span, int startOffset, int endOffset) => new(
         span.Path,

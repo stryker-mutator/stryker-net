@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
@@ -40,7 +44,7 @@ public class FsharpMutationProcess(IFileSystem fileSystem, ILogger<FsharpMutatio
             compiler.InjectFile(info.TestProjectsInfo, helperFileName, helperBytes);
             foreach (var testProject in info.TestProjectsInfo.AnalyzerResults)
             {
-                FsharpHelperAssembly.RegisterInDependencyManifests(fileSystem, testProject.GetAssemblyDirectoryPath(), helperFileName);
+                FsharpHelperAssembly.RegisterInDependencyManifests(fileSystem, testProject.GetAssemblyDirectoryPath(), helperFileName, logger);
             }
         }
         finally
@@ -61,6 +65,23 @@ public class FsharpMutationProcess(IFileSystem fileSystem, ILogger<FsharpMutatio
 
             mutant.ResultStatus = MutantStatus.CompileError;
             mutant.ResultStatusReason = "Mutant caused compile errors";
+        }
+    }
+
+    /// <summary>Undoes the helper injection; the source assembly itself is restored by Core.</summary>
+    public void Restore(MutationTestInput input)
+    {
+        var helperFileName = FsharpHelperAssembly.FileName(input.SourceProjectInfo.CodeInjector);
+        foreach (var testProject in input.SourceProjectInfo.TestProjectsInfo?.AnalyzerResults ?? [])
+        {
+            try
+            {
+                FsharpHelperAssembly.RestoreFromDirectory(fileSystem, testProject.GetAssemblyDirectoryPath(), helperFileName);
+            }
+            catch (IOException exception)
+            {
+                logger.LogWarning(exception, "Failed to remove the helper assembly or restore the dependency manifests in {Directory}.", testProject.GetAssemblyDirectoryPath());
+            }
         }
     }
 

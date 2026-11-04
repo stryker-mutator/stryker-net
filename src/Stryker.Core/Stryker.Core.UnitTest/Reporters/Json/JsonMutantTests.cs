@@ -36,4 +36,17 @@ public class JsonMutantTests : TestBase
         json.Location.End.Column.ShouldBe(12);
         json.Replacement.ShouldBe("x - y");
     }
+
+    [TestMethod]
+    public void JsonMutant_WithoutLocation_FallsBackToFileStart()
+    {
+        var mutant = new Mutant { Id = 1, Mutation = new Mutation { DisplayName = "External", ReplacementText = "b" } };
+
+        var json = new JsonMutant(mutant);
+
+        json.Location.Start.Line.ShouldBe(1);
+        json.Location.Start.Column.ShouldBe(1);
+        json.Location.End.Line.ShouldBe(1);
+        json.Location.End.Column.ShouldBe(1);
+    }
 }

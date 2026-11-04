@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using FSharp.Compiler.Syntax;
 using Microsoft.CodeAnalysis;
 using Stryker.Abstractions;

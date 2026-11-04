@@ -30,6 +30,20 @@ public class FsharpCompilingProcessTests
     }
 
     [TestMethod]
+    public void BuildArguments_DropsPdbAndSecondaryOutputOptions_AbsolutisesOthers()
+    {
+        var analyzerResult = new Mock<IAnalyzerResult>();
+        analyzerResult.Setup(x => x.ProjectFilePath).Returns("/proj/Lib.fsproj");
+        analyzerResult.Setup(x => x.CompilerArguments).Returns(["--pdb:obj/Debug/Lib.pdb", "--doc:obj/Lib.xml", "--embed:a.fs", "--keyfile:key.snk", "A.fs"]);
+        var process = new FsharpCompilingProcess(analyzerResult.Object, new FileSystem(), NullLogger.Instance);
+
+        var argv = process.BuildArguments("/work/Lib.dll", "/work", new Dictionary<string, string>(), [], []);
+
+        argv.ShouldNotContain(a => a.StartsWith("--pdb:") || a.StartsWith("--doc:") || a.StartsWith("--embed:"));
+        argv.ShouldContain(Path.GetFullPath("key.snk", "/proj").Insert(0, "--keyfile:"));
+    }
+
+    [TestMethod]
     public void FsharpCompile_SourceOverride_ReplacesFileContent_KeepingCompileOrder()
     {
         using var project = new TempFsharpProject();

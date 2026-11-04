@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using Buildalyzer;
 using FSharp.Compiler.CodeAnalysis;
 using FSharp.Compiler.Text;
@@ -16,9 +20,6 @@ namespace Stryker.Fsharp;
 public class FsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, ILogger logger, IFileSystem fileSystem) : ProjectComponentsBuilder(fileSystem)
 {
     private static readonly string[] ExcludedExtensions = [".fsi", ".fsx"];
-
-    // One checker for the whole run: it owns FCS caches and is expensive to create.
-    private static readonly FSharpChecker Checker = FSharpChecker.Create(null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
     public override IReadOnlyProjectComponent Build()
     {
@@ -52,7 +53,7 @@ public class FsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, ILogg
 
             var sourceCode = FileSystem.File.ReadAllText(sourceFile);
             var parseResults = FSharpAsync.RunSynchronously(
-                Checker.ParseFile(sourceFile, SourceText.ofString(sourceCode), parsingOptions, null, null), null, null);
+                FsharpCheckerHolder.Instance.ParseFile(sourceFile, SourceText.ofString(sourceCode), parsingOptions, null, null), null, null);
             if (parseResults.ParseHadErrors)
             {
                 logger.LogWarning("Skipping F# file {File}: it does not parse ({Errors}).", sourceFile, string.Join("; ",
@@ -82,7 +83,7 @@ public class FsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, ILogg
     private static FSharpParsingOptions CreateParsingOptions(IAnalyzerResult analyzerResult, IEnumerable<string> sourceFiles)
     {
         var args = analyzerResult.PreprocessorSymbols.Select(symbol => $"--define:{symbol}");
-        var (options, _) = Checker.GetParsingOptionsFromCommandLineArgs(
+        var (options, _) = FsharpCheckerHolder.Instance.GetParsingOptionsFromCommandLineArgs(
             ListModule.OfSeq(sourceFiles), ListModule.OfSeq(args), null, null);
         return options;
     }

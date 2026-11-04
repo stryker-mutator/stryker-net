@@ -19,6 +19,7 @@ internal sealed class MutatedFsharpProject : IDisposable
 {
     private readonly TempFsharpProject _project;
     private readonly string _assemblyFileName;
+    private readonly List<AssemblyLoadContext> _contexts = [];
 
     public MutatedFsharpProject(string source)
     {
@@ -51,6 +52,7 @@ internal sealed class MutatedFsharpProject : IDisposable
     public LoadedMutatedAssembly Load()
     {
         var context = new AssemblyLoadContext(null, isCollectible: true);
+        _contexts.Add(context);
         context.Resolving += (ctx, name) =>
         {
             var candidate = Path.Combine(Output, name.Name + ".dll");
@@ -61,7 +63,15 @@ internal sealed class MutatedFsharpProject : IDisposable
         return new LoadedMutatedAssembly(lib, helper.GetType($"{Ns}.MutantControl")!);
     }
 
-    public void Dispose() => _project.Dispose();
+    public void Dispose()
+    {
+        foreach (var context in _contexts)
+        {
+            context.Unload();
+        }
+
+        _project.Dispose();
+    }
 }
 
 internal sealed class LoadedMutatedAssembly(Assembly lib, Type mutantControl)

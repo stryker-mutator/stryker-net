@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using FSharp.Compiler.Text;
 using Stryker.Abstractions;
 
@@ -5,13 +7,16 @@ namespace Stryker.Fsharp.Mutants;
 
 internal static class FsharpLocations
 {
+    // Line tables per source text instance: every node of a file converts against the same text.
+    private static readonly ConditionalWeakTable<string, List<int>> Memo = new();
+
     /// <summary>
     /// Converts an FCS range (lines 1-based, columns 0-based) to a <see cref="MutationLocation"/> (columns 1-based).
-    /// This is the only place the +1 on columns is applied.
+    /// This is the only place the +1 on columns is applied for FCS ranges; Roslyn has its own conversion (MutationLocation.FromRoslyn).
     /// </summary>
     public static MutationLocation ToLocation(FSharp.Compiler.Text.Range range, string sourceText)
     {
-        var lineStarts = LineStarts(sourceText);
+        var lineStarts = Memo.GetValue(sourceText, LineStarts);
         return new MutationLocation(
             range.FileName,
             range.StartLine,

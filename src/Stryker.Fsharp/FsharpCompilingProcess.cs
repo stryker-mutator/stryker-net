@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using Buildalyzer;
 using FSharp.Compiler.CodeAnalysis;
 using FSharp.Compiler.Diagnostics;
@@ -23,11 +27,9 @@ internal sealed record FsharpCompileResult(bool Success, byte[] Assembly, IReadO
 internal sealed class FsharpCompilingProcess(IAnalyzerResult sourceProject, IFileSystem fileSystem, ILogger logger)
 {
     // Options whose value is a path that Buildalyzer reports relative to the project directory.
-    private static readonly string[] PathOptions = ["-o:", "--out:", "--embed:", "--resource:", "--keyfile:", "--win32icon:", "--win32res:", "--win32manifest:", "--appconfig:", "--doc:", "--sourcelink:", "--pdb:"];
+    private static readonly string[] PathOptions = ["-o:", "--out:", "--resource:", "--keyfile:", "--win32icon:", "--win32res:", "--win32manifest:", "--appconfig:", "--sourcelink:"];
     // Options that would produce secondary outputs we do not want next to the original build.
-    private static readonly string[] DroppedOptions = ["--refout:", "--refonly", "--doc:", "--embed:"];
-
-    private static readonly FSharpChecker Checker = FSharpChecker.Create(null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    private static readonly string[] DroppedOptions = ["--refout:", "--refonly", "--doc:", "--embed:", "--pdb:"];
 
     private string ProjectDir => fileSystem.Path.GetDirectoryName(sourceProject.ProjectFilePath)!;
 
@@ -42,7 +44,7 @@ internal sealed class FsharpCompilingProcess(IAnalyzerResult sourceProject, IFil
             var output = fileSystem.Path.Combine(workDir, sourceProject.GetAssemblyFileName());
             var sourceMap = new Dictionary<string, string>();
             var argv = BuildArguments(output, workDir, sourceOverrides ?? new Dictionary<string, string>(), references ?? [], sourceMap);
-            var (diagnostics, exception) = FSharpAsync.RunSynchronously(Checker.Compile(argv, null), null, null).ToValueTuple();
+            var (diagnostics, exception) = FSharpAsync.RunSynchronously(FsharpCheckerHolder.Instance.Compile(argv, null), null, null).ToValueTuple();
             var hasErrors = diagnostics.Any(d => d.Severity.IsError) || exception != null;
             foreach (var diagnostic in diagnostics.Where(d => d.Severity.IsError))
             {
@@ -80,7 +82,7 @@ internal sealed class FsharpCompilingProcess(IAnalyzerResult sourceProject, IFil
         }
     }
 
-    private string[] BuildArguments(string output, string workDir, IReadOnlyDictionary<string, string> sourceOverrides, IEnumerable<string> references, Dictionary<string, string> sourceMap)
+    internal string[] BuildArguments(string output, string workDir, IReadOnlyDictionary<string, string> sourceOverrides, IEnumerable<string> references, Dictionary<string, string> sourceMap)
     {
         var overrides = sourceOverrides.ToDictionary(o => fileSystem.Path.GetFullPath(o.Key), o => o.Value);
         var argv = new List<string> { "fsc.exe" };

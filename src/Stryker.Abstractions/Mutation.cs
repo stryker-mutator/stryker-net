@@ -11,7 +11,7 @@ public class Mutation
     public string Description { get; set; }
 
     /// <summary>1-based source range of the original code.</summary>
-    public MutationLocation Location { get; set; }
-    public string OriginalText { get; set; }
-    public string ReplacementText { get; set; }
+    public virtual MutationLocation Location { get; set; }
+    public virtual string OriginalText { get; set; }
+    public virtual string ReplacementText { get; set; }
 }

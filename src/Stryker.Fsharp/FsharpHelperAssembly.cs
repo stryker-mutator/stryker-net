@@ -1,9 +1,13 @@
+using System;
+using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Core.InjectedHelpers;
 
@@ -15,6 +19,8 @@ namespace Stryker.Fsharp;
 /// </summary>
 internal static class FsharpHelperAssembly
 {
+    private const string BackupSuffix = ".stryker-unchanged";
+
     public static string FileName(CodeInjection injector) => $"{injector.HelperNamespace}.StrykerHelpers.dll";
 
     public static byte[] Compile(CodeInjection injector, IAnalyzerResult sourceProject)
@@ -54,15 +60,32 @@ internal static class FsharpHelperAssembly
     /// dependency manifest only load listed assemblies, so a helper that is merely copied next to the mutated
     /// assembly would not be found when the mutated code first references it.
     /// </summary>
-    public static void RegisterInDependencyManifests(IFileSystem fileSystem, string directory, string helperFileName)
+    public static void RegisterInDependencyManifests(IFileSystem fileSystem, string directory, string helperFileName, ILogger? logger = null)
     {
         var name = fileSystem.Path.GetFileNameWithoutExtension(helperFileName);
         var key = $"{name}/1.0.0";
         foreach (var manifest in fileSystem.Directory.GetFiles(directory, "*.deps.json"))
         {
-            if (JsonNode.Parse(fileSystem.File.ReadAllText(manifest)) is not JsonObject root)
+            JsonNode? parsed;
+            try
+            {
+                parsed = JsonNode.Parse(fileSystem.File.ReadAllText(manifest));
+            }
+            catch (JsonException exception)
+            {
+                logger?.LogWarning(exception, "Skipping malformed dependency manifest {Manifest}: the helper assembly is not registered in it.", manifest);
+                continue;
+            }
+
+            if (parsed is not JsonObject root)
             {
                 continue;
+            }
+
+            var backup = manifest + BackupSuffix;
+            if (!fileSystem.File.Exists(backup))
+            {
+                fileSystem.File.Copy(manifest, backup);
             }
 
             foreach (var target in (root["targets"] as JsonObject)?.Select(t => t.Value).OfType<JsonObject>() ?? [])
@@ -74,6 +97,27 @@ internal static class FsharpHelperAssembly
             libraries[key] = new JsonObject { ["type"] = "reference", ["serviceable"] = false, ["sha512"] = string.Empty };
             root["libraries"] = libraries;
             fileSystem.File.WriteAllText(manifest, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+        }
+    }
+
+    /// <summary>Undoes <see cref="RegisterInDependencyManifests"/> and the helper copy: manifests come back from their backups, the helper is deleted.</summary>
+    public static void RestoreFromDirectory(IFileSystem fileSystem, string directory, string helperFileName)
+    {
+        if (!fileSystem.Directory.Exists(directory))
+        {
+            return;
+        }
+
+        foreach (var backup in fileSystem.Directory.GetFiles(directory, "*.deps.json" + BackupSuffix))
+        {
+            fileSystem.File.Copy(backup, backup[..^BackupSuffix.Length], true);
+            fileSystem.File.Delete(backup);
+        }
+
+        var helperPath = fileSystem.Path.Combine(directory, helperFileName);
+        if (fileSystem.File.Exists(helperPath))
+        {
+            fileSystem.File.Delete(helperPath);
         }
     }
 }

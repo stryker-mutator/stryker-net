@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using FSharp.Compiler.Syntax;
 using Stryker.Abstractions;
 using Stryker.Fsharp.Mutants;

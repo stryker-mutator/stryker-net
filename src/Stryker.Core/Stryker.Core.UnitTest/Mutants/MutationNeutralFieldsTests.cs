@@ -62,4 +62,22 @@ public class MutationNeutralFieldsTests : MutantOrchestratorTestsBase
             mutation.ReplacementText.ShouldBe(mutation.ReplacementNode.ToString());
         }
     }
+
+    [TestMethod]
+    public void CsharpMutation_DerivesFieldsLazilyFromNodes_AndExplicitValuesWin()
+    {
+        var original = Microsoft.CodeAnalysis.CSharp.SyntaxFactory.ParseExpression("a + b");
+        var replacement = Microsoft.CodeAnalysis.CSharp.SyntaxFactory.ParseExpression("a - b");
+
+        var derived = new CsharpMutation { OriginalNode = original, ReplacementNode = replacement };
+        var explicitValues = new CsharpMutation { OriginalNode = original, ReplacementNode = replacement, OriginalText = "x", Location = new MutationLocation("f", 5, 1, 5, 2, 0, 1) };
+
+        derived.OriginalText.ShouldBe("a + b");
+        derived.ReplacementText.ShouldBe("a - b");
+        derived.Location.StartLine.ShouldBe(1);
+        derived.Location.ShouldBeSameAs(derived.Location);
+        explicitValues.OriginalText.ShouldBe("x");
+        explicitValues.Location.StartLine.ShouldBe(5);
+        new CsharpMutation().Location.ShouldBeNull();
+    }
 }

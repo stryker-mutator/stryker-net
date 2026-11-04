@@ -36,9 +36,21 @@ Boolean, arithmetic, equality, string literal and `String.Empty`, and `Seq`/`Lis
 - Lambda bodies and `match` expressions are not walked yet.
 - No `.fsx` or `.fsi` support, and no source linking for F# test files.
 - Interpolated strings are skipped.
+- The walker does not descend into tuples, array and list literals, records, type members, or `do` expressions.
 - Extension-method LINQ is not matched.
 - The injected helper assembly is unsigned. Signed F# projects are untested.
 - F#-specific mutators, such as pipe removal, are future work.
+
+## Review follow-ups
+
+Known and deferred:
+
+- Unattributable compile errors are fatal, with diagnostics. This is safe, but a rollback strategy could recover.
+- The orchestrator does not descend into tuples, array and list literals, records, type members, or `do` expressions (documented walker gap).
+- The `TrackValue` wrapper on multi-line module values may trip offside rules. It degrades safely to dropping the file's mutants.
+- `BaselineMutantHelper` no longer validates that the span is a node.
+- `-r:` and `-I:` arguments assume Buildalyzer reports project-relative paths.
+- `DefaultCsharpBuilderFactory` duplicates some construction code.
 
 ## Options
 

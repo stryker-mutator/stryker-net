@@ -100,4 +100,16 @@ public void SomeMethod()
         filteredMutants.ShouldContain(blockMutant);
         blockMutant.ResultStatus.ShouldNotBe(MutantStatus.Ignored);
     }
+
+    [TestMethod]
+    public void MutantFilter_WithMutationWithoutLocation_DoesNotFilterOrThrow()
+    {
+        var blockMutant = new Mutant { Mutation = new Mutation { Type = Mutator.Block, Location = new MutationLocation("f", 1, 1, 9, 1, 0, 100) } };
+        var locationless = new Mutant { Mutation = new Mutation { Type = Mutator.Arithmetic } };
+
+        var result = new IgnoreBlockMutantFilter().FilterMutants([blockMutant, locationless], null, null).ToList();
+
+        result.ShouldContain(blockMutant);
+        result.ShouldContain(locationless);
+    }
 }

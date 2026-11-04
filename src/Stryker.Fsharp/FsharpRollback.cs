@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using FSharp.Compiler.Diagnostics;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Fsharp.Mutants;
@@ -9,15 +12,15 @@ namespace Stryker.Fsharp;
 internal sealed record FsharpRollbackResult(FsharpCompileResult Compiled, IReadOnlyCollection<int> RolledBackIds, int Attempts);
 
 /// <summary>
-/// Compile-error rollback, mirroring the C# escalation (<c>CsharpCompilingProcess.CompileAndFixUntilSuccess</c>):
-/// Normal drops only the splices the diagnostics point at, Aggressive drops every splice of the files that
-/// errored, LastChance leaves those files unmutated. Bounded by <see cref="MaxAttempts"/>.
+/// Compile-error rollback, loosely mirroring the C# escalation (<c>CsharpCompilingProcess.CompileAndFixUntilSuccess</c>):
+/// Normal drops only the splices the diagnostics point at; for the last few attempts it escalates to DropFile,
+/// which leaves the files that errored unmutated. Bounded by <see cref="MaxAttempts"/>.
 /// </summary>
 internal static class FsharpRollback
 {
     public const int MaxAttempts = 50;
 
-    private enum Mode { Normal, Aggressive, LastChance }
+    private enum Mode { Normal, DropFile }
 
     /// <param name="leaves">Files carrying splices.</param>
     /// <param name="compile">Compiles the project with the given full-path to mutated-text overrides.</param>
@@ -37,7 +40,7 @@ internal static class FsharpRollback
                 return new FsharpRollbackResult(last, rolledBack, attempt);
             }
 
-            var mode = attempt == maxAttempts ? Mode.LastChance : attempt >= maxAttempts - 3 ? Mode.Aggressive : Mode.Normal;
+            var mode = attempt >= maxAttempts - 3 ? Mode.DropFile : Mode.Normal;
             foreach (var error in last.Diagnostics.Where(d => d.Severity.IsError))
             {
                 var leaf = LeafOf(error, last, applied.Keys) ?? throw Fatal("An error was reported outside the mutated files", last);

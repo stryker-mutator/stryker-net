@@ -30,7 +30,9 @@ public class IgnoreBlockMutantFilter : IMutantFilter
         var mutantsToIgnore = blockMutants.Where(blockMutant => mutants.Any(
             m => m != blockMutant
             && !_inactiveStatuses.Contains(m.ResultStatus)
-            && Contains(blockMutant.Mutation.Location, m.Mutation.Location)
+            && blockMutant.Mutation.Location is { } outer
+            && m.Mutation.Location is { } inner
+            && Contains(outer, inner)
         ));
 
         return mutants.Except(mutantsToIgnore);
