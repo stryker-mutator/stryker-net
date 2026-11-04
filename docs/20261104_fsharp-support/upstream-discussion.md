@@ -56,4 +56,4 @@ Known and deferred:
 
 We can open one PR, or split it. The `Mutation` refactor can go first on its own. The `Stryker.Fsharp` package and docs would follow. Tell us which you prefer.
 
-Design record: [DESIGN.md](./DESIGN.md) and the ADRs in [adrs](./adrs/).
+Design record: [the design](./designs/fsharp-support.md) and the ADRs in [adrs](./adrs/).

@@ -90,7 +90,7 @@ injected `IsActive` call would surface in the expression tree and change semanti
   `TestFiles`, `TestProject.cs:33-37`); linking is an optimisation, not a correctness need.
 - **Porting every C# mutator** — the C# set took years; FR6 defines the floor, the ADR'd
   mechanism makes additions cheap. The per-mutator verdicts (5 floor, 5 wave-2 ports,
-  6 later, 10 n/a of 26) live in [mutator-portability.md](./mutator-portability.md).
+  6 later, 10 n/a of 26) live in [mutator-portability.md](../mutator-portability.md).
 - **F#-specific mutators** (pipe removal, pattern-match case deletion) — valuable later;
   excluded to bound scope.
 - **Shared/multi-targeted project edge cases** — follow the C# behaviour where free.
@@ -151,10 +151,10 @@ and data collector work unchanged (their contract is reflection on the compiled 
 env vars).
 
 Decisions:
-- [Mutation mechanism: text splice at FCS ranges](./adrs/mutation-mechanism.md)
-- [Compile strategy for mutated F#](./adrs/compile-strategy.md)
-- [FCS dependency and packaging](./adrs/fsharp-compiler-dependency.md)
-- [Language-neutral Mutation location](./adrs/mutation-location-abstraction.md)
+- [Mutation mechanism: text splice at FCS ranges](../adrs/mutation-mechanism.md)
+- [Compile strategy for mutated F#](../adrs/compile-strategy.md)
+- [FCS dependency and packaging](../adrs/fsharp-compiler-dependency.md)
+- [Language-neutral Mutation location](../adrs/mutation-location-abstraction.md)
 
 C4 diagram: N/A — single container (CLI tool); the table above carries the structure.
 STRIDE: N/A — no new trust boundary; mutated code runs where mutated code already runs.

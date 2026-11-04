@@ -3,7 +3,7 @@ status: accepted
 ---
 # Mutation mechanism: text splice at FCS ranges
 
-Addresses: [FR2](../DESIGN.md#fr2), [FR3](../DESIGN.md#fr3), [NFR3](../DESIGN.md#nfr3)
+Addresses: [FR2](../designs/fsharp-support.md#fr2), [FR3](../designs/fsharp-support.md#fr3), [NFR3](../designs/fsharp-support.md#nfr3)
 
 ## Problem
 How to inject `(if Stryker.MutantControl.IsActive n then mutated else original)` into F#

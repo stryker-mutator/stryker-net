@@ -3,7 +3,7 @@ status: accepted
 ---
 # FCS dependency and packaging
 
-Addresses: [NFR1](../DESIGN.md#nfr1), [NFR2](../DESIGN.md#nfr2)
+Addresses: [NFR1](../designs/fsharp-support.md#nfr1), [NFR2](../designs/fsharp-support.md#nfr2)
 
 ## Problem
 F# support was deleted because the pinned FCS preview dragged in a vulnerable

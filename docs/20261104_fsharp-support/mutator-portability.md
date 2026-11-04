@@ -1,7 +1,7 @@
 # C# → F# mutator portability matrix
 
-Addresses [FR6](./DESIGN.md#fr6) and bounds the "porting every C# mutator" non-goal in
-[DESIGN.md](./DESIGN.md#non-goals). Source of truth for the C# set:
+Addresses [FR6](./designs/fsharp-support.md#fr6) and bounds the "porting every C# mutator" non-goal in
+[the design](./designs/fsharp-support.md#non-goals). Source of truth for the C# set:
 `DefaultMutatorList()` in `CsharpMutantOrchestrator.cs:94` — 26 registered mutators.
 
 Verdicts: **floor** = in this plan's tasks; **wave 2** = cheap port, first follow-up;
@@ -10,11 +10,11 @@ covered by expression mutation.
 
 | C# mutator | Verdict | F# mapping / reason |
 |---|---|---|
-| `BinaryExpressionMutator` (arith, equality, logical, bitwise, shift) | floor ([task 12](./TASKS.md), [task 13](./TASKS.md)) + wave 2 | operator idents (`op_Addition`, …) in `SynExpr.App`; wave 2 extends to `&&`/`\|\|` and `&&& \|\|\| ^^^ <<< >>>` |
-| `BooleanMutator` | floor ([task 8](./TASKS.md)) | `true`↔`false` literals |
-| `StringMutator` | floor ([task 14](./TASKS.md)) | literal↔`"Stryker was here!"` |
-| `StringEmptyMutator` | floor (fold into [task 14](./TASKS.md)) | `String.Empty` is the same .NET member |
-| `LinqMutator` | floor ([task 15](./TASKS.md)) | `l.Select(f)` ≡ `l \|> Seq.map f`: mutate `Seq`/`List`/`Array` module functions (`min`↔`max`, `head`↔`last`, `sortBy`↔`sortByDescending`, …) |
+| `BinaryExpressionMutator` (arith, equality, logical, bitwise, shift) | floor (task 12, task 13) + wave 2 | operator idents (`op_Addition`, …) in `SynExpr.App`; wave 2 extends to `&&`/`\|\|` and `&&& \|\|\| ^^^ <<< >>>` |
+| `BooleanMutator` | floor (task 8) | `true`↔`false` literals |
+| `StringMutator` | floor (task 14) | literal↔`"Stryker was here!"` |
+| `StringEmptyMutator` | floor (fold into task 14) | `String.Empty` is the same .NET member |
+| `LinqMutator` | floor (task 15) | `l.Select(f)` ≡ `l \|> Seq.map f`: mutate `Seq`/`List`/`Array` module functions (`min`↔`max`, `head`↔`last`, `sortBy`↔`sortByDescending`, …) |
 | `ConditionalExpressionMutator` | wave 2 | force `if`/`elif`/`while` condition to `true`/`false` |
 | `NegateConditionMutator` | wave 2 | wrap condition in `not (…)` |
 | `PrefixUnaryMutator` | wave 2 (partial) | `-x`→`+x` (`op_UnaryNegation`), remove `not`; `++/--` have no F# form |
@@ -22,7 +22,7 @@ covered by expression mutation.
 | `MathMutator` | wave 2 | same `System.Math` calls, plus F# `min`/`max`/`abs` function idents |
 | `StringMethodMutator` | later | `s.Trim()` is `SynExpr.DotGet` + `App`; same splice, broader matching |
 | `StringMethodToConstantMutator` | later | with the above |
-| `InterpolatedStringMutator` | later | F# `$"…"` exists; mutate the whole literal only (no partial splice inside quotes, [task 14](./TASKS.md) rule) |
+| `InterpolatedStringMutator` | later | F# `$"…"` exists; mutate the whole literal only (no partial splice inside quotes, task 14 rule) |
 | `RegexMutator` | later | `Stryker.RegexMutators` package is language-agnostic; only `Regex(…)` call-site detection differs |
 | `BinaryPatternMutator` | later | F# or-patterns `\|` and and-patterns `&` exist; niche, needs semantics check |
 | `NullCoalescingExpressionMutator` | later | no `??`; analogue mutates `defaultArg`/`Option.defaultValue` via the task-15 table |
@@ -40,5 +40,5 @@ Net: 5 floor, 5 wave-2 ports, 6 later, 10 n/a. F#'s expression-oriented syntax m
 through expression mutators.
 
 Wave 2 is the natural next workspace after integration
-([amending rule](./DESIGN.md), plan skill): one task per row, same `IFsharpMutator`
+(the amending rule, plan skill): one task per row, same `IFsharpMutator`
 text-splice pattern, no new ADRs expected.

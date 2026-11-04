@@ -3,7 +3,7 @@ status: accepted
 ---
 # Language-neutral Mutation location
 
-Addresses: [FR5](../DESIGN.md#fr5), [FR7](../DESIGN.md#fr7), [NFR2](../DESIGN.md#nfr2)
+Addresses: [FR5](../designs/fsharp-support.md#fr5), [FR7](../designs/fsharp-support.md#fr7), [NFR2](../designs/fsharp-support.md#nfr2)
 
 ## Problem
 `Mutation.OriginalNode/ReplacementNode` are Roslyn `SyntaxNode`
