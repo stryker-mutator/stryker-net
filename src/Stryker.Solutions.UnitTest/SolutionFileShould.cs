@@ -92,6 +92,8 @@ public sealed class SolutionFileShould
             Path.Combine(solutionPath, "Stryker.Core", "Stryker.Core", "Stryker.Core.csproj"),
             Path.Combine(solutionPath, "Stryker.Core", "Stryker.Core.UnitTest", "Stryker.Core.UnitTest.csproj"),
             Path.Combine(solutionPath, "Stryker.DataCollector", "Stryker.DataCollector.csproj"),
+            Path.Combine(solutionPath, "Stryker.Fsharp", "Stryker.Fsharp.csproj"),
+            Path.Combine(solutionPath, "Stryker.Fsharp.UnitTest", "Stryker.Fsharp.UnitTest.csproj"),
             Path.Combine(solutionPath, "Stryker.RegexMutators", "Stryker.RegexMutators", "Stryker.RegexMutators.csproj"),
             Path.Combine(solutionPath, "Stryker.RegexMutators", "Stryker.RegexMutators.UnitTest", "Stryker.RegexMutators.UnitTest.csproj"),
             Path.Combine(solutionPath, "Stryker.Abstractions", "Stryker.Abstractions.csproj"),

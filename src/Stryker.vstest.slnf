@@ -8,6 +8,8 @@
       "Stryker.Configuration/Stryker.Configuration.csproj",
       "Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj",
       "Stryker.Core/Stryker.Core/Stryker.Core.csproj",
+      "Stryker.Fsharp.UnitTest/Stryker.Fsharp.UnitTest.csproj",
+      "Stryker.Fsharp/Stryker.Fsharp.csproj",
       "Stryker.DataCollector/Stryker.DataCollector.csproj",
       "Stryker.RegexMutators/Stryker.RegexMutators.UnitTest/Stryker.RegexMutators.UnitTest.csproj",
       "Stryker.RegexMutators/Stryker.RegexMutators/Stryker.RegexMutators.csproj",

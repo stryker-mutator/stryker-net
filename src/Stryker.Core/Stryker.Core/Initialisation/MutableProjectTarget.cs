@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using Buildalyzer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
@@ -46,6 +47,10 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
         return true;
     }
 
+    private static ProjectComponentsBuilder DefaultCsharpBuilderFactory(SourceProjectInfo projectInfo, IStrykerOptions options,
+        string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) =>
+        new CsharpProjectComponentsBuilder(projectInfo, options, foldersToExclude, logger, fileSystem);
+
     private static string LanguageNotEnabledMessage(Language language, string projectPath) =>
         language == Language.Fsharp
             ? $"F# support is experimental and not yet enabled. Project '{projectPath}' cannot be mutated."
@@ -57,7 +62,7 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
     /// <param name="options">Stryker options</param>
     /// <param name="fileSystem">filesystem</param>
     /// <returns></returns>
-    public SourceProjectInfo BuildSourceProjectInfo(IStrykerOptions options, IFileSystem fileSystem )
+    public SourceProjectInfo BuildSourceProjectInfo(IStrykerOptions options, IFileSystem fileSystem, IServiceProvider serviceProvider = null)
     {
         var testProjectInfo = new TestProjectsInfo(fileSystem)
         {
@@ -67,10 +72,15 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
 
         var language = targetProjectInfo.AnalyzerResult.GetLanguage();
 
-        var builder = language == Language.Csharp
-            ? new CsharpProjectComponentsBuilder(targetProjectInfo, options, FoldersToExclude, logger,
-                fileSystem)
-            : throw new InputException(LanguageNotEnabledMessage(language, ProjectTarget.ProjectFilePath));
+        // F# stays disabled until its builder is implemented; the keyed Fsharp slot is registered by Stryker.Fsharp
+        if (language != Language.Csharp)
+        {
+            throw new InputException(LanguageNotEnabledMessage(language, ProjectTarget.ProjectFilePath));
+        }
+
+        var builderFactory = (serviceProvider as IKeyedServiceProvider)?.GetKeyedService<ProjectComponentsBuilderFactory>(language)
+            ?? DefaultCsharpBuilderFactory;
+        var builder = builderFactory(targetProjectInfo, options, FoldersToExclude, logger, fileSystem);
 
         var inputFiles = builder.Build();
         builder.InjectHelpers(inputFiles);

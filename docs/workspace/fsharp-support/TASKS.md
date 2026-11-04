@@ -205,8 +205,8 @@ classDiagram
 - `ServiceProvider_CsharpProject_ResolvesCsharpMutationProcess` — regression guard
 **Verify**: `dotnet build src/Stryker.slnx -c Debug && dotnet list src/Stryker.slnx package --vulnerable --include-transitive`
 **Acceptance criteria**:
-- [ ] `Stryker.Core.csproj` has no FCS reference (direct or transitive)
-- [ ] Vulnerability scan reports nothing
+- [x] `Stryker.Core.csproj` has no FCS reference (direct or transitive)
+- [x] Vulnerability scan reports nothing
 **Depends on**: task 1
 **Time-box**: ~90 min
 

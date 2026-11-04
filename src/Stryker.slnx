@@ -34,6 +34,8 @@
   <Project Path="Stryker.Configuration/Stryker.Configuration.csproj" />
   <Project Path="Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj" />
   <Project Path="Stryker.Core/Stryker.Core/Stryker.Core.csproj" />
+  <Project Path="Stryker.Fsharp.UnitTest/Stryker.Fsharp.UnitTest.csproj" />
+  <Project Path="Stryker.Fsharp/Stryker.Fsharp.csproj" />
   <Project Path="Stryker.DataCollector/Stryker.DataCollector.csproj" />
   <Project Path="Stryker.RegexMutators/Stryker.RegexMutators.UnitTest/Stryker.RegexMutators.UnitTest.csproj" />
   <Project Path="Stryker.RegexMutators/Stryker.RegexMutators/Stryker.RegexMutators.csproj" />

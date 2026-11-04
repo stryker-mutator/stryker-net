@@ -80,6 +80,11 @@
         "resolved": "9.0.0",
         "contentHash": "9zJ/NpiBiUzySAMcLfHFlENgMN1TSYSlXcIts4v9i3+NOKTodRehRKlL9wBDHn2oPLyjpo0kxUlsyRUwzymNfA=="
       },
+      "FSharp.Core": {
+        "type": "Transitive",
+        "resolved": "10.1.403",
+        "contentHash": "SpKxPt90eSC3pfSKGLnSyucXXKVWokv1KVMTy2uQG36seOgJg14qUxjlcaWjZNWgxJtG5MeH9WpI6PQg4OR4tA=="
+      },
       "LibGit2Sharp.NativeBinaries": {
         "type": "Transitive",
         "resolved": "2.0.324",
@@ -461,6 +466,15 @@
           "Microsoft.TestPlatform.Portable": "[18.11.0, )"
         }
       },
+      "stryker.fsharp": {
+        "type": "Project",
+        "dependencies": {
+          "FSharp.Compiler.Service": "[43.12.403, )",
+          "Microsoft.Extensions.DependencyInjection": "[10.0.14, )",
+          "Stryker.Abstractions": "[5.0.0, )",
+          "stryker": "[5.0.0, )"
+        }
+      },
       "stryker.regexmutators": {
         "type": "Project",
         "dependencies": {
@@ -566,6 +580,15 @@
         "resolved": "3.1.3",
         "contentHash": "hOfHw7MLJw/tbXaFwR1oiDb+dIXDp8URTxp5Pco42OOhiw77wrUNx6v6syNygHZbWwYdXQocL2Mo1l5FnfDVjg=="
       },
+      "FSharp.Compiler.Service": {
+        "type": "CentralTransitive",
+        "requested": "[43.12.403, )",
+        "resolved": "43.12.403",
+        "contentHash": "L8nTnxAsjXY6Fjnap5AVHVptbc7QqkNftmQiO0ylAnXpJHMCqO2u2XxmXo2pw4NfAAwClCwnjbF6BMOU3gibMA==",
+        "dependencies": {
+          "FSharp.Core": "[10.1.403]"
+        }
+      },
       "Grynwald.MarkdownGenerator": {
         "type": "CentralTransitive",
         "requested": "[3.0.106, )",
@@ -580,6 +603,12 @@
         "dependencies": {
           "LibGit2Sharp.NativeBinaries": "[2.0.324]"
         }
+      },
+      "Microsoft.CodeAnalysis.Analyzers": {
+        "type": "CentralTransitive",
+        "requested": "[5.9.0, )",
+        "resolved": "5.9.0-1.26328.17",
+        "contentHash": "HP9NNk8ZjOSI2hgOyXnQg+kv7/X837Vr2nAlXiGAtqtYnYKjRRa1UmQFr8KFs5ynGYKqfbb8zB9APoWjiAGdMg=="
       },
       "Microsoft.CodeAnalysis.Common": {
         "type": "CentralTransitive",
