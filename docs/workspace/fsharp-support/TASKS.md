@@ -344,7 +344,7 @@ classDiagram
 - `ArithmeticMutator_ReportCount_OnFixtureFile` — count asserted
 **Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
-- [ ] Pairwise replacements exact; fixture count matches
+- [x] Pairwise replacements exact; fixture count matches
 **Depends on**: tasks 9, 10
 **Time-box**: ~60 min
 

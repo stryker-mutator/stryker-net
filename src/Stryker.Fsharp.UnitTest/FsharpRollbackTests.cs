@@ -9,6 +9,7 @@ using Shouldly;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Fsharp.Mutants;
+using Stryker.Fsharp.Mutators;
 using Stryker.Fsharp.ProjectComponents;
 using Stryker.Fsharp.UnitTest.Fixtures;
 using Stryker.Utilities.Buildalyzer;
@@ -107,7 +108,7 @@ public class FsharpRollbackTests
         const string source = "module Lib\nlet calc () = 10 + 5\nlet flag () = if true then 1 else 2\nlet other () = if false then 3 else 4\n";
         using var project = new TempFsharpProject(("Lib.fs", source));
         var leaf = FsharpParse.Leaf(source, Path.Combine(project.Directory, "Lib.fs"));
-        new FsharpMutantOrchestrator(Ns).Mutate(leaf).ShouldBe(2);
+        new FsharpMutantOrchestrator(Ns, [new BooleanMutator()]).Mutate(leaf).ShouldBe(2);
         // nested pair, hand-crafted: outer 10 + 5 -> 10 * 5, inner 5 -> 7
         leaf.Splices.Add(NestedSplice(leaf, source, "10 + 5", 100, "10 * 5"));
         leaf.Splices.Add(NestedSplice(leaf, source, "5", 101, "7"));

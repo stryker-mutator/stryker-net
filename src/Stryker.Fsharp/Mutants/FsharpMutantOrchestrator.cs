@@ -14,7 +14,7 @@ namespace Stryker.Fsharp.Mutants;
 /// </summary>
 internal sealed class FsharpMutantOrchestrator(string helperNamespace, IEnumerable<IFsharpMutator>? mutators = null)
 {
-    private readonly IReadOnlyList<IFsharpMutator> _mutators = [.. mutators ?? [new BooleanMutator()]];
+    private readonly IReadOnlyList<IFsharpMutator> _mutators = [.. mutators ?? [new BooleanMutator(), new ArithmeticOperatorMutator()]];
     private int _nextId;
 
     /// <summary>Mutates one file: attaches mutants and splices to the leaf. Returns the mutant count.</summary>
@@ -209,6 +209,7 @@ internal sealed class FsharpMutantOrchestrator(string helperNamespace, IEnumerab
                 VisitExpression(paren.expr, file, mutants);
                 return;
             case SynExpr.App app:
+                AddMutants(expression, file, mutants);
                 VisitExpression(app.funcExpr, file, mutants);
                 VisitExpression(app.argExpr, file, mutants);
                 return;
@@ -238,6 +239,11 @@ internal sealed class FsharpMutantOrchestrator(string helperNamespace, IEnumerab
                 return;
         }
 
+        AddMutants(expression, file, mutants);
+    }
+
+    private void AddMutants(SynExpr expression, FsharpFileLeaf file, List<Mutant> mutants)
+    {
         foreach (var mutator in _mutators)
         {
             foreach (var mutation in mutator.ApplyMutations(expression, file.SourceCode))

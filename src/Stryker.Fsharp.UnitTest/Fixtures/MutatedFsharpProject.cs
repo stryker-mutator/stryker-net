@@ -68,7 +68,7 @@ internal sealed class LoadedMutatedAssembly(Assembly lib, Type mutantControl)
 {
     public void Set(string field, object value) => mutantControl.GetField(field, BindingFlags.Public | BindingFlags.Static)!.SetValue(null, value);
 
-    public object? Call(string module, string function) => lib.GetType(module)!.GetMethod(function)!.Invoke(null, null);
+    public object? Call(string module, string function, params object[] args) => lib.GetType(module)!.GetMethod(function)!.Invoke(null, args);
 
     /// <summary>The runners' contract: GetCoverageData returns [covered, coveredInStatic].</summary>
     public IList<int>[] CoverageData() => (IList<int>[])mutantControl.GetMethod("GetCoverageData")!.Invoke(null, null)!;
