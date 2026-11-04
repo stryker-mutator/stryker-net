@@ -224,8 +224,8 @@ classDiagram
 - `FsharpComponentsBuilder_SkipsUnparseableFile_WithWarning`
 **Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
-- [ ] Leaves ordered exactly as compile items
-- [ ] Each leaf has `SourceCode` + `ParseTree` populated
+- [x] Leaves ordered exactly as compile items
+- [x] Each leaf has `SourceCode` + `ParseTree` populated
 **Depends on**: task 5
 **Time-box**: ~90 min
 

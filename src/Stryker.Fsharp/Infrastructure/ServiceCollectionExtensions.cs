@@ -12,7 +12,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddKeyedTransient<IMutationProcess, FsharpMutationProcess>(Language.Fsharp);
         services.AddKeyedSingleton<ProjectComponentsBuilderFactory>(Language.Fsharp,
-            (_, _) => (_, _, _, _, fileSystem) => new FsharpProjectComponentsBuilder(fileSystem));
+            (_, _) => (projectInfo, _, _, logger, fileSystem) => new FsharpProjectComponentsBuilder(projectInfo, logger, fileSystem));
 
         return services;
     }
