@@ -39,9 +39,10 @@ internal sealed class TempFsharpProject : IDisposable
         {
             System.IO.Directory.Delete(Directory, true);
         }
-        catch (IOException exception)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            // a still-mapped assembly can hold the directory on Windows; leave it to the OS temp cleanup, but say so
+            // a still-mapped assembly can hold the directory on Windows (access denied, not IOException);
+            // leave it to the OS temp cleanup, but say so
             Console.WriteLine($"Could not delete temp project {Directory}: {exception.Message}");
         }
     }

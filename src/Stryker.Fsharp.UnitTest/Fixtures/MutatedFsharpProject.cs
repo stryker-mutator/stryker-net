@@ -70,6 +70,15 @@ internal sealed class MutatedFsharpProject : IDisposable
             context.Unload();
         }
 
+        // Unload is asynchronous: the DLLs stay mapped (and locked on Windows) until the
+        // contexts are collected, so drop our references and collect before deleting.
+        _contexts.Clear();
+        for (var i = 0; i < 2; i++)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+
         _project.Dispose();
     }
 }
