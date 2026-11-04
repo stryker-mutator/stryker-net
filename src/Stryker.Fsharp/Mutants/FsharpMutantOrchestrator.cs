@@ -12,9 +12,9 @@ namespace Stryker.Fsharp.Mutants;
 /// (ADR mutation-mechanism). The walker is deliberately small: it reaches expressions through the node
 /// kinds below and never enters a quotation.
 /// </summary>
-internal sealed class FsharpMutantOrchestrator(string helperNamespace, IEnumerable<IFsharpMutator>? mutators = null)
+internal sealed class FsharpMutantOrchestrator(string helperNamespace, IEnumerable<IFsharpMutator>? mutators = null, MutationLevel mutationLevel = MutationLevel.Complete)
 {
-    private readonly IReadOnlyList<IFsharpMutator> _mutators = [.. mutators ?? [new BooleanMutator(), new ArithmeticOperatorMutator()]];
+    private readonly IReadOnlyList<IFsharpMutator> _mutators = [.. (mutators ?? [new BooleanMutator(), new ArithmeticOperatorMutator(), new EqualityOperatorMutator()]).Where(m => m.MutationLevel <= mutationLevel)];
     private int _nextId;
 
     /// <summary>Mutates one file: attaches mutants and splices to the leaf. Returns the mutant count.</summary>

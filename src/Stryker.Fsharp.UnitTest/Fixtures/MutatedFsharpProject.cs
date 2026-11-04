@@ -38,7 +38,7 @@ internal sealed class MutatedFsharpProject : IDisposable
         Info.ProjectContents = new FsharpProjectComponentsBuilder(Info, NullLogger.Instance, new FileSystem()).Build();
         Info.BackupOriginalAssembly(_project.AnalyzerResult);
         new FsharpMutationProcess(new FileSystem(), NullLogger<FsharpMutationProcess>.Instance)
-            .Mutate(new MutationTestInput { SourceProjectInfo = Info }, Mock.Of<IStrykerOptions>());
+            .Mutate(new MutationTestInput { SourceProjectInfo = Info }, Mock.Of<IStrykerOptions>(o => o.MutationLevel == Stryker.Abstractions.MutationLevel.Complete));
         Leaf = Info.ProjectContents.GetAllFiles().Cast<FsharpFileLeaf>().Single();
     }
 

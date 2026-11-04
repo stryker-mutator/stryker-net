@@ -16,7 +16,7 @@ public class FsharpMutationProcess(IFileSystem fileSystem, ILogger<FsharpMutatio
     {
         var info = input.SourceProjectInfo;
         var leaves = info.ProjectContents.GetAllFiles().Cast<FsharpFileLeaf>().ToList();
-        var orchestrator = new FsharpMutantOrchestrator(info.HelperNamespace);
+        var orchestrator = new FsharpMutantOrchestrator(info.HelperNamespace, null, options.MutationLevel);
         foreach (var leaf in leaves)
         {
             logger.LogDebug("Mutating {FilePath}", leaf.FullPath);

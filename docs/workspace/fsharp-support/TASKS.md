@@ -360,7 +360,7 @@ classDiagram
 - `EqualityMutator_ReportCount_OnFixtureFile`
 **Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
-- [ ] Table replacements exact; fixture count matches
+- [x] Table replacements exact; fixture count matches
 **Depends on**: task 12
 **Time-box**: ~45 min
 

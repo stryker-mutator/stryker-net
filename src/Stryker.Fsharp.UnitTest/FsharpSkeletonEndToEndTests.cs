@@ -42,7 +42,7 @@ public class FsharpSkeletonEndToEndTests
         // same order as MutationTestProcess.Initialize then Mutate
         info.BackupOriginalAssembly(project.AnalyzerResult);
 
-        new FsharpMutationProcess(new FileSystem(), NullLogger<FsharpMutationProcess>.Instance).Mutate(input, Mock.Of<IStrykerOptions>());
+        new FsharpMutationProcess(new FileSystem(), NullLogger<FsharpMutationProcess>.Instance).Mutate(input, Mock.Of<IStrykerOptions>(o => o.MutationLevel == Stryker.Abstractions.MutationLevel.Complete));
 
         var leaf = info.ProjectContents.GetAllFiles().Cast<FsharpFileLeaf>().Single();
         var mutant = leaf.Mutants.Single();
