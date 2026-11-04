@@ -266,7 +266,7 @@ classDiagram
 - `FsharpSkeleton_EndToEnd_ReportsKilledMutant` — drives `MutationTestProcess` on a temp F# project (pattern: `ProjectOrchestratorTests`)
 **Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug && dotnet test src/Stryker.vstest.slnf -c Debug`
 **Acceptance criteria**:
-- [ ] JSON report: 1 mutant, status Killed, `language: "fs"`, 1-based span matching the literal
+- [x] JSON report: 1 mutant, status Killed, `language: "fs"`, 1-based span matching the literal (proof landed in task 16: live VsTest run over F# mutants reports Killed with `language: "fs"`)
 - [x] Original assembly restored after the run
 
 **Delta (task 8)**: `FsharpSkeleton_EndToEnd_ReportsKilledMutant` runs the real orchestrate, splice, helper compile, F# compile and injection through `FsharpMutationProcess.Mutate`, loads the mutated assembly and flips the result via `<ns>.MutantControl.ActiveMutant`; the `SourceFile`/`JsonMutant` fragment has `language: "fs"` and the 1-based span. The Killed status is set by a simulated failing test, not by a VsTest run (no F# xunit packages offline, so the first box stays open until the task 16 integration target). Found while probing: hosts with a `*.deps.json` only load listed assemblies, so the helper dll is also registered in the test output's deps files (`RegisterInDependencyManifests`). The gate in `MutableProjectTarget` now throws only when no builder is registered for the language; `ProjectMutator` resolves the keyed `IMutationProcess` for non-C# projects. Mutant filters are not applied to F# yet (TODO in `FsharpMutationProcess`).
@@ -325,7 +325,7 @@ classDiagram
 **Acceptance criteria**:
 - [x] Uncovered mutant ends NoCoverage, covered one Killed/Survived
 - [x] Module-value mutant flagged static (or tracked) — assertion on mutant metadata
-- Delta: the NoCoverage proof drives the real helper (`CaptureCoverage`/`GetCoverageData`) and the runner-agnostic `CoverageAnalyser` with a mocked `ITestRunner`. The covered mutant stays Pending (to be tested), Killed/Survived needs the live runner: task 16.
+- Delta: the NoCoverage proof drives the real helper (`CaptureCoverage`/`GetCoverageData`) and the runner-agnostic `CoverageAnalyser` with a mocked `ITestRunner`. The covered mutant stays Pending (to be tested), Killed/Survived needs the live runner: task 16 (done: live run reports 5 Killed, 2 Survived, 1 NoCoverage).
 - Delta: module values are both flagged `IsStaticValue` and wrapped in a public `StaticValueTracker.Track` (helper-side shim over the internal `MutantContext.TrackValue`).
 **Depends on**: task 8
 **Time-box**: ~90 min
@@ -412,8 +412,8 @@ classDiagram
 **Tests**: the validation `[Fact]` itself
 **Verify**: `CATEGORY=fsharp RUNTIME=netcore pwsh ./integration-tests.ps1`
 **Acceptance criteria**:
-- [ ] Integration run green locally with pinned counts
-- [ ] Existing C# categories' counts unchanged ([NFR2](./DESIGN.md#nfr2))
+- [x] Integration run green locally with pinned counts (11 total: 5 killed, 2 survived, 1 nocoverage, 3 compileError)
+- [x] Existing C# categories' counts unchanged ([NFR2](./DESIGN.md#nfr2))
 **Depends on**: tasks 11, 13, 14, 15
 **Time-box**: ~90 min
 

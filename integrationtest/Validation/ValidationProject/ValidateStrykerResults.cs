@@ -273,6 +273,28 @@ public class ValidateStrykerResults
         CheckReportMutants(report, total: 29, ignored: 7, survived: 3, killed: 7, timeout: 0, nocoverage: 11);
     }
 
+    [Fact]
+    [Trait("Category", "Fsharp")]
+    [Trait("Runtime", "netcore")]
+    public async Task Fsharp_NetCore_SingleTestProject()
+    {
+        var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/FsharpTestProject/StrykerOutput");
+        directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+        var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+            .OrderByDescending(f => f.LastWriteTime)
+            .First();
+
+        using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+        var report = await strykerRunOutput.DeserializeJsonReportAsync();
+
+        // The C# syntax-kind validation of CheckReportMutants cannot parse F# sources, so only the status counts are pinned.
+        CheckReportMutantStatuses(report, total: 11, ignored: 0, survived: 2, killed: 5, timeout: 0, nocoverage: 1, compileError: 3);
+        report.Files.Keys.ShouldAllBe(file => file.EndsWith(".fs", StringComparison.Ordinal));
+        report.Files.Keys.Select(Path.GetFileName).ShouldBe(["A.fs", "B.fs"], ignoreOrder: true);
+    }
+
     private void CheckMutationKindsValidity(IJsonReport report)
     {
         foreach (var file in report.Files)
@@ -320,25 +342,26 @@ public class ValidateStrykerResults
 
     private void CheckReportMutants(IJsonReport report, int total, int ignored, int survived, int killed, int timeout, int nocoverage, int runtimeError = 0)
     {
+        CheckReportMutantStatuses(report, total, ignored, survived, killed, timeout, nocoverage, runtimeError: runtimeError);
+
+        CheckMutationKindsValidity(report);
+    }
+
+    private static void CheckReportMutantStatuses(IJsonReport report, int total, int ignored, int survived, int killed, int timeout, int nocoverage, int runtimeError = 0, int? compileError = null)
+    {
+        int CountOf(MutantStatus status) => report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == status.ToString())).Sum();
         var actualTotal = report.Files.Select(f => f.Value.Mutants.Count()).Sum();
-        var actualIgnored = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Ignored.ToString())).Sum();
-        var actualSurvived = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Survived.ToString())).Sum();
-        var actualKilled = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Killed.ToString())).Sum();
-        var actualTimeout = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Timeout.ToString())).Sum();
-        var actualNoCoverage = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.NoCoverage.ToString())).Sum();
-        var actualRuntimeError = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.RuntimeError.ToString())).Sum();
 
         report.Files.ShouldSatisfyAllConditions(
             () => actualTotal.ShouldBe(total),
-            () => actualIgnored.ShouldBe(ignored),
-            () => actualSurvived.ShouldBe(survived),
-            () => actualKilled.ShouldBe(killed),
-            () => actualTimeout.ShouldBe(timeout),
-            () => actualNoCoverage.ShouldBe(nocoverage),
-            () => actualRuntimeError.ShouldBe(runtimeError)
+            () => CountOf(MutantStatus.Ignored).ShouldBe(ignored),
+            () => CountOf(MutantStatus.Survived).ShouldBe(survived),
+            () => CountOf(MutantStatus.Killed).ShouldBe(killed),
+            () => CountOf(MutantStatus.Timeout).ShouldBe(timeout),
+            () => CountOf(MutantStatus.NoCoverage).ShouldBe(nocoverage),
+            () => CountOf(MutantStatus.RuntimeError).ShouldBe(runtimeError),
+            () => { if (compileError is { } expected) CountOf(MutantStatus.CompileError).ShouldBe(expected); }
         );
-
-        CheckMutationKindsValidity(report);
     }
 
     private void CheckReportTestCounts(IJsonReport report, int total)
