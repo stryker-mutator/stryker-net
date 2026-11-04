@@ -1,6 +1,6 @@
 using System.IO.Abstractions;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Core.MutationTest;
 using Stryker.Utilities.Buildalyzer;
@@ -25,23 +25,16 @@ public class FsharpMutationProcess(IFileSystem fileSystem, ILogger<FsharpMutatio
 
         logger.LogDebug("{MutantsCount} mutants created", leaves.Sum(l => l.Mutants.Count()));
 
-        var overrides = leaves.Where(l => l.Splices.Count > 0).ToDictionary(
-            l => l.FullPath,
-            l => FsharpMutantOrchestrator.ApplySplices(l.SourceCode, l.Splices, info.HelperNamespace));
-
         var helperBytes = FsharpHelperAssembly.Compile(info.CodeInjector, info.AnalyzerResult);
         var helperPath = WriteHelperToTemp(info.CodeInjector, helperBytes);
         try
         {
             var compiler = new FsharpCompilingProcess(info.AnalyzerResult, fileSystem, logger);
-            var result = compiler.Compile(overrides, [helperPath]);
-            if (!result.Success)
-            {
-                // TODO(agt): roll back mutants that break compilation (task 9: compile-error rollback)
-                var errors = string.Join(Environment.NewLine, result.Diagnostics.Where(d => d.Severity.IsError).Select(d => d.ToString()));
-                throw new GeneralStrykerException($"The mutated F# project failed to compile:{Environment.NewLine}{errors}");
-            }
-
+            var rollback = FsharpRollback.Run(leaves.Where(l => l.Splices.Count > 0).ToList(), info.HelperNamespace,
+                overrides => compiler.Compile(overrides, [helperPath]));
+            MarkBuildErrors(leaves, rollback.RolledBackIds);
+            logger.LogDebug("{RolledBack} mutants rolled back after {Attempts} compilation attempts", rollback.RolledBackIds.Count, rollback.Attempts);
+            var result = rollback.Compiled;
             compiler.Inject(info.TestProjectsInfo, result.Assembly);
             var helperFileName = FsharpHelperAssembly.FileName(info.CodeInjector);
             compiler.InjectFile(info.TestProjectsInfo, helperFileName, helperBytes);
@@ -53,6 +46,21 @@ public class FsharpMutationProcess(IFileSystem fileSystem, ILogger<FsharpMutatio
         finally
         {
             fileSystem.File.Delete(helperPath);
+        }
+    }
+
+    /// <summary>Rolled-back mutants become CompileError, as in the C# process, unless already ignored.</summary>
+    private static void MarkBuildErrors(IEnumerable<FsharpFileLeaf> leaves, IReadOnlyCollection<int> rolledBackIds)
+    {
+        foreach (var mutant in leaves.SelectMany(l => l.Mutants).Where(m => rolledBackIds.Contains(m.Id)))
+        {
+            if (mutant.ResultStatus == MutantStatus.Ignored)
+            {
+                continue;
+            }
+
+            mutant.ResultStatus = MutantStatus.CompileError;
+            mutant.ResultStatusReason = "Mutant caused compile errors";
         }
     }
 

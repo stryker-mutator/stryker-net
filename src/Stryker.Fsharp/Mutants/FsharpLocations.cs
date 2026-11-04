@@ -23,7 +23,7 @@ internal static class FsharpLocations
     }
 
     /// <summary>Character offset of the start of each line; handles \n, \r\n and lone \r terminators.</summary>
-    private static List<int> LineStarts(string text)
+    internal static List<int> LineStarts(string text)
     {
         var starts = new List<int> { 0 };
         for (var i = 0; i < text.Length; i++)

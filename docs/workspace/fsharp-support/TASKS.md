@@ -288,8 +288,8 @@ classDiagram
 - `Rollback_AlwaysFailingSplice_BoundedRetries`
 **Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
-- [ ] Report: BuildError for the broken mutant, Killed/Survived for the rest
-- [ ] Retry bound proven by the always-failing test
+- [x] Report: BuildError for the broken mutant, Killed/Survived for the rest
+- [x] Retry bound proven by the always-failing test
 **Depends on**: task 8
 **Time-box**: ~90 min
 

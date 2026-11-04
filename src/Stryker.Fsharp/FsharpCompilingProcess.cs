@@ -10,7 +10,11 @@ using Stryker.Utilities.Buildalyzer;
 namespace Stryker.Fsharp;
 
 /// <summary>Outcome of an F# compilation: assembly bytes on success, diagnostics always.</summary>
-internal sealed record FsharpCompileResult(bool Success, byte[] Assembly, IReadOnlyList<FSharpDiagnostic> Diagnostics);
+internal sealed record FsharpCompileResult(bool Success, byte[] Assembly, IReadOnlyList<FSharpDiagnostic> Diagnostics)
+{
+    /// <summary>Temp copy path (as named in diagnostics) to the original source path, for overridden files.</summary>
+    public IReadOnlyDictionary<string, string> SourceMap { get; init; } = new Dictionary<string, string>();
+}
 
 /// <summary>
 /// Compiles an F# project in-process with FCS (ADR compile-strategy, option A), from the exact fsc
@@ -36,7 +40,8 @@ internal sealed class FsharpCompilingProcess(IAnalyzerResult sourceProject, IFil
         try
         {
             var output = fileSystem.Path.Combine(workDir, sourceProject.GetAssemblyFileName());
-            var argv = BuildArguments(output, workDir, sourceOverrides ?? new Dictionary<string, string>(), references ?? []);
+            var sourceMap = new Dictionary<string, string>();
+            var argv = BuildArguments(output, workDir, sourceOverrides ?? new Dictionary<string, string>(), references ?? [], sourceMap);
             var (diagnostics, exception) = FSharpAsync.RunSynchronously(Checker.Compile(argv, null), null, null).ToValueTuple();
             var hasErrors = diagnostics.Any(d => d.Severity.IsError) || exception != null;
             foreach (var diagnostic in diagnostics.Where(d => d.Severity.IsError))
@@ -45,8 +50,8 @@ internal sealed class FsharpCompilingProcess(IAnalyzerResult sourceProject, IFil
             }
 
             return hasErrors || !fileSystem.File.Exists(output)
-                ? new FsharpCompileResult(false, [], diagnostics)
-                : new FsharpCompileResult(true, fileSystem.File.ReadAllBytes(output), diagnostics);
+                ? new FsharpCompileResult(false, [], diagnostics) { SourceMap = sourceMap }
+                : new FsharpCompileResult(true, fileSystem.File.ReadAllBytes(output), diagnostics) { SourceMap = sourceMap };
         }
         finally
         {
@@ -75,7 +80,7 @@ internal sealed class FsharpCompilingProcess(IAnalyzerResult sourceProject, IFil
         }
     }
 
-    private string[] BuildArguments(string output, string workDir, IReadOnlyDictionary<string, string> sourceOverrides, IEnumerable<string> references)
+    private string[] BuildArguments(string output, string workDir, IReadOnlyDictionary<string, string> sourceOverrides, IEnumerable<string> references, Dictionary<string, string> sourceMap)
     {
         var overrides = sourceOverrides.ToDictionary(o => fileSystem.Path.GetFullPath(o.Key), o => o.Value);
         var argv = new List<string> { "fsc.exe" };
@@ -104,6 +109,7 @@ internal sealed class FsharpCompilingProcess(IAnalyzerResult sourceProject, IFil
                 {
                     var overridePath = fileSystem.Path.Combine(workDir, $"{sourceIndex++}-{fileSystem.Path.GetFileName(fullPath)}");
                     fileSystem.File.WriteAllText(overridePath, text);
+                    sourceMap[overridePath] = fullPath;
                     fullPath = overridePath;
                 }
 

@@ -35,17 +35,35 @@ internal sealed class FsharpMutantOrchestrator(string helperNamespace, IEnumerab
     }
 
     /// <summary>Applies splices right-to-left by offset so earlier ranges stay valid.</summary>
-    public static string ApplySplices(string source, IEnumerable<TextSplice> splices, string helperNamespace)
+    public static string ApplySplices(string source, IEnumerable<TextSplice> splices, string helperNamespace) =>
+        ApplySplicesTracked(source, splices, helperNamespace).Text;
+
+    /// <summary>
+    /// Same as <see cref="ApplySplices"/>, and also returns where each spliced text lands in the result:
+    /// every splice shifts all later ones by the length it added, accumulated left to right.
+    /// </summary>
+    public static AppliedSplices ApplySplicesTracked(string source, IEnumerable<TextSplice> splices, string helperNamespace)
     {
+        var ordered = splices.OrderBy(s => s.Range.StartOffset).ToList();
         var result = new StringBuilder(source);
-        foreach (var splice in splices.OrderByDescending(s => s.Range.StartOffset))
+        foreach (var splice in Enumerable.Reverse(ordered))
         {
             var length = splice.Range.EndOffset - splice.Range.StartOffset;
             result.Remove(splice.Range.StartOffset, length);
             result.Insert(splice.Range.StartOffset, Wrap(splice, helperNamespace));
         }
 
-        return result.ToString();
+        var shift = 0;
+        var placed = new List<PlacedSplice>();
+        foreach (var splice in ordered)
+        {
+            var wrappedLength = Wrap(splice, helperNamespace).Length;
+            var start = splice.Range.StartOffset + shift;
+            placed.Add(new PlacedSplice(splice.MutantId, start, start + wrappedLength));
+            shift += wrappedLength - (splice.Range.EndOffset - splice.Range.StartOffset);
+        }
+
+        return new AppliedSplices(result.ToString(), placed);
     }
 
     private static string Wrap(TextSplice splice, string helperNamespace) =>
