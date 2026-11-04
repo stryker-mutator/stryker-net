@@ -243,8 +243,8 @@ classDiagram
 - `FsharpCompile_OverwritesTestOutput_AndBackupExists`
 **Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
-- [ ] Compiled assembly has same name/version as original and loads
-- [ ] Backup file present; restore returns the original
+- [x] Compiled assembly has same name/version as original and loads
+- [x] Backup file present; restore returns the original
 **Depends on**: task 6
 **Time-box**: ~90 min (hard cap: fallback to Option B inside it)
 

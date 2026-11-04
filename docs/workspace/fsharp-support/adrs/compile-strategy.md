@@ -29,3 +29,5 @@ walking skeleton; if it fails, switch to B without changing any other seam
 Easier: fast rollback retries (no MSBuild per attempt), diagnostics as typed objects.
 Harder: compiler args fidelity (signing, resources, defines) is on us — covered by an
 integration target project asserting the mutated assembly loads and tests run.
+
+Task 7 outcome: Option A landed. `FsharpCompilingProcess` rebuilds the fsc argv from Buildalyzer `CompilerArguments` (relative paths absolutised, `--refout`/`--embed` dropped, output redirected to a temp dir) and compiles via `FSharpChecker.Compile(argv)`; name, version and compile order matched in a real two-file project. Note: Buildalyzer reports `SourceFiles` and `CompilerArguments` paths relative to the project directory and includes generated `*.AssemblyInfo.fs`/`AssemblyAttributes.fs` items. Resolve against the project directory (task 6 reads them verbatim; follow-up needed there). Overridden sources compile from temp copies, so diagnostics carry temp file names (map by file name in rollback).
