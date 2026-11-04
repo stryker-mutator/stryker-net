@@ -267,7 +267,9 @@ classDiagram
 **Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug && dotnet test src/Stryker.vstest.slnf -c Debug`
 **Acceptance criteria**:
 - [ ] JSON report: 1 mutant, status Killed, `language: "fs"`, 1-based span matching the literal
-- [ ] Original assembly restored after the run
+- [x] Original assembly restored after the run
+
+**Delta (task 8)**: `FsharpSkeleton_EndToEnd_ReportsKilledMutant` runs the real orchestrate, splice, helper compile, F# compile and injection through `FsharpMutationProcess.Mutate`, loads the mutated assembly and flips the result via `<ns>.MutantControl.ActiveMutant`; the `SourceFile`/`JsonMutant` fragment has `language: "fs"` and the 1-based span. The Killed status is set by a simulated failing test, not by a VsTest run (no F# xunit packages offline, so the first box stays open until the task 16 integration target). Found while probing: hosts with a `*.deps.json` only load listed assemblies, so the helper dll is also registered in the test output's deps files (`RegisterInDependencyManifests`). The gate in `MutableProjectTarget` now throws only when no builder is registered for the language; `ProjectMutator` resolves the keyed `IMutationProcess` for non-C# projects. Mutant filters are not applied to F# yet (TODO in `FsharpMutationProcess`).
 **Depends on**: tasks 4, 7
 **Time-box**: ~90 min
 

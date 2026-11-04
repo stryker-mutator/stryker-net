@@ -72,14 +72,14 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
 
         var language = targetProjectInfo.AnalyzerResult.GetLanguage();
 
-        // F# stays disabled until its builder is implemented; the keyed Fsharp slot is registered by Stryker.Fsharp
-        if (language != Language.Csharp)
+        // Languages other than C# are enabled by registering their keyed builder factory (see Stryker.Fsharp)
+        var builderFactory = (serviceProvider as IKeyedServiceProvider)?.GetKeyedService<ProjectComponentsBuilderFactory>(language)
+            ?? (language == Language.Csharp ? DefaultCsharpBuilderFactory : null);
+        if (builderFactory is null)
         {
             throw new InputException(LanguageNotEnabledMessage(language, ProjectTarget.ProjectFilePath));
         }
 
-        var builderFactory = (serviceProvider as IKeyedServiceProvider)?.GetKeyedService<ProjectComponentsBuilderFactory>(language)
-            ?? DefaultCsharpBuilderFactory;
         var builder = builderFactory(targetProjectInfo, options, FoldersToExclude, logger, fileSystem);
 
         var inputFiles = builder.Build();

@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.ProjectComponents;
+using Stryker.Fsharp.Mutants;
 
 namespace Stryker.Fsharp.ProjectComponents;
 
@@ -13,6 +14,9 @@ public class FsharpFileLeaf : ProjectComponent, IFileLeaf
 
     /// <summary>The unmutated FCS parse tree.</summary>
     public ParsedInput? ParseTree { get; set; }
+
+    /// <summary>Text splices carrying the mutants of this file; empty until orchestrated.</summary>
+    internal List<TextSplice> Splices { get; } = [];
 
     public override IEnumerable<IMutant> Mutants { get; set; } = [];
 

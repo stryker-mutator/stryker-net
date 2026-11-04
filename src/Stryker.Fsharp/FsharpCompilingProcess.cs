@@ -28,14 +28,15 @@ internal sealed class FsharpCompilingProcess(IAnalyzerResult sourceProject, IFil
     private string ProjectDir => fileSystem.Path.GetDirectoryName(sourceProject.ProjectFilePath)!;
 
     /// <param name="sourceOverrides">Full source path to replacement text; used to compile mutated sources.</param>
-    public FsharpCompileResult Compile(IReadOnlyDictionary<string, string>? sourceOverrides = null)
+    /// <param name="references">Extra assemblies to reference (the compiled mutant-control helper).</param>
+    public FsharpCompileResult Compile(IReadOnlyDictionary<string, string>? sourceOverrides = null, IEnumerable<string>? references = null)
     {
         var workDir = fileSystem.Path.Combine(fileSystem.Path.GetTempPath(), "stryker-fsharp-" + Guid.NewGuid().ToString("N"));
         fileSystem.Directory.CreateDirectory(workDir);
         try
         {
             var output = fileSystem.Path.Combine(workDir, sourceProject.GetAssemblyFileName());
-            var argv = BuildArguments(output, workDir, sourceOverrides ?? new Dictionary<string, string>());
+            var argv = BuildArguments(output, workDir, sourceOverrides ?? new Dictionary<string, string>(), references ?? []);
             var (diagnostics, exception) = FSharpAsync.RunSynchronously(Checker.Compile(argv, null), null, null).ToValueTuple();
             var hasErrors = diagnostics.Any(d => d.Severity.IsError) || exception != null;
             foreach (var diagnostic in diagnostics.Where(d => d.Severity.IsError))
@@ -54,7 +55,11 @@ internal sealed class FsharpCompilingProcess(IAnalyzerResult sourceProject, IFil
     }
 
     /// <summary>Overwrites the source assembly in every test project's output. Backup is done beforehand, as in the C# flow.</summary>
-    public void Inject(ITestProjectsInfo testProjects, byte[] assembly)
+    public void Inject(ITestProjectsInfo testProjects, byte[] assembly) =>
+        InjectFile(testProjects, sourceProject.GetAssemblyFileName(), assembly);
+
+    /// <summary>Writes a file (the compiled assembly or the helper assembly) into every test project's output.</summary>
+    public void InjectFile(ITestProjectsInfo testProjects, string fileName, byte[] content)
     {
         foreach (var testProject in testProjects.AnalyzerResults)
         {
@@ -64,16 +69,17 @@ internal sealed class FsharpCompilingProcess(IAnalyzerResult sourceProject, IFil
                 fileSystem.Directory.CreateDirectory(directory);
             }
 
-            var injectionPath = fileSystem.Path.Combine(directory, sourceProject.GetAssemblyFileName());
-            fileSystem.File.WriteAllBytes(injectionPath, assembly);
-            logger.LogDebug("Injected the compiled F# assembly into {InjectionPath}", injectionPath);
+            var injectionPath = fileSystem.Path.Combine(directory, fileName);
+            fileSystem.File.WriteAllBytes(injectionPath, content);
+            logger.LogDebug("Injected {FileName} into {InjectionPath}", fileName, injectionPath);
         }
     }
 
-    private string[] BuildArguments(string output, string workDir, IReadOnlyDictionary<string, string> sourceOverrides)
+    private string[] BuildArguments(string output, string workDir, IReadOnlyDictionary<string, string> sourceOverrides, IEnumerable<string> references)
     {
         var overrides = sourceOverrides.ToDictionary(o => fileSystem.Path.GetFullPath(o.Key), o => o.Value);
         var argv = new List<string> { "fsc.exe" };
+        argv.AddRange(references.Select(r => $"-r:{fileSystem.Path.GetFullPath(r)}"));
         var sourceIndex = 0;
         foreach (var argument in sourceProject.CompilerArguments!)
         {

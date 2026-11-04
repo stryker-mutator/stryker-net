@@ -49,6 +49,23 @@ public class FsharpProjectComponentsBuilderTests
     }
 
     [TestMethod]
+    public void FsharpComponentsBuilder_RelativeCompileItems_AreResolved_AndGeneratedFilesExcluded()
+    {
+        // Buildalyzer reports project-relative paths and includes generated files from obj/
+        var (builder, _) = CreateBuilder(new()
+        {
+            [$"{ProjectDir}/A.fs"] = "module A\nlet a = 1\n",
+            [$"{ProjectDir}/obj/Debug/net10.0/Lib.AssemblyInfo.fs"] = "module Info\nlet i = 1\n",
+            [$"{ProjectDir}/obj/Debug/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.fs"] = "module Attr\nlet i = 1\n",
+        }, "A.fs", "obj/Debug/net10.0/Lib.AssemblyInfo.fs", "obj/Debug/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.fs");
+
+        var leaves = builder.Build().GetAllFiles().Cast<FsharpFileLeaf>().ToList();
+
+        leaves.Select(l => l.RelativePath).ShouldBe(["A.fs"]);
+        leaves.Single().FullPath.ShouldBe($"{ProjectDir}/A.fs");
+    }
+
+    [TestMethod]
     public void FsharpComponentsBuilder_SkipsUnparseableFile_WithWarning()
     {
         var (builder, logger) = CreateBuilder(new()

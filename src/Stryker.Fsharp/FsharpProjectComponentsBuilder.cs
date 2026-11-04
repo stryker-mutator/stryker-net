@@ -30,11 +30,20 @@ public class FsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, ILogg
             RelativePath = FileSystem.Path.GetDirectoryName(projectDir) ?? string.Empty,
         };
         var folders = new Dictionary<string, FsharpFolderComposite> { [string.Empty] = root };
-        var parsingOptions = CreateParsingOptions(analyzerResult);
+        // Buildalyzer reports project-relative paths
+        var sourceFiles = analyzerResult.SourceFiles.Select(f => FileSystem.Path.GetFullPath(f, projectDir)).ToList();
+        var parsingOptions = CreateParsingOptions(analyzerResult, sourceFiles);
 
         // SourceFiles holds the compile items in fsproj order; F# compilation order is semantic.
-        foreach (var sourceFile in analyzerResult.SourceFiles)
+        foreach (var sourceFile in sourceFiles)
         {
+            if (IsGenerated(sourceFile, projectDir))
+            {
+                // still compiled (the compile step uses the fsc arguments), but never mutated
+                logger.LogDebug("Excluding generated F# compile item {File}", sourceFile);
+                continue;
+            }
+
             if (ExcludedExtensions.Contains(FileSystem.Path.GetExtension(sourceFile), StringComparer.OrdinalIgnoreCase))
             {
                 logger.LogDebug("Excluding unsupported F# compile item {File}", sourceFile);
@@ -64,11 +73,17 @@ public class FsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, ILogg
         return root;
     }
 
-    private static FSharpParsingOptions CreateParsingOptions(IAnalyzerResult analyzerResult)
+    private bool IsGenerated(string sourceFile, string projectDir)
+    {
+        var relative = FileSystem.Path.GetRelativePath(projectDir, sourceFile).Replace('\\', '/');
+        return relative.StartsWith("obj/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static FSharpParsingOptions CreateParsingOptions(IAnalyzerResult analyzerResult, IEnumerable<string> sourceFiles)
     {
         var args = analyzerResult.PreprocessorSymbols.Select(symbol => $"--define:{symbol}");
         var (options, _) = Checker.GetParsingOptionsFromCommandLineArgs(
-            ListModule.OfSeq(analyzerResult.SourceFiles), ListModule.OfSeq(args), null, null);
+            ListModule.OfSeq(sourceFiles), ListModule.OfSeq(args), null, null);
         return options;
     }
 
@@ -90,9 +105,10 @@ public class FsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, ILogg
         return folder;
     }
 
-    public override void InjectHelpers(IReadOnlyProjectComponent inputFiles) =>
-        throw new NotImplementedException("F# helper injection is not implemented yet.");
+    // F# helpers live in a separate compiled assembly (see FsharpHelperAssembly), not in the source tree.
+    public override void InjectHelpers(IReadOnlyProjectComponent inputFiles)
+    {
+    }
 
-    public override Action PostBuildAction() =>
-        throw new NotImplementedException("F# post-build action is not implemented yet.");
+    public override Action PostBuildAction() => () => { };
 }

@@ -84,6 +84,17 @@ namespace ExtraProject.XUnit
     }
 
     [TestMethod]
+    public void JsonReportFileComponent_FsharpFile_ShouldHaveFsLanguage()
+    {
+        var file = new Moq.Mock<Stryker.Abstractions.ProjectComponents.IReadOnlyFileLeaf>();
+        file.Setup(f => f.RelativePath).Returns("Lib.fs");
+        file.Setup(f => f.SourceCode).Returns("module Lib");
+        file.Setup(f => f.Mutants).Returns([]);
+
+        new SourceFile(file.Object).Language.ShouldBe("fs");
+    }
+
+    [TestMethod]
     public void JsonReportFileComponent_ShouldContainOriginalSource()
     {
         var folderComponent = ReportTestHelper.CreateProjectWith();
