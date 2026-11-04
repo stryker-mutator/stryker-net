@@ -377,7 +377,7 @@ classDiagram
 - `StringMutator_LiteralAttribute_IsSkipped`
 **Verify**: `dotnet test src/Stryker.Fsharp.UnitTest -c Debug`
 **Acceptance criteria**:
-- [ ] Literal cases exact; `[<Literal>]` untouched
+- [x] Literal cases exact; `[<Literal>]` untouched
 **Depends on**: task 12
 **Time-box**: ~60 min
 

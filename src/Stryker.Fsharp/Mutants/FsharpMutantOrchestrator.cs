@@ -14,7 +14,7 @@ namespace Stryker.Fsharp.Mutants;
 /// </summary>
 internal sealed class FsharpMutantOrchestrator(string helperNamespace, IEnumerable<IFsharpMutator>? mutators = null, MutationLevel mutationLevel = MutationLevel.Complete)
 {
-    private readonly IReadOnlyList<IFsharpMutator> _mutators = [.. (mutators ?? [new BooleanMutator(), new ArithmeticOperatorMutator(), new EqualityOperatorMutator()]).Where(m => m.MutationLevel <= mutationLevel)];
+    private readonly IReadOnlyList<IFsharpMutator> _mutators = [.. (mutators ?? [new BooleanMutator(), new ArithmeticOperatorMutator(), new EqualityOperatorMutator(), new StringLiteralMutator()]).Where(m => m.MutationLevel <= mutationLevel)];
     private int _nextId;
 
     /// <summary>Mutates one file: attaches mutants and splices to the leaf. Returns the mutant count.</summary>
@@ -177,6 +177,11 @@ internal sealed class FsharpMutantOrchestrator(string helperNamespace, IEnumerab
     /// </summary>
     private void VisitModuleBinding(SynBinding binding, FsharpFileLeaf file, List<Mutant> mutants)
     {
+        if (IsLiteralBinding(binding))
+        {
+            return; // compile-time constant: a mutant would only burn a rollback retry
+        }
+
         var firstMutant = mutants.Count;
         var firstSplice = file.Splices.Count;
         VisitExpression(binding.expr, file, mutants);
@@ -194,6 +199,10 @@ internal sealed class FsharpMutantOrchestrator(string helperNamespace, IEnumerab
         // listed before the mutant splices, which may share its range: the wrapper must be the outer one
         file.Splices.Insert(firstSplice, TextSplice.TrackValue(range, file.SourceCode.Substring(range.StartOffset, range.EndOffset - range.StartOffset)));
     }
+
+    private static bool IsLiteralBinding(SynBinding binding) =>
+        binding.attributes.SelectMany(list => list.Attributes)
+            .Any(a => a.TypeName.LongIdent.Last().idText is "Literal" or "LiteralAttribute");
 
     private static bool IsFunction(SynBinding binding) =>
         binding.headPat is SynPat.LongIdent { argPats: SynArgPats.Pats { pats: { IsEmpty: false } } };
