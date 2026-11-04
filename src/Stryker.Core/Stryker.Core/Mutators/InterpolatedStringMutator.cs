@@ -11,11 +11,11 @@ public class InterpolatedStringMutator : MutatorBase<InterpolatedStringExpressio
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-    public override IEnumerable<Mutation> ApplyMutations(InterpolatedStringExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(InterpolatedStringExpressionSyntax node, SemanticModel semanticModel)
     {
         if (node.Contents.Any())
         {
-            yield return new Mutation
+            yield return new CsharpMutation
             {
                 OriginalNode = node,
                 ReplacementNode = CreateEmptyInterpolatedString().WithCleanTriviaFrom(node),

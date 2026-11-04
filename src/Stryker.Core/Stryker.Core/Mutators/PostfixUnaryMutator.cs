@@ -11,7 +11,7 @@ public class PostfixUnaryMutator : MutatorBase<PostfixUnaryExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-    public override IEnumerable<Mutation> ApplyMutations(PostfixUnaryExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(PostfixUnaryExpressionSyntax node, SemanticModel semanticModel)
     {
         var unaryKind = node.Kind();
         SyntaxKind newKind;
@@ -28,7 +28,7 @@ public class PostfixUnaryMutator : MutatorBase<PostfixUnaryExpressionSyntax>
             yield break;
         }
 
-        yield return new Mutation
+        yield return new CsharpMutation
         {
             OriginalNode = node,
             ReplacementNode = SyntaxFactory.PostfixUnaryExpression(newKind, node.Operand.WithCleanTrivia()),

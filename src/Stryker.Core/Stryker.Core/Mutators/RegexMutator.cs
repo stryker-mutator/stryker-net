@@ -20,7 +20,7 @@ public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>
 
     public override MutationLevel MutationLevel => MutationLevel.Advanced;
 
-    public override IEnumerable<Mutation> ApplyMutations(ObjectCreationExpressionSyntax node,
+    public override IEnumerable<CsharpMutation> ApplyMutations(ObjectCreationExpressionSyntax node,
         SemanticModel semanticModel)
     {
         var name = node.Type.ToString();
@@ -66,7 +66,7 @@ public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>
                     continue;
                 }
 
-                yield return new Mutation()
+                yield return new CsharpMutation()
                 {
                     OriginalNode = node,
                     ReplacementNode = node.ReplaceNode(subNode,

@@ -57,7 +57,7 @@ public class DashboardClientsTest : TestBase
     private static readonly JsonMutant Mutant = new(new Mutant
     {
         Id = 1,
-        Mutation = new Mutation
+        Mutation = new CsharpMutation
         {
             DisplayName = "test mutation",
             OriginalNode = SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal("A"))),

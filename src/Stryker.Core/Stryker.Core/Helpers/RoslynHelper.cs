@@ -133,10 +133,17 @@ internal static class RoslynHelper
     /// <returns>A copy of <see cref="sourceNode"/> with the mutation applied.</returns>
     /// <exception cref="InvalidOperationException">when mutation does not belong to this node.</exception>
     /// <remarks><paramref name="sourceNode"/> can be any node that includes the original, non mutated node described in the mutation.</remarks>
-    public static T InjectMutation<T>(this T sourceNode, Mutation mutation) where T : SyntaxNode =>
-        sourceNode.Contains(mutation.OriginalNode) ? sourceNode.ReplaceNode(mutation.OriginalNode, mutation.ReplacementNode)
+    public static T InjectMutation<T>(this T sourceNode, Mutation mutation) where T : SyntaxNode
+    {
+        if (mutation is not CsharpMutation csharpMutation)
+        {
+            throw new InvalidOperationException($"Cannot inject mutation of type '{mutation?.GetType().Name}' in a C# syntax tree: a {nameof(CsharpMutation)} is required.");
+        }
+
+        return sourceNode.Contains(csharpMutation.OriginalNode) ? sourceNode.ReplaceNode(csharpMutation.OriginalNode, csharpMutation.ReplacementNode)
             // if this happens, there is a probably a bug in some orchestrator
-            : throw new InvalidOperationException($"Cannot inject mutation '{mutation.ReplacementNode}' in '{sourceNode}' because we cannot find the original code.");
+            : throw new InvalidOperationException($"Cannot inject mutation '{csharpMutation.ReplacementNode}' in '{sourceNode}' because we cannot find the original code.");
+    }
 
     /// <summary>
     /// Get the gets accessor of a property, if any.

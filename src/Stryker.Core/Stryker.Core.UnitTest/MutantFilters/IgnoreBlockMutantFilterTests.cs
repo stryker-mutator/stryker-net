@@ -45,7 +45,7 @@ public void SomeMethod()
 
         var blockMutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = blockNode,
                 Location = MutationLocation.FromRoslyn(blockNode),
@@ -54,7 +54,7 @@ public void SomeMethod()
         };
         var binaryExpressionMutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = binaryExpressionNode,
                 Location = MutationLocation.FromRoslyn(binaryExpressionNode),
@@ -84,7 +84,7 @@ public void SomeMethod()
         var blockNode = syntaxTree.DescendantNodes().OfType<BlockSyntax>().First();
         var blockMutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = blockNode,
                 Location = MutationLocation.FromRoslyn(blockNode),

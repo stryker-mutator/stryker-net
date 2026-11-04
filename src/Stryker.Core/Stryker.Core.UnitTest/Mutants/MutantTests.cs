@@ -16,7 +16,7 @@ public class MutantTests : TestBase
         var mutant = new Mutant
         {
             Id = 1,
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 DisplayName = "test mutation"
             }

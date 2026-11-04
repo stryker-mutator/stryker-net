@@ -44,14 +44,14 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
     };
 
     /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
-    public override IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node, SemanticModel semanticModel) => node.Expression switch
+    public override IEnumerable<CsharpMutation> ApplyMutations(InvocationExpressionSyntax node, SemanticModel semanticModel) => node.Expression switch
     {
         MemberAccessExpressionSyntax memberAccess => ApplyMutationsToMemberCall(node, memberAccess, semanticModel),
         IdentifierNameSyntax methodName => ApplyMutationsToDirectCall(node, methodName, semanticModel),
         _ => []
     };
 
-    private static IEnumerable<Mutation> ApplyMutationsToMemberCall(InvocationExpressionSyntax node, MemberAccessExpressionSyntax memberAccessExpressionSyntax, SemanticModel semanticModel)
+    private static IEnumerable<CsharpMutation> ApplyMutationsToMemberCall(InvocationExpressionSyntax node, MemberAccessExpressionSyntax memberAccessExpressionSyntax, SemanticModel semanticModel)
     {
         var methodNameText = memberAccessExpressionSyntax.Name.Identifier.Text;
         if (!Enum.TryParse(methodNameText, out MathExpression _))
@@ -81,7 +81,7 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
             yield return mutation;
         }
     }
-    private static IEnumerable<Mutation> ApplyMutationsToDirectCall(InvocationExpressionSyntax node, IdentifierNameSyntax methodName, SemanticModel semanticModel)
+    private static IEnumerable<CsharpMutation> ApplyMutationsToDirectCall(InvocationExpressionSyntax node, IdentifierNameSyntax methodName, SemanticModel semanticModel)
     {
         var methodNameText = methodName.Identifier.Text;
         if (!Enum.TryParse(methodNameText, out MathExpression _))
@@ -105,14 +105,14 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
             yield return mutation;
         }
     }
-    private static IEnumerable<Mutation> ApplyMutationsToMethod(InvocationExpressionSyntax original, SimpleNameSyntax method)
+    private static IEnumerable<CsharpMutation> ApplyMutationsToMethod(InvocationExpressionSyntax original, SimpleNameSyntax method)
     {
         if (Enum.TryParse(method.Identifier.ValueText, out MathExpression expression) &&
             KindsToMutate.TryGetValue(expression, out var replacementExpressions))
         {
             foreach (var replacementExpression in replacementExpressions)
             {
-                yield return new Mutation
+                yield return new CsharpMutation
                 {
                     DisplayName =
                         $"Math method mutation ({method.Identifier.ValueText}() to {SyntaxFactory.IdentifierName(replacementExpression.ToString())}())",

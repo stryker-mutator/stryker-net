@@ -25,12 +25,12 @@ public class PrefixUnaryMutator : MutatorBase<PrefixUnaryExpressionSyntax>
         SyntaxKind.LogicalNotExpression
     };
 
-    public override IEnumerable<Mutation> ApplyMutations(PrefixUnaryExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(PrefixUnaryExpressionSyntax node, SemanticModel semanticModel)
     {
         var unaryKind = node.Kind();
         if (UnaryWithOpposite.TryGetValue(unaryKind, out var oppositeKind))
         {
-            yield return new Mutation
+            yield return new CsharpMutation
             {
                 OriginalNode = node,
                 ReplacementNode = SyntaxFactory.PrefixUnaryExpression(oppositeKind, node.Operand.WithCleanTrivia()),
@@ -40,7 +40,7 @@ public class PrefixUnaryMutator : MutatorBase<PrefixUnaryExpressionSyntax>
         }
         else if (UnaryToInitial.Contains(unaryKind))
         {
-            yield return new Mutation
+            yield return new CsharpMutation
             {
                 OriginalNode = node,
                 ReplacementNode = node.Operand.WithCleanTrivia(),

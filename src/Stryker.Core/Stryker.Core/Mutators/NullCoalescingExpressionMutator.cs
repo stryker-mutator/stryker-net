@@ -11,7 +11,7 @@ public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSynta
 {
     public override MutationLevel MutationLevel => MutationLevel.Basic;
 
-    public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(BinaryExpressionSyntax node, SemanticModel semanticModel)
     {
         if (node.Kind() != SyntaxKind.CoalesceExpression)
         {
@@ -26,7 +26,7 @@ public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSynta
             // Only create a "left to right" mutant if both sides are nullable.
             if (rightPartIsNullable)
             {
-                yield return new Mutation
+                yield return new CsharpMutation
                 {
                     OriginalNode = node,
                     ReplacementNode = node.WithLeft(node.Right).WithRight(node.Left).WithCleanTrivia(),
@@ -35,7 +35,7 @@ public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSynta
                 };
             }
 
-            yield return new Mutation
+            yield return new CsharpMutation
             {
                 OriginalNode = node,
                 ReplacementNode = node.Right.WithCleanTrivia(),
@@ -47,7 +47,7 @@ public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSynta
         // Only create a "remove right" mutant if the right side is nullable.
         if (rightPartIsNullable || node.Right.IsKind(SyntaxKind.CollectionExpression))
         {
-            yield return new Mutation
+            yield return new CsharpMutation
             {
                 OriginalNode = node,
                 ReplacementNode = node.Left.WithCleanTrivia(),

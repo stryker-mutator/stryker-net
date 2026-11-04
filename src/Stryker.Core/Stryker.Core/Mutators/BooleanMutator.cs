@@ -10,11 +10,11 @@ namespace Stryker.Core.Mutators;
 public class BooleanMutator : MutatorBase<LiteralExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
-    public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(LiteralExpressionSyntax node, SemanticModel semanticModel)
     {
         if (node.Kind() == SyntaxKind.TrueLiteralExpression)
         {
-            yield return new Mutation()
+            yield return new CsharpMutation()
             {
                 OriginalNode = node,
                 ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression).WithCleanTriviaFrom(node),
@@ -24,7 +24,7 @@ public class BooleanMutator : MutatorBase<LiteralExpressionSyntax>
         }
         else if (node.Kind() == SyntaxKind.FalseLiteralExpression)
         {
-            yield return new Mutation()
+            yield return new CsharpMutation()
             {
                 OriginalNode = node,
                 ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression).WithCleanTriviaFrom(node),

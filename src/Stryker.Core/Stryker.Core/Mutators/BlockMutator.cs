@@ -14,7 +14,7 @@ public class BlockMutator : MutatorBase<BlockSyntax>
 
     public override MutationLevel MutationLevel => MutationLevel.Basic;
 
-    public override IEnumerable<Mutation> ApplyMutations(BlockSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(BlockSyntax node, SemanticModel semanticModel)
     {
         if (node.IsEmpty() ||
             IsInfiniteWhileLoop(node) ||
@@ -23,7 +23,7 @@ public class BlockMutator : MutatorBase<BlockSyntax>
             yield break;
         }
 
-        yield return new Mutation
+        yield return new CsharpMutation
         {
             OriginalNode = node,
             ReplacementNode = SyntaxFactory.Block().WithCleanTriviaFrom(node),

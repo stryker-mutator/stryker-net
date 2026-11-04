@@ -94,7 +94,7 @@ public class StringEmptyMutatorTests : TestBase
         mutated.ShouldBeEmpty();
     }
 
-    private void ValidateMutationIsNullCheck(Mutation mutation, InvocationExpressionSyntax original)
+    private void ValidateMutationIsNullCheck(CsharpMutation mutation, InvocationExpressionSyntax original)
     {
         mutation.OriginalNode.ShouldBe(original);
         mutation.DisplayName.ShouldBe("String mutation");
@@ -111,7 +111,7 @@ public class StringEmptyMutatorTests : TestBase
         nullLiteral.Kind().ShouldBe(SyntaxKind.NullLiteralExpression);
     }
 
-    private void ValidateMutationIsEmptyCheck(Mutation mutation, InvocationExpressionSyntax original)
+    private void ValidateMutationIsEmptyCheck(CsharpMutation mutation, InvocationExpressionSyntax original)
     {
         mutation.OriginalNode.ShouldBe(original);
         mutation.DisplayName.ShouldBe("String mutation");
@@ -129,7 +129,7 @@ public class StringEmptyMutatorTests : TestBase
         emptyLiteral.Token.ToString().ShouldBe(@"""""");
     }
 
-    private void ValidateMutationIsWhiteSpaceCheck(Mutation mutation, InvocationExpressionSyntax original)
+    private void ValidateMutationIsWhiteSpaceCheck(CsharpMutation mutation, InvocationExpressionSyntax original)
     {
         mutation.OriginalNode.ShouldBe(original);
         mutation.DisplayName.ShouldBe("String mutation");

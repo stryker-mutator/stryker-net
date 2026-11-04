@@ -33,7 +33,7 @@ public class RealTimeMutantHandlerTest : TestBase
         var mutant = new Mutant
         {
             Id = 1,
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 DisplayName = "test mutation",
                 OriginalNode = SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal("A"))),
@@ -88,7 +88,7 @@ public class RealTimeMutantHandlerTest : TestBase
         var mutant = new Mutant
         {
             Id = 1,
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 DisplayName = "test mutation",
                 OriginalNode = SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal("A"))),

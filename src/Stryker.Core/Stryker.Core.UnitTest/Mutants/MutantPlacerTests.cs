@@ -35,7 +35,7 @@ public class MutantPlacerTests : TestBase
             SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
             SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8))));
 
-        var mutants = new List<(Mutant, StatementSyntax)> { (new Mutant { Id = id, Mutation = new Mutation { ReplacementNode = mutatedNode } }, mutatedNode) };
+        var mutants = new List<(Mutant, StatementSyntax)> { (new Mutant { Id = id, Mutation = new CsharpMutation { ReplacementNode = mutatedNode } }, mutatedNode) };
 
         var result = placer.PlaceStatementControlledMutations(originalNode, mutants);
 
@@ -100,7 +100,7 @@ public class MutantPlacerTests : TestBase
             SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
             SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8)));
 
-        var mutants = new List<(Mutant, ExpressionSyntax)> { (new Mutant { Id = id, Mutation = new Mutation { ReplacementNode = mutatedNode } }, mutatedNode) };
+        var mutants = new List<(Mutant, ExpressionSyntax)> { (new Mutant { Id = id, Mutation = new CsharpMutation { ReplacementNode = mutatedNode } }, mutatedNode) };
 
         var result = placer.PlaceExpressionControlledMutations(originalNode, mutants);
 

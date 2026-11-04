@@ -185,8 +185,8 @@ classDiagram
 - existing suites green
 **Verify**: `dotnet test src/Stryker.vstest.slnf -c Debug`
 **Acceptance criteria**:
-- [ ] `Mutation` (base) has no Roslyn member
-- [ ] Full unit suite green
+- [x] `Mutation` (base) has no Roslyn member
+- [x] Full unit suite green
 **Depends on**: task 3
 **Time-box**: ~60 min
 

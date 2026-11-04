@@ -11,7 +11,7 @@ public class NegateConditionMutator : MutatorBase<ExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-    public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel)
     {
         SyntaxNode replacement = null;
         if (node is IsPatternExpressionSyntax)
@@ -44,7 +44,7 @@ public class NegateConditionMutator : MutatorBase<ExpressionSyntax>
 
         if (replacement != null)
         {
-            yield return new Mutation()
+            yield return new CsharpMutation()
             {
                 OriginalNode = node,
                 ReplacementNode = replacement.WithCleanTriviaFrom(node),

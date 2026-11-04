@@ -27,7 +27,7 @@ public class AssignmentExpressionMutator : MutatorBase<AssignmentExpressionSynta
 
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-    public override IEnumerable<Mutation> ApplyMutations(AssignmentExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(AssignmentExpressionSyntax node, SemanticModel semanticModel)
     {
         var assignmentKind = node.Kind();
 
@@ -48,7 +48,7 @@ public class AssignmentExpressionMutator : MutatorBase<AssignmentExpressionSynta
             var replacementNode =
                 SyntaxFactory.AssignmentExpression(targetAssignmentKind, node.Left.WithCleanTrivia(), node.Right.WithCleanTrivia());
             replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithCleanTriviaFrom(node.OperatorToken));
-            yield return new Mutation
+            yield return new CsharpMutation
             {
                 OriginalNode = node,
                 ReplacementNode = replacementNode,

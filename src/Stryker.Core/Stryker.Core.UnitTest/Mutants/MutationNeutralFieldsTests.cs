@@ -46,7 +46,7 @@ public class MutationNeutralFieldsTests : MutantOrchestratorTestsBase
             .AddSyntaxTrees(syntaxTree);
 
         Target.Mutate(syntaxTree, compilation.GetSemanticModel(syntaxTree));
-        var mutations = Target.GetLatestMutantBatch().Select(m => m.Mutation).ToList();
+        var mutations = Target.GetLatestMutantBatch().Select(m => m.Mutation).Cast<CsharpMutation>().ToList();
 
         mutations.ShouldNotBeEmpty();
         foreach (var mutation in mutations)

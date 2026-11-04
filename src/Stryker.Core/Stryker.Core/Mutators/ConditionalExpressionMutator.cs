@@ -12,7 +12,7 @@ public class ConditionalExpressionMutator : MutatorBase<ConditionalExpressionSyn
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-    public override IEnumerable<Mutation> ApplyMutations(ConditionalExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(ConditionalExpressionSyntax node, SemanticModel semanticModel)
     {
         // if the condition contains variable declarations, we should not mutate it
         if (node.Condition.DescendantNodes().OfType<DeclarationPatternSyntax>().Any())
@@ -20,7 +20,7 @@ public class ConditionalExpressionMutator : MutatorBase<ConditionalExpressionSyn
             yield break;
         }
 
-        yield return new Mutation()
+        yield return new CsharpMutation()
         {
             Type = Mutator.Conditional,
             DisplayName = "Conditional (true) mutation",
@@ -34,7 +34,7 @@ public class ConditionalExpressionMutator : MutatorBase<ConditionalExpressionSyn
             )
         };
 
-        yield return new Mutation()
+        yield return new CsharpMutation()
         {
             Type = Mutator.Conditional,
             DisplayName = "Conditional (false) mutation",

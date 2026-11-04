@@ -6,5 +6,5 @@ namespace Stryker.Abstractions;
 
 public interface IMutator
 {
-    IEnumerable<Mutation> Mutate(SyntaxNode node, SemanticModel semanticModel, IStrykerOptions options);
+    IEnumerable<CsharpMutation> Mutate(SyntaxNode node, SemanticModel semanticModel, IStrykerOptions options);
 }

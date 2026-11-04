@@ -17,7 +17,7 @@ public class BinaryPatternMutator : MutatorBase<BinaryPatternSyntax>
         [SyntaxKind.AndPattern] = [SyntaxKind.OrPattern],
     };
 
-    public override IEnumerable<Mutation> ApplyMutations(BinaryPatternSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(BinaryPatternSyntax node, SemanticModel semanticModel)
     {
         if (!KindsToMutate.TryGetValue(node.Kind(), out var mutations))
         {

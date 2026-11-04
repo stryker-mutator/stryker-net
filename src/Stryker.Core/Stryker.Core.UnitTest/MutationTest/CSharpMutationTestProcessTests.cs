@@ -1,3 +1,4 @@
+using Stryker.Abstractions;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -76,7 +77,7 @@ public class CSharpMutationTestProcessTests : TestBase
             }
         };
 
-        var mockMutants = new Collection<Mutant>() { new() { Mutation = new Mutation() } };
+        var mockMutants = new Collection<Mutant>() { new() { Mutation = new CsharpMutation() } };
 
         // create mocks
         var options = new StrykerOptions();

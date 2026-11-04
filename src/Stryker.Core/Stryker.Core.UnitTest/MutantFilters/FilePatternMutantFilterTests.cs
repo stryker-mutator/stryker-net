@@ -56,7 +56,7 @@ public class FilePatternMutantFilterTests : TestBase
 
         var mutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = SyntaxFactory.IdentifierName(syntaxToken),
                 Location = new MutationLocation("", 1, 1, 1, 1, spanStart, spanEnd)

@@ -13,7 +13,7 @@ public class StringMutator : MutatorBase<LiteralExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-    public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(LiteralExpressionSyntax node, SemanticModel semanticModel)
     {
         // Get objectCreationSyntax to check if it contains a regex type.
         var root = node.Parent?.Parent?.Parent;
@@ -22,7 +22,7 @@ public class StringMutator : MutatorBase<LiteralExpressionSyntax>
         {
             var currentValue = (string)node.Token.Value;
             var replacementValue = currentValue == "" ? "Stryker was here!" : "";
-            yield return new Mutation
+            yield return new CsharpMutation
             {
                 OriginalNode = node,
                 ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(replacementValue)),

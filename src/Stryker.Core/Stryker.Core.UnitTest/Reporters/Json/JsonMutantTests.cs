@@ -17,7 +17,7 @@ public class JsonMutantTests : TestBase
         var mutant = new Mutant
         {
             Id = 1,
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 DisplayName = "Arithmetic",
                 OriginalNode = SyntaxFactory.ParseExpression("a + b"),
