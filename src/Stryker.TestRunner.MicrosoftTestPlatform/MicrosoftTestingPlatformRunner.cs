@@ -37,14 +37,23 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     private readonly int _id;
     private readonly Dictionary<string, List<TestNode>> _testsByAssembly;
     private readonly Dictionary<string, MtpTestDescription> _testDescriptions;
+    private List<MtpTestDescription>? _testDescriptionsSnapshot;
     private readonly TestSet _testSet;
     private readonly object _discoveryLock;
     private readonly ILogger _logger;
     private readonly string _mutantFilePath;
+    private readonly string _reachedFilePath;
     private readonly string _runIdentity;
     private readonly string _coverageFilePathBase;
     private readonly IStrykerOptions? _options;
     private readonly object _serverLock = new();
+    private readonly SemaphoreSlim _sessionSemaphore = new(1, 1);
+    private readonly object _mutantFileLock = new();
+    private FileStream? _mutantFileStream;
+    private readonly object _reachedFileLock = new();
+    private FileStream? _reachedFileStream;
+    private int _retestCount;
+    private int _retestedKilledCount;
     private readonly HashSet<string> _initializedPerTestFiles = new();
     private readonly Dictionary<string, int> _perTestEpochCounters = new();
 
@@ -54,6 +63,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     /// Path of the mutant-id control file this runner shares with its test hosts. Exposed for unit testing.
     /// </summary>
     internal string MutantFilePath => _mutantFilePath;
+
+    /// <summary>
+    /// Path of the reached-mutant relay file this runner shares with its test hosts. Exposed for unit testing.
+    /// </summary>
+    internal string ReachedFilePath => _reachedFilePath;
 
     public MicrosoftTestingPlatformRunner(
         int id,
@@ -83,10 +97,22 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         // writes or disposal from changing this runner's active mutant.
         _runIdentity = $"{Environment.ProcessId}-{_id}-{Guid.NewGuid().ToString("N")[..8]}";
         _mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-{_runIdentity}.txt");
+        _reachedFilePath = Path.Combine(Path.GetTempPath(), $"stryker-reached-{_runIdentity}.txt");
         _coverageFilePathBase = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{_runIdentity}");
 
-        // Initialize with no active mutation
-        WriteMutantIdToFile(-1);
+        // Initialize with no active mutation. A failure is already logged and the next session
+        // write fails the run, so the constructor stays non-throwing.
+        try
+        {
+            WriteMutantIdToFile(-1);
+        }
+        catch (InvalidOperationException)
+        {
+        }
+
+        // Size the reached-signal file up front so the test host can memory-map it on its first
+        // ReportReached call. A failure is already logged and only costs the reached signal.
+        ResetReachedFile();
     }
 
     public Task<bool> DiscoverTestsAsync(string assembly)
@@ -121,7 +147,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     public async Task ResetServerAsync()
     {
         _logger.LogDebug("{RunnerId}: Resetting test servers to reload assemblies", RunnerId);
-        
+
         lock (_serverLock)
         {
             foreach (var server in _assemblyServers.Values)
@@ -130,44 +156,76 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             }
             _assemblyServers.Clear();
         }
-        
+
         _logger.LogDebug("{RunnerId}: Test servers reset complete", RunnerId);
         await Task.CompletedTask;
     }
 
+    internal int ActiveMutantId { get; set; } = -1;
+
+    /// <summary>
+    /// Publishes the active mutant id to the control file. A failed write throws: continuing would run
+    /// the tests with a different mutant active than the one being judged.
+    /// </summary>
     private void WriteMutantIdToFile(int mutantId)
     {
         try
         {
-            // Publish the active mutant id as a fixed 4-byte int through a file-backed memory-mapped view.
-            // The injected MutantControl maps the same file and reads the id on every IsActive call, so the
-            // reused test host always sees the current mutant with no per-call file I/O. Both sides use
-            // CreateFromFile with a null map name (file-backed maps work cross-platform, unlike named maps
-            // which are Windows-only), and FileShare.ReadWrite lets the host keep the file mapped while we
-            // update it between runs.
-            using (var stream = new FileStream(_mutantFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
-            using (var mmf = MemoryMappedFile.CreateFromFile(stream, null, sizeof(int), MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, leaveOpen: true))
-            using (var accessor = mmf.CreateViewAccessor(0, sizeof(int), MemoryMappedFileAccess.Write))
+            // Keep the control file open for the life of the runner. Reopening it for every mutant session
+            // can invalidate memory-mapped views in reused MTP hosts; MutantControl maps the file (or reads it
+            // directly as a fallback) with FileShare.ReadWrite (stryker-mutator/stryker-net#3832).
+            lock (_mutantFileLock)
             {
-                accessor.Write(0, mutantId);
-                accessor.Flush();
+                _mutantFileStream ??= OpenMutantControlFile();
+                _mutantFileStream.Seek(0, SeekOrigin.Begin);
+                Span<byte> bytes = stackalloc byte[sizeof(int)];
+                BitConverter.TryWriteBytes(bytes, mutantId);
+                _mutantFileStream.Write(bytes);
+                _mutantFileStream.Flush();
             }
 
-            _logger.LogDebug("{RunnerId}: Wrote mutant ID {MutantId} to memory-mapped file {FilePath}",
+            _logger.LogDebug("{RunnerId}: Wrote mutant ID {MutantId} to mutant control file {FilePath}",
                 RunnerId, mutantId, _mutantFilePath);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "{RunnerId}: Failed to write mutant ID to memory-mapped file {FilePath}",
+            _logger.LogWarning(ex, "{RunnerId}: Failed to write mutant ID to mutant control file {FilePath}",
                 RunnerId, _mutantFilePath);
+            throw new InvalidOperationException($"Could not publish mutant id {mutantId} to the control file {_mutantFilePath}.", ex);
         }
+    }
+
+    private FileStream OpenMutantControlFile() => OpenMutantControlFile(_mutantFilePath, stream => stream.SetLength(sizeof(int)));
+
+    /// <summary>
+    /// Opens the control file and sizes it with <paramref name="resize"/> when it is too short. The stream is
+    /// released when sizing fails, since the caller never receives it and a retry would otherwise leak a handle.
+    /// </summary>
+    internal static FileStream OpenMutantControlFile(string path, Action<FileStream> resize)
+    {
+        var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+        try
+        {
+            if (stream.Length < sizeof(int))
+            {
+                resize(stream);
+            }
+        }
+        catch
+        {
+            stream.Dispose();
+            throw;
+        }
+
+        return stream;
     }
 
     private Dictionary<string, string?> BuildEnvironmentVariables(string assembly)
     {
         var envVars = new Dictionary<string, string?>
         {
-            ["STRYKER_MUTANT_FILE"] = _mutantFilePath
+            ["STRYKER_MUTANT_FILE"] = _mutantFilePath,
+            ["STRYKER_REACHED_FILE"] = _reachedFilePath
         };
 
         ExternalEnvironmentVariables.Add(envVars);
@@ -714,16 +772,29 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     }
 
     /// <summary>
+    /// Builds the result of an isolated capture from the coverage file the test host flushed on exit. Mutants seen
+    /// running in a static context are kept so they are later run on a fresh host.
+    /// </summary>
+    internal ICoverageRunResult BuildIsolatedCoverageResult(string testId, string coverageFilePath, string assembly)
+    {
+        var (covered, staticMutants) = ReadCoverageForHandedOutPath(coverageFilePath, assembly);
+        _logger.LogDebug("{RunnerId}: Isolated coverage of {TestId}: {CoveredCount} mutant(s) covered, {StaticCount} of them in a static context",
+            RunnerId, testId, covered.Count, staticMutants.Count);
+        return CoverageRunResult.Create(testId, CoverageConfidence.Exact, covered, staticMutants, Array.Empty<int>());
+    }
+
+    /// <summary>
     /// Captures coverage for a single test with full process isolation: the test host is discarded and
     /// restarted before the test runs and stopped again right after, so no static state or coverage from
     /// another test can leak in. That is what lets the result be trusted with
     /// <see cref="CoverageConfidence.Exact"/> - unlike the reused-process "perTest" capture in
     /// <see cref="RunSingleTestForCoverageInReusedProcessAsync"/>, which can only ever report
     /// <see cref="CoverageConfidence.Normal"/> since other tests may have already touched shared state
-    /// on the same warm process. Static-mutant tagging is dropped here (an empty array is passed to
-    /// <see cref="CoverageRunResult.Create"/>), mirroring VsTestRunnerPool's per-isolated-test handling:
-    /// that tagging exists to protect mutants that might only be covered via static state left over from
-    /// another test, and true process isolation already rules that out.
+    /// on the same warm process. The mutants seen running in a static context are kept, unlike
+    /// VsTestRunnerPool, which starts a new process for every mutant run: mutation runs here reuse test
+    /// hosts, and only a mutant flagged as static is run on a fresh host
+    /// (see <see cref="RequiresFreshHost"/>), so dropping the flag would let the warm-up cache the original
+    /// value of a static initializer and the mutant could never take effect.
     /// </summary>
     internal virtual async Task<ICoverageRunResult> RunSingleTestForCoverageInIsolatedProcessAsync(
         string assembly, TestNode test, string testId)
@@ -741,7 +812,13 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             // credit this test with the earlier one's coverage - at Exact confidence, which the pool
             // trusts enough to drop mutants no test covers. A single shared file gave this for free,
             // since every host rewrote it whole.
-            foreach (var staleCoverageFilePath in EnumerateCoverageFiles(coverageFilePath))
+            var staleCoverageFilePaths = EnumerateCoverageFiles(coverageFilePath);
+            if (staleCoverageFilePaths.Count > 0)
+            {
+                _logger.LogDebug("{RunnerId}: Removing {Count} stale coverage file(s) before capturing {TestId}", RunnerId, staleCoverageFilePaths.Count, testId);
+            }
+
+            foreach (var staleCoverageFilePath in staleCoverageFilePaths)
             {
                 DeleteFileIfExists(staleCoverageFilePath);
             }
@@ -762,8 +839,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             // this test's (and only this test's) coverage to file before the process goes away.
             await server.StopAsync().ConfigureAwait(false);
 
-            var (covered, _) = ReadCoverageForHandedOutPath(coverageFilePath, assembly);
-            return CoverageRunResult.Create(testId, CoverageConfidence.Exact, covered, Array.Empty<int>(), Array.Empty<int>());
+            return BuildIsolatedCoverageResult(testId, coverageFilePath, assembly);
         }
         catch (Exception ex)
         {
@@ -835,6 +911,8 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
         if (server is not null)
         {
+            _logger.LogDebug("{RunnerId}: Discarding the test server for {Assembly} (warmed up: {WarmedUp})",
+                RunnerId, Path.GetFileName(assembly), server.IsWarmedUp);
             await server.StopAsync(force: true).ConfigureAwait(false);
         }
     }
@@ -937,13 +1015,13 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         _logger.LogDebug("{RunnerId}: Test run timed out for {Assembly}", RunnerId, Path.GetFileName(assembly));
 
         allTimedOutTests.AddRange(discoveredTests.Select(t => t.Uid));
-        
+
         AssemblyTestServer? server;
         lock (_serverLock)
         {
             _assemblyServers.TryGetValue(assembly, out server);
         }
-        
+
         if (server is not null)
         {
             _logger.LogDebug("{RunnerId}: Restarting test server for {Assembly} after timeout", RunnerId, Path.GetFileName(assembly));
@@ -1061,6 +1139,24 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         return testIds.Count == 0 ? null : node => testIds.Contains(node.Uid);
     }
 
+    /// <summary>
+    /// Returns the test descriptions as a list that is safe to enumerate without the discovery lock.
+    /// Descriptions are only ever added, so the cached copy is reused until the count changes instead
+    /// of being rebuilt for every mutant.
+    /// </summary>
+    private List<MtpTestDescription> GetTestDescriptionsSnapshot()
+    {
+        lock (_discoveryLock)
+        {
+            if (_testDescriptionsSnapshot is null || _testDescriptionsSnapshot.Count != _testDescriptions.Count)
+            {
+                _testDescriptionsSnapshot = _testDescriptions.Values.ToList();
+            }
+
+            return _testDescriptionsSnapshot;
+        }
+    }
+
     internal async Task<ITestRunResult> RunAllTestsAsync(
         IReadOnlyList<string> assemblies,
         int mutantId,
@@ -1068,8 +1164,10 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         TestUpdateHandler? update,
         ITimeoutValueCalculator? timeoutCalc = null)
     {
+        await _sessionSemaphore.WaitAsync().ConfigureAwait(false);
         try
         {
+            ActiveMutantId = mutantId;
             WriteMutantIdToFile(mutantId);
 
             var testUidFilter = BuildTestUidFilter(mutants);
@@ -1100,11 +1198,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             var failedTestIds = accumulator.BuildFailedTests();
             var timedOutTestIds = accumulator.BuildTimedOutTests();
 
-            IEnumerable<MtpTestDescription> testDescriptionValues;
-            lock (_discoveryLock)
-            {
-                testDescriptionValues = _testDescriptions.Values.ToList();
-            }
+            var testDescriptionValues = GetTestDescriptionsSnapshot();
 
             if (update is not null && mutants is not null)
             {
@@ -1153,6 +1247,12 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             _logger.LogDebug(ex, "{RunnerId}: Failed to run tests for mutant ID {MutantId}", RunnerId, mutantId);
             return new TestRunResult(false, ex.Message);
         }
+        finally
+        {
+            // A host started outside a mutant session must not be warmed up under a stale mutant id.
+            ActiveMutantId = -1;
+            _sessionSemaphore.Release();
+        }
     }
 
     internal virtual async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
@@ -1183,15 +1283,126 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             timeout = CalculateAssemblyTimeout(discoveredTests, timeoutCalc, assembly, mutants);
         }
 
-        var (testResults, timedOut) = await RunAssemblyTestsInternalAsync(assembly, testUidFilter, timeout).ConfigureAwait(false);
+        var (testResults, timedOut) = await RunAssemblyTestsInternalAsync(
+            assembly,
+            testUidFilter,
+            timeout,
+            () => CalculateWarmUpTimeout(discoveredTests, timeoutCalc, assembly),
+            RequiresFreshHost(mutants)).ConfigureAwait(false);
 
         return (testResults as TestRunResult, timedOut, discoveredTests);
+    }
+
+    /// <summary>
+    /// True when a mutant sits in static code (a static initializer or static constructor). Such a mutant
+    /// only takes effect if it is active when the host first initializes that code, so it needs a host
+    /// that has not run anything yet, and nothing else may reuse the host afterwards.
+    /// </summary>
+    internal static bool RequiresFreshHost(IReadOnlyList<IMutant>? mutants) =>
+        mutants is not null && mutants.Any(mutant => mutant.IsStaticValue);
+
+    /// <summary>
+    /// Whether a fresh host runs all tests once with no mutant active before its first mutant. Without
+    /// the warm-up, the first session on a host initializes every static with the current mutant active,
+    /// and that value stays for the host's life: a mutant that corrupts a static silently poisons the
+    /// host and every later mutant on it can be falsely killed. The warm-up used to be skipped without
+    /// coverage-based testing because a mutant in code reached only from a static initializer is not
+    /// flagged as static and could never take effect on a warmed host; the fresh-host retest now covers
+    /// exactly that case, so every covered mode warms up. <c>off</c> has no coverage data, so no retest
+    /// is possible and the warm-up stays off there. Unknown options keep the warm-up on.
+    /// </summary>
+    internal bool WarmUpEnabled =>
+        _options is null
+        || _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest)
+        || _options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants);
+
+    /// <summary>
+    /// The warm-up runs every test, so it cannot borrow the per-mutant timeout, which is sized for the
+    /// tests covering one mutant. It uses the timeout of a full run instead, which scales with the suite.
+    /// Returns <c>null</c> (no cap) when no timeout calculator or no discovered tests are available.
+    /// </summary>
+    internal TimeSpan? CalculateWarmUpTimeout(List<TestNode>? discoveredTests, ITimeoutValueCalculator? timeoutCalc, string assembly)
+    {
+        if (timeoutCalc is null || discoveredTests is null)
+        {
+            return null;
+        }
+
+        return CalculateAssemblyTimeout(discoveredTests, timeoutCalc, assembly);
+    }
+
+    /// <summary>
+    /// Runs the tests once with no mutant active on a host that has not run any yet, then restores the
+    /// active mutant id. Returns false, after discarding the host, when the warm-up timed out or reported
+    /// a failed type initializer: such a host is already poisoned, and running the first mutant on it
+    /// would falsely kill the mutant before the poisoning is noticed.
+    /// </summary>
+    internal async Task<bool> WarmUpServerAsync(AssemblyTestServer server, string assembly, List<TestNode>? tests, TimeSpan? timeout = null)
+    {
+        if (ActiveMutantId >= 0)
+        {
+            var mutantId = ActiveMutantId;
+            WriteMutantIdToFile(-1);
+            List<TestNodeUpdate> updates;
+            bool timedOut;
+            try
+            {
+                (updates, timedOut) = await RunWarmUpTestsAsync(server, tests?.ToArray(), timeout).ConfigureAwait(false);
+            }
+            finally
+            {
+                WriteMutantIdToFile(mutantId);
+            }
+
+            if (timedOut)
+            {
+                _logger.LogDebug("{RunnerId}: Warm-up run of {Assembly} timed out; discarding the test server",
+                    RunnerId, Path.GetFileName(assembly));
+                await DiscardServerAsync(assembly).ConfigureAwait(false);
+                return false;
+            }
+
+            if (updates.Any(update => TestNodeStates.IsHostPoisoning(update.Node)))
+            {
+                _logger.LogDebug("{RunnerId}: A type initializer failed during the warm-up run of {Assembly}; discarding the poisoned test server",
+                    RunnerId, Path.GetFileName(assembly));
+                await DiscardServerAsync(assembly).ConfigureAwait(false);
+                return false;
+            }
+        }
+
+        server.IsWarmedUp = true;
+        return true;
+    }
+
+    /// <summary>
+    /// Discards the host when a test reported a type that failed to initialize or load, so the next mutant
+    /// starts on a fresh one. Returns true when the host was recycled.
+    /// </summary>
+    internal async Task<bool> RecycleIfHostPoisonedAsync(string assembly, IEnumerable<TestNodeUpdate> testResults)
+    {
+        if (!testResults.Any(update => TestNodeStates.IsHostPoisoning(update.Node)))
+        {
+            return false;
+        }
+
+        _logger.LogDebug("{RunnerId}: A type initializer failed in {Assembly}; recycling the test server before the next mutant",
+            RunnerId, Path.GetFileName(assembly));
+        await DiscardServerAsync(assembly).ConfigureAwait(false);
+        return true;
+    }
+
+    internal virtual async Task<(List<TestNodeUpdate> Updates, bool TimedOut)> RunWarmUpTestsAsync(AssemblyTestServer server, TestNode[]? tests, TimeSpan? timeout)
+    {
+        return await server.RunTestsAsync(tests, timeout).ConfigureAwait(false);
     }
 
     internal async Task<(ITestRunResult Result, bool TimedOut)> RunAssemblyTestsInternalAsync(
         string assembly,
         Func<TestNode, bool>? testUidFilter,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        Func<TimeSpan?>? warmUpTimeout = null,
+        bool freshHost = false)
     {
         // A crashed test host tears down the RPC connection, so the run throws (rather than timing out).
         // Retry once on a freshly started server: a crash caused by a *previous* mutant then self-heals
@@ -1204,6 +1415,12 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             AssemblyTestServer server;
             try
             {
+                if (freshHost && attempt == 1)
+                {
+                    // Statics the reused host already initialized would hide this mutant.
+                    await DiscardServerAsync(assembly).ConfigureAwait(false);
+                }
+
                 // Get or create the server for this assembly (reuses an existing, live server)
                 server = await GetOrCreateServerAsync(assembly).ConfigureAwait(false);
             }
@@ -1211,6 +1428,12 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             {
                 // The server could not be started at all; retrying immediately would not help.
                 return (new TestRunResult(false, ex.Message), false);
+            }
+
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _logger.LogDebug("{RunnerId}: Running {Assembly} (attempt {Attempt}/{MaxAttempts}); active mutant: {MutantId}, fresh host required: {FreshHost}, warm-up enabled: {WarmUpEnabled}, host already warmed up: {WarmedUp}, runs already executed on this host: {RunCount}",
+                    RunnerId, Path.GetFileName(assembly), attempt, maxRunAttempts, ActiveMutantId, freshHost, WarmUpEnabled, server.IsWarmedUp, server.RunCount);
             }
 
             var startTime = DateTime.UtcNow;
@@ -1227,10 +1450,71 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
                 var testsToRun = tests?.Where(t => testUidFilter is null || testUidFilter(t)).ToArray();
 
+                // A fresh host runs static initializers under whichever mutant is active first, and keeps that
+                // value for its whole life: the mutant is then judged differently than on a reused host and
+                // every later mutant on this host inherits it. Initializing under "no mutant" first makes the
+                // outcome independent of which runner or host a mutant lands on (stryker-mutator/stryker-net#3832).
+                if (!freshHost && WarmUpEnabled && !server.IsWarmedUp && !await WarmUpServerAsync(server, assembly, tests, warmUpTimeout?.Invoke()).ConfigureAwait(false))
+                {
+                    lastRunException = new TimeoutException($"The warm-up run of {Path.GetFileName(assembly)} did not complete");
+                    continue;
+                }
+
+                // The host reports reaching the active mutant through the relay file; clear any signal
+                // from an earlier run so what we read after this run belongs to it alone. When the clear
+                // failed the relay stays untrusted: a retry reruns the same mutant id, so a stale flag
+                // there would suppress the fresh-host retest. Ignoring it can only cost an extra retest.
+                var reachedSignalTrusted = ResetReachedFile();
+
                 var (testResults, timedOut) = await server.RunTestsAsync(testsToRun, timeout).ConfigureAwait(false);
 
                 var duration = DateTime.UtcNow - startTime;
                 var result = BuildTestRunResult(testResults, tests?.Count ?? 0, duration);
+
+                // The runtime caches a failed type initializer for the life of the process, so this host would
+                // fail every later mutant the same way and each would be reported as killed. This mutant stays
+                // killed; the next one starts on a fresh host (stryker-mutator/stryker-net#3832).
+                if (freshHost)
+                {
+                    // This host initialized its statics under a static mutant: no other mutant may reuse it.
+                    await DiscardServerAsync(assembly).ConfigureAwait(false);
+                }
+                else
+                {
+                    await RecycleIfHostPoisonedAsync(assembly, testResults).ConfigureAwait(false);
+                }
+
+                // A survivor that never reached its mutated code may have been hidden by reused-host state.
+                // Retest once on a fresh host; the fresh-host result is final (no loops).
+                var reached = reachedSignalTrusted && ReadReachedFile();
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    if (!reachedSignalTrusted)
+                    {
+                        _logger.LogDebug("{RunnerId}: Ignoring the reached signal for {Assembly}: the relay file could not be cleared before the run",
+                            RunnerId, Path.GetFileName(assembly));
+                    }
+
+                    _logger.LogDebug("{RunnerId}: Test run used reached signal: {Reached}", RunnerId, reached);
+                }
+
+                // No active mutant (coverage analysis, warm-up bookkeeping) has nothing to retest, and
+                // a retest there would spin a fresh host for a session that judges no mutant.
+                if (!freshHost && !timedOut && RetestHiddenSurvivorsEnabled && ShouldRetestHiddenSurvivor(result, reached, ActiveMutantId))
+                {
+                    _logger.LogDebug("{RunnerId}: Retesting mutant {MutantId} on a fresh host: it survived on a reused host without reaching its mutated code",
+                        RunnerId, ActiveMutantId);
+                    _retestCount++;
+
+                    var (retestResult, retestTimedOut) = await RunAssemblyTestsInternalAsync(
+                        assembly, testUidFilter, timeout, warmUpTimeout, freshHost: true).ConfigureAwait(false);
+                    if (!retestResult.FailingTests.IsEmpty && !retestResult.FailingTests.IsEveryTest)
+                    {
+                        _retestedKilledCount++;
+                    }
+
+                    return (retestResult, retestTimedOut);
+                }
 
                 return (result, timedOut);
             }
@@ -1248,6 +1532,138 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         // Every attempt failed. Return the crash sentinel; the accumulator recognises it and flags the
         // run as crashed, so the affected mutants are reported as RuntimeError rather than Survived.
         return (new TestRunResult(false, lastRunException!.Message), false);
+    }
+
+    /// <summary>
+    /// True when a run's outcome may have been distorted by reused-host state and a fresh-host retest is
+    /// worthwhile: the mutant was not reached while every executed test passed on a non-fresh host. A run
+    /// with no active mutant (coverage analysis) judges no mutant, so it is never retested.
+    /// Exposed for unit testing. Coverage-mode gating is separate (<see cref="RetestHiddenSurvivorsEnabled"/>).
+    /// </summary>
+    internal static bool ShouldRetestHiddenSurvivor(TestRunResult result, bool reached, int activeMutantId) =>
+        activeMutantId >= 0
+        && !reached
+        && !result.ExecutedTests.IsEmpty
+        && result.FailingTests.IsEmpty
+        && result.TimedOutTests.IsEmpty
+        && !result.SessionTimedOut
+        && !result.SessionHadRuntimeIssue;
+
+    /// <summary>
+    /// True when the mode has coverage data to compare against, so a not-reached survivor can be told
+    /// apart from a simply uncovered one. In <c>off</c> mode there is no coverage, so a survivor says
+    /// nothing about reaching the code and a retest is skipped (the user chose the mode; hidden mutants
+    /// remain a known limitation there).
+    /// </summary>
+    internal bool RetestHiddenSurvivorsEnabled =>
+        _options is null
+        || _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest)
+        || _options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants);
+
+    /// <summary>
+    /// Number of mutants this runner retested on a fresh host because reused-host state hid them, and
+    /// how many of those retests killed the mutant. Exposed for unit testing and the pool summary.
+    /// </summary>
+    internal (int Retested, int Killed) RetestStatistics => (_retestCount, _retestedKilledCount);
+
+    /// <summary>
+    /// Reads the reached signal the test host wrote during the run. The host either memory-maps the file
+    /// (offset 0: flag, offset 4: mutant id) or, as a fallback, writes the same binary pair; both spell
+    /// "reached". The signal only counts when the recorded id is the active mutant: a reset that failed
+    /// would otherwise leave a previous run's flag set and hide a not-reached survivor from the retest.
+    /// Any failure reads as "not reached", which can only cost an extra fresh-host retest, never a wrong
+    /// verdict.
+    /// </summary>
+    internal bool ReadReachedFile()
+    {
+        try
+        {
+            var bytes = new byte[2 * sizeof(int)];
+            int read;
+            lock (_reachedFileLock)
+            {
+                var stream = _reachedFileStream;
+                if (stream is null)
+                {
+                    // The persistent stream could not be opened; fall back to a shared read.
+                    if (!File.Exists(_reachedFilePath))
+                    {
+                        return false;
+                    }
+
+                    using var diskStream = new FileStream(_reachedFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    read = 0;
+                    while (read < bytes.Length)
+                    {
+                        var chunk = diskStream.Read(bytes, read, bytes.Length - read);
+                        if (chunk == 0)
+                        {
+                            break;
+                        }
+
+                        read += chunk;
+                    }
+                }
+                else
+                {
+                    stream.Seek(0, SeekOrigin.Begin);
+                    read = 0;
+                    while (read < bytes.Length)
+                    {
+                        var chunk = stream.Read(bytes, read, bytes.Length - read);
+                        if (chunk == 0)
+                        {
+                            break;
+                        }
+
+                        read += chunk;
+                    }
+                }
+            }
+
+            if (read < 2 * sizeof(int))
+            {
+                return false;
+            }
+
+            return BitConverter.ToInt32(bytes, 0) != 0 && BitConverter.ToInt32(bytes, 4) == ActiveMutantId;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "{RunnerId}: Failed to read the reached-signal file {FilePath}",
+                RunnerId, _reachedFilePath);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Clears the reached signal before a run so the flag the host writes belongs to this run only.
+    /// The file is sized to 8 bytes (flag + mutant id) so the host can memory-map it. Returns false when
+    /// the file could not be cleared: the caller must then ignore the signal, since a retry reruns the
+    /// same mutant id and the reader cannot tell a stale flag from this run's own.
+    /// </summary>
+    internal bool ResetReachedFile()
+    {
+        try
+        {
+            lock (_reachedFileLock)
+            {
+                // Keep the file open for the life of the runner: reopening it can invalidate the memory-mapped
+                // view the reused host holds, exactly like the mutant control file.
+                _reachedFileStream ??= OpenMutantControlFile(_reachedFilePath, stream => stream.SetLength(2 * sizeof(int)));
+                var zeros = new byte[2 * sizeof(int)];
+                _reachedFileStream.Seek(0, SeekOrigin.Begin);
+                _reachedFileStream.Write(zeros);
+                _reachedFileStream.Flush();
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "{RunnerId}: Failed to reset the reached-signal file {FilePath}",
+                RunnerId, _reachedFilePath);
+            return false;
+        }
     }
 
     /// <summary>
@@ -1270,19 +1686,28 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         int totalDiscoveredTests,
         TimeSpan duration)
     {
-        var finishedTests = testResults
-            .Where(x => TestNodeStates.IsFinished(x.Node.ExecutionState))
-            .ToList();
+        var finishedTests = TestNodeStates.CollapseFinishedUpdates(testResults).ToList();
 
-        var failedTests = finishedTests
-            .Where(x => TestNodeStates.IsFailure(x.Node.ExecutionState))
-            .Select(x => x.Node.Uid)
-            .ToList();
-
-        var timedOutTests = finishedTests
-            .Where(x => TestNodeStates.IsTimeout(x.Node.ExecutionState))
-            .Select(x => x.Node.Uid)
-            .ToList();
+        var failedTests = new List<string>();
+        var timedOutTests = new List<string>();
+        var errorMessages = new List<string>();
+        var messages = new List<string>(finishedTests.Count);
+        foreach (var finished in finishedTests)
+        {
+            var state = finished.Node.ExecutionState;
+            var message = $"{finished.Node.DisplayName}{Environment.NewLine}{Environment.NewLine}State: {state}";
+            messages.Add(message);
+            if (TestNodeStates.IsFailure(state))
+            {
+                failedTests.Add(finished.Node.Uid);
+                errorMessages.Add(message);
+            }
+            else if (TestNodeStates.IsTimeout(state))
+            {
+                timedOutTests.Add(finished.Node.Uid);
+                errorMessages.Add(message);
+            }
+        }
 
         lock (_discoveryLock)
         {
@@ -1298,14 +1723,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             }
         }
 
-        var errorMessagesStr = string.Join(Environment.NewLine,
-            finishedTests
-                .Where(x => TestNodeStates.IsFailure(x.Node.ExecutionState)
-                         || TestNodeStates.IsTimeout(x.Node.ExecutionState))
-                .Select(x => $"{x.Node.DisplayName}{Environment.NewLine}{Environment.NewLine}State: {x.Node.ExecutionState}"));
-
-        var messages = finishedTests.Select(x =>
-            $"{x.Node.DisplayName}{Environment.NewLine}{Environment.NewLine}State: {x.Node.ExecutionState}");
+        var errorMessagesStr = string.Join(Environment.NewLine, errorMessages);
 
         var executedTestCount = finishedTests.Count;
         var executedTests = totalDiscoveredTests > 0 && executedTestCount >= totalDiscoveredTests
@@ -1317,14 +1735,8 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             ? TestIdentifierList.NoTest()
             : new TestIdentifierList(timedOutTests);
 
-        IEnumerable<MtpTestDescription> testDescriptionValues;
-        lock (_discoveryLock)
-        {
-            testDescriptionValues = _testDescriptions.Values.ToList();
-        }
-
         return new TestRunResult(
-            testDescriptionValues,
+            GetTestDescriptionsSnapshot(),
             executedTests,
             failedTestIds,
             timedOutTestIds,
@@ -1360,9 +1772,26 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             // Clean up temp files
             try
             {
+                lock (_mutantFileLock)
+                {
+                    _mutantFileStream?.Dispose();
+                    _mutantFileStream = null;
+                }
+
+                lock (_reachedFileLock)
+                {
+                    _reachedFileStream?.Dispose();
+                    _reachedFileStream = null;
+                }
+
                 if (File.Exists(_mutantFilePath))
                 {
                     File.Delete(_mutantFilePath);
+                }
+
+                if (File.Exists(_reachedFilePath))
+                {
+                    File.Delete(_reachedFilePath);
                 }
                 // Only has anything to do when the runner is disposed while still in per-test mode,
                 // leaving the mode deletes these files and forgets the assemblies they belong to
