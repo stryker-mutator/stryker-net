@@ -201,7 +201,7 @@ public class CommandLineConfigReader
         // Category: Reporting
         AddCliInput(inputs.OpenReportInput, "open-report", "o", CommandOptionType.SingleOrNoValue, argumentHint: "report-type", category: InputCategory.Reporting);
         AddCliInput(inputs.ReportersInput, "reporter", "r", optionType: CommandOptionType.MultipleValue, category: InputCategory.Reporting);
-        AddCliInput(inputs.ProjectVersionInput, "version", "v", category: InputCategory.Reporting);
+        AddCliInput(inputs.ProjectVersionInput, "version", "v", argumentHint: "project-version", category: InputCategory.Reporting);
         AddCliInput(inputs.DashboardApiKeyInput, "dashboard-api-key", null, category: InputCategory.Reporting);
         AddCliInput(inputs.AzureFileStorageSasInput, "azure-fileshare-sas", null, category: InputCategory.Reporting);
         AddCliInput(inputs.S3BucketNameInput, "s3-bucket-name", null, category: InputCategory.Reporting);

@@ -99,6 +99,13 @@ public class StrykerCli
     /// <param name="args">User input</param>
     public async Task<int> RunAsync(string[] args)
     {
+        // `--version` without a value prints the Stryker version. With a value it sets the project version.
+        if (IsToolVersionRequested(args))
+        {
+            _console.WriteLine(GetStrykerVersion());
+            return ExitCodes.Success;
+        }
+
         var app = new CommandLineApplication(new ConsoleWrapper(_console))
         {
             Name = "Stryker",
@@ -150,6 +157,26 @@ public class StrykerCli
 
             return ExitCodes.OtherError;
         }
+    }
+
+    private static bool IsToolVersionRequested(string[] args)
+    {
+        for (var i = 0; i < args.Length; i++)
+        {
+            if (args[i] is "--version" or "-v" && (i == args.Length - 1 || args[i + 1].StartsWith('-')))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static string GetStrykerVersion()
+    {
+        var version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+        return SemanticVersion.TryParse(version, out var parsed) ? parsed.ToString() : version ?? "unknown";
     }
 
     private async Task RunStrykerAsync(IStrykerInputs inputs)
