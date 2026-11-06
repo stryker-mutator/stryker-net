@@ -213,6 +213,8 @@ Available options:
 
 The MTP test runner is a modern alternative that provides better performance in certain scenarios and supports newer testing frameworks like TUnit. However, it's still in preview and may have limitations compared to the VsTest runner.
 
+With `test-runner` set to `mtp`, see [coverage analysis notes for MTP](#microsoft-test-platform-mtp) when choosing `off` or `all` instead of `perTest`.
+
 ### `mutation-level` &lt;`level`&gt;
 
 Default: `Standard`  
@@ -453,6 +455,14 @@ Stryker again without coverage analysis and report an issue if this mutant is ki
 are run against all tests as Stryker cannot reliably capture coverage for those. This is a consequence of static
 constructors/initializers being called only once during tests. This heuristic is not needed when using
 `perTestInIsolation` due to tests being run one by one.
+
+#### Microsoft Test Platform (`mtp`)
+
+When the [test runner](#test-runner-string) is `mtp`, the MTP pool reuses test hosts across mutants. A reused host keeps static state from earlier runs (memoized fields, `Lazy<T>`, transitive static initialization): a mutant that corrupts such state poisons the host for every later mutant on it.
+
+* In the covered modes every freshly started host also runs the tests once with **no mutant active** before its first mutant session, so the host's statics always initialize with the original values. Without that warm-up, a host that starts mid-run would initialize its statics under the active mutant and could silently poison every later mutant on it. `off` skips the warm-up as before.
+* In the three covered modes the kill count does not depend on the [concurrency](#concurrency-number) value: the warm-up plus host recycling close the reused-host poisoning gap. In `off`, host assignment can still decide whether a mutation reachable only from a static initializer is active at first initialization, so parity across concurrency values is not guaranteed there.
+* A covered mutant whose mutated code never executes on a reused host (hidden by state that host cached earlier) is a known limitation of the reused-host model.
 
 ### `disable-bail` &lt;`flag`&gt;
 

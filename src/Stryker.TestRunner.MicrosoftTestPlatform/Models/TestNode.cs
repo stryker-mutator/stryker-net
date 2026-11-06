@@ -36,4 +36,12 @@ public sealed record TestNode
 
     [property: JsonPropertyName("location.method")]
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    string? LocationMethod = null);
+    string? LocationMethod = null,
+
+    [property: JsonPropertyName("error.message")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? ErrorMessage = null,
+
+    [property: JsonPropertyName("error.stacktrace")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? ErrorStackTrace = null);

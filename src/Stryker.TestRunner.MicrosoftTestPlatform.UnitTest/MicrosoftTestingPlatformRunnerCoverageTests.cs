@@ -1,6 +1,8 @@
 using System.IO.MemoryMappedFiles;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Shouldly;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 using Stryker.TestRunner.Tests;
@@ -367,6 +369,82 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
     }
 
     [TestMethod]
+    [DataRow("1,2,3;10,20", new[] { 1, 2, 3 }, new[] { 10, 20 })]
+    [DataRow("1,2;", new[] { 1, 2 }, new int[0])]
+    [DataRow("7", new[] { 7 }, new int[0])]
+    [DataRow(";5,6", new int[0], new[] { 5, 6 })]
+    public void BuildIsolatedCoverageResult_ShouldKeepStaticMutants_AndTrustTheResult(
+        string fileContent, int[] expectedCovered, int[] expectedStatic)
+    {
+        using var runner = CreateRunner(507);
+        var coverageFilePath = runner.GetCoverageFilePath("Tests.dll");
+
+        try
+        {
+            File.WriteAllText(coverageFilePath, fileContent);
+
+            var result = runner.BuildIsolatedCoverageResult("test-1", coverageFilePath, "Tests.dll");
+
+            result.TestId.ShouldBe("test-1");
+            result.Confidence.ShouldBe(CoverageConfidence.Exact);
+            result.MutationsCovered.OrderBy(id => id).ShouldBe(expectedCovered.Concat(expectedStatic).OrderBy(id => id));
+            foreach (var id in expectedStatic)
+            {
+                result[id].ShouldBe(MutationTestingRequirements.Static);
+            }
+
+            foreach (var id in expectedCovered)
+            {
+                result[id].ShouldBe(MutationTestingRequirements.None);
+            }
+        }
+        finally
+        {
+            if (File.Exists(coverageFilePath))
+            {
+                File.Delete(coverageFilePath);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void BuildIsolatedCoverageResult_ShouldLogHowManyMutantsWereStatic()
+    {
+        var logger = new CapturingLogger();
+        using var runner = new MicrosoftTestingPlatformRunner(509, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, logger);
+        var coverageFilePath = runner.GetCoverageFilePath("Tests.dll");
+
+        try
+        {
+            File.WriteAllText(coverageFilePath, "1,2,3;10,20");
+
+            runner.BuildIsolatedCoverageResult("test-3", coverageFilePath, "Tests.dll");
+
+            logger.Messages.ShouldContain(message =>
+                message.Contains("test-3") && message.Contains("3 mutant(s) covered") && message.Contains("2 of them in a static context"));
+        }
+        finally
+        {
+            if (File.Exists(coverageFilePath))
+            {
+                File.Delete(coverageFilePath);
+            }
+        }
+    }
+    [TestMethod]
+    public void BuildIsolatedCoverageResult_ShouldReportNothing_WhenNoCoverageFileWasWritten()
+    {
+        using var runner = CreateRunner(508);
+        var coverageFilePath = runner.GetCoverageFilePath("Tests.dll");
+        File.Delete(coverageFilePath);
+
+        var result = runner.BuildIsolatedCoverageResult("test-2", coverageFilePath, "Tests.dll");
+
+        result.MutationsCovered.ShouldBeEmpty();
+        result.Confidence.ShouldBe(CoverageConfidence.Exact);
+    }
+
+    [TestMethod]
     public void ReadCoverageData_ShouldParseCoveredAndStaticMutants()
     {
         using var runner = CreateRunner(504);
@@ -631,7 +709,10 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         }
         finally
         {
-            if (File.Exists(epochFilePath)) File.Delete(epochFilePath);
+            if (File.Exists(epochFilePath))
+            {
+                File.Delete(epochFilePath);
+            }
         }
     }
 
@@ -664,7 +745,10 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         }
         finally
         {
-            if (File.Exists(epochFilePath)) File.Delete(epochFilePath);
+            if (File.Exists(epochFilePath))
+            {
+                File.Delete(epochFilePath);
+            }
         }
     }
 
@@ -689,7 +773,10 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         }
         finally
         {
-            if (File.Exists(epochFilePath)) File.Delete(epochFilePath);
+            if (File.Exists(epochFilePath))
+            {
+                File.Delete(epochFilePath);
+            }
         }
     }
 
@@ -746,7 +833,10 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         {
             foreach (var path in new[] { basePath, firstRelay, secondRelay })
             {
-                if (File.Exists(path)) File.Delete(path);
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
             }
         }
     }
@@ -783,7 +873,10 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         {
             foreach (var path in new[] { basePath, reachedRelay, lateRelay })
             {
-                if (path is not null && File.Exists(path)) File.Delete(path);
+                if (path is not null && File.Exists(path))
+                {
+                    File.Delete(path);
+                }
             }
         }
     }
@@ -816,7 +909,10 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         {
             foreach (var path in new[] { basePath, firstRelay, secondRelay })
             {
-                if (File.Exists(path)) File.Delete(path);
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
             }
         }
     }
@@ -843,7 +939,10 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         }
         finally
         {
-            if (File.Exists(basePath)) File.Delete(basePath);
+            if (File.Exists(basePath))
+            {
+                File.Delete(basePath);
+            }
         }
     }
 
@@ -860,6 +959,73 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
 
         result.Confidence.ShouldBe(CoverageConfidence.Dubious);
         result.MutationsCovered.ShouldBeEmpty();
+    }
+
+    private static TestNodeUpdate Update(string state) =>
+        new(new TestNode("uid", "Test", "action", state), "root");
+
+    [TestMethod, Timeout(5000)]
+    public async Task RunSingleTestForCoverageInReusedProcessAsync_CleansStaleRelays_AndReportsAnEmptyNormalCapture()
+    {
+        // No real host runs, so no relay attaches: the epoch wait has nothing to flush and the
+        // coverage file the host would have written is absent. The capture is Normal but empty, and
+        // a relay or coverage file left behind by an earlier run must be gone, or the epoch wait
+        // would hang on the relay and the read would attribute stale coverage to this test.
+        using var server = new FakeAssemblyServer([Update(TestNodeStates.Passed)]);
+        using var runner = new FakeServerLoopRunner(server);
+        runner.SetPerTestCoverageMode(true);
+
+        var epochFilePath = runner.GetPerTestEpochFilePath("fake.dll");
+        var staleRelayPath = Path.Combine(
+            Path.GetDirectoryName(epochFilePath)!,
+            Path.GetFileNameWithoutExtension(epochFilePath) + "-stale" + Path.GetExtension(epochFilePath));
+        File.WriteAllText(staleRelayPath, string.Empty);
+        var coverageFilePath = runner.GetPerTestCoverageFilePath("fake.dll");
+        var staleCoveragePath = Path.Combine(
+            Path.GetDirectoryName(coverageFilePath)!,
+            Path.GetFileNameWithoutExtension(coverageFilePath) + "-stale" + Path.GetExtension(coverageFilePath));
+        File.WriteAllText(staleCoveragePath, string.Empty);
+
+        var result = await runner.RunSingleTestForCoverageInReusedProcessAsync(
+            "fake.dll", new TestNode("test-1", "Test1", "test", "discovered"), "test-1");
+
+        server.RunCalls.ShouldBe(1);
+        File.Exists(staleRelayPath).ShouldBeFalse("the stale relay must be deleted before the host creates its own");
+        File.Exists(staleCoveragePath).ShouldBeFalse("the stale coverage file must be deleted before the host writes its own");
+        File.Exists(epochFilePath).ShouldBeTrue("the epoch file must be initialized for the host's relay");
+        result.Confidence.ShouldBe(CoverageConfidence.Normal);
+        result.MutationsCovered.ShouldBeEmpty();
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task RunSingleTestForCoverageInReusedProcessAsync_MarksTheCaptureDubious_WhenTheRunTimesOut()
+    {
+        using var server = new FakeAssemblyServer([Update(TestNodeStates.Passed)]) { TimedOutRuns = true };
+        using var runner = new FakeServerLoopRunner(server);
+        runner.SetPerTestCoverageMode(true);
+
+        var result = await runner.RunSingleTestForCoverageInReusedProcessAsync(
+            "fake.dll", new TestNode("test-1", "Test1", "test", "discovered"), "test-1");
+
+        server.RunCalls.ShouldBe(1, "a timed-out coverage run must not be retried");
+        result.Confidence.ShouldBe(CoverageConfidence.Dubious);
+        result.MutationsCovered.ShouldBeEmpty();
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task RunSingleTestForCoverageInReusedProcessAsync_RetriesOnceOnAFreshServer_WhenTheRunCrashes()
+    {
+        // A crashed test host tears down the RPC connection mid-capture; retrying once on a freshly
+        // started server recovers this test's real coverage instead of settling for Dubious.
+        using var server = new FakeAssemblyServer([Update(TestNodeStates.Passed)]) { FirstRunFailure = new InvalidOperationException("RPC connection is down") };
+        using var runner = new FakeServerLoopRunner(server);
+        runner.SetPerTestCoverageMode(true);
+
+        var result = await runner.RunSingleTestForCoverageInReusedProcessAsync(
+            "fake.dll", new TestNode("test-1", "Test1", "test", "discovered"), "test-1");
+
+        server.RunCalls.ShouldBe(2, "the crashed capture must be retried exactly once");
+        result.Confidence.ShouldBe(CoverageConfidence.Normal);
     }
 
     // --- Isolated ("perTestInIsolation") per-test coverage capture ---
@@ -942,7 +1108,10 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         {
             foreach (var path in writtenByTheHost.Concat(new[] { coverageFilePath, epochFilePath }))
             {
-                if (File.Exists(path)) File.Delete(path);
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
             }
         }
     }
@@ -1070,7 +1239,10 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         }
         finally
         {
-            if (File.Exists(coverageFilePath)) File.Delete(coverageFilePath);
+            if (File.Exists(coverageFilePath))
+            {
+                File.Delete(coverageFilePath);
+            }
         }
     }
 
@@ -1085,5 +1257,103 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
 
         runner.SetPerTestCoverageMode(false);
         runner._perTestCoverageMode.ShouldBeFalse();
+    }
+
+    [TestMethod]
+    public async Task SetPerTestCoverageMode_ShouldDisposeExistingServers_WhenEnteringTheMode()
+    {
+        using var runner = CreateRunner(716);
+        var testAssembly = typeof(MicrosoftTestingPlatformRunnerCoverageTests).Assembly.Location;
+
+        await runner.DiscoverTestsAsync(testAssembly);
+        runner._assemblyServers.ShouldNotBeEmpty("setup: discovery should have started a server");
+
+        runner.SetPerTestCoverageMode(true);
+
+        runner._assemblyServers.ShouldBeEmpty("entering per-test mode must give the next run fresh hosts");
+    }
+
+    // --- Single-test timeout calculation ---
+
+    [TestMethod]
+    public void CalculateSingleTestTimeout_UsesTheFloor_WhenNothingWasMeasured()
+    {
+        using var runner = CreateRunner(730);
+        var testNode = new TestNode("test-1", "Test1", "test", TestNodeStates.Discovered);
+
+        runner.CalculateSingleTestTimeout(testNode).ShouldBeGreaterThanOrEqualTo(
+            TimeSpan.FromSeconds(30),
+            "a test with no measured run time still needs RPC/JIT headroom");
+    }
+
+    [TestMethod]
+    public void CalculateSingleTestTimeout_ScalesTheMeasuredRunTime_AndAddsTheConfiguredExtra()
+    {
+        var options = new Mock<IStrykerOptions>();
+        options.Setup(x => x.AdditionalTimeout).Returns(20000);
+        using var runner = new MicrosoftTestingPlatformRunner(
+            731, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance, options.Object);
+
+        var testNode = new TestNode("test-1", "Test1", "test", TestNodeStates.Discovered);
+        var description = new MtpTestDescription(testNode);
+        description.RegisterInitialTestResult(new MtpTestResult(TimeSpan.FromMinutes(1)));
+        _testDescriptions[testNode.Uid] = description;
+
+        // 1 minute measured * 1.5 ratio + 20 s of additional timeout
+        runner.CalculateSingleTestTimeout(testNode).ShouldBe(TimeSpan.FromSeconds(110));
+    }
+
+    [TestMethod]
+    public void TryReadEpochAck_ReturnsFalse_WhenTheRelayFileDoesNotExist()
+    {
+        var missing = Path.Combine(Path.GetTempPath(), $"stryker-epoch-missing-{Guid.NewGuid():N}.txt");
+
+        MicrosoftTestingPlatformRunner.TryReadEpochAck(missing, out var ack).ShouldBeFalse();
+        ack.ShouldBe(-1, "the out value must not be trusted when the read fails");
+    }
+
+    // --- Assembly-timeout handling ---
+
+    [TestMethod]
+    public async Task HandleAssemblyTimeoutAsync_RegistersEveryDiscoveredTest_AndRestartsTheServer()
+    {
+        using var runner = CreateRunner(733);
+        var testAssembly = typeof(MicrosoftTestingPlatformRunnerCoverageTests).Assembly.Location;
+        await runner.DiscoverTestsAsync(testAssembly);
+
+        var timedOutTests = new List<string>();
+        await runner.HandleAssemblyTimeoutAsync(
+            testAssembly, [new TestNode("test-1", "Test1", "test", TestNodeStates.Discovered)], timedOutTests);
+
+        timedOutTests.ShouldHaveSingleItem().ShouldBe("test-1", "every discovered test of the timed-out assembly is reported");
+        runner._assemblyServers.ContainsKey(testAssembly).ShouldBeTrue("the server must be restarted for the next run, not discarded");
+    }
+
+    [TestMethod]
+    public async Task HandleAssemblyTimeoutAsync_RecordsTheTests_EvenWhenTheAssemblyHasNoServer()
+    {
+        using var runner = CreateRunner(734);
+
+        var timedOutTests = new List<string>();
+        await runner.HandleAssemblyTimeoutAsync(
+            "/nonexistent/assembly.dll", [new TestNode("test-1", "Test1", "test", TestNodeStates.Discovered)], timedOutTests);
+
+        timedOutTests.ShouldHaveSingleItem().ShouldBe("test-1");
+        runner._assemblyServers.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public async Task DiscardServerAsync_RemovesAndForceStopsTheServer()
+    {
+        using var runner = CreateRunner(735);
+        var testAssembly = typeof(MicrosoftTestingPlatformRunnerCoverageTests).Assembly.Location;
+        await runner.DiscoverTestsAsync(testAssembly);
+        runner._assemblyServers.ShouldNotBeEmpty("setup: discovery should have started a server");
+
+        var discard = typeof(MicrosoftTestingPlatformRunner).GetMethod(
+            "DiscardServerAsync", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+        await (Task)discard.Invoke(runner, [testAssembly])!;
+
+        runner._assemblyServers.ShouldBeEmpty("the discarded server must not be reused");
     }
 }
