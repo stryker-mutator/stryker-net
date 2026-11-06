@@ -51,6 +51,7 @@ public class VsTestMockingHelper : TestBase
     private readonly Uri _NUnitUri;
     private readonly Uri _xUnitUri;
     private readonly VsTestObjModel.TestProperty _coverageProperty;
+    private readonly VsTestObjModel.TestProperty _coverageHitCountsProperty;
     private readonly VsTestObjModel.TestProperty _unexpectedCoverageProperty;
     protected readonly TimeSpan TestDefaultDuration = TimeSpan.FromSeconds(1);
     private readonly string _filesystemRoot;
@@ -94,6 +95,7 @@ public class VsTestMockingHelper : TestBase
                 { Path.Combine(_filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"), new MockFileData("Bytecode") },
             });
         _coverageProperty = VsTestObjModel.TestProperty.Register(CoverageCollector.PropertyName, CoverageCollector.PropertyName, typeof(string), typeof(VsTestObjModel.TestResult));
+        _coverageHitCountsProperty = VsTestObjModel.TestProperty.Register(CoverageCollector.HitCountsPropertyName, CoverageCollector.HitCountsPropertyName, typeof(string), typeof(VsTestObjModel.TestResult));
         _unexpectedCoverageProperty = VsTestObjModel.TestProperty.Register(CoverageCollector.OutOfTestsPropertyName, CoverageCollector.OutOfTestsPropertyName, typeof(string), typeof(VsTestObjModel.TestResult));
         Mutant = new Mutant { Id = 0 };
         OtherMutant = new Mutant { Id = 1 };
@@ -181,6 +183,9 @@ public class VsTestMockingHelper : TestBase
             null,
             null);
     }
+
+    protected static void CompleteMockTestRun(ITestRunEventsHandler testRunEvents,
+        IReadOnlyList<VsTestObjModel.TestResult> testResults) => MockTestRun(testRunEvents, testResults);
 
     protected void SetupMockTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, bool testResult, IReadOnlyList<VsTestObjModel.TestCase> testCases)
     {
@@ -344,6 +349,10 @@ public class VsTestMockingHelper : TestBase
                 {
                     result.SetPropertyValue(_unexpectedCoverageProperty, coveredList[1]);
                 }
+                if (coveredList.Length > 2)
+                {
+                    result.SetPropertyValue(_coverageHitCountsProperty, coveredList[2]);
+                }
             }
 
             results.Add(result);
@@ -390,6 +399,10 @@ public class VsTestMockingHelper : TestBase
         if (coveredList.Length > 1)
         {
             result.SetPropertyValue(_unexpectedCoverageProperty, coveredList[1]);
+        }
+        if (coveredList.Length > 2)
+        {
+            result.SetPropertyValue(_coverageHitCountsProperty, coveredList[2]);
         }
 
         return result;
@@ -559,9 +572,15 @@ public class VsTestMockingHelper : TestBase
         return process;
     }
 
-    private class MockStrykerTestHostLauncher : IStrykerTestHostLauncher
+    private class MockStrykerTestHostLauncher : IStrykerTestHostLauncherWithEnvironmentVariables
     {
+        private readonly Dictionary<string, string> _environmentVariables = new();
+
         public MockStrykerTestHostLauncher(bool isDebug) => IsDebug = isDebug;
+
+        public void SetEnvironmentVariable(string name, string value) => _environmentVariables[name] = value;
+
+        public string GetEnvironmentVariable(string name) => _environmentVariables.TryGetValue(name, out var value) ? value : null;
 
         public int LaunchTestHost(VsTestObjModel.TestProcessStartInfo defaultTestHostStartInfo) => throw new NotImplementedException();
 
@@ -569,4 +588,7 @@ public class VsTestMockingHelper : TestBase
 
         public bool IsDebug { get; }
     }
+
+    protected static string GetHostEnvironmentVariable(ITestHostLauncher launcher, string name) =>
+        ((MockStrykerTestHostLauncher)launcher).GetEnvironmentVariable(name);
 }

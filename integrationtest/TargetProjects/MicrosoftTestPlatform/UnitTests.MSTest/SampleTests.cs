@@ -30,8 +30,8 @@ public class SampleTests
     {
         var sut = new TargetProject.StrykerFeatures.StackOverflow();
 
-        // Mutating the recursion makes this overflow the stack and crash the test host,
-        // which the MTP runner reports as a RuntimeError mutant.
+        // A nonterminating recursive mutant should be stopped at this call site before
+        // stack exhaustion crashes the test host.
         Assert.AreEqual(6, sut.SumTo(3));
     }
 }

@@ -41,12 +41,14 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     private readonly object _discoveryLock;
     private readonly ILogger _logger;
     private readonly string _mutantFilePath;
+    private readonly string _hitLimitMarkerPath;
     private readonly string _runIdentity;
     private readonly string _coverageFilePathBase;
     private readonly IStrykerOptions? _options;
     private readonly object _serverLock = new();
     private readonly HashSet<string> _initializedPerTestFiles = new();
     private readonly Dictionary<string, int> _perTestEpochCounters = new();
+    private int _runGeneration;
 
     private string RunnerId => $"MtpRunner-{_id}";
 
@@ -83,10 +85,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         // writes or disposal from changing this runner's active mutant.
         _runIdentity = $"{Environment.ProcessId}-{_id}-{Guid.NewGuid().ToString("N")[..8]}";
         _mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-{_runIdentity}.txt");
+        _hitLimitMarkerPath = Path.Combine(Path.GetTempPath(), $"stryker-hitlimit-{_runIdentity}.txt");
         _coverageFilePathBase = Path.Combine(Path.GetTempPath(), $"stryker-coverage-{_runIdentity}");
 
         // Initialize with no active mutation
-        WriteMutantIdToFile(-1);
+        WriteMutantIdToFile(-1, 0);
     }
 
     public Task<bool> DiscoverTestsAsync(string assembly)
@@ -135,26 +138,32 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         await Task.CompletedTask;
     }
 
-    private void WriteMutantIdToFile(int mutantId)
+    private void WriteMutantIdToFile(int mutantId, long hitLimit)
     {
         try
         {
-            // Publish the active mutant id as a fixed 4-byte int through a file-backed memory-mapped view.
+            DeleteFileIfExists(_hitLimitMarkerPath);
+            var generation = System.Threading.Interlocked.Increment(ref _runGeneration);
+
+            // Publish the active mutant id, run generation, and hit limit through a file-backed mapping.
             // The injected MutantControl maps the same file and reads the id on every IsActive call, so the
             // reused test host always sees the current mutant with no per-call file I/O. Both sides use
             // CreateFromFile with a null map name (file-backed maps work cross-platform, unlike named maps
             // which are Windows-only), and FileShare.ReadWrite lets the host keep the file mapped while we
             // update it between runs.
             using (var stream = new FileStream(_mutantFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
-            using (var mmf = MemoryMappedFile.CreateFromFile(stream, null, sizeof(int), MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, leaveOpen: true))
-            using (var accessor = mmf.CreateViewAccessor(0, sizeof(int), MemoryMappedFileAccess.Write))
             {
+                stream.SetLength(16);
+                using var mmf = MemoryMappedFile.CreateFromFile(stream, null, 16, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, leaveOpen: true);
+                using var accessor = mmf.CreateViewAccessor(0, 16, MemoryMappedFileAccess.Write);
                 accessor.Write(0, mutantId);
+                accessor.Write(4, generation);
+                accessor.Write(8, hitLimit);
                 accessor.Flush();
             }
 
-            _logger.LogDebug("{RunnerId}: Wrote mutant ID {MutantId} to memory-mapped file {FilePath}",
-                RunnerId, mutantId, _mutantFilePath);
+            _logger.LogDebug("{RunnerId}: Wrote mutant ID {MutantId}, generation {Generation}, and hit limit {HitLimit} to memory-mapped file {FilePath}",
+                RunnerId, mutantId, generation, hitLimit, _mutantFilePath);
         }
         catch (Exception ex)
         {
@@ -167,7 +176,8 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     {
         var envVars = new Dictionary<string, string?>
         {
-            ["STRYKER_MUTANT_FILE"] = _mutantFilePath
+            ["STRYKER_MUTANT_FILE"] = _mutantFilePath,
+            ["STRYKER_HITLIMIT_FILE"] = _hitLimitMarkerPath
         };
 
         ExternalEnvironmentVariables.Add(envVars);
@@ -305,24 +315,32 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     /// </summary>
     public (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants) ReadCoverageData()
     {
+        var (coveredMutants, staticMutants, _) = ReadCoverageDataWithHitCounts();
+        return (coveredMutants, staticMutants);
+    }
+
+    internal (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants, IReadOnlyDictionary<int, int> MutationHitCounts) ReadCoverageDataWithHitCounts()
+    {
         var coveredMutants = new HashSet<int>();
         var staticMutants = new HashSet<int>();
+        var mutationHitCounts = new Dictionary<int, int>();
 
         foreach (var (assembly, handedOutPath) in _coverageFilePaths)
         {
-            var (covered, statics) = ReadCoverageForHandedOutPath(handedOutPath, assembly);
+            var (covered, statics, hitCounts) = ReadCoverageForHandedOutPath(handedOutPath, assembly);
             coveredMutants.UnionWith(covered);
             staticMutants.UnionWith(statics);
+            AddHitCounts(mutationHitCounts, hitCounts);
         }
 
-        return (coveredMutants.ToList(), staticMutants.ToList());
+        return (coveredMutants.ToList(), staticMutants.ToList(), mutationHitCounts);
     }
 
     /// <summary>
     /// Reads the coverage written for one path handed out through STRYKER_COVERAGE_FILE, unioned across
     /// every mutated assembly the test host loaded (see <see cref="EnumerateCoverageFiles"/>).
     /// </summary>
-    private (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants) ReadCoverageForHandedOutPath(
+    private (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants, IReadOnlyDictionary<int, int> MutationHitCounts) ReadCoverageForHandedOutPath(
         string handedOutPath, string? assembly = null)
     {
         var coverageFilePaths = EnumerateCoverageFiles(handedOutPath);
@@ -330,20 +348,22 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         {
             _logger.LogDebug("{RunnerId}: No coverage file{ForAssembly} found at {Path}",
                 RunnerId, assembly is null ? string.Empty : $" for {Path.GetFileName(assembly)}", handedOutPath);
-            return (Array.Empty<int>(), Array.Empty<int>());
+            return (Array.Empty<int>(), Array.Empty<int>(), new Dictionary<int, int>());
         }
 
         var coveredMutants = new HashSet<int>();
         var staticMutants = new HashSet<int>();
+        var mutationHitCounts = new Dictionary<int, int>();
 
         foreach (var coverageFilePath in coverageFilePaths)
         {
-            var (covered, statics) = ReadCoverageDataFrom(coverageFilePath, assembly);
+            var (covered, statics, hitCounts) = ReadCoverageDataFrom(coverageFilePath, assembly);
             coveredMutants.UnionWith(covered);
             staticMutants.UnionWith(statics);
+            AddHitCounts(mutationHitCounts, hitCounts);
         }
 
-        return (coveredMutants.ToList(), staticMutants.ToList());
+        return (coveredMutants.ToList(), staticMutants.ToList(), mutationHitCounts);
     }
 
     /// <summary>
@@ -378,13 +398,13 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     /// per-assembly union in <see cref="ReadCoverageData"/> and the single-test read used by
     /// <see cref="RunSingleTestForCoverageInReusedProcessAsync"/>.
     /// </summary>
-    private (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants) ReadCoverageDataFrom(string coverageFilePath, string? assembly = null)
+    private (IReadOnlyList<int> CoveredMutants, IReadOnlyList<int> StaticMutants, IReadOnlyDictionary<int, int> MutationHitCounts) ReadCoverageDataFrom(string coverageFilePath, string? assembly = null)
     {
         if (!File.Exists(coverageFilePath))
         {
             _logger.LogDebug("{RunnerId}: Coverage file{ForAssembly} not found at {Path}",
                 RunnerId, assembly is null ? string.Empty : $" for {Path.GetFileName(assembly)}", coverageFilePath);
-            return (Array.Empty<int>(), Array.Empty<int>());
+            return (Array.Empty<int>(), Array.Empty<int>(), new Dictionary<int, int>());
         }
 
         try
@@ -395,19 +415,48 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
             if (string.IsNullOrEmpty(content))
             {
-                return (Array.Empty<int>(), Array.Empty<int>());
+                return (Array.Empty<int>(), Array.Empty<int>(), new Dictionary<int, int>());
             }
 
             var parts = content.Split(';');
             var coveredMutants = ParseMutantIds(parts.Length > 0 ? parts[0] : string.Empty);
             var staticMutants = ParseMutantIds(parts.Length > 1 ? parts[1] : string.Empty);
+            var hitCounts = parts.Length > 2 ? ParseMutationHitCounts(parts[2]) : new Dictionary<int, int>();
 
-            return (coveredMutants, staticMutants);
+            return (coveredMutants, staticMutants, hitCounts);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "{RunnerId}: Failed to read coverage file at {Path}", RunnerId, coverageFilePath);
-            return (Array.Empty<int>(), Array.Empty<int>());
+            return (Array.Empty<int>(), Array.Empty<int>(), new Dictionary<int, int>());
+        }
+    }
+
+    private static Dictionary<int, int> ParseMutationHitCounts(string value)
+    {
+        var hitCounts = new Dictionary<int, int>();
+        foreach (var entry in value.Split(',', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var parts = entry.Split(':');
+            if (parts.Length == 2 && int.TryParse(parts[0].Trim(), out var mutantId) &&
+                int.TryParse(parts[1].Trim(), out var hitCount) && hitCount >= 0)
+            {
+                hitCounts[mutantId] = hitCounts.TryGetValue(mutantId, out var existingHitCount)
+                    ? existingHitCount + hitCount
+                    : hitCount;
+            }
+        }
+
+        return hitCounts;
+    }
+
+    private static void AddHitCounts(IDictionary<int, int> target, IReadOnlyDictionary<int, int> source)
+    {
+        foreach (var (mutantId, hitCount) in source)
+        {
+            target[mutantId] = target.TryGetValue(mutantId, out var existingHitCount)
+                ? existingHitCount + hitCount
+                : hitCount;
         }
     }
 
@@ -690,8 +739,8 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                         Array.Empty<int>(), Array.Empty<int>(), Array.Empty<int>());
                 }
 
-                var (covered, staticMutants) = ReadCoverageForHandedOutPath(coverageFilePath);
-                return CoverageRunResult.Create(testId, CoverageConfidence.Normal, covered, staticMutants, Array.Empty<int>());
+                var (covered, staticMutants, hitCounts) = ReadCoverageForHandedOutPath(coverageFilePath);
+                return CoverageRunResult.Create(testId, CoverageConfidence.Normal, covered, staticMutants, Array.Empty<int>(), hitCounts);
             }
             catch (Exception ex)
             {
@@ -762,8 +811,8 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             // this test's (and only this test's) coverage to file before the process goes away.
             await server.StopAsync().ConfigureAwait(false);
 
-            var (covered, _) = ReadCoverageForHandedOutPath(coverageFilePath, assembly);
-            return CoverageRunResult.Create(testId, CoverageConfidence.Exact, covered, Array.Empty<int>(), Array.Empty<int>());
+            var (covered, _, hitCounts) = ReadCoverageForHandedOutPath(coverageFilePath, assembly);
+            return CoverageRunResult.Create(testId, CoverageConfidence.Exact, covered, Array.Empty<int>(), Array.Empty<int>(), hitCounts);
         }
         catch (Exception ex)
         {
@@ -962,6 +1011,29 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         }
     }
 
+    private void SetHitLimitResultReason(IReadOnlyList<IMutant>? mutants)
+    {
+        if (mutants is not { Count: 1 } || !File.Exists(_hitLimitMarkerPath))
+        {
+            return;
+        }
+
+        try
+        {
+            var parts = File.ReadAllText(_hitLimitMarkerPath).Split(';');
+            if (parts.Length == 3 && int.TryParse(parts[0], out var mutantId) &&
+                long.TryParse(parts[1], out var hitCount) && long.TryParse(parts[2], out var hitLimit) &&
+                mutants[0].Id == mutantId)
+            {
+                mutants[0].ResultStatusReason = $"Hit limit exceeded ({hitCount} > {hitLimit})";
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "{RunnerId}: Failed to read hit-limit marker {Path}", RunnerId, _hitLimitMarkerPath);
+        }
+    }
+
     private sealed class TestRunAccumulator
     {
         private readonly List<string> _executedTests = [];
@@ -1070,7 +1142,8 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     {
         try
         {
-            WriteMutantIdToFile(mutantId);
+            var hitLimit = mutants is { Count: 1 } ? mutants[0].HitLimit.GetValueOrDefault() : 0;
+            WriteMutantIdToFile(mutantId, hitLimit);
 
             var testUidFilter = BuildTestUidFilter(mutants);
             var accumulator = new TestRunAccumulator();
@@ -1086,6 +1159,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                     if (timedOut)
                     {
                         accumulator.HasTimeout = true;
+                        SetHitLimitResultReason(mutants);
                         await HandleAssemblyTimeoutAsync(assembly, discoveredTests, accumulator.TimedOutTests).ConfigureAwait(false);
                     }
                 }
@@ -1227,7 +1301,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
                 var testsToRun = tests?.Where(t => testUidFilter is null || testUidFilter(t)).ToArray();
 
-                var (testResults, timedOut) = await server.RunTestsAsync(testsToRun, timeout).ConfigureAwait(false);
+                var (testResults, timedOut) = await server.RunTestsAsync(testsToRun, timeout, _hitLimitMarkerPath).ConfigureAwait(false);
 
                 var duration = DateTime.UtcNow - startTime;
                 var result = BuildTestRunResult(testResults, tests?.Count ?? 0, duration);

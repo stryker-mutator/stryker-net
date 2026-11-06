@@ -1,3 +1,4 @@
+using System;
 using Stryker.Abstractions.Testing;
 
 namespace Stryker.Abstractions;
@@ -9,6 +10,12 @@ public interface IReadOnlyMutant
 {
     int Id { get; }
     Mutation Mutation { get; }
+    /// <summary>Gets the elapsed time spent testing this mutant.</summary>
+    TimeSpan? TestDuration { get; }
+    /// <summary>Gets the number of times this mutant was hit during coverage analysis.</summary>
+    long? HitCount { get; }
+    /// <summary>Gets the hit limit used when testing this mutant.</summary>
+    long? HitLimit { get; }
     MutantStatus ResultStatus { get; }
     string ResultStatusReason { get; }
     ITestIdentifiers CoveringTests { get; }

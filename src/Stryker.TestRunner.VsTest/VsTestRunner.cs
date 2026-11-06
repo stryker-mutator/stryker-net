@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
@@ -27,6 +28,8 @@ public sealed class VsTestRunner : IDisposable
     private readonly int _id;
     private int _instanceCount;
     private readonly ILogger _logger;
+    private readonly string _hitLimitMarkerPath;
+    private bool _hitLimitMarkerObserved;
     // safety timeout for VsTestWrapper operations. We assume VsTest crashed if the timeout triggers
 
     public static int VsTestExtraTimeOutInMs { get; set; } = 10 * 1000;
@@ -44,6 +47,7 @@ public sealed class VsTestRunner : IDisposable
         _context = context;
         _id = id;
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunner>();
+        _hitLimitMarkerPath = Path.Combine(Path.GetTempPath(), $"stryker-hitlimit-vstest-{Environment.ProcessId}-{id}-{Guid.NewGuid():N}.txt");
         _vsTestConsole = _context.BuildVsTestWrapper(RunnerId, ControlVariableName);
     }
 
@@ -110,7 +114,15 @@ public sealed class VsTestRunner : IDisposable
             _logger.LogDebug("{RunnerId}: Using {timeOutMs} ms as test run timeout", RunnerId, timeOutMs);
         }
 
-        var testResults = RunTestSession(new TestIdentifierList(testCases), project, timeOutMs, mutantTestsMap, HandleUpdate);
+        var mutantHitLimits = mutants.ToDictionary(mutant => mutant.Id, mutant => mutant.HitLimit.GetValueOrDefault());
+        _hitLimitMarkerObserved = false;
+        var testResults = RunTestSession(new TestIdentifierList(testCases), project, timeOutMs, mutantTestsMap,
+            HandleUpdate, mutantHitLimits);
+
+        if (_hitLimitMarkerObserved && mutants.Count == 1 && TryReadHitLimitMarker(mutants[0], out var hitCount, out var hitLimit))
+        {
+            mutants[0].ResultStatusReason = $"Hit limit exceeded ({hitCount} > {hitLimit})";
+        }
 
         return BuildTestRunResult(testResults, expectedTests, totalCountOfTests);
 
@@ -192,7 +204,7 @@ public sealed class VsTestRunner : IDisposable
         var resultAsArray = testResults.TestResults.ToArray();
         var testCases = resultAsArray.Select(t => t.TestCase.Id.ToString()).ToHashSet();
         var ranTestsCount = testCases.Count;
-        var timeout = !_currentSessionCancelled && ranTestsCount < expectedTests;
+        var timeout = _hitLimitMarkerObserved || !_currentSessionCancelled && ranTestsCount < expectedTests;
         // ranTests is the list of test that have been executed. We detect the special case where all (existing and found) tests have been executed.
         // this is needed when the tests list is not stable (mutations can generate variation for theories) and also helps for performance
         // so we assume that if executed at least as much test as have been detected, it means all tests have been executed
@@ -223,15 +235,18 @@ public sealed class VsTestRunner : IDisposable
                     messages, duration);
     }
 
-    public IRunResults RunTestSession(ITestIdentifiers testsToRun, IProjectAndTests project, int? timeout = null, Dictionary<int, ITestIdentifiers> mutantTestsMap = null, Action<IRunResults> updateHandler = null) =>
-        RunTestSession(testsToRun, project, false, timeout, updateHandler, mutantTestsMap).normal;
+    public IRunResults RunTestSession(ITestIdentifiers testsToRun, IProjectAndTests project, int? timeout = null,
+        Dictionary<int, ITestIdentifiers> mutantTestsMap = null, Action<IRunResults> updateHandler = null,
+        IReadOnlyDictionary<int, long> mutantHitLimits = null) =>
+        RunTestSession(testsToRun, project, false, timeout, updateHandler, mutantTestsMap, mutantHitLimits).normal;
 
     public IRunResults RunCoverageSession(ITestIdentifiers testsToRun, IProjectAndTests project) =>
         RunTestSession(testsToRun, project, true).raw;
 
     private (IRunResults normal, IRunResults raw) RunTestSession(ITestIdentifiers tests, IProjectAndTests projectAndTests,
         bool forCoverage, int? timeOut = null, Action<IRunResults> updateHandler = null,
-        Dictionary<int, ITestIdentifiers> mutantTestsMap = null)
+        Dictionary<int, ITestIdentifiers> mutantTestsMap = null,
+        IReadOnlyDictionary<int, long> mutantHitLimits = null)
     {
         var sources = projectAndTests.GetTestAssemblies();
         var validSources = _context.GetValidSources(sources).ToList();
@@ -263,7 +278,7 @@ public sealed class VsTestRunner : IDisposable
                 continue;
             }
             var runSettings = _context.GenerateRunSettings(timeOut, forCoverage, mutantTestsMap,
-                projectAndTests.HelperNamespace, source.TargetFramework, source.TargetPlatform());
+                projectAndTests.HelperNamespace, source.TargetFramework, source.TargetPlatform(), mutantHitLimits);
             _logger.LogTrace("{RunnerId}: testing assembly {source}.", RunnerId, source.GetAssemblyFileName());
             var activeId = -1;
             if (mutantTestsMap is { Count: 1 })
@@ -294,7 +309,8 @@ public sealed class VsTestRunner : IDisposable
         var attempt = 0;
         while (attempt < MaxAttempts)
         {
-            var strykerVsTestHostLauncher = _context.BuildHostLauncher(RunnerId);
+            TryDeleteHitLimitMarker();
+            var strykerVsTestHostLauncher = _context.BuildHostLauncher(RunnerId, _hitLimitMarkerPath);
 
             eventHandler.StartSession();
             _currentSessionCancelled = false;
@@ -345,9 +361,16 @@ public sealed class VsTestRunner : IDisposable
         var vsTestFailed = false;
         if (timeOut.HasValue)
         {
-            // we wait for the end notification for the test session
-            // ==> if it failed, results are uncertain
-            var suspiciousTimeOut = !eventHandler.Wait(VsTestExtraTimeOutInMs + timeOut.Value, out var slept);
+            var (suspiciousTimeOut, slept) = WaitForTestRunCompletion(eventHandler,
+                TimeSpan.FromMilliseconds(VsTestExtraTimeOutInMs + timeOut.Value));
+
+            if (_hitLimitMarkerObserved)
+            {
+                _currentSessionCancelled = true;
+                vsTestFailed = true;
+                _vsTestConsole.AbortTestRun();
+            }
+
             // we wait for vsTestProcess to stop
             // ==> if it appears hung, we recycle it.
             if (!session.Wait(VsTestExtraTimeOutInMs))
@@ -371,16 +394,80 @@ public sealed class VsTestRunner : IDisposable
         }
         else
         {
-            // no timeout provided ==> initial tests
-            // we wait for VsTest to end.
-            // we could add a configurable timeout, to prevent actual locking to happen during initial tests, but no idea what a good default should be
-            session.Wait();
-            // we add a grace delay for notifications to be propagated
-            eventHandler.Wait(VsTestExtraTimeOutInMs, out var _);
+            while (!eventHandler.HasCompleted)
+            {
+                if (File.Exists(_hitLimitMarkerPath))
+                {
+                    _hitLimitMarkerObserved = true;
+                    _currentSessionCancelled = true;
+                    vsTestFailed = true;
+                    _vsTestConsole.AbortTestRun();
+                    break;
+                }
+
+                eventHandler.Wait(50, out var _);
+            }
+
+            if (!session.Wait(VsTestExtraTimeOutInMs))
+            {
+                _vsTestConsole.AbortTestRun();
+                vsTestFailed = !session.Wait(VsTestExtraTimeOutInMs);
+            }
             _logger.LogDebug("{RunnerId}: Test session finished.", RunnerId);
         }
 
         return vsTestFailed;
+    }
+
+    private (bool TimedOut, bool Slept) WaitForTestRunCompletion(RunEventHandler eventHandler, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        var slept = false;
+        while (!eventHandler.HasCompleted && DateTime.UtcNow < deadline)
+        {
+            if (File.Exists(_hitLimitMarkerPath))
+            {
+                _hitLimitMarkerObserved = true;
+                return (false, false);
+            }
+
+            var waitTime = Math.Min(50, Math.Max(1, (int)(deadline - DateTime.UtcNow).TotalMilliseconds));
+            eventHandler.Wait(waitTime, out var waitSlept);
+            slept |= waitSlept;
+        }
+
+        return (!eventHandler.HasCompleted, slept);
+    }
+
+    private bool TryReadHitLimitMarker(IMutant mutant, out long hitCount, out long hitLimit)
+    {
+        hitCount = 0;
+        hitLimit = 0;
+        try
+        {
+            var parts = File.ReadAllText(_hitLimitMarkerPath).Split(';');
+            return parts.Length == 3 && int.TryParse(parts[0], out var mutantId) && mutantId == mutant.Id &&
+                long.TryParse(parts[1], out hitCount) && long.TryParse(parts[2], out hitLimit);
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+    }
+
+    private void TryDeleteHitLimitMarker()
+    {
+        try
+        {
+            if (File.Exists(_hitLimitMarkerPath))
+            {
+                File.Delete(_hitLimitMarkerPath);
+            }
+        }
+        catch (IOException ex)
+        {
+            _logger.LogDebug(ex, "{RunnerId}: Could not clear hit-limit marker {Path}", RunnerId, _hitLimitMarkerPath);
+        }
     }
 
     private void PrepareVsTestConsole()

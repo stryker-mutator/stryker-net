@@ -92,6 +92,23 @@ namespace ExtraProject.XUnit
     }
 
     [TestMethod]
+    public void JsonReport_ShouldContainMutantTestDurationInMilliseconds()
+    {
+        var project = ReportTestHelper.CreateProjectWith();
+        var mutant = ((FolderComposite)project).GetAllFiles().SelectMany(file => file.Mutants).First();
+        mutant.TestDuration = TimeSpan.FromMilliseconds(1234);
+    mutant.HitCount = 8;
+    mutant.HitLimit = 1000;
+
+        var report = JsonReport.Build(new StrykerOptions(), project, null);
+
+        report.ToJson().ShouldContain(@"""duration"":1234");
+        report.ToJson().ShouldContain("Duration: 1234 ms");
+        report.ToJson().ShouldContain("HitCount: 8");
+        report.ToJson().ShouldContain("HitLimit: 1000");
+    }
+
+    [TestMethod]
     public void JsonReportFileComponents_ShouldContainMutants()
     {
         var folderComponent = ReportTestHelper.CreateProjectWith();
