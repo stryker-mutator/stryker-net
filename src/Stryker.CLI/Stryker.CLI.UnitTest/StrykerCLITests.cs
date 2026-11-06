@@ -71,6 +71,44 @@ Options:";
     }
 
     [TestMethod]
+    [DataRow("--version")]
+    [DataRow("-v")]
+    public async Task ShouldPrintToolVersionWhenVersionHasNoValue(string option)
+    {
+        var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+        var console = new TestConsole().Width(160);
+        var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), console, Mock.Of<IFileSystem>());
+
+        var exitCode = await target.RunAsync(new[] { option });
+
+        exitCode.ShouldBe(ExitCodes.Success);
+        console.Output.Trim().ShouldNotBeEmpty();
+        console.Output.ShouldNotContain("Missing value");
+        mock.VerifyNoOtherCalls();
+    }
+
+    [TestMethod]
+    public async Task ShouldPrintToolVersionWhenVersionIsFollowedByAnotherOption()
+    {
+        var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+        var console = new TestConsole().Width(160);
+        var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), console, Mock.Of<IFileSystem>());
+
+        var exitCode = await target.RunAsync(new[] { "--version", "--skip-version-check" });
+
+        exitCode.ShouldBe(ExitCodes.Success);
+        mock.VerifyNoOtherCalls();
+    }
+
+    [TestMethod]
+    public async Task ShouldKeepUsingVersionAsProjectVersionWhenValueIsGiven()
+    {
+        await _target.RunAsync(new[] { "--version", "1.2.3", "--skip-version-check" });
+
+        _inputs.ProjectVersionInput.SuppliedInput.ShouldBe("1.2.3");
+    }
+
+    [TestMethod]
     public async Task ShouldDisplayLogo()
     {
         var strykerRunnerMock = new Mock<IStrykerRunner>(MockBehavior.Strict);
