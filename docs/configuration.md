@@ -12,12 +12,14 @@ On some dotnet core projects stryker can run without specifying any custom confi
 On dotnet framework projects the solution path argument is always required. Run at least `dotnet stryker --solution <solution-path>` or specify the solution file path in the config file to start testing. See [solution](#solution-path).
 
 ## Use a config file
-When using Stryker regularly we recommend using a config file. This way you won't have to document how to run Stryker, you can save the config file in version control. 
+
+When using Stryker regularly we recommend using a config file. This way you won't have to document how to run Stryker, you can save the config file in version control.
 To use a config file create a file called `stryker-config.json` in the (unit test) project folder and add a configuration section called stryker-config.
 
 We support json and yaml as the config file formats
 
 Example `stryker-config.json` file:
+
 ``` javascript
 {
     "stryker-config":
@@ -29,8 +31,9 @@ Example `stryker-config.json` file:
 ```
 
 Example `stryker-config.yaml` file:
+
 ``` yaml
-  stryker-config:
+stryker-config:
     solution: '../SolutionFile.sln'
     project: 'ExampleProject.csproj'
 ```
@@ -39,7 +42,7 @@ Example `stryker-config.yaml` file:
 
 To get started quickly with configuring stryker, use the command:
 
-```
+```shell
 dotnet stryker init
 ```
 
@@ -47,13 +50,13 @@ This will output a new json configuration file where the command is being run.
 
 To create a config file with a custom name, provide a config file name:
 
-```
+```shell
 dotnet stryker init --config-file "custom.json"
 ```
 
 To override the default values, provide a value using the regular cli options:
 
-```
+```shell
 dotnet stryker init --mutation-level "advanced"
 ```
 
@@ -124,11 +127,11 @@ The patterns support [globbing syntax](https://en.wikipedia.org/wiki/Glob_(progr
 
 **Example**:
 
-| Patterns  | File                      | Will be mutated   |
-| ----------| ------------------------- | ----------------- |
-| null            | MyFolder/MyFactory.cs    | Yes               |
-| '\*\*/\*.\*'   | MyFolder/MyFactory.cs    | Yes               |
-| '!\*\*/MyFactory.cs'   | MyFolder/MyFactory.cs    | No        |
+| Patterns             | File                  | Will be mutated |
+|----------------------|-----------------------|-----------------|
+| null                 | MyFolder/MyFactory.cs | Yes             |
+| '\*\*/\*.\*'         | MyFolder/MyFactory.cs | Yes             |
+| '!\*\*/MyFactory.cs' | MyFolder/MyFactory.cs | No              |
 
 To allow more fine-grained filtering you can also specify the span of text that should be in- or excluded. A span is defined by the indices of the first character and the last character.
 
@@ -153,9 +156,10 @@ Existing configuration values remain accepted for compatibility and produce a
 deprecation warning.
 
 ### `configuration` &lt;`string`&gt;
+
 Default: default for SDK, usually `Debug`
 Command line: `--configuration Release`  
-Config file: `"configuration": "Release"
+Config file: `"configuration": "Release"`
 
 Allows you to specify the build configuration to use when building the project. This can be useful when you want to test the release build of your project.
 
@@ -191,7 +195,7 @@ Default: `null`
 Command line: `[-v|--version] "feat/logging"`  
 Config file: `"project-info": { "version": 'feat/logging' }`
 
-The version of the report. This should be filled with the branch name, git tag or git sha (although no validation is done). You can override a report of a specific version, like docker tags. Slashes in the version should not be encoded. For example, it's valid to use "feat/logging".
+The version of the report. This should be filled with the branch name, git tag or git commit hash (although no validation is done). You can override existing versions. Slashes in the version should not be encoded. For example, it's valid to use "feat/logging".
 
 See [Stryker dashboard](./reporters.md#dashboard-reporter)
 
@@ -208,6 +212,7 @@ Config file: `"test-runner": "mtp"`
 Specifies the test runner to use for executing tests during mutation testing.
 
 Available options:
+
 * `vstest` - The traditional Visual Studio Test Platform runner (default)
 * `mtp` - The Microsoft Test Platform runner (preview)
 
@@ -219,32 +224,35 @@ Default: `Standard`
 Command line: `[-l|--mutation-level] "Advanced"`  
 Config file: `"mutation-level": 'Advanced'`
 
-Stryker supports multiple mutation levels. Each level comes with a specific set of mutations. Each level contains the mutations of the levels below it. By setting the level to `Complete` you will get all possible mutations and thus the strictest mutation test. This comes at the price of longer runtime as more mutations will be generated and tested. 
+Stryker supports multiple mutation levels. Each level comes with a specific set of mutations. Each level contains the mutations of the levels below it. By setting the level to `Complete` you will get all possible mutations and thus the strictest mutation test. This comes at the cost of a longer runtime as more mutations will be generated and tested.
 
 The levels are:
-- Basic
-- Standard
-- Advanced
-- Complete
 
-| Mutations| Level| 
-| ------------- | ------------- | 
-| Arithmetic Operators | Basic|
-| Block statements | Basic|
-| Logical Operators | Basic |
-| Bitwise Operators | Basic |
-| Equality Operators | Standard |
-| Boolean Literals | Standard|
-| Assignment statements | Standard |
+* Complete
+* Advanced
+* Standard
+* Basic
+
+| Mutations              | Level    |
+|------------------------|----------|
+| Regex                  | Advanced |
+| Math Methods           | Advanced |
+| String Methods         | Advanced |
+| Equality Operators     | Standard |
+| Boolean Literals       | Standard |
+| Assignment statements  | Standard |
 | Collection initializer | Standard |
-| Unary Operators | Standard |
-| Update Operators | Standard |
-| String Literals | Standard |
-| Linq Methods | Standard |
-| Checked Statements | Standard |
-| Regex | Advanced |
-| Math Methods | Advanced |
-| String Methods | Advanced |
+| Unary Operators        | Standard |
+| Update Operators       | Standard |
+| String Literals        | Standard |
+| Linq Methods           | Standard |
+| Checked Statements     | Standard |
+| Arithmetic Operators   | Basic    |
+| Block statements       | Basic    |
+| Logical Operators      | Basic    |
+| Bitwise Operators      | Basic    |
+
+Note that no `Complete` mutations currently exists.
 
 ### `reporter` &lt;`string[]`&gt;
 
@@ -252,11 +260,12 @@ Default: `html, progress`
 Command line: `[-r|--reporter] "html" -r "json" -r "progress"`  
 Config file: `"reporters": ['html', 'json', 'progress']`
 
-*The reporter option can be used multiple times on the command line*
+*\* The reporter option can be used multiple times on the command line*
 
 During a mutation testrun one or more reporters can be enabled. A reporter will produce some kind of output during or after the mutation testrun.
 
 The available reporter options are
+
 * all (Enable all reporters)
 * [html](./reporters.md#html-reporter)
 * [progress](./reporters.md#progress-reporter)
@@ -266,24 +275,25 @@ The available reporter options are
 * [dots](./reporters.md#dots-reporter)
 * [json](./reporters.md#json-reporter)
 
-You can find a description for every reporter in the [reporter docs](./reporters.md)
+You can find a description for every reporter in the [reporter docs](./reporters.md).
 
 ### `open-report` &lt;`string`&gt;
 
-Default: `html`
-Command line: `[-o:html|--open-report:dashboard]`
-Config file: `N/A`
+Default: `html`  
+Command line: `[-o:html|--open-report:dashboard]`  
+Config file: `N/A`  
 
 When this option is passed, generated reports should open in the browser automatically once Stryker starts testing mutants, and will update the report till Stryker is done. Both html and dashboard reports can be opened automatically.
 
 Valid values:
-- html
-- dashboard
+
+* html
+* dashboard
 
 ### `report-file-name` &lt;`string`&gt;
 
-Default: `mutation-report`
-Command line: `N/A` 
+Default: `mutation-report`  
+Command line: `N/A`  
 Config file: `report-file-name`
 
 If HTML and/or JSON reporting is being used you can use this option to change the report file name.
@@ -312,7 +322,7 @@ Default: `1.5`
 Command line: `N/A`  
 Config file: `"timeout-ratio": 2.0`
 
-The ratio the estimated test time is multiplied by when calculating the [timeout](#additional-timeout-number) for a mutant. A higher ratio gives mutants more time to run before they are cancelled, a lower ratio catches endless loops faster. Must be higher than `1`.
+Configures the ratio with which the estimated test time is multiplied when calculating the [timeout](#additional-timeout-number) for a mutant. A higher ratio gives mutants more time to run before they are cancelled, a lower ratio catches endless loops faster. Must be higher than `1`.
 
 ### `concurrency` &lt;`number`&gt;
 
@@ -322,7 +332,7 @@ Config file: `"concurrency": 10`
 
 Change the amount of concurrent workers Stryker uses for the mutation testrun. Defaults to using half your logical (virtual) processor count.
 
-**Example**: an intel i7 quad-core with hyperthreading has 8 logical cores and 4 physical cores. Stryker will use 4 concurrent workers when using the default.
+**Example**: an intel i7 quad-core with hyperthreading has 8 logical cores and 4 physical cores. Stryker will use 4 concurrent workers when using the default setting.
 
 ### `thresholds` &lt;`object`&gt;
 
@@ -333,14 +343,15 @@ Config file: `"thresholds": { "high": 80, "low": 60, "break": 0 }`
 Configure the mutation score thresholds for your project. Thresholds should be a number between 0 and 100. Thresholds can have the same value.
 
 Threshold calculations in order:
-- `mutation score >= threshold-high`: 
-    - Awesome! Your reporters will color this green and happy.
-- `mutation score < threshold-high && mutation score >= threshold-low`:
-    - Warning! Your reporters will display yellow/orange colors, watch out!
-- `mutation score < threshold-low`:
-    - Danger! Your reporters will display red colors, you're in the danger zone now.
-- `mutation score < threshold-break`:
-    - Error! Stryker will exit with exitcode 1.
+
+* `mutation score >= threshold-high`:
+  * Awesome! Your reporters will color this green and happy.
+* `mutation score < threshold-high && mutation score >= threshold-low`:
+  * Warning! Your reporters will display yellow/orange colors, watch out!
+* `mutation score < threshold-low`:
+  * Danger! Your reporters will display red colors, you're in the danger zone now.
+* `mutation score < threshold-break`:
+  * Error! Stryker will exit with exitcode 1.
 
 ### `break-at` &lt;`number`&gt;
 
@@ -348,7 +359,7 @@ Default: `0`
 Command line: `[-b|--break-at] 40`  
 Config file: See [thresholds](#thresholds-object)
 
-Must be less than or equal to threshold low.  
+Must be less than or equal to threshold-low.  
 When threshold break is set to anything other than 0 and the mutation score is lower than the threshold Stryker will exit with a non-zero code. This can be used in a CI pipeline to fail the pipeline when your mutation score is not sufficient.  
 
 ### `threshold-high` &lt;`number`&gt;
@@ -373,11 +384,14 @@ Default: `null`
 Command line: `N/A`  
 Config file: `"ignore-mutations": ['string', 'logical']`
 
-Ignores mutations that are not currently relevant to your project. Find the mutation names [here](./mutations.md).
+Ignores mutations that are not currently relevant to your project. Find the mutation names in the [mutations docs](./mutations.md).
+
+The mutants of the ignored types will not be tested. They will show up in your reports as `Ignored`.
 
 #### `Linq expressions`
 
-It's also possible to disable specific linq expressions using:
+It is also possible to disable specific linq expressions using `linq.<expression>`:
+
 ```json
 "stryker-config": {
     "ignore-mutations": [
@@ -387,15 +401,13 @@ It's also possible to disable specific linq expressions using:
 }
 ```
 
-The mutants of the ignored types will not be tested. They will show up in your reports as `Ignored`.
-
 ### `ignore-methods` &lt;`string[]`&gt;
 
 Default: `null`  
 Command line: `N/A`  
 Config file: `"ignore-methods": ['ToString', 'ConfigureAwait', '*Exception.ctor', 'Console.Write*']`
 
-Skip specified method signatures from being mutated. 
+Skip specified method signatures from being mutated.
 
 ```csharp
 // This mutation will be skipped
@@ -422,6 +434,8 @@ Both, method names and constructor names support wildcards.
 }
 ```
 
+*Note that this only ignores mutation inside the method calls, not the method declaration.*
+
 ### `output` &lt;`string`&gt;
 
 Default: `null`  
@@ -438,18 +452,19 @@ Default: `perTest`
 Command line: `N/A`  
 Config file: `"coverage-analysis": 'off'`
 
-Use coverage info to speed up execution. 
+Use coverage info to speed up execution.
 
-- **perTest**: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover the mutant are used to test a mutant. Mutants without tests are reported as `NoCoverage`. Fastest option.
-- **perTestInIsolation**: like 'perTest', but running each test in an isolated run. This results in more accurate
+* **perTest**: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover that mutant are used. Mutants without tests are reported as `NoCoverage`. Fastest option.
+* **perTestInIsolation**: like 'perTest', but running each test in an isolated run. This results in more accurate
 coverage information for some mutants (see below), at the expense of a longer startup time.
-- **all**: capture the list of mutants covered by a test. Test only the mutants covered by unit tests. Non covered mutants are assumed as survivors. Fast option.
-- **off**: coverage data is not captured. All unit tests are run against all mutants.
+* **all**: capture the list of mutants covered by a test. Test only the mutants covered by unit tests. Non covered mutants are assumed as survivors. Fast option.
+* **off**: coverage data is not captured. All unit tests are run against all mutants.
 
 #### Notes on coverage analysis
+
 * Results should not be impacted by coverage analysis. If you identify a suspicious survivor, run
 Stryker again without coverage analysis and report an issue if this mutant is killed by this run.
-* When using `perTest` mode, mutants that are executed as part of some static constructor/initializer 
+* When using `perTest` mode, mutants that are executed as part of some static constructor/initializer
 are run against all tests as Stryker cannot reliably capture coverage for those. This is a consequence of static
 constructors/initializers being called only once during tests. This heuristic is not needed when using
 `perTestInIsolation` due to tests being run one by one.
@@ -511,7 +526,7 @@ Config file: `"since": { "ignore-changes-in: ['**/*Translations.json'] }`
 
 Allows to specify an array of files that should be ignored if present in the diff.
 This feature is only recommended when you are sure these files will not affect results, or when you are prepared to sacrifice accuracy for performance.
-            
+
 Use [globbing syntax](https://en.wikipedia.org/wiki/Glob_(programming)) for wildcards. Example: ['**/*Assets.json','**/favicon.ico']
 
 ## Experimental
@@ -552,25 +567,29 @@ Config file: `"baseline": { "fallback-version": 'develop' }`
 When [with-baseline](#with-baseline-flag-committish) is enabled and Stryker cannot find an existing report for the current branch the fallback version is used. When Stryker is still unable to find a baseline we will do a complete instead of partial testrun. The complete testrun will then be saved as the new baseline for the next mutation testrun.
 
 **Example**:
+
 ```json
 "since-target": 'development',
 "current-branch" 'feat-2'
 ```
-```json
+
+```text
 baseline exists for branch feat-2: false
 baseline exists for branch development: false
 
 baseline used: null (complete instead of partial testrun)
 new baseline saved to: feat-2
 ```
-```json
+
+```text
 baseline exists for branch feat-2: false
 baseline exists for branch development: true
 
 baseline used: development
 new baseline saved to: feat-2
 ```
-```json
+
+```text
 baseline exists for branch feat-2: true
 baseline exists for branch development: true
 
@@ -590,12 +609,12 @@ Sets the storage provider for the baseline used by [with-baseline](#with-baselin
 
 Supported storage providers are:
 
-| Storage location  | Option | Description |
-|------------------ |--------|-------------|
-| Disk              | Disk   | Saves the baseline on disk to the `StrykerOutput` folder |
-| Stryker Dashboard | Dashboard | Saves the baseline to Stryker Dashboard |
-| Azure File Storage | AzureFileStorage | Saves the baseline to Azure File Storage |
-| S3-compatible storage | S3 | Saves the baseline to any S3-compatible object storage (AWS S3, MinIO, Backblaze B2, etc.) |
+| Storage location      | Option           | Description                                                                                |
+|-----------------------|------------------|--------------------------------------------------------------------------------------------|
+| Disk                  | Disk             | Saves the baseline on disk to the `StrykerOutput` folder                                   |
+| Stryker Dashboard     | Dashboard        | Saves the baseline to Stryker Dashboard                                                    |
+| Azure File Storage    | AzureFileStorage | Saves the baseline to Azure File Storage                                                   |
+| S3-compatible storage | S3               | Saves the baseline to any S3-compatible object storage (AWS S3, MinIO, Backblaze B2, etc.) |
 
 For configuring the dashboard provider see [Dashboard Reporter Settings](./reporters.md#dashboard-reporter)
 
@@ -610,8 +629,8 @@ The file share url should be in the the format:
 
 `https://<STORAGE_ACCOUNT_NAME>.file.core.windows.net/<FILE_SHARE_NAME>/<OPTIONAL_SUBFOLDER_NAME>`
 
-The baseline are stored in a folder called `StrykerOutput/Baselines` by default. Or in `StrykerOutput/<projectName>` if a [project name](#project-infoname-string) is set.
-Providing a subfolder is optional but allowed. In the case of a custom subfolder the complete url to the baselines would become `https://<FILE_SHARE_URL>/<OPTIONAL_SUBFOLDER_NAME>/StrykerOutput/Baselines`
+The baselines are stored in a folder called `StrykerOutput/Baselines` by default. Or in `StrykerOutput/<projectName>` if a [project name](#project-infoname-string) is set.
+Providing a subfolder is optional but allowed. In the case of a custom subfolder the complete url to the baselines would become `https://<FILE_SHARE_URL>/<OPTIONAL_SUBFOLDER_NAME>/StrykerOutput/Baselines`.
 
 ### `azure-fileshare-sas` &lt;`string`&gt;
 
@@ -620,7 +639,7 @@ Command line: `--azure-fileshare-sas "se=2022-08-25T14%3A27Z&sp=rwdl&spr=https&s
 Config file: `N/A`
 
 When using the azure file storage [provider](#baselineprovider-string) you must pass credentials for the fileshare to Stryker.
-For authentication with the azure fileshare we support Shared Access Signatures (SAS). 
+For authentication with the azure fileshare we support Shared Access Signatures (SAS).
 
 The SAS should be configured with the following properties:
 
@@ -671,6 +690,7 @@ Config file: `"verbosity": 'trace'`
 Change the console `verbosity` of Stryker when you want more or less details about the mutation testrun.
 
 All available loglevels are
+
 * error
 * warning
 * info
@@ -683,7 +703,7 @@ Default: `false`
 Command line: `[-L|--log-to-file]`  
 Config file: `N/A`
 
-When creating an issue on github you can include a logfile so the issue can be diagnosed easier. 
+When creating an issue on github you can include a logfile so the issue can be diagnosed easier.
 
 *\* File logging always uses loglevel `trace`.*
 
@@ -702,7 +722,7 @@ As a result, Stryker will be slower, but the log file should help diagnose the h
 
 Default: `null`  
 Command line: `--dashboard-api-key "afdfsgarg3wr32r3r32f3f3"`  
-Config file: `N/A`
+Config file: `N/A`  
 Environment variable: `STRYKER_DASHBOARD_API_KEY="afdfsgarg3wr32r3r32f3f3"`
 
 The API key for authentication with the Stryker dashboard.  
@@ -723,7 +743,7 @@ Default: `null`
 Command line: `--msbuild-path "c://MsBuild/MsBuild.exe"`  
 Config file: `N/A`  
 
-By default, Stryker tries to auto-discover msbuild on your system. If Stryker fails to discover msbuild you may supply the path to msbuild manually with this option.
+By default, Stryker tries to auto-discover msbuild on your system. If Stryker fails to discover msbuild you can supply the path to msbuild manually with this option.
 
 ### `break-on-initial-test-failure` &lt;`flag`&gt;
 
