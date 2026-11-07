@@ -41,9 +41,11 @@ public class TestIdentifierList : ITestIdentifiers
 
     public IEnumerable<string> GetIdentifiers() => _identifiers ?? [];
 
-    public bool Contains(string testId) => IsEveryTest || _identifiers?.Contains(testId) is false;
+    public bool Contains(string testId) => IsEveryTest || _identifiers?.Contains(testId) is true;
 
-    public ITestIdentifiers Intersect(ITestIdentifiers other) => IsEveryTest ? new TestIdentifierList(other.GetIdentifiers()) : new TestIdentifierList(GetIdentifiers().Intersect(other.GetIdentifiers()));
+    public ITestIdentifiers Intersect(ITestIdentifiers other) => IsEveryTest
+        ? other.IsEveryTest ? EveryTest() : new TestIdentifierList(other.GetIdentifiers())
+        : other.IsEveryTest ? new TestIdentifierList(GetIdentifiers()) : new TestIdentifierList(GetIdentifiers().Intersect(other.GetIdentifiers()));
 
     public bool IsIncludedIn(ITestIdentifiers other) => other.IsEveryTest || _identifiers?.IsSubsetOf(other.GetIdentifiers()) is true;
 
@@ -63,9 +65,9 @@ public class TestIdentifierList : ITestIdentifiers
 
     public ITestIdentifiers Merge(ITestIdentifiers other)
     {
-        if (IsEveryTest)
+        if (IsEveryTest || other.IsEveryTest)
         {
-            return this;
+            return EveryTest();
         }
 
         var result = new HashSet<string>(_identifiers ?? []);
@@ -80,11 +82,16 @@ public class TestIdentifierList : ITestIdentifiers
             return this;
         }
 
+        if (testsToSkip.IsEveryTest)
+        {
+            return NoTest();
+        }
+
         if (IsEveryTest)
         {
             throw new InvalidOperationException("Can't exclude from EveryTest");
         }
 
-        return testsToSkip.IsEveryTest ? NoTest() : new TestIdentifierList(_identifiers.Except(testsToSkip.GetIdentifiers()));
+        return new TestIdentifierList(_identifiers.Except(testsToSkip.GetIdentifiers()));
     }
 }
