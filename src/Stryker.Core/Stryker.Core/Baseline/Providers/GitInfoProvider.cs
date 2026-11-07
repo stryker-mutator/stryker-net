@@ -17,7 +17,7 @@ public class GitInfoProvider : IGitInfoProvider
 
     public IRepository Repository { get; }
 
-    public string RepositoryPath => _repositoryPath ?? RemoveExtension(LibGit2Sharp.Repository.Discover(_options.ProjectPath));
+    public string RepositoryPath => _repositoryPath ?? RemoveEndingGit(LibGit2Sharp.Repository.Discover(_options.ProjectPath));
 
     public GitInfoProvider(IStrykerOptions options, IRepository repository = null, string repositoryPath = null, ILogger<GitInfoProvider> logger = null)
     {
@@ -33,8 +33,19 @@ public class GitInfoProvider : IGitInfoProvider
         Repository = repository ?? CreateRepository();
     }
 
-    private string RemoveExtension(string fileName) =>
-        string.IsNullOrWhiteSpace(fileName) ? fileName : Path.GetExtension(fileName) == ".git" ? fileName[..^4] : fileName;
+    private static string RemoveEndingGit(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return fileName;
+        }
+
+        if (fileName[^1]=='\\' || fileName[^1]=='/')
+        {
+            fileName = fileName[..^1];
+        }
+        return Path.GetExtension(fileName) == ".git" ? fileName[..^4] : fileName;
+    }
 
     public string GetCurrentBranchName()
     {
