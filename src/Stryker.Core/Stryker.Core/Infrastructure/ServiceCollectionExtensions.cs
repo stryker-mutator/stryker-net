@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +16,9 @@ public static class ServiceCollectionExtensions
 {
     // Cannot be tested directly
     [ExcludeFromCodeCoverage]
-    public static IServiceCollection AddStrykerCore(this IServiceCollection services)
+    public static IServiceCollection AddStrykerCore(
+        this IServiceCollection services,
+        Action<IServiceCollection> configure = null)
     {
         // Add logging support (providers configured by caller)
         services.AddLogging();
@@ -46,6 +49,8 @@ public static class ServiceCollectionExtensions
 
         // Reporter factory - Singleton as it's stateless
         services.AddSingleton<IReporterFactory, ReporterFactory>();
+
+        configure?.Invoke(services);
 
         return services;
     }
