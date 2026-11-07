@@ -230,7 +230,7 @@ class Program
             .ShouldBeEmpty();
     }
 
-    private static IEnumerable<Mutation> GetMutations(string source)
+    private static IEnumerable<CsharpMutation> GetMutations(string source)
     {
         var statements = CSharpSyntaxTree
             .ParseText(source)
@@ -242,7 +242,7 @@ class Program
         return statements.SelectMany(statement => target.ApplyMutations(statement, null));
     }
 
-    private static void AssertDefaultReturn(Mutation mutation)
+    private static void AssertDefaultReturn(CsharpMutation mutation)
     {
         var block = mutation.ReplacementNode.ShouldBeOfType<BlockSyntax>();
         var returnStatement = block.Statements.OfType<ReturnStatementSyntax>().ShouldHaveSingleItem();

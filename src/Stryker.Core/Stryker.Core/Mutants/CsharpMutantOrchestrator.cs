@@ -166,7 +166,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
     /// Creates a new mutant for the given mutation, mutator and context. Returns null if the mutant
     /// is a duplicate.
     /// </summary>
-    private Mutant CreateNewMutant(Mutation mutation, MutationContext context)
+    private Mutant CreateNewMutant(CsharpMutation mutation, MutationContext context)
     {
         var mutantIgnored = context.FilteredMutators?.Contains(mutation.Type) ?? false;
         return new Mutant
@@ -181,12 +181,12 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
     /// <summary>
     /// Returns true if the new mutant is a duplicate of a mutant already listed in Mutants.
     /// </summary>
-    private bool IsMutantDuplicate(IReadOnlyMutant newMutant, Mutation mutation)
+    private bool IsMutantDuplicate(IReadOnlyMutant newMutant, CsharpMutation mutation)
     {
         foreach (var mutant in Mutants)
         {
-            if (mutant.Mutation.OriginalNode != mutation.OriginalNode ||
-                !SyntaxFactory.AreEquivalent(mutant.Mutation.ReplacementNode, newMutant.Mutation.ReplacementNode))
+            if (mutant.Mutation is not CsharpMutation existing || existing.OriginalNode != mutation.OriginalNode ||
+                !SyntaxFactory.AreEquivalent(existing.ReplacementNode, mutation.ReplacementNode))
             {
                 continue;
             }

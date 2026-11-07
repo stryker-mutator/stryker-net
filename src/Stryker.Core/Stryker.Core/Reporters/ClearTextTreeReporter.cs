@@ -84,10 +84,10 @@ public class ClearTextTreeReporter : IReporter
                     _ => $"[Red][[{mutant.ResultStatus}]][/]",
                 };
 
-                var mutantLine = mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
+                var mutantLine = mutant.Mutation.Location.StartLine;
                 var mutantNode = fileNode.AddNode(status + $" {mutant.Mutation.DisplayName} on line {mutantLine}");
-                mutantNode.AddNode(Markup.Escape($"[-] {mutant.Mutation.OriginalNode}"));
-                mutantNode.AddNode(Markup.Escape($"[+] {mutant.Mutation.ReplacementNode}"));
+                mutantNode.AddNode(Markup.Escape($"[-] {mutant.Mutation.OriginalText}"));
+                mutantNode.AddNode(Markup.Escape($"[+] {mutant.Mutation.ReplacementText}"));
             }
         };
 

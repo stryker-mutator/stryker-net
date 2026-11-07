@@ -18,11 +18,11 @@ public abstract class MutatorBase<T> : IMutator where T : SyntaxNode
     /// </summary>
     /// <param name="node">The node to mutate</param>
     /// <returns>One or more mutations</returns>
-    public abstract IEnumerable<Mutation> ApplyMutations(T node, SemanticModel semanticModel);
+    public abstract IEnumerable<CsharpMutation> ApplyMutations(T node, SemanticModel semanticModel);
 
     public abstract MutationLevel MutationLevel { get; }
 
-    public IEnumerable<Mutation> Mutate(SyntaxNode node, SemanticModel semanticModel, IStrykerOptions options)
+    public IEnumerable<CsharpMutation> Mutate(SyntaxNode node, SemanticModel semanticModel, IStrykerOptions options)
     {
         if (MutationLevel <= options.MutationLevel && node is T tNode)
         {
@@ -30,6 +30,6 @@ public abstract class MutatorBase<T> : IMutator where T : SyntaxNode
             return ApplyMutations(tNode, semanticModel);
         }
 
-        return Enumerable.Empty<Mutation>();
+        return Enumerable.Empty<CsharpMutation>();
     }
 }

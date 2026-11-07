@@ -35,8 +35,9 @@ public class JsonMutant : IJsonMutant
         MutatorName = mutant.Mutation.DisplayName;
         Description = mutant.Mutation.Description;
 
-        Replacement = mutant.Mutation.ReplacementNode.ToString();
-        Location = new Location(mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan());
+        Replacement = mutant.Mutation.ReplacementText;
+        // external mutators may not provide a location: report the file start rather than failing the whole report
+        Location = new Location(mutant.Mutation.Location ?? new MutationLocation(string.Empty, 1, 1, 1, 1, 0, 0));
 
         Status = mutant.ResultStatus.ToString();
         StatusReason = mutant.ResultStatusReason;

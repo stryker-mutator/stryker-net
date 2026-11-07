@@ -81,7 +81,7 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
         };
     }
     /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
-    public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel)
     {
 
         string memberName;
@@ -109,7 +109,7 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
                 yield break;
             }
 
-            yield return new Mutation
+            yield return new CsharpMutation
             {
                 DisplayName =
                     $"Linq method mutation ({memberName}() to {SyntaxFactory.IdentifierName(replacementExpression.ToString())}())",

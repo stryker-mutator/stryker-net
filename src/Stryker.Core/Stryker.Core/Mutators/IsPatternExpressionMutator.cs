@@ -16,21 +16,21 @@ public class IsPatternExpressionMutator : MutatorBase<IsPatternExpressionSyntax>
     /// Apply mutations to all <see cref="PatternSyntax"/> inside an <see cref="IsPatternExpressionSyntax"/>.
     /// Apply mutations to the root pattern.
     /// </summary>
-    public override IEnumerable<Mutation> ApplyMutations(IsPatternExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(IsPatternExpressionSyntax node, SemanticModel semanticModel)
     {
         yield return ReverseRootPattern(node);
     }
 
-    private static Mutation ReverseRootPattern(IsPatternExpressionSyntax node) => node.Pattern switch
+    private static CsharpMutation ReverseRootPattern(IsPatternExpressionSyntax node) => node.Pattern switch
     {
-        UnaryPatternSyntax notPattern => new Mutation
+        UnaryPatternSyntax notPattern => new CsharpMutation
         {
             OriginalNode = node,
             ReplacementNode = node.WithCleanTrivia().WithPattern(notPattern.WithCleanTrivia().Pattern),
             Type = Mutator.Equality,
             DisplayName = "Equality mutation"
         },
-        _ => new Mutation
+        _ => new CsharpMutation
         {
             OriginalNode = node,
             ReplacementNode = node.WithCleanTrivia().WithPattern(SyntaxFactory.UnaryPattern(node.Pattern.WithLeadingTrivia(SyntaxFactory.Space).WithoutTrailingTrivia())),

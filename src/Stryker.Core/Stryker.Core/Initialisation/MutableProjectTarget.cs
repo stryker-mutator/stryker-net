@@ -4,8 +4,10 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using Buildalyzer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -45,13 +47,22 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
         return true;
     }
 
+    private static ProjectComponentsBuilder DefaultCsharpBuilderFactory(SourceProjectInfo projectInfo, IStrykerOptions options,
+        string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) =>
+        new CsharpProjectComponentsBuilder(projectInfo, options, foldersToExclude, logger, fileSystem);
+
+    private static string LanguageNotEnabledMessage(Language language, string projectPath) =>
+        language == Language.Fsharp
+            ? $"F# support is experimental and not yet enabled. Project '{projectPath}' cannot be mutated."
+            : $"Project '{projectPath}' uses a language Stryker cannot mutate ({language}). Only C# projects can be mutated.";
+
     /// <summary>
     /// Builds a <see cref="SourceProjectInfo"/> instance describing a project its associated test project(s)
     /// </summary>
     /// <param name="options">Stryker options</param>
     /// <param name="fileSystem">filesystem</param>
     /// <returns></returns>
-    public SourceProjectInfo BuildSourceProjectInfo(IStrykerOptions options, IFileSystem fileSystem )
+    public SourceProjectInfo BuildSourceProjectInfo(IStrykerOptions options, IFileSystem fileSystem, IServiceProvider serviceProvider = null)
     {
         var testProjectInfo = new TestProjectsInfo(fileSystem)
         {
@@ -61,10 +72,15 @@ internal class MutableProjectTarget(IAnalyzerResult target, ILogger logger)
 
         var language = targetProjectInfo.AnalyzerResult.GetLanguage();
 
-        var builder = language == Language.Csharp
-            ? new CsharpProjectComponentsBuilder(targetProjectInfo, options, FoldersToExclude, logger,
-                fileSystem)
-            : throw new NotSupportedException($"Language not supported: {language}");
+        // Languages other than C# are enabled by registering their keyed builder factory (see Stryker.Fsharp)
+        var builderFactory = (serviceProvider as IKeyedServiceProvider)?.GetKeyedService<ProjectComponentsBuilderFactory>(language)
+            ?? (language == Language.Csharp ? DefaultCsharpBuilderFactory : null);
+        if (builderFactory is null)
+        {
+            throw new InputException(LanguageNotEnabledMessage(language, ProjectTarget.ProjectFilePath));
+        }
+
+        var builder = builderFactory(targetProjectInfo, options, FoldersToExclude, logger, fileSystem);
 
         var inputFiles = builder.Build();
         builder.InjectHelpers(inputFiles);

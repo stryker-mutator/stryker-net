@@ -45,7 +45,7 @@ public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
 
     public override MutationLevel MutationLevel => MutationLevel.Basic;
 
-    public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(BinaryExpressionSyntax node, SemanticModel semanticModel)
     {
         // skip string additions
         if (node.Kind() == SyntaxKind.AddExpression && (node.Left.IsAStringExpression() || node.Right.IsAStringExpression()))
@@ -60,7 +60,7 @@ public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
                 var replacementNode = SyntaxFactory.BinaryExpression(mutationKind, node.Left.WithCleanTrivia(), node.Right.WithCleanTrivia());
                 // make sure the trivia stays in place for displaying
                 replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithCleanTriviaFrom(node.OperatorToken));
-                yield return new Mutation()
+                yield return new CsharpMutation()
                 {
                     OriginalNode = node,
                     ReplacementNode = replacementNode,
@@ -77,12 +77,12 @@ public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
         }
     }
 
-    private static Mutation GetLogicalMutation(BinaryExpressionSyntax node)
+    private static CsharpMutation GetLogicalMutation(BinaryExpressionSyntax node)
     {
         var replacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.EqualsExpression, node.Left.WithCleanTrivia(), node.Right.WithCleanTrivia());
         replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithCleanTriviaFrom(node.OperatorToken));
 
-        return new Mutation
+        return new CsharpMutation
         {
             OriginalNode = node,
             ReplacementNode = replacementNode,
@@ -91,11 +91,11 @@ public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
         };
     }
 
-    private static Mutation GetIntegralMutation(ExpressionSyntax node)
+    private static CsharpMutation GetIntegralMutation(ExpressionSyntax node)
     {
         var replacementNode = SyntaxFactory.PrefixUnaryExpression(SyntaxKind.BitwiseNotExpression, SyntaxFactory.ParenthesizedExpression(node));
 
-        return new Mutation
+        return new CsharpMutation
         {
             OriginalNode = node,
             ReplacementNode = replacementNode,

@@ -143,7 +143,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
         var mutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = originalNode,
             }

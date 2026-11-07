@@ -1167,10 +1167,10 @@ if(StrykerNamespace.MutantControl.IsActive(2)){;}else{Console.WriteLine((Stryker
 
         var mutants = Target.GetLatestMutantBatch().ToList();
         mutants.Count.ShouldBe(2);
-        var blockLinespan = mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan();
+        var blockLinespan = ((CsharpMutation)mutants.First().Mutation).OriginalNode.GetLocation().GetLineSpan();
         blockLinespan.StartLinePosition.Line.ShouldBe(1);
         blockLinespan.EndLinePosition.Line.ShouldBe(3);
-        mutants.Last().Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(2);
+        ((CsharpMutation)mutants.Last().Mutation).OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(2);
     }
 
     [TestMethod]
@@ -1195,12 +1195,12 @@ namespace TestApp
         var mutants = Target.GetLatestMutantBatch().ToList();
         mutants.Count.ShouldBe(7);
 
-        var blockLinespan = mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan();
+        var blockLinespan = ((CsharpMutation)mutants.First().Mutation).OriginalNode.GetLocation().GetLineSpan();
         blockLinespan.StartLinePosition.Line.ShouldBe(9);
         blockLinespan.EndLinePosition.Line.ShouldBe(11);
         foreach (var mutant in mutants.Skip(1))
         {
-            mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(10);
+            ((CsharpMutation)mutant.Mutation).OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(10);
         }
     }
 

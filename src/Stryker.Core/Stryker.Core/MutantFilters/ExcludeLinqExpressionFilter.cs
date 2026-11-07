@@ -19,9 +19,10 @@ public class ExcludeLinqExpressionFilter : IMutantFilter
     public MutantFilter Type => MutantFilter.IgnoreLinqMutation;
     public string DisplayName => "linq expression filter";
     private SyntaxTriviaRemover _triviaRemover { get; init; } = new SyntaxTriviaRemover();
+    private readonly CsharpOnlyFilterSupport _csharpOnly = new("linq expression filter");
 
     public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options) => options.ExcludedLinqExpressions.Any() ?
-                mutants.Where(m => m.Mutation.Type != Mutator.Linq || !IsIgnoreExpression(m.Mutation.OriginalNode, options)) :
+                _csharpOnly.Filter(mutants, (m, csharp) => m.Mutation.Type == Mutator.Linq && IsIgnoreExpression(csharp.OriginalNode, options)) :
                 mutants;
 
     private bool IsIgnoreExpression(SyntaxNode syntaxNode, IStrykerOptions options) =>

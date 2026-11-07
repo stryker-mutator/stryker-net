@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 using System.Text.Json;
-using Microsoft.CodeAnalysis;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Reporting;
 using System;
 
@@ -15,17 +15,17 @@ public class Location : ILocation
     {
     }
 
-    public Location(FileLinePositionSpan location)
+    public Location(MutationLocation location)
     {
         Start = new Position
         {
-            Line = location.StartLinePosition.Line + 1,
-            Column = location.StartLinePosition.Character + 1
+            Line = location.StartLine,
+            Column = location.StartColumn
         };
         End = new Position
         {
-            Line = location.EndLinePosition.Line + 1,
-            Column = location.EndLinePosition.Character + 1
+            Line = location.EndLine,
+            Column = location.EndColumn
         };
     }
 }

@@ -12,7 +12,7 @@ public class StringMethodMutator : MutatorBase<MemberAccessExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Advanced;
 
-    public override IEnumerable<Mutation> ApplyMutations(MemberAccessExpressionSyntax member, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(MemberAccessExpressionSyntax member, SemanticModel semanticModel)
     {
 
         var identifier = member.Name.Identifier.ValueText;
@@ -44,7 +44,7 @@ public class StringMethodMutator : MutatorBase<MemberAccessExpressionSyntax>
             _ => null
         };
 
-    private static Mutation ApplyReplaceMutation(MemberAccessExpressionSyntax node, string original, string replacement) =>
+    private static CsharpMutation ApplyReplaceMutation(MemberAccessExpressionSyntax node, string original, string replacement) =>
         new()
         {
             OriginalNode = node,

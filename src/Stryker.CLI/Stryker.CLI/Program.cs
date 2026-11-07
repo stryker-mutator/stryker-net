@@ -5,6 +5,7 @@ using Spectre.Console;
 using Stryker.Abstractions.Exceptions;
 using Stryker.CLI.Infrastructure;
 using Stryker.CLI.Logging;
+using Stryker.Fsharp.Infrastructure;
 using Stryker.Configuration;
 using Stryker.Core.Infrastructure;
 
@@ -21,6 +22,7 @@ public static class Program
                 .AddLogging(builder => builder.SetMinimumLevel(LogLevel.Trace))
                 .AddStrykerCore()
                 .AddStrykerCli()
+                .AddStrykerFsharp()
                 .BuildServiceProvider();
             // ensure the logger Factory instance is shared
             ApplicationLogging.LoggerFactory = services.GetRequiredService<ILoggerFactory>();

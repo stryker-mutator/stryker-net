@@ -28,7 +28,7 @@ public class AbstractMutatorTests : TestBase
             MutationLevel = mutationLevel;
         }
 
-        public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node, SemanticModel semanticModel)
+        public override IEnumerable<CsharpMutation> ApplyMutations(BinaryExpressionSyntax node, SemanticModel semanticModel)
         {
             // when this exception is thrown the test knows the method has been called by the BaseMutator
             throw new NotImplementedException();

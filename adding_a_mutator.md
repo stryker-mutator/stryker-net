@@ -36,7 +36,7 @@ A mutator:
 - You should have a look at unit test for existing mutators as it will help you write yours.
 - You should as well examine the code for mutator(s) which is/are similar to the one you plan to write.
 ### General
-Every mutator must implements the `IMutator`interface, with a single method `IEnumerable<Mutation> Mutate(SyntaxNode node, StrykerOptions options)`. The _Mutate_ method is called on every syntax element and the implementation must return an enumeration of generated mutations (or empty list if the mutator is not able to mutate the given _node_.
+Every mutator must implements the `IMutator`interface, with a single method `IEnumerable<CsharpMutation> Mutate(SyntaxNode node, SemanticModel semanticModel, IStrykerOptions options)`. The _Mutate_ method is called on every syntax element and the implementation must return an enumeration of generated mutations (or empty list if the mutator is not able to mutate the given _node_.
 
 Adding your mutator means:
 - adding a class that will implementation the mutator. It must implement `IMutator` and should inherit from `MutatorBase` (see below)

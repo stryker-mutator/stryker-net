@@ -19,7 +19,7 @@ public class RelationalPatternMutator : MutatorBase<RelationalPatternSyntax>
         [SyntaxKind.GreaterThanToken] = [SyntaxKind.LessThanToken, SyntaxKind.GreaterThanEqualsToken]
     };
 
-    public override IEnumerable<Mutation> ApplyMutations(RelationalPatternSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(RelationalPatternSyntax node, SemanticModel semanticModel)
     {
         if (!KindsToMutate.TryGetValue(node.OperatorToken.Kind(), out var mutations))
         {

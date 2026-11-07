@@ -162,6 +162,12 @@ function Run-Category {
       if (Test-Path $webApiWd) { Run-Stryker -WorkingDirectory $webApiWd } else { Write-Warn "WebApiWithOpenApi folder not found at $webApiWd" }
       break
     }
+    'Fsharp' {
+      if ($Runtime -ne 'netcore') { throw "Fsharp only supports runtime 'netcore'." }
+      $fsharpWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore\FsharpTestProject'
+      if (Test-Path $fsharpWd) { Run-Stryker -WorkingDirectory $fsharpWd } else { Write-Warn "Fsharp test project not found at $fsharpWd" }
+      break
+    }
     'Solution' {
       if ($Runtime -eq 'netcore') {
         $netcoreWd = Join-Path $RepoRoot 'integrationtest\TargetProjects\NetCore'

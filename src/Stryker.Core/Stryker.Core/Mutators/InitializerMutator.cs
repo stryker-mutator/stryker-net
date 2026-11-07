@@ -11,7 +11,7 @@ public class InitializerMutator : MutatorBase<InitializerExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-    public override IEnumerable<Mutation> ApplyMutations(InitializerExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(InitializerExpressionSyntax node, SemanticModel semanticModel)
     {
         if (node.Parent is ArrayCreationExpressionSyntax || node.Parent is ImplicitArrayCreationExpressionSyntax || node.Parent is StackAllocArrayCreationExpressionSyntax || !node.Expressions.Any())
         {
@@ -20,7 +20,7 @@ public class InitializerMutator : MutatorBase<InitializerExpressionSyntax>
 
         if (node.Kind() == SyntaxKind.ArrayInitializerExpression)
         {
-            yield return new Mutation()
+            yield return new CsharpMutation()
             {
                 OriginalNode = node,
                 ReplacementNode = SyntaxFactory.InitializerExpression(SyntaxKind.ArrayInitializerExpression).WithCleanTriviaFrom(node),

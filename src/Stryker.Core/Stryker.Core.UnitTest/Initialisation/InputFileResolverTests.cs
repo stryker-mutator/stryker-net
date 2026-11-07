@@ -177,6 +177,20 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
     }
 
     [TestMethod]
+    public void BuildSourceProjectInfo_FsharpProject_ThrowsInputException_WithProjectPath()
+    {
+        var fileSystem = BuildMockFileSystem();
+        InitializeAllMocksWithoutScanningForSourceFiles(new Dictionary<string, string>
+            { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" }, { "Language", "F#" } });
+
+        var exception = Should.Throw<InputException>(() => BuildTestResolver(fileSystem).ResolveSourceProjectInfos(_options));
+
+        exception.Message.ShouldContain(_sourceProjectFilePath);
+        exception.Message.ShouldContain("experimental");
+        exception.Message.ShouldNotContain("not supported");
+    }
+
+    [TestMethod]
     public void ShouldFailFastForUnityTestProjects()
     {
         var fileSystem = BuildMockFileSystem();

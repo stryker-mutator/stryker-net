@@ -11,7 +11,7 @@ public class StringMethodToConstantMutator : MutatorBase<InvocationExpressionSyn
 {
     public override MutationLevel MutationLevel => MutationLevel.Advanced;
 
-    public override IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(InvocationExpressionSyntax node, SemanticModel semanticModel)
     {
         if (node is not { Expression: MemberAccessExpressionSyntax member }
         || (semanticModel != null && !member.Expression.IsAStringExpression(semanticModel)))
@@ -33,7 +33,7 @@ public class StringMethodToConstantMutator : MutatorBase<InvocationExpressionSyn
         }
     }
 
-    private static Mutation ApplyReplaceWithEmptyStringMutation(SyntaxNode node, string identifier) =>
+    private static CsharpMutation ApplyReplaceWithEmptyStringMutation(SyntaxNode node, string identifier) =>
         new()
         {
             OriginalNode = node,
@@ -45,7 +45,7 @@ public class StringMethodToConstantMutator : MutatorBase<InvocationExpressionSyn
             Type = Mutator.StringMethod
         };
 
-    private static Mutation ApplyReplaceWithCharMutation(SyntaxNode node, string identifier) =>
+    private static CsharpMutation ApplyReplaceWithCharMutation(SyntaxNode node, string identifier) =>
         new()
         {
             OriginalNode = node,

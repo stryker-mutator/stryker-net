@@ -25,7 +25,7 @@ public class ExcludeMutationMutantFilterTests : TestBase
         // Arrange
         var mutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 Type = Mutator.Arithmetic,
             }
