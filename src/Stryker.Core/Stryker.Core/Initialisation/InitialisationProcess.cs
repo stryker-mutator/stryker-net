@@ -105,9 +105,10 @@ public class InitialisationProcess(
         }
 
         // initial test
+        var foundTests = testRunner.GetTests(projectInfo).Count;
         _logger.LogInformation(
             "Number of tests found: {TestCount} for project {ProjectFilePath}. Initial test run started.",
-        testRunner.GetTests(projectInfo).Count,
+        foundTests,
         projectInfo.AnalyzerResult.ProjectFilePath);
 
         var result = await _initialTestProcess.InitialTestAsync(options, projectInfo, testRunner);
@@ -132,7 +133,7 @@ public class InitialisationProcess(
                 throw new InputException("Initial testrun has failing tests.", result.Result.ResultMessage);
             }
 
-            if (throwIfFails && (double)failingTestsCount / result.Result.ExecutedTests.Count >= .5)
+            if (throwIfFails && (double)failingTestsCount / foundTests >= .5)
             {
                 throw new InputException("Initial testrun has more than 50% failing tests.",
                         result.Result.ResultMessage);
