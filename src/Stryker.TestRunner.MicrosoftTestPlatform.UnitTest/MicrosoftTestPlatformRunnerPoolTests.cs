@@ -545,6 +545,32 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         harness.ReusedCaptures.ShouldBeEmpty();
     }
 
+    [TestMethod]
+    [DataRow(OptimizationModes.CoverageBasedTest, "Per-test coverage capture complete: 2 tests captured (0 dubious)")]
+    [DataRow(OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest,
+        "Per-test-in-isolation coverage capture complete: 2 tests captured (0 dubious)")]
+    public void CaptureCoverage_ShouldLogProgress_WhileCapturingTestByTest(OptimizationModes mode, string completeMessage)
+    {
+        // Arrange - every capture takes a full progress interval, so each one is reported.
+        var time = new ManualTimeProvider();
+        var logger = new ListLogger();
+        var harness = new IsolatedCoverageHarness(
+            mode,
+            assemblies: new Dictionary<string, string[]> { ["assembly.dll"] = ["test-1", "test-2"] },
+            isolatedCoverage: _ => [1],
+            logger: logger,
+            timeProvider: time,
+            afterEachCapture: () => time.Advance(MicrosoftTestPlatformRunnerPool.CaptureProgressInterval));
+
+        // Act
+        harness.Pool.CaptureCoverage(harness.Project).ToList();
+
+        // Assert
+        logger.Messages.ShouldContain("Captured coverage for 1/2 tests (0 dubious)");
+        logger.Messages.ShouldContain("Captured coverage for 2/2 tests (0 dubious)");
+        logger.Messages.ShouldContain(completeMessage);
+    }
+
     /// <summary>
     /// Builds a pool backed by <see cref="TestableRunner"/>s with a pre-populated discovery result, and
     /// records which capture path each test went through.
@@ -563,7 +589,10 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
             Dictionary<string, string[]> assemblies,
             Func<string, int[]> isolatedCoverage,
             string[]? undescribedTests = null,
-            int concurrency = 1)
+            int concurrency = 1,
+            ILogger? logger = null,
+            TimeProvider? timeProvider = null,
+            Action? afterEachCapture = null)
         {
             var testsByAssembly = new Dictionary<string, List<TestNode>>();
             foreach (var (assembly, testUids) in assemblies)
@@ -615,12 +644,14 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
                             coverageHandler: (_, _, testId) =>
                             {
                                 ReusedCaptures.Add(testId);
+                                afterEachCapture?.Invoke();
                                 return Task.FromResult<ICoverageRunResult>(CoverageRunResult.Create(
                                     testId, CoverageConfidence.Normal, [], [], []));
                             },
                             isolatedCoverageHandler: (assembly, _, testId) =>
                             {
                                 IsolatedCaptures.Add((assembly, testId));
+                                afterEachCapture?.Invoke();
                                 return Task.FromResult<ICoverageRunResult>(CoverageRunResult.Create(
                                     testId, CoverageConfidence.Exact, isolatedCoverage(testId), [], []));
                             });
@@ -630,7 +661,7 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
             project.Setup(x => x.GetTestAssemblies()).Returns(assemblies.Keys.ToList());
             Project = project.Object;
 
-            Pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance, runnerFactory.Object);
+            Pool = new MicrosoftTestPlatformRunnerPool(options.Object, logger ?? NullLogger.Instance, runnerFactory.Object, timeProvider);
         }
 
         public string IdOf(string testUid) => _descriptions[testUid].Id;

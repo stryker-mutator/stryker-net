@@ -33,15 +33,21 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     private readonly object _discoveryLock = new();
     private readonly ISingleRunnerFactory _runnerFactory;
     private readonly IStrykerOptions _options;
+    private readonly TimeProvider _timeProvider;
+
+    // How often a test-by-test coverage capture logs how far it has got.
+    internal static readonly TimeSpan CaptureProgressInterval = TimeSpan.FromSeconds(30);
 
     public IEnumerable<MicrosoftTestingPlatformRunner> Runners => _availableRunners;
 
-    public MicrosoftTestPlatformRunnerPool(IStrykerOptions options, ILogger? logger = null, ISingleRunnerFactory? runnerFactory = null)
+    public MicrosoftTestPlatformRunnerPool(IStrykerOptions options, ILogger? logger = null, ISingleRunnerFactory? runnerFactory = null,
+        TimeProvider? timeProvider = null)
     {
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<MicrosoftTestPlatformRunnerPool>();
         _options = options;
         _countOfRunners = Math.Max(1, options.Concurrency);
         _runnerFactory = runnerFactory ?? new DefaultRunnerFactory();
+        _timeProvider = timeProvider ?? TimeProvider.System;
         _logger.LogWarning("The Microsoft Test Platform testrunner is currently in preview. Results should be verified since this feature is still being tested.");
 
         Initialize();
@@ -221,6 +227,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
                 allTests.Count, _testsByAssembly.Count);
 
             var results = new ConcurrentBag<ICoverageRunResult>();
+            var progress = new CoverageCaptureProgress(_logger, allTests.Count, CaptureProgressInterval, _timeProvider);
 
             Parallel.ForEach(allTests, new ParallelOptions { MaxDegreeOfParallelism = _countOfRunners }, testInfo =>
             {
@@ -228,9 +235,11 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
                         runner.RunSingleTestForCoverageInReusedProcessAsync(testInfo.Assembly, testInfo.Test, testInfo.TestId))
                     .GetAwaiter().GetResult();
                 results.Add(result);
+                progress.Add(result);
             });
 
-            _logger.LogInformation("Per-test coverage capture complete: {TestCount} tests captured", results.Count);
+            _logger.LogInformation("Per-test coverage capture complete: {TestCount} tests captured ({DubiousCount} dubious)",
+                results.Count, progress.Dubious);
 
             return results;
         }
@@ -280,6 +289,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
                 allTests.Count, _testsByAssembly.Count);
 
             var results = new ConcurrentBag<ICoverageRunResult>();
+            var progress = new CoverageCaptureProgress(_logger, allTests.Count, CaptureProgressInterval, _timeProvider);
 
             Parallel.ForEach(allTests, new ParallelOptions { MaxDegreeOfParallelism = _countOfRunners }, testInfo =>
             {
@@ -287,9 +297,11 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
                         runner.RunSingleTestForCoverageInIsolatedProcessAsync(testInfo.Assembly, testInfo.Test, testInfo.TestId))
                     .GetAwaiter().GetResult();
                 results.Add(result);
+                progress.Add(result);
             });
 
-            _logger.LogInformation("Per-test-in-isolation coverage capture complete: {TestCount} tests captured", results.Count);
+            _logger.LogInformation("Per-test-in-isolation coverage capture complete: {TestCount} tests captured ({DubiousCount} dubious)",
+                results.Count, progress.Dubious);
 
             return results;
         }
