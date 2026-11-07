@@ -24,6 +24,8 @@ public sealed class MtpTestDescription : IFrameworkTestDescription
 
     public string Id => _testNode.Uid;
 
+    internal bool InitiallyFailed { get; set; }
+
     public ITestCase Case { get; }
 
     public int NbSubCases => Math.Max(1, _initialResults.Count);
@@ -42,4 +44,3 @@ public sealed class MtpTestDescription : IFrameworkTestDescription
 
     public void ClearInitialResult() => _initialResults.Clear();
 }
-
