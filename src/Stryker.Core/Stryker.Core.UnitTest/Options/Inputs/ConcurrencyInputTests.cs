@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
@@ -27,10 +28,12 @@ Reasons you might want to lower this setting:
     - You are running stryker in the background while doing other work | default: '{Math.Max(Environment.ProcessorCount / 2, 1)}'");
     }
 
-    [TestMethod]
-    public void WhenZeroIsPassedAsMaxConcurrentTestRunnersParam_StrykerInputExceptionShouldBeThrown()
+    [DataTestMethod]
+    [DataRow(0)]
+    [DataRow(-1)]
+    public void WhenConcurrencyIsLessThanOne_StrykerInputExceptionShouldBeThrown(int concurrency)
     {
-        var target = new ConcurrencyInput { SuppliedInput = 0 };
+        var target = new ConcurrencyInput { SuppliedInput = concurrency };
 
         var ex = Should.Throw<InputException>(() => target.Validate(_loggerMock.Object));
 
@@ -73,14 +76,44 @@ Reasons you might want to lower this setting:
         _loggerMock.VerifyNoOtherCalls();
     }
 
-    [TestMethod]
-    public void WhenGivenNullShouldGetDefault()
+    public static IEnumerable<object[]> EffectiveConcurrencyLogCases()
     {
-        var validatedInput = new ConcurrencyInput().Validate(_loggerMock.Object);
-
         var safeProcessorCount = Math.Max(Environment.ProcessorCount / 2, 1);
 
-        validatedInput.ShouldBe(safeProcessorCount);
-        _loggerMock.VerifyNoOtherCalls();
+        foreach (var concurrency in new[] { 1, 2, 4, 8, 16, 32 })
+        {
+            yield return new object[] { (int?)concurrency, concurrency == 1, concurrency > safeProcessorCount };
+        }
+
+        yield return new object[] { null, safeProcessorCount == 1, false };
+    }
+
+    [DataTestMethod]
+    [DynamicData(nameof(EffectiveConcurrencyLogCases), DynamicDataSourceType.Method)]
+    public void WhenEffectiveConcurrencyIsUsed_ShouldLogParallelTestSessions(int? suppliedConcurrency, bool expectSingleThreadedWarning, bool expectOverRecommendedWarning)
+    {
+        var loggerMock = new Mock<ILogger<ConcurrencyInput>>();
+        var safeProcessorCount = Math.Max(Environment.ProcessorCount / 2, 1);
+        var expectedEffectiveConcurrency = suppliedConcurrency ?? safeProcessorCount;
+
+        var validatedInput = new ConcurrencyInput { SuppliedInput = suppliedConcurrency }.Validate(loggerMock.Object);
+
+        validatedInput.ShouldBe(expectedEffectiveConcurrency);
+
+        var formattedMessage = string.Format("Stryker will use a max of {0} parallel testsessions.", expectedEffectiveConcurrency);
+        loggerMock.Verify(LogLevel.Information, formattedMessage, Times.Once);
+
+        if (expectSingleThreadedWarning)
+        {
+            loggerMock.Verify(LogLevel.Warning, "Stryker is running in single threaded mode due to concurrency being set to 1.", Times.Once);
+        }
+
+        if (expectOverRecommendedWarning)
+        {
+            formattedMessage = string.Format("Using a concurrency of {0} which is more than recommended {1} for normal system operation. This might have an impact on performance.", expectedEffectiveConcurrency, safeProcessorCount);
+            loggerMock.Verify(LogLevel.Warning, formattedMessage, Times.Once);
+        }
+
+        loggerMock.VerifyNoOtherCalls();
     }
 }
