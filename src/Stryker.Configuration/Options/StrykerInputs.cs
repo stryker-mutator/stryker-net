@@ -31,6 +31,7 @@ public interface IStrykerInputs
     IgnoreMutationsInput IgnoreMutationsInput { get; init; }
     FallbackVersionInput FallbackVersionInput { get; init; }
     IgnoreMethodsInput IgnoredMethodsInput { get; init; }
+    IgnoreMethodsEffectsInput IgnoreMethodsEffectsInput { get; init; }
     LanguageVersionInput LanguageVersionInput { get; init; }
     LogToFileInput LogToFileInput { get; init; }
     ModuleNameInput ModuleNameInput { get; init; }
@@ -108,6 +109,7 @@ public class StrykerInputs(IFileSystem? fileSystem = null)
     public ModuleNameInput ModuleNameInput { get; init; } = new();
     public MutateInput MutateInput { get; init; } = new();
     public IgnoreMethodsInput IgnoredMethodsInput { get; init; } = new();
+    public IgnoreMethodsEffectsInput IgnoreMethodsEffectsInput { get; init; } = new();
     public IgnoreMutationsInput IgnoreMutationsInput { get; init; } = new();
     public CoverageAnalysisInput CoverageAnalysisInput { get; init; } = new();
     public DisableBailInput DisableBailInput { get; set; } = new();
@@ -161,6 +163,7 @@ public class StrykerInputs(IFileSystem? fileSystem = null)
             ExcludedMutations = IgnoreMutationsInput.Validate<Mutator>(),
             ExcludedLinqExpressions = IgnoreMutationsInput.ValidateLinqExpressions(),
             IgnoredMethods = IgnoredMethodsInput.Validate(),
+            IgnoreMethodsEffects = IgnoreMethodsEffectsInput.Validate(),
             Mutate = MutateInput.Validate(),
             LanguageVersion = LanguageVersionInput.Validate(),
             OptimizationMode = CoverageAnalysisInput.Validate(testRunner) | DisableBailInput.Validate() | DisableMixMutantsInput.Validate(),

@@ -31,7 +31,7 @@ public sealed class IgnoredMethodMutantFilter : IMutantFilter
         // Check if the current node is an invocation. This will also ignore invokable properties like `Func<bool> MyProp { get;}`
         // follow the invocation chain to see if it ends with a filtered one
         InvocationExpressionSyntax invocation => MatchesAnIgnoredMethod(
-                                                     _triviaRemover.Visit(invocation.Expression).ToString(),
+                                                     CallName(invocation),
                                                      options)
                                                  || (invocation.Parent is MemberAccessExpressionSyntax &&
                                                      invocation.Parent.Parent is InvocationExpressionSyntax &&
@@ -42,7 +42,11 @@ public sealed class IgnoredMethodMutantFilter : IMutantFilter
 
         // Check if the current node is an object creation syntax (constructor invocation).
         ObjectCreationExpressionSyntax creation => MatchesAnIgnoredMethod(
-            _triviaRemover.Visit(creation.Type) + ".ctor", options),
+            _triviaRemover.Visit(creation.Type) + ".ctor", options)
+            // an argument of an ignored call, like its other arguments; only the directly enclosing call counts,
+            // not one further up a fluent chain such as `Fetch(new Options { .. }).ConfigureAwait(false)`
+            || (canGoUp && creation.Parent is ArgumentSyntax { Parent: ArgumentListSyntax { Parent: InvocationExpressionSyntax invocation } }
+                && MatchesAnIgnoredMethod(CallName(invocation), options)),
 
         ImplicitObjectCreationExpressionSyntax creation => creation.FirstAncestorOrSelf<VariableDeclarationSyntax>() != null
             && MatchesAnIgnoredMethod(
@@ -82,6 +86,17 @@ public sealed class IgnoredMethodMutantFilter : IMutantFilter
     };
 
     private static bool MatchesAnIgnoredMethod(string expressionString, IStrykerOptions options) => options.IgnoredMethods.Any(r => r.IsMatch(expressionString));
+
+    // `logger?.LogWarning(..)` names its method `.LogWarning`; prefix the receiver so a pattern that
+    // qualifies the receiver (`*logger*.Log*`) matches it like `logger.LogWarning(..)`.
+    private string CallName(InvocationExpressionSyntax invocation)
+    {
+        var name = _triviaRemover.Visit(invocation.Expression).ToString();
+        return invocation.Expression is MemberBindingExpressionSyntax
+            && invocation.Parent is ConditionalAccessExpressionSyntax conditional && conditional.WhenNotNull == invocation
+                ? _triviaRemover.Visit(conditional.Expression) + name
+                : name;
+    }
 
     /// <summary>
     /// Removes comments, whitespace, and other junk from a syntax tree.

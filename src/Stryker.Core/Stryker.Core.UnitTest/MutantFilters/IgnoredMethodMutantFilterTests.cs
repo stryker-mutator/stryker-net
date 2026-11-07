@@ -36,6 +36,7 @@ public class IgnoredMethodMutantFilterTests : TestBase
     [DataRow("SomeMethod(true).IgnoredMethod(false);", "true", true)]
     [DataRow("IgnoredMethod(x==> SomeCall(param));", "param", true)]
     [DataRow("IgnoredMethod(x==1 ? true : false);", "false", true)]
+    [DataRow("IgnoredMethod(new Foo(x==1));", "==", true)]
     public void ShouldFilterDocumentedCases(string methodCall, string anchor, bool shouldSkipMutant)
     {
         // Arrange
