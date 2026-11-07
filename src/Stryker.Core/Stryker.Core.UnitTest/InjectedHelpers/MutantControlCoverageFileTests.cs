@@ -24,6 +24,7 @@ public class MutantControlCoverageFileTests : TestBase
 {
     private const string CoverageFileEnvironmentVariable = "STRYKER_COVERAGE_FILE";
     private const string EpochFileEnvironmentVariable = "STRYKER_COVERAGE_EPOCH_FILE";
+    private const string MutantFileEnvironmentVariable = "STRYKER_MUTANT_FILE";
 
     private readonly List<Assembly> _loadedHelpers = new();
 
@@ -279,6 +280,71 @@ public class MutantControlCoverageFileTests : TestBase
         accessor.Write(0, request);
         accessor.Flush();
     }
+
+    [TestMethod]
+    public void IsActive_ShouldReadTheMutantFileWithoutGoingThroughTheViewAccessor()
+    {
+        // IsActive runs for every mutated expression on every test thread. Reading the mutant id through
+        // MemoryMappedViewAccessor.ReadInt32 acquires and releases the view's SafeBuffer on each call, an
+        // interlocked update of one ref count shared by all threads, which made instrumented code run orders
+        // of magnitude slower under parallel tests. The id has to come from a plain read of the mapped view,
+        // so once the view is set up, the accessor must not be needed anymore - and the id must still
+        // follow what the runner writes between runs.
+        var mutantFilePath = Path.Combine(Path.GetTempPath(), $"stryker-mutant-test-{Guid.NewGuid():N}.txt");
+        var previousEnvironmentValue = Environment.GetEnvironmentVariable(MutantFileEnvironmentVariable);
+        MemoryMappedViewAccessor mappedView = null;
+        IDisposable mapping = null;
+
+        try
+        {
+            WriteMutantId(mutantFilePath, 5);
+            Environment.SetEnvironmentVariable(MutantFileEnvironmentVariable, mutantFilePath);
+
+            var mutantControl = GetMutantControl(CompileMutantControl("MutantFileReader"));
+            IsActive(mutantControl, 5).ShouldBeTrue("setup: the helper should read the mutant id the runner wrote");
+            GetStaticField(mutantControl, "_mutantMmfReady").ShouldBe(true, "setup: the helper should have mapped the mutant file");
+            mappedView = (MemoryMappedViewAccessor)GetStaticField(mutantControl, "_mutantAccessor");
+            mapping = (IDisposable)GetStaticField(mutantControl, "_mutantMmf");
+
+            // Stands in for an accessor the hot path must no longer use
+            SetStaticField(mutantControl, "_mutantAccessor", new object());
+            WriteMutantId(mutantFilePath, 7);
+
+            IsActive(mutantControl, 7).ShouldBeTrue("the helper must see the id the runner wrote for the next run");
+            IsActive(mutantControl, 5).ShouldBeFalse();
+            GetStaticField(mutantControl, "_mutantMmfFailed").ShouldBe(false,
+                "the mutant id must be read from the mapped view directly, not through the view accessor");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(MutantFileEnvironmentVariable, previousEnvironmentValue);
+            // The helper keeps the file mapped for the life of the process, so undo that here or Windows
+            // won't let the file be deleted
+            if (mappedView is not null)
+            {
+                mappedView.SafeMemoryMappedViewHandle.DangerousRelease();
+                mappedView.Dispose();
+            }
+            mapping?.Dispose();
+            File.Delete(mutantFilePath);
+        }
+    }
+
+    private static void WriteMutantId(string mutantFilePath, int mutantId)
+    {
+        // As the runner does: through a mapping of its own, so a host keeping the file mapped sees the change
+        using var stream = new FileStream(mutantFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+        using var mmf = MemoryMappedFile.CreateFromFile(stream, null, sizeof(int), MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, leaveOpen: true);
+        using var accessor = mmf.CreateViewAccessor(0, sizeof(int), MemoryMappedFileAccess.Write);
+        accessor.Write(0, mutantId);
+        accessor.Flush();
+    }
+
+    private static bool IsActive(Type mutantControl, int mutantId) =>
+        (bool)mutantControl.GetMethod("IsActive")!.Invoke(null, new object[] { mutantId })!;
+
+    private static object GetStaticField(Type mutantControl, string name) =>
+        mutantControl.GetField(name, BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null);
 
     private static int ReadEpochAck(string relayFilePath)
     {
