@@ -47,17 +47,21 @@ public class ProjectMutator : IProjectMutator
     {
         var unitTests = initialTestRun.Result.TestDescriptions.Select(desc => desc.Case);
 
+        // TestFiles is recomputed (and its distinct hashing reads every test file source) on each access
+        var testFiles = testProjectsInfo.TestFiles.ToList();
+        var testFilesByPath = testFiles.ToLookup(tf => tf.FilePath);
+
         foreach (var unitTest in unitTests)
         {
             // Primary: use location info when the framework provides it (e.g. XUnit v3, TUnit)
             if (unitTest.LineNumber != Stryker.Abstractions.Testing.ITestCase.LineNumberNotFound
-                && TryAddTestByLineNumber(unitTest, testProjectsInfo))
+                && TryAddTestByLineNumber(unitTest, testFilesByPath))
             {
                 continue;
             }
 
             // Fallback: search by method name when location info is missing (e.g. NUnit and MSTest with MTP)
-            var (testFile, node) = FindTestMethodByName(unitTest, testProjectsInfo.TestFiles);
+            var (testFile, node) = FindTestMethodByName(unitTest, testFiles);
             if (testFile is not null && node is not null)
             {
                 testFile.AddTest(unitTest.Id, unitTest.FullyQualifiedName, node);
@@ -69,14 +73,14 @@ public class ProjectMutator : IProjectMutator
         }
     }
 
-    private static bool TryAddTestByLineNumber(Stryker.Abstractions.Testing.ITestCase unitTest, ITestProjectsInfo testProjectsInfo)
+    private static bool TryAddTestByLineNumber(Stryker.Abstractions.Testing.ITestCase unitTest, ILookup<string, ITestFile> testFilesByPath)
     {
         if (Path.GetExtension(unitTest.CodeFilePath) != ".cs")
         {
             return false;
         }
 
-        var testFile = testProjectsInfo.TestFiles.SingleOrDefault(tf => tf.FilePath == unitTest.CodeFilePath);
+        var testFile = testFilesByPath[unitTest.CodeFilePath].SingleOrDefault();
         if (testFile is null)
         {
             return false;
