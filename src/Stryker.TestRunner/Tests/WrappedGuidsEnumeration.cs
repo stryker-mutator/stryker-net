@@ -1,43 +1,30 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Stryker.Abstractions.Testing;
 
 namespace Stryker.TestRunner.Tests;
 
-public class WrappedIdentifierEnumeration : ITestIdentifiers
+/// <summary>
+/// Wraps an enumeration of test identifiers into an ITestIdentifiers implementation. This allows for event passing
+/// and test results processing with limited allocation and performance overhead.
+/// </summary>
+/// <param name="identifiers">list of test identifiers</param>
+public class WrappedIdentifierEnumeration(IEnumerable<string> identifiers) : ITestIdentifiers
 {
-    private readonly IEnumerable<string> _identifiers;
+    public int Count => identifiers.Count();
 
-    public int Count => _identifiers.Count();
+    public bool IsEmpty => !identifiers.Any();
 
-    public bool IsEmpty => _identifiers is null || !_identifiers.Any();
-
+    /// <summary>
+    /// Always returns false, as this implementation is meant to represent a specific enumeration of identifiers.
+    /// </summary>
     public bool IsEveryTest => false;
 
-    public ITestIdentifiers Merge(ITestIdentifiers other) => MergeList(this, other);
+    public bool Contains(string testId) => identifiers.Any(g => g == testId);
 
-    public bool Contains(string testId) => _identifiers.Any(g => g == testId);
+    public bool ContainsAny(ITestIdentifiers other) => identifiers.Any(other.Contains);
 
-    public bool ContainsAny(ITestIdentifiers other) => _identifiers.Any(other.Contains);
+    public bool IsIncludedIn(ITestIdentifiers other) => identifiers.All(other.Contains);
 
-    public bool IsIncludedIn(ITestIdentifiers other) => _identifiers.All(other.Contains);
-
-    public WrappedIdentifierEnumeration(IEnumerable<string> identifiers) => _identifiers = identifiers;
-
-    public static ITestIdentifiers MergeList(ITestIdentifiers a, ITestIdentifiers b)
-    {
-        if (a.GetIdentifiers() is null)
-        {
-            return b;
-        }
-
-        return b.GetIdentifiers() is null ? a : new WrappedIdentifierEnumeration(a.GetIdentifiers().Union(b.GetIdentifiers()));
-    }
-
-    public IEnumerable<string> GetIdentifiers() => _identifiers;
-
-    public ITestIdentifiers Intersect(ITestIdentifiers other) => IsEveryTest ? new WrappedIdentifierEnumeration(other.GetIdentifiers()) : new WrappedIdentifierEnumeration(_identifiers.Intersect(other.GetIdentifiers()));
-
-    public ITestIdentifiers Excluding(ITestIdentifiers testsToSkip) => throw new NotImplementedException();
+    public IEnumerable<string> GetIdentifiers() => identifiers;
 }

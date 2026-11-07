@@ -121,7 +121,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     public async Task ResetServerAsync()
     {
         _logger.LogDebug("{RunnerId}: Resetting test servers to reload assemblies", RunnerId);
-        
+
         lock (_serverLock)
         {
             foreach (var server in _assemblyServers.Values)
@@ -130,7 +130,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             }
             _assemblyServers.Clear();
         }
-        
+
         _logger.LogDebug("{RunnerId}: Test servers reset complete", RunnerId);
         await Task.CompletedTask;
     }
@@ -937,13 +937,13 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         _logger.LogDebug("{RunnerId}: Test run timed out for {Assembly}", RunnerId, Path.GetFileName(assembly));
 
         allTimedOutTests.AddRange(discoveredTests.Select(t => t.Uid));
-        
+
         AssemblyTestServer? server;
         lock (_serverLock)
         {
             _assemblyServers.TryGetValue(assembly, out server);
         }
-        
+
         if (server is not null)
         {
             _logger.LogDebug("{RunnerId}: Restarting test server for {Assembly} after timeout", RunnerId, Path.GetFileName(assembly));
@@ -1027,11 +1027,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         public ITestIdentifiers BuildExecutedTests() =>
             _totalDiscoveredTests > 0 && _totalExecutedTests >= _totalDiscoveredTests
                 ? TestIdentifierList.EveryTest()
-                : new TestIdentifierList(_executedTests);
+                : new WrappedIdentifierEnumeration(_executedTests);
 
-        public ITestIdentifiers BuildFailedTests() => new TestIdentifierList(_failedTests);
+        public ITestIdentifiers BuildFailedTests() => new WrappedIdentifierEnumeration(_failedTests);
 
-        public ITestIdentifiers BuildTimedOutTests() => new TestIdentifierList(TimedOutTests);
+        public ITestIdentifiers BuildTimedOutTests() => new WrappedIdentifierEnumeration(TimedOutTests);
 
         public string BuildErrorMessage() => string.Join(Environment.NewLine, _errorMessages);
 
@@ -1312,10 +1312,10 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             ? TestIdentifierList.EveryTest()
             : new TestIdentifierList(finishedTests.Select(x => x.Node.Uid));
 
-        var failedTestIds = new TestIdentifierList(failedTests);
-        var timedOutTestIds = timedOutTests.Count == 0
+        var failedTestIds = new WrappedIdentifierEnumeration(failedTests);
+        ITestIdentifiers timedOutTestIds = timedOutTests.Count == 0
             ? TestIdentifierList.NoTest()
-            : new TestIdentifierList(timedOutTests);
+            : new WrappedIdentifierEnumeration(timedOutTests);
 
         IEnumerable<MtpTestDescription> testDescriptionValues;
         lock (_discoveryLock)

@@ -697,7 +697,7 @@ public class MicrosoftTestingPlatformRunnerTests
     private static Func<TestNode, bool>? InvokeBuildTestUidFilter(IReadOnlyList<IMutant>? mutants) =>
         MicrosoftTestingPlatformRunner.BuildTestUidFilter(mutants);
 
-    private static Mock<IMutant> MockMutant(int id, ITestIdentifiers assessingTests)
+    private static Mock<IMutant> MockMutant(int id, ITestIdentifierSet assessingTests)
     {
         var mutant = new Mock<IMutant>();
         mutant.Setup(x => x.Id).Returns(id);
