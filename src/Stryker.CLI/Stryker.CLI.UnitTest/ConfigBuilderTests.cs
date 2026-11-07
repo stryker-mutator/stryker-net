@@ -189,6 +189,7 @@ public class ConfigBuilderTests
         inputs.Setup(x => x.ConcurrencyInput).Returns(new ConcurrencyInput());
         inputs.Setup(x => x.SolutionInput).Returns(new SolutionInput());
         inputs.Setup(x => x.ConfigurationInput).Returns(new ConfigurationInput());
+        inputs.Setup(x => x.BuildPropertiesInput).Returns(new BuildPropertiesInput());
         inputs.Setup(x => x.SourceProjectNameInput).Returns(new SourceProjectNameInput());
         inputs.Setup(x => x.TestProjectsInput).Returns(new TestProjectsInput());
         inputs.Setup(x => x.MsBuildPathInput).Returns(new MsBuildPathInput());

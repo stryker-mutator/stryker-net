@@ -4,7 +4,6 @@ using System.Linq;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Abstractions.Options;
 
 namespace Stryker.Utilities.Buildalyzer;
 
@@ -13,43 +12,47 @@ public static class IAnalyzerResultCSharpExtensions
     private const string InterceptorsNamespacesKey = "InterceptorsNamespaces";
     private const string InterceptorsPreviewNamespacesKey = "InterceptorsPreviewNamespaces";
 
-    public static CSharpCompilationOptions GetCompilationOptions(this IAnalyzerResult analyzerResult)
+    extension(IAnalyzerResult analyzerResult)
     {
-        var compilationOptions = new CSharpCompilationOptions(analyzerResult.GetOutputKind())
-            .WithNullableContextOptions(analyzerResult.GetNullableContextOptions())
-            .WithAllowUnsafe(analyzerResult.GetPropertyOrDefault("AllowUnsafeBlocks", true))
-            .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
-            .WithConcurrentBuild(true)
-            .WithModuleName(analyzerResult.GetAssemblyName())
-            .WithOverflowChecks(analyzerResult.GetPropertyOrDefault("CheckForOverflowUnderflow", false))
-            .WithSpecificDiagnosticOptions(analyzerResult.GetDiagnosticOptions())
-            .WithWarningLevel(analyzerResult.GetWarningLevel());
-
-        if (analyzerResult.IsSignedAssembly() && analyzerResult.GetAssemblyOriginatorKeyFile() is { } keyFile)
+        public CSharpCompilationOptions GetCompilationOptions()
         {
-            compilationOptions = compilationOptions.WithCryptoKeyFile(keyFile)
-                .WithStrongNameProvider(new DesktopStrongNameProvider())
-                .WithDelaySign(analyzerResult.IsDelayedSignedAssembly());
-        }
-        return compilationOptions;
-    }
+            var compilationOptions = new CSharpCompilationOptions(analyzerResult.GetOutputKind())
+                .WithNullableContextOptions(analyzerResult.GetNullableContextOptions())
+                .WithAllowUnsafe(analyzerResult.GetPropertyOrDefault("AllowUnsafeBlocks", true))
+                .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
+                .WithConcurrentBuild(true)
+                .WithModuleName(analyzerResult.GetAssemblyName())
+                .WithOverflowChecks(analyzerResult.GetPropertyOrDefault("CheckForOverflowUnderflow", false))
+                .WithSpecificDiagnosticOptions(analyzerResult.GetDiagnosticOptions())
+                .WithWarningLevel(analyzerResult.GetWarningLevel());
 
-    public static CSharpParseOptions GetParseOptions(this IAnalyzerResult analyzerResult)
-    {
-        var parseOptions = new CSharpParseOptions(
-            documentationMode: DocumentationMode.None,
-            preprocessorSymbols: analyzerResult.PreprocessorSymbols);
-        var version = analyzerResult.GetProperty("LangVersion");
-        if (!string.IsNullOrWhiteSpace(version) && LanguageVersionFacts.TryParse(version, out var parsedVersion))
-        {
-            parseOptions = parseOptions.WithLanguageVersion(parsedVersion);
+            if (analyzerResult.IsSignedAssembly() && analyzerResult.GetAssemblyOriginatorKeyFile() is { } keyFile)
+            {
+                compilationOptions = compilationOptions.WithCryptoKeyFile(keyFile)
+                    .WithStrongNameProvider(new DesktopStrongNameProvider())
+                    .WithDelaySign(analyzerResult.IsDelayedSignedAssembly());
+            }
+            return compilationOptions;
         }
 
-        return parseOptions.WithFeatures(ExtractCSharpFeatures(analyzerResult));
-    }
+        public CSharpParseOptions GetParseOptions() =>
+            new CSharpParseOptions(analyzerResult.GetLanguageVersion(),
+                DocumentationMode.None,
+                preprocessorSymbols: analyzerResult.PreprocessorSymbols
+            ).WithFeatures(ExtractCSharpFeatures(analyzerResult));
 
-    public static CSharpParseOptions GetParseOptions(this IAnalyzerResult analyzerResult, IStrykerOptions _) =>
-        analyzerResult.GetParseOptions();
+        private LanguageVersion GetLanguageVersion()
+        {
+            var version = analyzerResult.GetProperty("LangVersion");
+            return !string.IsNullOrWhiteSpace(version) && LanguageVersionFacts.TryParse(version, out var parsedVersion)
+                ? parsedVersion
+                : LanguageVersion.Default;
+        }
+
+        private NullableContextOptions GetNullableContextOptions() =>
+            Enum.TryParse(analyzerResult.GetPropertyOrDefault("Nullable", "disable"), true,
+                out NullableContextOptions nullableOptions) ? nullableOptions : NullableContextOptions.Disable;
+    }
 
     /// <summary>
     /// The Features MSBuild property is an internal Roslyn mechanism that passes a key-value dictionary directly to CSharpParseOptions.WithFeatures().
@@ -97,11 +100,5 @@ public static class IAnalyzerResultCSharpExtensions
         }
 
         return features;
-    }
-
-    private static NullableContextOptions GetNullableContextOptions(this IAnalyzerResult analyzerResult)
-    {
-        Enum.TryParse(analyzerResult.GetPropertyOrDefault("Nullable", "disable"), true, out NullableContextOptions nullableOptions);
-        return nullableOptions;
     }
 }

@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Core.Compiling;
 using Stryker.Core.MutantFilters;
@@ -68,8 +68,31 @@ public class CsharpMutationProcess : IMutationProcess
         var projectInfo = (ProjectComponent)info.ProjectContents;
         using var ms = new MemoryStream();
         using var msForSymbols = _options.DiagMode ? new MemoryStream() : null;
-        // compile the mutated syntax trees
-        var compileResult = compilingProcess.Compile(ms, msForSymbols);
+        // compile the mutated syntax trees1
+        CompilingProcessResult compileResult;
+        try
+        {
+            compileResult = compilingProcess.Compile(ms, msForSymbols);
+        }
+        catch (Exception)
+        {
+            // mark all mutants as CompileError if the compilation failed
+            foreach (var mutant in projectInfo.Mutants.Where(x => x.ResultStatus != MutantStatus.Ignored))
+            {
+                mutant.ResultStatus = MutantStatus.CompileError;
+                mutant.ResultStatusReason = "Stryker failed to compile the mutated project";
+            }
+
+            throw;
+        }
+        finally
+        {
+            // ensure we keep track of any compilation problems, even if the compilation was successful
+            foreach (var problem in compilingProcess.Problems)
+            {
+                input.SourceProjectInfo.LogError(problem);
+            }
+        }
 
         foreach (var testProject in info.TestProjectsInfo.AnalyzerResults)
         {
