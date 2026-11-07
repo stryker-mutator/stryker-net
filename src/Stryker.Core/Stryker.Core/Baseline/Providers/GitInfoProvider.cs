@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
@@ -16,7 +17,7 @@ public class GitInfoProvider : IGitInfoProvider
 
     public IRepository Repository { get; }
 
-    public string RepositoryPath => _repositoryPath ?? LibGit2Sharp.Repository.Discover(_options.ProjectPath)?.Split(".git")[0];
+    public string RepositoryPath => _repositoryPath ?? RemoveEndingGit(LibGit2Sharp.Repository.Discover(_options.ProjectPath));
 
     public GitInfoProvider(IStrykerOptions options, IRepository repository = null, string repositoryPath = null, ILogger<GitInfoProvider> logger = null)
     {
@@ -32,10 +33,24 @@ public class GitInfoProvider : IGitInfoProvider
         Repository = repository ?? CreateRepository();
     }
 
+    private static string RemoveEndingGit(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return fileName;
+        }
+
+        if (fileName[^1]=='\\' || fileName[^1]=='/')
+        {
+            fileName = fileName[..^1];
+        }
+        return Path.GetExtension(fileName) == ".git" ? fileName[..^4] : fileName;
+    }
+
     public string GetCurrentBranchName()
     {
         string branchName = null;
-        if (Repository?.Branches?.FirstOrDefault(b => b.IsCurrentRepositoryHead) is var identifiedBranch && identifiedBranch is { })
+        if (Repository?.Branches?.FirstOrDefault(b => b.IsCurrentRepositoryHead) is { } identifiedBranch)
         {
             _logger.LogDebug("{BranchName} identified as current branch", identifiedBranch.FriendlyName);
             branchName = identifiedBranch.FriendlyName;
@@ -55,26 +70,10 @@ public class GitInfoProvider : IGitInfoProvider
     }
 
     public Commit DetermineCommit()
-    {
-        var commit = GetTargetCommit();
-
-        if (commit == null)
-        {
-            throw new InputException($"No branch or tag or commit found with given target {_options.SinceTarget}. Please provide a different GitDiffTarget.");
-        }
-
-        return commit;
-    }
+        => GetTargetCommit() ?? throw new InputException($"No branch or tag or commit found with given target {_options.SinceTarget}. Please provide a different GitDiffTarget.");
 
     private IRepository CreateRepository()
-    {
-        if (string.IsNullOrEmpty(RepositoryPath))
-        {
-            throw new InputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the 'since' feature.");
-        }
-
-        return new Repository(RepositoryPath);
-    }
+        => string.IsNullOrEmpty(RepositoryPath) ? throw new InputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the 'since' feature.") : new Repository(RepositoryPath);
 
     private Commit GetTargetCommit()
     {
