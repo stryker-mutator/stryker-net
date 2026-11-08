@@ -133,9 +133,14 @@ public class InitialisationProcess(
                 throw new InputException("Initial testrun has failing tests.", result.Result.ResultMessage);
             }
 
+            if (result.Result.ExecutedTests.Count != 0)
+            {
+                foundTests = result.Result.ExecutedTests.Count;
+            }
+
             if (throwIfFails && (double)failingTestsCount / foundTests >= .5)
             {
-                throw new InputException("Initial testrun has more than 50% failing tests.",
+                throw new InputException("Initial testrun has 50% or more failing tests.",
                         result.Result.ResultMessage);
             }
 
