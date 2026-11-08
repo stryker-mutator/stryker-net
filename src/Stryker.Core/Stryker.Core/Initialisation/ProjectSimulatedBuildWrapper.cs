@@ -36,7 +36,7 @@ public class ProjectSimulatedBuildWrapper
         ProjectsTracker projectsTracker)
     {
         _buildLogger = new StringWriter();
-        var manager = buildalyzerProvider.Provide(new AnalyzerManagerOptions{LogWriter = _buildLogger});
+        var manager = buildalyzerProvider.Provide(new AnalyzerManagerOptions{LogWriter = TextWriter.Synchronized(_buildLogger)});
         var analyzer = manager.GetProject(projectFile);
 
         _analyzer = analyzer;
