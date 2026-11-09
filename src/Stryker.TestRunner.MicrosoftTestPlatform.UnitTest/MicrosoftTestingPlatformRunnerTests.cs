@@ -1007,6 +1007,45 @@ public class MicrosoftTestingPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_ErrorMessages_IncludeTheFailureMessageAndStackTrace()
+    {
+        using var runner = CreateRunner();
+        var failed = new TestNode(
+            "failed",
+            "MyTest",
+            "test",
+            TestNodeStates.Failed,
+            ErrorMessage: "Expected 1 but was 2",
+            ErrorStackTrace: "   at Tests.MyTest() in Tests.cs:line 42");
+
+        var result = runner.BuildTestRunResult(
+            [new TestNodeUpdate(failed, ParentUid: "root")],
+            totalDiscoveredTests: 1,
+            duration: TimeSpan.FromMilliseconds(10));
+
+        result.ResultMessage.ShouldBe(string.Join(
+            Environment.NewLine,
+            "MyTest",
+            "",
+            "State: failed",
+            "Expected 1 but was 2",
+            "   at Tests.MyTest() in Tests.cs:line 42"));
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_ErrorMessages_WithoutFailureDetails_KeepTheNameAndState()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("failed", TestNodeStates.Failed)],
+            totalDiscoveredTests: 1,
+            duration: TimeSpan.FromMilliseconds(10));
+
+        result.ResultMessage.ShouldBe($"failed{Environment.NewLine}{Environment.NewLine}State: failed");
+    }
+
+    [TestMethod, Timeout(1000)]
     public async Task RunAllTestsAsync_CrashedAssembly_ReportsRuntimeError()
     {
         // Regression: a crashed test host makes an assembly run return the failure sentinel

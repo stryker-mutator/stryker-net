@@ -1342,7 +1342,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             finishedTests
                 .Where(x => TestNodeStates.IsFailure(x.Node.ExecutionState)
                          || TestNodeStates.IsTimeout(x.Node.ExecutionState))
-                .Select(x => $"{x.Node.DisplayName}{Environment.NewLine}{Environment.NewLine}State: {x.Node.ExecutionState}"));
+                .Select(x => DescribeFailure(x.Node)));
 
         var messages = finishedTests.Select(x =>
             $"{x.Node.DisplayName}{Environment.NewLine}{Environment.NewLine}State: {x.Node.ExecutionState}");
@@ -1371,6 +1371,22 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             errorMessagesStr,
             messages,
             duration);
+    }
+
+    private static string DescribeFailure(TestNode node)
+    {
+        var lines = new List<string> { $"{node.DisplayName}{Environment.NewLine}{Environment.NewLine}State: {node.ExecutionState}" };
+        if (!string.IsNullOrWhiteSpace(node.ErrorMessage))
+        {
+            lines.Add(node.ErrorMessage);
+        }
+
+        if (!string.IsNullOrWhiteSpace(node.ErrorStackTrace))
+        {
+            lines.Add(node.ErrorStackTrace);
+        }
+
+        return string.Join(Environment.NewLine, lines);
     }
 
     public void Dispose()
