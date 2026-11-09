@@ -10,6 +10,7 @@ using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
 using Stryker.TestRunner.Results;
+using static Stryker.Abstractions.Testing.ITestRunner;
 
 namespace Stryker.TestRunner.MicrosoftTestPlatform.UnitTest;
 
@@ -1066,9 +1067,189 @@ public class MicrosoftTestingPlatformRunnerTests
             => _discovered = discovered;
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null,
+            Func<IReadOnlyCollection<TestNodeUpdate>, bool>? shouldStop = null)
             => Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>(
                 (new TestRunResult(false, "simulated test host crash"), false, _discovered));
+    }
+
+    /// <summary>
+    /// Records the stop check handed to each assembly run, without starting any server process.
+    /// </summary>
+    private sealed class StopCheckCapturingRunner : MicrosoftTestingPlatformRunner
+    {
+        public Func<IReadOnlyCollection<TestNodeUpdate>, bool>? CapturedShouldStop { get; private set; }
+
+        public StopCheckCapturingRunner(
+            Dictionary<string, List<TestNode>> testsByAssembly,
+            Dictionary<string, MtpTestDescription> testDescriptions,
+            TestSet testSet,
+            object discoveryLock,
+            IStrykerOptions? options)
+            : base(0, testsByAssembly, testDescriptions, testSet, discoveryLock, NullLogger.Instance, options)
+        {
+        }
+
+        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
+            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null,
+            Func<IReadOnlyCollection<TestNodeUpdate>, bool>? shouldStop = null)
+        {
+            CapturedShouldStop = shouldStop;
+            return Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>((new TestRunResult(true), false, null));
+        }
+    }
+
+    private async Task<StopCheckCapturingRunner> RunWithUpdateHandlerAsync(TestUpdateHandler? update, IStrykerOptions? options)
+    {
+        var runner = new StopCheckCapturingRunner(_testsByAssembly, _testDescriptions, _testSet, _discoveryLock, options);
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(new List<string> { "/path/to/tests.dll" });
+        var mutant = new Mock<IMutant>();
+        mutant.Setup(x => x.Id).Returns(1);
+
+        await runner.TestMultipleMutantsAsync(project.Object, null, [mutant.Object], update);
+        return runner;
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task TestMultipleMutantsAsync_StopsRun_WhenHandlerReportsFateEstablished()
+    {
+        IReadOnlyList<IMutant>? seenMutants = null;
+        ITestIdentifiers? seenFailed = null;
+        using var runner = await RunWithUpdateHandlerAsync((mutants, failed, _, _) =>
+        {
+            seenMutants = mutants;
+            seenFailed = failed;
+            return false;
+        }, options: null);
+
+        runner.CapturedShouldStop.ShouldNotBeNull();
+        var stop = runner.CapturedShouldStop!([Update("t1", TestNodeStates.Failed), Update("t2", TestNodeStates.Passed)]);
+
+        stop.ShouldBeTrue();
+        seenMutants!.Count.ShouldBe(1);
+        seenFailed!.GetIdentifiers().ShouldBe(["t1"]);
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task TestMultipleMutantsAsync_StopCheck_PassesTimedOutTestsToTheHandler()
+    {
+        ITestIdentifiers? seenTimedOut = null;
+        using var runner = await RunWithUpdateHandlerAsync((_, _, _, timedOut) =>
+        {
+            seenTimedOut = timedOut;
+            return true;
+        }, options: null);
+
+        runner.CapturedShouldStop!([Update("t1", TestNodeStates.Failed), Update("t2", TestNodeStates.TimedOut)]);
+
+        seenTimedOut!.GetIdentifiers().ShouldBe(["t2"]);
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task TestMultipleMutantsAsync_KeepsRunning_WhenHandlerWantsMoreResults()
+    {
+        using var runner = await RunWithUpdateHandlerAsync((_, _, _, _) => true, options: null);
+
+        runner.CapturedShouldStop!([Update("t1", TestNodeStates.Failed)]).ShouldBeFalse();
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task TestMultipleMutantsAsync_DoesNotBail_WhenBailIsDisabled()
+    {
+        var options = new Mock<IStrykerOptions>();
+        options.Setup(x => x.OptimizationMode).Returns(OptimizationModes.DisableBail);
+
+        using var runner = await RunWithUpdateHandlerAsync((_, _, _, _) => false, options.Object);
+
+        runner.CapturedShouldStop.ShouldBeNull();
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task TestMultipleMutantsAsync_DoesNotBail_WithoutUpdateHandler()
+    {
+        using var runner = await RunWithUpdateHandlerAsync(null, options: null);
+
+        runner.CapturedShouldStop.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// Simulates several assemblies: each one reports a single failing test update to the stop check, if any.
+    /// </summary>
+    private sealed class MultiAssemblyBailRunner : MicrosoftTestingPlatformRunner
+    {
+        private readonly HashSet<string> _failingAssemblies;
+
+        public List<string> RunAssemblies { get; } = [];
+
+        public MultiAssemblyBailRunner(
+            Dictionary<string, List<TestNode>> testsByAssembly,
+            Dictionary<string, MtpTestDescription> testDescriptions,
+            TestSet testSet,
+            object discoveryLock,
+            IEnumerable<string> failingAssemblies)
+            : base(0, testsByAssembly, testDescriptions, testSet, discoveryLock, NullLogger.Instance, null)
+        {
+            _failingAssemblies = [.. failingAssemblies];
+        }
+
+        internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
+            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null,
+            Func<IReadOnlyCollection<TestNodeUpdate>, bool>? shouldStop = null)
+        {
+            RunAssemblies.Add(assembly);
+            if (_failingAssemblies.Contains(assembly))
+            {
+                shouldStop?.Invoke([Update("t-" + assembly, TestNodeStates.Failed)]);
+            }
+
+            var discovered = new List<TestNode> { new("t-" + assembly, "T", "test", "discovered") };
+            return Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>((new TestRunResult(true), false, discovered));
+        }
+    }
+
+    private static async Task<MultiAssemblyBailRunner> RunAssembliesWithBailAsync(string[] assemblies, string[] failingAssemblies, bool handlerWantsMore)
+    {
+        var runner = new MultiAssemblyBailRunner([], [], new TestSet(), new object(), failingAssemblies);
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns(assemblies.ToList());
+        var mutant = new Mock<IMutant>();
+        mutant.Setup(x => x.Id).Returns(1);
+
+        await runner.TestMultipleMutantsAsync(project.Object, null, [mutant.Object], (_, _, _, _) => handlerWantsMore);
+        return runner;
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task TestMultipleMutantsAsync_SkipsRemainingAssemblies_WhenFateEstablishedInAnEarlierOne()
+    {
+        using var runner = await RunAssembliesWithBailAsync(["a.dll", "b.dll", "c.dll"], ["a.dll"], handlerWantsMore: false);
+
+        runner.RunAssemblies.ShouldBe(["a.dll"]);
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task TestMultipleMutantsAsync_StopsAfterTheMiddleAssembly_WhenFateEstablishedThere()
+    {
+        using var runner = await RunAssembliesWithBailAsync(["a.dll", "b.dll", "c.dll"], ["b.dll"], handlerWantsMore: false);
+
+        runner.RunAssemblies.ShouldBe(["a.dll", "b.dll"]);
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task TestMultipleMutantsAsync_RunsEveryAssembly_WhenHandlerWantsMoreResults()
+    {
+        using var runner = await RunAssembliesWithBailAsync(["a.dll", "b.dll"], ["a.dll", "b.dll"], handlerWantsMore: true);
+
+        runner.RunAssemblies.ShouldBe(["a.dll", "b.dll"]);
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task TestMultipleMutantsAsync_RunsEveryAssembly_WhenNoTestFails()
+    {
+        using var runner = await RunAssembliesWithBailAsync(["a.dll", "b.dll"], [], handlerWantsMore: false);
+
+        runner.RunAssemblies.ShouldBe(["a.dll", "b.dll"]);
     }
 
     // --- Multi-assembly test-filter tests ---
@@ -1216,7 +1397,8 @@ public class MicrosoftTestingPlatformRunnerTests
             => _perAssembly = perAssembly;
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null,
+            Func<IReadOnlyCollection<TestNodeUpdate>, bool>? shouldStop = null)
         {
             var (result, discovered) = _perAssembly[assembly];
             return Task.FromResult<(TestRunResult?, bool, List<TestNode>?)>((result, false, discovered));
@@ -1955,7 +2137,8 @@ public class MicrosoftTestingPlatformRunnerTests
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null,
+            Func<IReadOnlyCollection<TestNodeUpdate>, bool>? shouldStop = null)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
             var result = new TestRunResult(
@@ -1982,7 +2165,8 @@ public class MicrosoftTestingPlatformRunnerTests
             : base(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger) { }
 
         internal override Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
-            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null)
+            string assembly, ITimeoutValueCalculator? timeoutCalc, IReadOnlyList<IMutant>? mutants = null, Func<TestNode, bool>? testUidFilter = null,
+            Func<IReadOnlyCollection<TestNodeUpdate>, bool>? shouldStop = null)
         {
             var discoveredTests = GetDiscoveredTests(assembly);
             var result = new TestRunResult(

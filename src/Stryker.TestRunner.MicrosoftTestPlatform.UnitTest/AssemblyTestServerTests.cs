@@ -291,6 +291,60 @@ public class AssemblyTestServerTests
     }
 
     [TestMethod]
+    public async Task RunTestsAsync_WhenShouldStopReturnsTrue_CancelsRunWithoutTimeout()
+    {
+        var failed = new TestNodeUpdate(new TestNode("uid-1", "Test 1", "action", TestNodeStates.Failed), "parent");
+        var ignoredAfterStop = new TestNodeUpdate(new TestNode("uid-2", "Test 2", "action", TestNodeStates.Failed), "parent");
+        _client.Setup(client => client.RunTestsAsync(
+                It.IsAny<Func<TestNodeUpdate[], Task>>(),
+                null,
+                It.IsAny<CancellationToken>()))
+            .Returns<Func<TestNodeUpdate[], Task>, TestNode[]?, CancellationToken>(async (callback, _, cancellationToken) =>
+            {
+                await callback([failed]);
+                cancellationToken.IsCancellationRequested.ShouldBeTrue();
+                await callback([ignoredAfterStop]);
+                cancellationToken.ThrowIfCancellationRequested();
+            });
+
+        using var server = CreateServer();
+        await server.StartAsync();
+        var (results, timedOut) = await server.RunTestsAsync(null, null, _ => true);
+
+        timedOut.ShouldBeFalse();
+        results.ShouldBe([failed]);
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_WhenShouldStopReturnsFalse_KeepsRunning()
+    {
+        var failed = new TestNodeUpdate(new TestNode("uid-1", "Test 1", "action", TestNodeStates.Failed), "parent");
+        var passed = new TestNodeUpdate(new TestNode("uid-2", "Test 2", "action", TestNodeStates.Passed), "parent");
+        var stopChecks = 0;
+        _client.Setup(client => client.RunTestsAsync(
+                It.IsAny<Func<TestNodeUpdate[], Task>>(),
+                null,
+                It.IsAny<CancellationToken>()))
+            .Returns<Func<TestNodeUpdate[], Task>, TestNode[]?, CancellationToken>(async (callback, _, _) =>
+            {
+                await callback([failed]);
+                await callback([passed]);
+            });
+
+        using var server = CreateServer();
+        await server.StartAsync();
+        var (results, timedOut) = await server.RunTestsAsync(null, null, _ =>
+        {
+            stopChecks++;
+            return false;
+        });
+
+        timedOut.ShouldBeFalse();
+        results.Count.ShouldBe(2);
+        stopChecks.ShouldBe(1);
+    }
+
+    [TestMethod]
     public async Task RunTestsAsync_WhenHostCrashes_ThrowsTestHostCrashed()
     {
         _client.Setup(client => client.RunTestsAsync(
