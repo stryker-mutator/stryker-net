@@ -12,7 +12,7 @@ public sealed class MtpTestDescription : IFrameworkTestDescription
     public MtpTestDescription(TestNode testNode)
     {
         _testNode = testNode;
-        Description = new TestDescription(testNode.Uid, testNode.DisplayName, string.Empty);
+        Description = new TestDescription(testNode.Uid, testNode.DisplayName, testNode.LocationFile ?? string.Empty);
         Case = new MtpTestCase(testNode);
     }
 

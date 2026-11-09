@@ -692,14 +692,23 @@ When creating an issue on github you can include a logfile so the issue can be d
 
 *\* File logging always uses loglevel `trace`.*
 
-### `dev-mode` &lt;`flag`&gt;
+### `diag` &lt;`flag`&gt;
 
 Default: `false`  
-Command line: `--dev-mode`  
+Command line: `--diag`  
 Config file: `N/A`
 
-You should activate `dev mode` when diagnosing an issue with Stryker. This will enable additional logging, specific checks, disable some optimizations...
-As a result, Stryker will be slower, but the log file should help diagnose the hardest issues.
+You should activate `diag` mode when diagnosing an issue with Stryker. It replaces the old `dev-mode` option.
+
+When `diag` is enabled:
+* The console log level is raised to `debug` if it was lower.
+* File logging is turned on, as if `--log-to-file` was set, and the log file gets the `trace` level.
+* Stryker logs the analysis result of each project and the build log of each project that fails analysis. Projects are analyzed one at a time.
+* Stryker logs the mutated source code and the compilation errors that it rolls back.
+* If the mutated project cannot be compiled, Stryker also tries to build the project without mutations to help find the cause.
+* The output of the test host processes is added to the log.
+
+As a result, Stryker can be slower, but the log file should help diagnose the hardest issues. Attach it when you create an issue on GitHub.
 
 ## Misc
 
