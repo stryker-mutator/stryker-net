@@ -197,7 +197,7 @@ public class ProjectSimulatedBuildWrapper
         }
     }
 
-    private static string PropertyOption(string propertyName, string value) => $"-P {propertyName}={value}";
+    private static string PropertyOption(string propertyName, string value) => $"-bp {propertyName}={value}";
 
     // use analysis results to identify potential problems with this project
     public IEnumerable<string> IdentifiedProblems() => DetectNetFrameworkProblems().Union(DetectGitVersioning());
