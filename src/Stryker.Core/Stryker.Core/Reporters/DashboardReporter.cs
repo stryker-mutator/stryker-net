@@ -35,13 +35,20 @@ public class DashboardReporter : IReporter
 
     public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
     {
-        if (ShouldPublishInRealTime())
+        var publishInRealTime = ShouldPublishInRealTime();
+        if (publishInRealTime)
         {
             _dashboardClient.PublishFinished().Wait();
         }
 
         var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
-        _dashboardClient.PublishReport(mutationReport, _options.ProjectVersion).Wait();
+        var reportUri = _dashboardClient.PublishReport(mutationReport, _options.ProjectVersion).Result;
+
+        // In real-time mode the report link was already shown when the mutants were created
+        if (!publishInRealTime)
+        {
+            OpenDashboardReport(reportUri);
+        }
     }
 
     private void OpenDashboardReport(string reportUri)
