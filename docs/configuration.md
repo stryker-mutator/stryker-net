@@ -103,9 +103,14 @@ Config file: `"test-case-filter": "(FullyQualifiedName~UnitTest1&TestCategory=Ca
 
 Filter expression to run selective tests. Uses `dotnet test --filter` option syntax, [detailed here](https://docs.microsoft.com/en-us/dotnet/core/testing/selective-unit-tests). Use this option if you wish to run stryker only on a selective subset of tests from your test suite.
 
-When using Microsoft Testing Platform, the test application must expose the
-`--filter` command-line option. The current xUnit v3 and TUnit MTP runners do
-not expose this option, so `test-case-filter` cannot be used with them.
+When using Microsoft Testing Platform, the filter is passed to test applications
+that expose the `--filter` command-line option (for example MSTest and NUnit).
+For test applications that do not (for example xUnit v3 and TUnit), Stryker
+applies the filter itself to the discovered tests. It then supports the
+`FullyQualifiedName`, `Name`, `DisplayName` and `ClassName` properties with the
+`=`, `!=`, `~` and `!~` operators, combined with `&`, `|` and parentheses. A
+value without a property (`MyTests`) is read as `FullyQualifiedName~MyTests`.
+Other properties, such as traits or categories, are rejected with an error.
 
 ### `mutate` &lt;`glob[]`&gt;
 
