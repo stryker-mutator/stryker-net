@@ -41,7 +41,7 @@ namespace Stryker.TestRunner.Tests;
     public bool Contains(string testId) => IsEveryTest || _identifiers?.Contains(testId) is true;
 
     private static ITestIdentifierSet Convert(ITestIdentifiers other)
-        => other is ITestIdentifierSet set ? set : new TestIdentifierList(other);
+        => other as ITestIdentifierSet ?? new TestIdentifierList(other);
 
     public ITestIdentifierSet Intersect(ITestIdentifiers other)
     {
