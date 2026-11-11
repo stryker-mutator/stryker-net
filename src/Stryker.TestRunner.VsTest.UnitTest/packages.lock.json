@@ -511,7 +511,7 @@
           "Stryker.TestRunner.MicrosoftTestPlatform": "[5.1.0, )",
           "Stryker.TestRunner.VsTest": "[5.1.0, )",
           "Stryker.Utilities": "[5.1.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.3.0, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[23.0.0, )"
         }
       },
       "stryker.abstractions": {
@@ -523,7 +523,7 @@
           "Microsoft.CodeAnalysis.Common": "[5.9.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[18.11.1, )",
           "Serilog": "[4.4.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.3.0, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[23.0.0, )"
         }
       },
       "stryker.configuration": {
@@ -604,7 +604,7 @@
           "Stryker.DataCollector": "[5.1.0, )",
           "Stryker.TestRunner": "[5.1.0, )",
           "Stryker.Utilities": "[5.1.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[22.3.0, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[23.0.0, )"
         }
       },
       "stryker.utilities": {
@@ -935,7 +935,7 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[22.3.0, )",
+        "requested": "[23.0.0, )",
         "resolved": "23.0.0",
         "contentHash": "WfbIVmdi/Yh3eKLDzprsctUXziXVP60lPfPRrAFxR+YPT++yGpsgBsen0vC5N3HeXANCHP7xRukgn/kZcUqusg==",
         "dependencies": {
