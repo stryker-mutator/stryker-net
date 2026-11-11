@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
@@ -15,6 +17,7 @@ public static class IAnalyzerResultCSharpExtensions
 {
     private const string InterceptorsNamespacesKey = "InterceptorsNamespaces";
     private const string InterceptorsPreviewNamespacesKey = "InterceptorsPreviewNamespaces";
+    private static readonly ConcurrentDictionary<string, byte> ProjectsWarnedAboutNewerLanguageVersion = new(StringComparer.OrdinalIgnoreCase);
 
     public static CSharpCompilationOptions GetCompilationOptions(this IAnalyzerResult analyzerResult)
     {
@@ -56,11 +59,15 @@ public static class IAnalyzerResultCSharpExtensions
                 if (requestedMajorVersion > latestSupportedMajorVersion)
                 {
                     parseOptions = parseOptions.WithLanguageVersion(LanguageVersion.Preview);
-                    var logger = ApplicationLogging.LoggerFactory?.CreateLogger(nameof(IAnalyzerResultCSharpExtensions));
-                    logger?.LogWarning(
-                        "Project LangVersion {LangVersion} is newer than the C# versions supported by Stryker's compiler ({MaxVersion}); using Preview.",
-                        version,
-                        latestSupportedMajorVersion);
+                    if (ProjectsWarnedAboutNewerLanguageVersion.TryAdd(analyzerResult.ProjectFilePath ?? string.Empty, 0))
+                    {
+                        var logger = ApplicationLogging.LoggerFactory?.CreateLogger(nameof(IAnalyzerResultCSharpExtensions));
+                        logger?.LogWarning(
+                            "Project {ProjectFileName} LangVersion {LangVersion} is newer than the C# versions supported by Stryker's compiler ({MaxVersion}); using Preview.",
+                            Path.GetFileName(analyzerResult.ProjectFilePath),
+                            version,
+                            latestSupportedMajorVersion);
+                    }
                 }
             }
         }

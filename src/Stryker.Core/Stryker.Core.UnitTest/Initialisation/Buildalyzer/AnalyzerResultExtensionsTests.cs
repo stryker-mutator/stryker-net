@@ -1,13 +1,16 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Configuration.Options;
 using Stryker.Utilities.Buildalyzer;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.UnitTest.Initialisation.Buildalyzer;
 
@@ -260,6 +263,43 @@ public class AnalyzerResultExtensionsTests
             .GetDiagnostics();
 
         diagnostics.ShouldNotContain(diagnostic => diagnostic.Id == "CS8652");
+    }
+
+    [TestMethod]
+    public void GetParseOptions_ShouldWarnAboutNewerLangVersionOncePerProject()
+    {
+        var previousLoggerFactory = ApplicationLogging.LoggerFactory;
+        var loggerFactoryMock = new Mock<ILoggerFactory>();
+        var loggerMock = new Mock<ILogger>();
+        loggerFactoryMock.Setup(factory => factory.CreateLogger(It.IsAny<string>())).Returns(loggerMock.Object);
+
+        try
+        {
+            ApplicationLogging.LoggerFactory = loggerFactoryMock.Object;
+            var projectFilePath = $"Project-{Guid.NewGuid():N}.csproj";
+            var analyzerResult = CreateAnalyzerResultWithProperties(new Dictionary<string, string> { ["LangVersion"] = "15.0" });
+            Mock.Get(analyzerResult)
+                .SetupGet(result => result.ProjectFilePath)
+                .Returns(projectFilePath);
+
+            var parseOptions = Enumerable.Range(0, 3)
+                .Select(_ => analyzerResult.GetParseOptions())
+                .ToArray();
+
+            parseOptions.ShouldAllBe(options => options.SpecifiedLanguageVersion == LanguageVersion.Preview);
+            loggerMock.Verify(
+                logger => logger.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((state, _) => (state.ToString() ?? string.Empty).Contains(projectFilePath, StringComparison.Ordinal)),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.Once);
+        }
+        finally
+        {
+            ApplicationLogging.LoggerFactory = previousLoggerFactory;
+        }
     }
 
     [TestMethod]
