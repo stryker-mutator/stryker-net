@@ -162,17 +162,17 @@ public class SinceMutantFilterTests : TestBase
             new Mutant()
             {
                 Id = 1,
-                Mutation = new Mutation()
+                Mutation = new CsharpMutation()
             },
             new Mutant()
             {
                 Id = 2,
-                Mutation = new Mutation()
+                Mutation = new CsharpMutation()
             },
             new Mutant()
             {
                 Id = 3,
-                Mutation = new Mutation()
+                Mutation = new CsharpMutation()
             }
         };
 
@@ -207,19 +207,19 @@ public class SinceMutantFilterTests : TestBase
             new Mutant()
             {
                 Id = 1,
-                Mutation = new Mutation(),
+                Mutation = new CsharpMutation(),
                 ResultStatus = MutantStatus.NoCoverage
             },
             new Mutant()
             {
                 Id = 2,
-                Mutation = new Mutation(),
+                Mutation = new CsharpMutation(),
                 ResultStatus = MutantStatus.NoCoverage
             },
             new Mutant()
             {
                 Id = 3,
-                Mutation = new Mutation(),
+                Mutation = new CsharpMutation(),
                 ResultStatus = MutantStatus.NoCoverage
             }
         };

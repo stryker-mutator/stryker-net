@@ -20,10 +20,11 @@ public sealed class IgnoredMethodMutantFilter : IMutantFilter
     public string DisplayName => "method filter";
 
     private readonly SyntaxTriviaRemover _triviaRemover = new();
+    private readonly CsharpOnlyFilterSupport _csharpOnly = new("method filter");
 
         public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options) =>
             options.IgnoredMethods.Any() ?
-                    mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options)) :
+                    _csharpOnly.Filter(mutants, (_, csharp) => IsPartOfIgnoredMethodCall(csharp.OriginalNode, options)) :
                     mutants;
 
     private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, IStrykerOptions options, bool canGoUp = true) => syntaxNode switch

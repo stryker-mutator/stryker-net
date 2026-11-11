@@ -32,7 +32,8 @@ public class InputFileResolver(
     IBuildalyzerProvider analyzerProvider,
     INugetRestoreProcess nugetRestoreProcess,
     ISolutionProvider solutionProvider,
-    ILogger<InputFileResolver> logger)
+    ILogger<InputFileResolver> logger,
+    IServiceProvider serviceProvider = null)
     : IInputFileResolver
 {
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -266,7 +267,7 @@ public class InputFileResolver(
         // keep only projects with one or more test projects
         // we must select projects according to framework settings if any
         var projectInfos = suitableCandidates.Where(p => p.Targets.Count > 0)
-            .Select(analyzerResult => analyzerResult.Targets[0].BuildSourceProjectInfo(options, FileSystem))
+            .Select(analyzerResult => analyzerResult.Targets[0].BuildSourceProjectInfo(options, FileSystem, serviceProvider))
             .ToList();
 
         if (projectInfos.Count != 0)

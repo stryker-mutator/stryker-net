@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using Stryker.Abstractions;
 using Stryker.Configuration.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
@@ -65,7 +66,7 @@ namespace ExtraProject.XUnit
             new LinePosition(2, 2),
             new LinePosition(4, 5));
 
-        var jsonMutantLocation = new Core.Reporters.Json.Location(lineSpan);
+        var jsonMutantLocation = new Core.Reporters.Json.Location(MutationLocation.FromRoslyn(lineSpan, 0, 0));
 
         jsonMutantLocation.Start.Line.ShouldBe(3);
         jsonMutantLocation.Start.Column.ShouldBe(3);
@@ -80,6 +81,17 @@ namespace ExtraProject.XUnit
         var fileComponent = (CsharpFileLeaf)(folderComponent as FolderComposite).GetAllFiles().First();
 
         new SourceFile(fileComponent).Language.ShouldBe("cs");
+    }
+
+    [TestMethod]
+    public void JsonReportFileComponent_FsharpFile_ShouldHaveFsLanguage()
+    {
+        var file = new Moq.Mock<Stryker.Abstractions.ProjectComponents.IReadOnlyFileLeaf>();
+        file.Setup(f => f.RelativePath).Returns("Lib.fs");
+        file.Setup(f => f.SourceCode).Returns("module Lib");
+        file.Setup(f => f.Mutants).Returns([]);
+
+        new SourceFile(file.Object).Language.ShouldBe("fs");
     }
 
     [TestMethod]

@@ -11,11 +11,11 @@ public class ObjectCreationMutator : MutatorBase<ObjectCreationExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-    public override IEnumerable<Mutation> ApplyMutations(ObjectCreationExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(ObjectCreationExpressionSyntax node, SemanticModel semanticModel)
     {
         if (node.Initializer?.Kind() == SyntaxKind.CollectionInitializerExpression && node.Initializer.Expressions.Count > 0)
         {
-            yield return new Mutation()
+            yield return new CsharpMutation()
             {
                 OriginalNode = node,
                 ReplacementNode = node.ReplaceNode(node.Initializer, SyntaxFactory.InitializerExpression(SyntaxKind.CollectionInitializerExpression)).WithCleanTrivia(),
@@ -25,7 +25,7 @@ public class ObjectCreationMutator : MutatorBase<ObjectCreationExpressionSyntax>
         }
         if (node.Initializer?.Kind() == SyntaxKind.ObjectInitializerExpression && node.Initializer.Expressions.Count > 0)
         {
-            yield return new Mutation()
+            yield return new CsharpMutation()
             {
                 OriginalNode = node,
                 ReplacementNode = node.ReplaceNode(node.Initializer, SyntaxFactory.InitializerExpression(SyntaxKind.ObjectInitializerExpression)).WithCleanTrivia(),

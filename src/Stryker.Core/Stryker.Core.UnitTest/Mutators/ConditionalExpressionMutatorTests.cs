@@ -29,8 +29,8 @@ public class ConditionalExpressionMutatorTests : TestBase
         var result = target.ApplyMutations(originalNode, null).ToList();
 
         result.Count.ShouldBe(2, "Two mutations should have been made");
-        result.First().ShouldBeOfType<Mutation>().ReplacementNode.ShouldBeOfType<ParenthesizedExpressionSyntax>().Expression.ShouldBeOfType<ConditionalExpressionSyntax>().Condition.Kind().ShouldBe(SyntaxKind.TrueLiteralExpression);
-        result.Last().ShouldBeOfType<Mutation>().ReplacementNode.ShouldBeOfType<ParenthesizedExpressionSyntax>().Expression.ShouldBeOfType<ConditionalExpressionSyntax>().Condition.Kind().ShouldBe(SyntaxKind.FalseLiteralExpression);
+        result.First().ShouldBeOfType<CsharpMutation>().ReplacementNode.ShouldBeOfType<ParenthesizedExpressionSyntax>().Expression.ShouldBeOfType<ConditionalExpressionSyntax>().Condition.Kind().ShouldBe(SyntaxKind.TrueLiteralExpression);
+        result.Last().ShouldBeOfType<CsharpMutation>().ReplacementNode.ShouldBeOfType<ParenthesizedExpressionSyntax>().Expression.ShouldBeOfType<ConditionalExpressionSyntax>().Condition.Kind().ShouldBe(SyntaxKind.FalseLiteralExpression);
     }
 
     [TestMethod]

@@ -15,13 +15,13 @@ public sealed class CollectionExpressionMutator : MutatorBase<CollectionExpressi
     private static ExpressionElementSyntax DefaultElementSyntax =>
         ExpressionElement(LiteralExpression(SyntaxKind.DefaultLiteralExpression, Token(SyntaxKind.DefaultKeyword)));
 
-    public override IEnumerable<Mutation> ApplyMutations(CollectionExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(CollectionExpressionSyntax node, SemanticModel semanticModel)
     {
         if (node.Elements.Count > 0)
         {
             var type = semanticModel?.GetOperation(node)?.Type;
 
-            yield return new Mutation
+            yield return new CsharpMutation
             {
                 OriginalNode = node,
                 ReplacementNode = type is not null
@@ -34,7 +34,7 @@ public sealed class CollectionExpressionMutator : MutatorBase<CollectionExpressi
         }
         else
         {
-            yield return new Mutation
+            yield return new CsharpMutation
             {
                 OriginalNode    = node,
                 ReplacementNode = node.AddElements(DefaultElementSyntax),

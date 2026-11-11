@@ -19,6 +19,21 @@ namespace Stryker.Core.UnitTest.MutantFilters;
 public class IgnoredMethodMutantFilterTests : TestBase
 {
     [TestMethod]
+    public void IgnoredMethodFilter_NonCsharpMutation_IsNotFiltered()
+    {
+        var options = new StrykerOptions
+        {
+            IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "IgnoredMethod" } }.Validate()
+        };
+        var neutralOnly = new Mutant { Mutation = new Mutation { OriginalText = "IgnoredMethod(true)", ReplacementText = "IgnoredMethod(false)" } };
+        var sut = new IgnoredMethodMutantFilter();
+
+        var result = sut.FilterMutants(new[] { neutralOnly }, null, options);
+
+        result.ShouldHaveSingleItem();
+    }
+
+    [TestMethod]
         public void ShouldHaveName()
     {
         var target = new IgnoredMethodMutantFilter() as IMutantFilter;
@@ -347,7 +362,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
         var mutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = originalNode,
             }
@@ -360,7 +375,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
         var blockMutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = (BlockSyntax)baseSyntaxTree.DescendantNodes().First(t => t is BlockSyntax),
             }
@@ -442,7 +457,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
         var mutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = originalNode,
             }
@@ -503,7 +518,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
         var mutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = originalNode,
             }
@@ -571,7 +586,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
         var mutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = originalNode,
             }
@@ -615,7 +630,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
         var mutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = originalNode,
             }
@@ -650,7 +665,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
         var mutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = originalNode,
             }
@@ -681,7 +696,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
         var mutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = originalNode,
             }
@@ -716,7 +731,7 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
     }
 }";
         var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
-        var mutants = new[] { "true", @"""A Mutation""", "42"}.Select(GetOriginalNode).Select(node => new Mutant { Mutation = new Mutation { OriginalNode = node } }).ToArray();
+        var mutants = new[] { "true", @"""A Mutation""", "42"}.Select(GetOriginalNode).Select(node => new Mutant { Mutation = new CsharpMutation { OriginalNode = node } }).ToArray();
         var options = new StrykerOptions
         {
             IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "Bar" } }.Validate()
@@ -750,7 +765,7 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
     }
 }";
         var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
-        var mutants = new[] { "true", @"""A Mutation""", "42" }.Select(GetOriginalNode).Select(node => new Mutant { Mutation = new Mutation { OriginalNode = node } }).ToArray();
+        var mutants = new[] { "true", @"""A Mutation""", "42" }.Select(GetOriginalNode).Select(node => new Mutant { Mutation = new CsharpMutation { OriginalNode = node } }).ToArray();
         var options = new StrykerOptions
         {
             IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "TestMethod" } }.Validate()
@@ -788,7 +803,7 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
         {
             yield return (new Mutant
             {
-                Mutation = new Mutation
+                Mutation = new CsharpMutation
                 {
                     OriginalNode = originalNode,
                 }
@@ -800,7 +815,7 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
         {
             yield return (new Mutant
             {
-                Mutation = new Mutation
+                Mutation = new CsharpMutation
                 {
                     OriginalNode = originalNode,
                 }
@@ -812,7 +827,7 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
         {
             yield return (new Mutant
             {
-                Mutation = new Mutation
+                Mutation = new CsharpMutation
                 {
                     OriginalNode = originalNode,
                 }
@@ -825,7 +840,7 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
     {
         var mutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = FindEnclosingNode<ExpressionSyntax>(CSharpSyntaxTree.ParseText(sourceCode).GetRoot(), anchor)
             }

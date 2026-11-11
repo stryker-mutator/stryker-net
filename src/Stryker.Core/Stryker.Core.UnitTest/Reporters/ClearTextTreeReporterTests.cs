@@ -24,10 +24,13 @@ public class ClearTextTreeReporterTests : TestBase
     {
         var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
         var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
-        var mutation = new Mutation()
+        var mutation = new CsharpMutation()
         {
             OriginalNode = originalNode,
             ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+            Location = MutationLocation.FromRoslyn(originalNode),
+            OriginalText = originalNode.ToString(),
+            ReplacementText = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right).ToString(),
             DisplayName = "This name should display",
             Type = Mutator.Arithmetic
         };
@@ -142,10 +145,13 @@ All files [0/0 (N/A)]
         var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
         var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
 
-        var mutation = new Mutation()
+        var mutation = new CsharpMutation()
         {
             OriginalNode = originalNode,
             ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+            Location = MutationLocation.FromRoslyn(originalNode),
+            OriginalText = originalNode.ToString(),
+            ReplacementText = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right).ToString(),
             DisplayName = "This name should display",
             Type = Mutator.Arithmetic
         };
@@ -188,10 +194,13 @@ All files [1/1 ({1:P2})]
         var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
         var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
 
-        var mutation = new Mutation()
+        var mutation = new CsharpMutation()
         {
             OriginalNode = originalNode,
             ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+            Location = MutationLocation.FromRoslyn(originalNode),
+            OriginalText = originalNode.ToString(),
+            ReplacementText = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right).ToString(),
             DisplayName = "This name should display",
             Type = Mutator.Arithmetic
         };
@@ -234,10 +243,13 @@ All files [0/1 ({0:P2})]
         var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
         var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
 
-        var mutation = new Mutation()
+        var mutation = new CsharpMutation()
         {
             OriginalNode = originalNode,
             ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+            Location = MutationLocation.FromRoslyn(originalNode),
+            OriginalText = originalNode.ToString(),
+            ReplacementText = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right).ToString(),
             DisplayName = "This name should display",
             Type = Mutator.Arithmetic
         };
@@ -276,10 +288,13 @@ All files [0/1 ({0:P2})]
         var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
         var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
 
-        var mutation = new Mutation()
+        var mutation = new CsharpMutation()
         {
             OriginalNode = originalNode,
             ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+            Location = MutationLocation.FromRoslyn(originalNode),
+            OriginalText = originalNode.ToString(),
+            ReplacementText = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right).ToString(),
             DisplayName = "This name should display",
             Type = Mutator.Arithmetic
         };
@@ -318,10 +333,13 @@ All files [0/1 ({0:P2})]
         var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
         var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
 
-        var mutation = new Mutation()
+        var mutation = new CsharpMutation()
         {
             OriginalNode = originalNode,
             ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+            Location = MutationLocation.FromRoslyn(originalNode),
+            OriginalText = originalNode.ToString(),
+            ReplacementText = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right).ToString(),
             DisplayName = "This name should display",
             Type = Mutator.Arithmetic
         };

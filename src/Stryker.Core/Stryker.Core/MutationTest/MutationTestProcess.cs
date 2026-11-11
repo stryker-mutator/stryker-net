@@ -79,7 +79,11 @@ public class MutationTestProcess : IMutationTestProcess
         return new StrykerRunResult(_options, _projectContents.GetMutationScore());
     }
 
-    public void Restore() => Input.SourceProjectInfo.RestoreOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
+    public void Restore()
+    {
+        Input.SourceProjectInfo.RestoreOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
+        _mutationProcess.Restore(Input);
+    }
 
     private async Task TestMutantsAsync(IEnumerable<IMutant> mutantsToTest)
     {

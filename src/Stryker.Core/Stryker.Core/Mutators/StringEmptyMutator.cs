@@ -18,19 +18,19 @@ public class StringEmptyMutator : MutatorBase<ExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-    public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel) => node switch
+    public override IEnumerable<CsharpMutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel) => node switch
     {
         MemberAccessExpressionSyntax memberAccess => ApplyMutations(memberAccess),
         InvocationExpressionSyntax invocation => ApplyMutations(invocation),
         _ => []
     };
 
-    private static IEnumerable<Mutation> ApplyMutations(MemberAccessExpressionSyntax node)
+    private static IEnumerable<CsharpMutation> ApplyMutations(MemberAccessExpressionSyntax node)
     {
         if (IsAccessToStringPredefinedType(node.Expression) &&
             node.Name.Identifier.ValueText == nameof(string.Empty))
         {
-            yield return new Mutation
+            yield return new CsharpMutation
             {
                 OriginalNode = node,
                 ReplacementNode =
@@ -42,7 +42,7 @@ public class StringEmptyMutator : MutatorBase<ExpressionSyntax>
         }
     }
 
-    private static IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node)
+    private static IEnumerable<CsharpMutation> ApplyMutations(InvocationExpressionSyntax node)
     {
         if (node.Expression is MemberAccessExpressionSyntax memberAccessExpression &&
             IsAccessToStringPredefinedType(memberAccessExpression.Expression))
@@ -66,7 +66,7 @@ public class StringEmptyMutator : MutatorBase<ExpressionSyntax>
         expression is PredefinedTypeSyntax typeSyntax &&
         typeSyntax.Keyword.ValueText == "string";
 
-    private static Mutation ApplyIsNullMutation(InvocationExpressionSyntax node) => new()
+    private static CsharpMutation ApplyIsNullMutation(InvocationExpressionSyntax node) => new CsharpMutation
     {
         OriginalNode = node,
         ReplacementNode =
@@ -79,7 +79,7 @@ public class StringEmptyMutator : MutatorBase<ExpressionSyntax>
         Type = Mutator.String
     };
 
-    private static Mutation ApplyIsEmptyMutation(InvocationExpressionSyntax node) => new()
+    private static CsharpMutation ApplyIsEmptyMutation(InvocationExpressionSyntax node) => new CsharpMutation
     {
         OriginalNode = node,
         ReplacementNode = SyntaxFactory.ParenthesizedExpression(
@@ -91,7 +91,7 @@ public class StringEmptyMutator : MutatorBase<ExpressionSyntax>
         Type = Mutator.String
     };
 
-    private static Mutation ApplyIsWhiteSpaceMutation(InvocationExpressionSyntax node) => new()
+    private static CsharpMutation ApplyIsWhiteSpaceMutation(InvocationExpressionSyntax node) => new CsharpMutation
     {
         OriginalNode = node,
         ReplacementNode =

@@ -24,7 +24,7 @@ public class SourceFile : ISourceFile
         logger ??= ApplicationLogging.LoggerFactory.CreateLogger<SourceFile>();
 
         Source = file.SourceCode;
-        Language = "cs";
+        Language = LanguageOf(file);
         Mutants = new HashSet<IJsonMutant>(new UniqueJsonMutantComparer());
 
         foreach (var mutant in file.Mutants)
@@ -38,6 +38,9 @@ public class SourceFile : ISourceFile
             }
         }
     }
+
+    private static string LanguageOf(IReadOnlyFileLeaf file) =>
+        string.Equals(System.IO.Path.GetExtension(file.RelativePath), ".fs", StringComparison.OrdinalIgnoreCase) ? "fs" : "cs";
 
     private sealed class UniqueJsonMutantComparer : EqualityComparer<IJsonMutant>
     {

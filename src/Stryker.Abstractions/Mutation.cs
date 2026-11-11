@@ -1,4 +1,3 @@
-using Microsoft.CodeAnalysis;
 
 namespace Stryker.Abstractions;
 
@@ -7,9 +6,12 @@ namespace Stryker.Abstractions;
 /// </summary>
 public class Mutation
 {
-    public SyntaxNode OriginalNode { get; set; }
-    public SyntaxNode ReplacementNode { get; set; }
     public string DisplayName { get; set; }
     public Mutator Type { get; set; }
     public string Description { get; set; }
+
+    /// <summary>1-based source range of the original code.</summary>
+    public virtual MutationLocation Location { get; set; }
+    public virtual string OriginalText { get; set; }
+    public virtual string ReplacementText { get; set; }
 }

@@ -1,0 +1,11 @@
+{
+  "stryker-config": {
+    "reporters": [
+      "Dots",
+      "ClearText",
+      "Json"
+    ],
+    "project": "FsharpTargetProject.fsproj",
+    "mutation-level": "Complete"
+  }
+}

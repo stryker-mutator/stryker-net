@@ -63,7 +63,7 @@ All mutants have been tested, and your mutation score has been calculated
         var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
         var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
 
-        var mutation = new Mutation()
+        var mutation = new CsharpMutation()
         {
             OriginalNode = originalNode,
             ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
@@ -116,7 +116,7 @@ All mutants have been tested, and your mutation score has been calculated
         var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
         var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
 
-        var mutation = new Mutation()
+        var mutation = new CsharpMutation()
         {
             OriginalNode = originalNode,
             ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
@@ -169,7 +169,7 @@ All mutants have been tested, and your mutation score has been calculated
         var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
         var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
 
-        var mutation = new Mutation()
+        var mutation = new CsharpMutation()
         {
             OriginalNode = originalNode,
             ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
@@ -211,7 +211,7 @@ All mutants have been tested, and your mutation score has been calculated
         var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
         var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
 
-        var mutation = new Mutation()
+        var mutation = new CsharpMutation()
         {
             OriginalNode = originalNode,
             ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
@@ -253,7 +253,7 @@ All mutants have been tested, and your mutation score has been calculated
         var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
         var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
 
-        var mutation = new Mutation()
+        var mutation = new CsharpMutation()
         {
             OriginalNode = originalNode,
             ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),

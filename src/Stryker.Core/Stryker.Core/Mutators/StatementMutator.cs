@@ -47,7 +47,7 @@ public class StatementMutator : MutatorBase<StatementSyntax>
         SyntaxKind.ExpressionStatement,
     ];
 
-    public override IEnumerable<Mutation> ApplyMutations(StatementSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(StatementSyntax node, SemanticModel semanticModel)
     {
         if (!_allowedSyntaxes.Contains(node.Kind()))
         {
@@ -99,7 +99,7 @@ public class StatementMutator : MutatorBase<StatementSyntax>
             }
         }
 
-        yield return new Mutation
+        yield return new CsharpMutation
         {
             OriginalNode = node,
             ReplacementNode = SyntaxFactory.EmptyStatement(),

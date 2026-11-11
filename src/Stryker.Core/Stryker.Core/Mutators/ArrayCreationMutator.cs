@@ -10,12 +10,12 @@ public class ArrayCreationMutator : MutatorBase<ExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-    public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<CsharpMutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel)
     {
         switch (node)
         {
             case StackAllocArrayCreationExpressionSyntax { Initializer.Expressions.Count: > 0 } stackAllocArray:
-                yield return new Mutation
+                yield return new CsharpMutation
                 {
                     OriginalNode = stackAllocArray,
                     ReplacementNode = stackAllocArray.ReplaceNode(stackAllocArray.Initializer, SyntaxFactory.InitializerExpression(SyntaxKind.ArrayInitializerExpression)),
@@ -24,7 +24,7 @@ public class ArrayCreationMutator : MutatorBase<ExpressionSyntax>
                 };
                 break;
             case ArrayCreationExpressionSyntax { Initializer.Expressions.Count: > 0 } arrayCreationNode:
-                yield return new Mutation
+                yield return new CsharpMutation
                 {
                     OriginalNode = arrayCreationNode,
                     ReplacementNode = arrayCreationNode.ReplaceNode(arrayCreationNode.Initializer, SyntaxFactory.InitializerExpression(SyntaxKind.ArrayInitializerExpression)),

@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
+using Stryker.Abstractions;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Helpers.ProcessUtil;
 using Stryker.Core.Initialisation;
@@ -29,6 +30,12 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IInitialisationProcess, InitialisationProcess>();
         services.AddTransient<IMutationTestProcess, MutationTestProcess>();
         services.AddTransient<IMutationProcess, CsharpMutationProcess>();
+
+        // Language dispatch seam: other language packages register under their own Language key
+        services.AddKeyedTransient<IMutationProcess, CsharpMutationProcess>(Language.Csharp);
+        services.AddKeyedSingleton<ProjectComponentsBuilderFactory>(Language.Csharp,
+            (_, _) => (projectInfo, options, foldersToExclude, logger, fileSystem) =>
+                new CsharpProjectComponentsBuilder(projectInfo, options, foldersToExclude, logger, fileSystem));
 
         // Initialisation services - Transient as they perform per-run operations
         services.AddTransient<IInitialBuildProcess, InitialBuildProcess>();

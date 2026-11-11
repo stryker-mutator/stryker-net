@@ -14,9 +14,11 @@ public class ExcludeFromCodeCoverageFilter : IMutantFilter
     public MutantFilter Type => MutantFilter.ExcludeFromCodeCoverage;
     public string DisplayName => "exclude from code coverage filter";
 
+    private readonly CsharpOnlyFilterSupport _csharpOnly = new("exclude from code coverage filter");
+
     public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options)
     {
-        return mutants.Where(m => !Exclude(m.Mutation.OriginalNode));
+        return _csharpOnly.Filter(mutants, (_, csharp) => Exclude(csharp.OriginalNode));
     }
 
     private static bool Exclude(SyntaxNode node)

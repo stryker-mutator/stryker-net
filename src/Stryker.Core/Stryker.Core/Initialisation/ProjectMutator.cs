@@ -6,7 +6,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
+using Stryker.Utilities.Buildalyzer;
 using Stryker.Abstractions.Reporting;
 using Stryker.Abstractions.Options;
 using Stryker.Core.MutationTest;
@@ -31,7 +33,7 @@ public class ProjectMutator : IProjectMutator
 
     public IMutationTestProcess MutateProject(IStrykerOptions options, MutationTestInput input, IReporter reporters, IMutationTestProcess mutationTestProcess = null)
     {
-        var process = mutationTestProcess ?? _serviceProvider.GetRequiredService<IMutationTestProcess>();
+        var process = mutationTestProcess ?? CreateMutationTestProcess(input);
         process.Initialize(input, options, reporters);
 
         // Enrich test projects info with unit tests
@@ -41,6 +43,20 @@ public class ProjectMutator : IProjectMutator
         process.Mutate();
 
         return process;
+    }
+
+    /// <summary>Non-C# projects get the mutation process registered under their language key.</summary>
+    private IMutationTestProcess CreateMutationTestProcess(MutationTestInput input)
+    {
+        var language = input.SourceProjectInfo?.AnalyzerResult?.GetLanguage() ?? Language.Csharp;
+        if (language is Language.Csharp or Language.Undefined
+            || _serviceProvider is not IKeyedServiceProvider keyedProvider
+            || keyedProvider.GetKeyedService<IMutationProcess>(language) is not { } mutationProcess)
+        {
+            return _serviceProvider.GetRequiredService<IMutationTestProcess>();
+        }
+
+        return ActivatorUtilities.CreateInstance<MutationTestProcess>(_serviceProvider, mutationProcess);
     }
 
     private void EnrichTestProjectsWithTestInfo(InitialTestRun initialTestRun, ITestProjectsInfo testProjectsInfo)

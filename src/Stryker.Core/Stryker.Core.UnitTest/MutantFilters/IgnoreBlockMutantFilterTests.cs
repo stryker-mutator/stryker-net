@@ -45,17 +45,19 @@ public void SomeMethod()
 
         var blockMutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = blockNode,
+                Location = MutationLocation.FromRoslyn(blockNode),
                 Type = Mutator.Block,
             }
         };
         var binaryExpressionMutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = binaryExpressionNode,
+                Location = MutationLocation.FromRoslyn(binaryExpressionNode),
             }
         };
 
@@ -82,9 +84,10 @@ public void SomeMethod()
         var blockNode = syntaxTree.DescendantNodes().OfType<BlockSyntax>().First();
         var blockMutant = new Mutant
         {
-            Mutation = new Mutation
+            Mutation = new CsharpMutation
             {
                 OriginalNode = blockNode,
+                Location = MutationLocation.FromRoslyn(blockNode),
                 Type = Mutator.Block,
             }
         };
@@ -96,5 +99,17 @@ public void SomeMethod()
         // Assert
         filteredMutants.ShouldContain(blockMutant);
         blockMutant.ResultStatus.ShouldNotBe(MutantStatus.Ignored);
+    }
+
+    [TestMethod]
+    public void MutantFilter_WithMutationWithoutLocation_DoesNotFilterOrThrow()
+    {
+        var blockMutant = new Mutant { Mutation = new Mutation { Type = Mutator.Block, Location = new MutationLocation("f", 1, 1, 9, 1, 0, 100) } };
+        var locationless = new Mutant { Mutation = new Mutation { Type = Mutator.Arithmetic } };
+
+        var result = new IgnoreBlockMutantFilter().FilterMutants([blockMutant, locationless], null, null).ToList();
+
+        result.ShouldContain(blockMutant);
+        result.ShouldContain(locationless);
     }
 }

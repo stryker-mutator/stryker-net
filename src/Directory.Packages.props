@@ -4,6 +4,7 @@
     <PackageVersion Include="Azure.Storage.Files.Shares" Version="12.28.0" />
     <PackageVersion Include="CliWrap" Version="3.10.5" />
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="2.0.5" />
+    <PackageVersion Include="FSharp.Compiler.Service" Version="43.12.403" />
     <PackageVersion Include="LaunchDarkly.EventSource" Version="6.0.0" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="5.1.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.15" />
