@@ -219,6 +219,9 @@ public class AnalyzerResultExtensionsTests
     [DataRow("8.0", LanguageVersion.CSharp8)]
     [DataRow("7.1", LanguageVersion.CSharp7_1)]
     [DataRow("latest", LanguageVersion.Latest)]
+    [DataRow("15.0", LanguageVersion.Preview)]
+    [DataRow("15", LanguageVersion.Preview)]
+    [DataRow("99.0", LanguageVersion.Preview)]
     [DataRow("dontCare", LanguageVersion.Default)]
     [DataRow(null, LanguageVersion.Default)]
     public void GetParseOptions_ShouldReturnProjectCSharpVersion(string actualLangVersion, LanguageVersion expected)
@@ -237,6 +240,26 @@ public class AnalyzerResultExtensionsTests
 
         // Assert
         parseOptions.SpecifiedLanguageVersion.ShouldBe(expected);
+    }
+
+    [TestMethod]
+    public void GetParseOptions_ShouldParseCollectionExpressionArgumentsForNewerLangVersion()
+    {
+        var analyzerResult = CreateAnalyzerResultWithProperties(new Dictionary<string, string> { ["LangVersion"] = "15.0" });
+        var parseOptions = analyzerResult.GetParseOptions();
+
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            "class C { System.Collections.Generic.HashSet<string> s = [with(System.StringComparer.Ordinal)]; }",
+            parseOptions);
+        var references = new[] { typeof(object).Assembly.Location, typeof(HashSet<>).Assembly.Location }
+            .Distinct()
+            .Select(location => MetadataReference.CreateFromFile(location));
+        var diagnostics = CSharpCompilation.Create("TestCompilation")
+            .AddReferences(references)
+            .AddSyntaxTrees(syntaxTree)
+            .GetDiagnostics();
+
+        diagnostics.ShouldNotContain(diagnostic => diagnostic.Id == "CS8652");
     }
 
     [TestMethod]
