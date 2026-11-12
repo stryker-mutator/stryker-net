@@ -604,7 +604,7 @@
         "type": "Project",
         "dependencies": {
           "CliWrap": "[3.10.5, )",
-          "Microsoft.Testing.Platform.ServerMode.Client.Sources": "[2.5.2, )",
+          "Microsoft.Testing.Platform.ServerMode.Client.Sources": "[2.5.3, )",
           "Stryker.TestRunner": "[5.1.0, )",
           "Stryker.Utilities": "[5.1.0, )"
         }
@@ -662,9 +662,9 @@
       },
       "Microsoft.Testing.Platform.ServerMode.Client.Sources": {
         "type": "CentralTransitive",
-        "requested": "[2.5.2, )",
-        "resolved": "2.5.2",
-        "contentHash": "ow1tD04f5EG3fTzNxJNZ/NMNAoBSRv+Yz/8zCtIu4H8kz7tvCQdelY1WUxvLdKEcnA/e7z8bIu7WnhMkuc1cdA=="
+        "requested": "[2.5.3, )",
+        "resolved": "2.5.3",
+        "contentHash": "CcxdgMY2JfgKIE0STQtzuHjb9gScicW/tku3z3kgPQRSdxaTbTJBIumEXRyNxHUh5F3r6/8/xqhFr2BVfp13XA=="
       },
       "Microsoft.VisualStudio.SolutionPersistence": {
         "type": "CentralTransitive",
