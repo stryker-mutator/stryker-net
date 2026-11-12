@@ -100,25 +100,33 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
                 yield break;
         }
 
-        if (Enum.TryParse(memberName, out LinqExpression expression) &&
-            KindsToMutate.TryGetValue(expression, out var replacementExpression))
+        if (!Enum.TryParse(memberName, out LinqExpression expression) ||
+            !KindsToMutate.TryGetValue(expression, out var replacementExpression))
         {
-            if (RequireArguments.Contains(replacementExpression) &&
-                FindEnclosingInvocation(node)?.ArgumentList.Arguments.Count == 0)
-            {
-                yield break;
-            }
-
-            yield return new Mutation
-            {
-                DisplayName =
-                    $"Linq method mutation ({memberName}() to {SyntaxFactory.IdentifierName(replacementExpression.ToString())}())",
-                OriginalNode = node,
-                ReplacementNode = node.ReplaceNode(toReplace,
-                    SyntaxFactory.IdentifierName(replacementExpression.ToString())).WithCleanTrivia(),
-                Type = Mutator.Linq
-            };
+            yield break;
         }
+
+        var invocationExpressionSyntax = FindEnclosingInvocation(node);
+        if (invocationExpressionSyntax is null)
+        {
+            yield break;
+        }
+
+        if (RequireArguments.Contains(replacementExpression) &&
+            invocationExpressionSyntax?.ArgumentList.Arguments.Count == 0)
+        {
+            yield break;
+        }
+
+        yield return new Mutation
+        {
+            DisplayName =
+                $"Linq method mutation ({memberName}() to {SyntaxFactory.IdentifierName(replacementExpression.ToString())}())",
+            OriginalNode = node,
+            ReplacementNode = node.ReplaceNode(toReplace,
+                SyntaxFactory.IdentifierName(replacementExpression.ToString())).WithCleanTrivia(),
+            Type = Mutator.Linq
+        };
     }
 
     private static InvocationExpressionSyntax FindEnclosingInvocation(ExpressionSyntax node)
@@ -132,6 +140,6 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
                 return invocationExpression;
             }
         }
-        return null;
+        return current as InvocationExpressionSyntax;
     }
 }

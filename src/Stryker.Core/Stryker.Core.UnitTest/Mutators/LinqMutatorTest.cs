@@ -159,4 +159,36 @@ namespace TestApplication
 
         result.ShouldHaveSingleItem().ReplacementNode.ShouldBeOfType<MemberAccessExpressionSyntax>().Name.ToString().ShouldBe("Any");
     }
+    [TestMethod]
+    public void ShouldNotMutateProperties()
+    {
+        var tree = CSharpSyntaxTree.ParseText(@"
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace TestApplication
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            List<string> Test = new[] {};
+
+            Test?.Count;
+        }
+    }
+}");
+        var memberAccessExpression = tree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ExpressionSyntax>().Single(x => x.ToString() == "Count");
+        var target = new LinqMutator();
+
+        var result = target.ApplyMutations(memberAccessExpression, null);
+
+        result.ShouldBeEmpty();
+    }
 }
