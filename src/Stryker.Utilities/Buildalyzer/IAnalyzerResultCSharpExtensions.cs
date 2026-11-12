@@ -66,10 +66,24 @@ public static class IAnalyzerResultCSharpExtensions
     ///
     /// And here is the part where the user configure the namespaces which are allowed to use interceptors in their project file:
     /// https://github.com/dotnet/roslyn/blob/main/docs/features/interceptors.md#user-opt-in
+    ///
+    /// Each entry is either a bare name, meaning "true", or name=value, read the way the compiler reads
+    /// /features: the Razor SDK turns on Razor's Roslyn tokenizer with use-roslyn-tokenizer=true, and a
+    /// Razor generator handed a feature named "use-roslyn-tokenizer=true" falls back to its legacy
+    /// tokenizer, which cannot compile some valid components. A later entry for the same name wins.
     /// </summary>
     private static List<KeyValuePair<string, string>> ExtractCSharpFeatures(IAnalyzerResult analyzerResult)
     {
-        var features = new List<KeyValuePair<string, string>>();
+        var features = new Dictionary<string, string>();
+        var order = new List<string>();
+        void Set(string name, string value)
+        {
+            if (!features.ContainsKey(name))
+            {
+                order.Add(name);
+            }
+            features[name] = value;
+        }
 
         var projectFeatures = analyzerResult.GetPropertyOrDefault("Features");
         if (!string.IsNullOrWhiteSpace(projectFeatures))
@@ -77,9 +91,19 @@ public static class IAnalyzerResultCSharpExtensions
             foreach (var feature in projectFeatures.Split(';', StringSplitOptions.RemoveEmptyEntries))
             {
                 var trimmedFeature = feature.Trim();
-                if (!string.IsNullOrWhiteSpace(trimmedFeature))
+                if (string.IsNullOrWhiteSpace(trimmedFeature))
                 {
-                    features.Add(new KeyValuePair<string, string>(trimmedFeature, "true"));
+                    continue;
+                }
+
+                var equals = trimmedFeature.IndexOf('=');
+                if (equals < 0)
+                {
+                    Set(trimmedFeature, "true");
+                }
+                else if (equals > 0)
+                {
+                    Set(trimmedFeature[..equals].Trim(), trimmedFeature[(equals + 1)..].Trim());
                 }
             }
         }
@@ -93,10 +117,10 @@ public static class IAnalyzerResultCSharpExtensions
 
         if (!string.IsNullOrWhiteSpace(combinedNamespaces))
         {
-            features.Add(new KeyValuePair<string, string>(InterceptorsNamespacesKey, combinedNamespaces));
+            Set(InterceptorsNamespacesKey, combinedNamespaces);
         }
 
-        return features;
+        return order.Select(name => new KeyValuePair<string, string>(name, features[name])).ToList();
     }
 
     private static NullableContextOptions GetNullableContextOptions(this IAnalyzerResult analyzerResult)

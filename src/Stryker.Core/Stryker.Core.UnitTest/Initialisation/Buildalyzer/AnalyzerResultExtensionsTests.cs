@@ -289,6 +289,36 @@ public class AnalyzerResultExtensionsTests
         }
     }
 
+    // the Razor SDK sets <Features>use-roslyn-tokenizer=true;$(Features)</Features>
+    [TestMethod]
+    [DataRow("use-roslyn-tokenizer=true", "use-roslyn-tokenizer", "true")]
+    [DataRow("use-roslyn-tokenizer=true;", "use-roslyn-tokenizer", "true")]
+    [DataRow("strict;run-nullable-analysis=never", "run-nullable-analysis", "never")]
+    [DataRow(" name = value ", "name", "value")]
+    public void GetParseOptions_ShouldReadNameEqualsValue_AsTheCompilerDoes(string propertyValue, string expectedName, string expectedValue)
+    {
+        var analyzerResult = CreateAnalyzerResultWithProperties(new Dictionary<string, string> { { "Features", propertyValue } });
+
+        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+
+        parseOptions.Features.ShouldContainKeyAndValue(expectedName, expectedValue);
+        parseOptions.Features.Keys.ShouldNotContain(k => k.Contains('='));
+    }
+
+    [TestMethod]
+    public void GetParseOptions_ShouldLetTheLastEntryWin_WhenAFeatureIsGivenTwice()
+    {
+        var analyzerResult = CreateAnalyzerResultWithProperties(new Dictionary<string, string>
+        {
+            { "Features", "use-roslyn-tokenizer;use-roslyn-tokenizer=true;flag=a;flag=b" }
+        });
+
+        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+
+        parseOptions.Features.ShouldContainKeyAndValue("use-roslyn-tokenizer", "true");
+        parseOptions.Features.ShouldContainKeyAndValue("flag", "b");
+    }
+
     [TestMethod]
     public void GetParseOptions_ShouldIncludeInterceptorsNamespaces_WhenInterceptorsNamespacesIsSet()
     {
