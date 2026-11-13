@@ -94,7 +94,7 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
                 toReplace = memberAccessExpression.Name;
                 memberName = memberAccessExpression.Name.Identifier.ValueText;
                 break;
-            case MemberAccessExpressionSyntax
+            case MemberAccessExpressionSyntax  //NOSONAR
                 {Parent: ConditionalAccessExpressionSyntax { Parent: InvocationExpressionSyntax memberParent }} memberAccessExpression:
                 invocationExpression = memberParent;
                 toReplace = memberAccessExpression.Name;
@@ -120,7 +120,7 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
 
 
         if (RequireArguments.Contains(replacementExpression) &&
-            invocationExpression?.ArgumentList.Arguments.Count == 0)
+            invocationExpression.ArgumentList.Arguments.Count == 0)
         {
             yield break;
         }
@@ -133,27 +133,6 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
             ReplacementNode = node.ReplaceNode(toReplace,
                 SyntaxFactory.IdentifierName(replacementExpression.ToString())).WithCleanTrivia(),
             Type = Mutator.Linq
-        };
-    }
-
-    private static InvocationExpressionSyntax FindEnclosingInvocation(ExpressionSyntax node)
-    {
-        return node switch
-        {
-            MemberAccessExpressionSyntax { Parent: InvocationExpressionSyntax invocationExpressionSyntax } =>
-                invocationExpressionSyntax,
-            MemberBindingExpressionSyntax
-            {
-                Parent: ConditionalAccessExpressionSyntax
-                {
-                    Parent: InvocationExpressionSyntax invocationExpression
-                }
-            } => invocationExpression,
-            MemberBindingExpressionSyntax
-            {
-                Parent: InvocationExpressionSyntax invocationExpression
-            } => invocationExpression,
-            _ => null
         };
     }
 }
