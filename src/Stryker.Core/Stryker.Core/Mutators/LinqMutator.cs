@@ -94,12 +94,6 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
                 toReplace = memberAccessExpression.Name;
                 memberName = memberAccessExpression.Name.Identifier.ValueText;
                 break;
-            case MemberAccessExpressionSyntax  //NOSONAR
-                {Parent: ConditionalAccessExpressionSyntax { Parent: InvocationExpressionSyntax memberParent }} memberAccessExpression:
-                invocationExpression = memberParent;
-                toReplace = memberAccessExpression.Name;
-                memberName = memberAccessExpression.Name.Identifier.ValueText;
-                break;
             case MemberBindingExpressionSyntax
             {
                 Parent : InvocationExpressionSyntax memberParent
