@@ -74,14 +74,10 @@ public static class IAnalyzerResultCSharpExtensions
         var projectFeatures = analyzerResult.GetPropertyOrDefault("Features");
         if (!string.IsNullOrWhiteSpace(projectFeatures))
         {
-            foreach (var feature in projectFeatures.Split(';', StringSplitOptions.RemoveEmptyEntries))
-            {
-                var trimmedFeature = feature.Trim();
-                if (!string.IsNullOrWhiteSpace(trimmedFeature))
-                {
-                    features.Add(new KeyValuePair<string, string>(trimmedFeature, "true"));
-                }
-            }
+            features.AddRange(from feature in projectFeatures.Split(';', StringSplitOptions.RemoveEmptyEntries)
+                select feature.Trim() into trimmedFeature where !string.IsNullOrWhiteSpace(trimmedFeature)
+                select trimmedFeature.Split('=', 2, StringSplitOptions.RemoveEmptyEntries).ToList()
+                into bloc select new KeyValuePair<string, string>(bloc[0].Trim(), bloc.Count > 1 ? bloc[1].Trim().Trim('"') : "true"));
         }
 
         var interceptorsNamespaces = new List<string?>

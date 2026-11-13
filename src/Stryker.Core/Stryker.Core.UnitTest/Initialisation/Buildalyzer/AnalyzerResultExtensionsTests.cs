@@ -327,6 +327,26 @@ public class AnalyzerResultExtensionsTests
     }
 
     [TestMethod]
+    public void GetParseOptions_ShouldSupportFeaturesWithExplicitValue()
+    {
+        // Arrange
+        var properties = new Dictionary<string, string>
+        {
+            { "Features", "InterceptorsPreview;FunctionPointers=true;ExtendedPartialMethods=false" }
+        };
+        var analyzerResult = CreateAnalyzerResultWithProperties(properties);
+
+        // Act
+        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+
+        // Assert
+        parseOptions.Features.ShouldContain(f => f.Key == "InterceptorsPreview" && f.Value == "true");
+        parseOptions.Features.ShouldContain(f => f.Key == "FunctionPointers" && f.Value == "true");
+        parseOptions.Features.ShouldContain(f => f.Key == "ExtendedPartialMethods" && f.Value == "false");
+        parseOptions.Features.Count().ShouldBe(3);
+    }
+
+    [TestMethod]
     public void GetParseOptions_ShouldNotDuplicateInterceptorsPreview_WhenBothFeaturesAndNamespacesAreSet()
     {
         // Arrange
