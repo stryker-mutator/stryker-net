@@ -319,6 +319,33 @@ public class AnalyzerResultExtensionsTests
         parseOptions.Features.ShouldContainKeyAndValue("flag", "b");
     }
 
+    // CSharpParseOptions.WithFeatures compares names ignoring case and throws on two that differ only in case
+    [TestMethod]
+    public void GetParseOptions_ShouldNotThrow_WhenTwoFeatureNamesDifferOnlyInCase()
+    {
+        var analyzerResult = CreateAnalyzerResultWithProperties(new Dictionary<string, string> { { "Features", "Flag=a;flag=b" } });
+
+        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+
+        parseOptions.Features.ShouldHaveSingleItem();
+        parseOptions.Features["flag"].ShouldBe("b");
+    }
+
+    // as csc reads /features:"name=quoted", /features:name="quoted" and /features:a=1,b=2
+    [TestMethod]
+    [DataRow("\"name=quoted\"", "name", "quoted")]
+    [DataRow("name=\"quoted\"", "name", "quoted")]
+    [DataRow("a=1,b=2", "b", "2")]
+    public void GetParseOptions_ShouldDropQuotesAndSplitOnCommas_AsTheCompilerDoes(string propertyValue, string expectedName, string expectedValue)
+    {
+        var analyzerResult = CreateAnalyzerResultWithProperties(new Dictionary<string, string> { { "Features", propertyValue } });
+
+        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+
+        parseOptions.Features.ShouldContainKeyAndValue(expectedName, expectedValue);
+        parseOptions.Features.Keys.ShouldNotContain(k => k.Contains('"') || k.Contains(','));
+    }
+
     [TestMethod]
     public void GetParseOptions_ShouldIncludeInterceptorsNamespaces_WhenInterceptorsNamespacesIsSet()
     {

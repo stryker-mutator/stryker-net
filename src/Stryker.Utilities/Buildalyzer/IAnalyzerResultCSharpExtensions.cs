@@ -70,11 +70,13 @@ public static class IAnalyzerResultCSharpExtensions
     /// Each entry is either a bare name, meaning "true", or name=value, read the way the compiler reads
     /// /features: the Razor SDK turns on Razor's Roslyn tokenizer with use-roslyn-tokenizer=true, and a
     /// Razor generator handed a feature named "use-roslyn-tokenizer=true" falls back to its legacy
-    /// tokenizer, which cannot compile some valid components. A later entry for the same name wins.
+    /// tokenizer, which cannot compile some valid components. As the compiler does, entries are separated
+    /// by ';' or ',', quotes are dropped, and a later entry for the same name wins - names compared
+    /// ignoring case, because CSharpParseOptions.WithFeatures throws on two that differ only in case.
     /// </summary>
     private static List<KeyValuePair<string, string>> ExtractCSharpFeatures(IAnalyzerResult analyzerResult)
     {
-        var features = new Dictionary<string, string>();
+        var features = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var order = new List<string>();
         void Set(string name, string value)
         {
@@ -88,9 +90,9 @@ public static class IAnalyzerResultCSharpExtensions
         var projectFeatures = analyzerResult.GetPropertyOrDefault("Features");
         if (!string.IsNullOrWhiteSpace(projectFeatures))
         {
-            foreach (var feature in projectFeatures.Split(';', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var feature in projectFeatures.Split([';', ','], StringSplitOptions.RemoveEmptyEntries))
             {
-                var trimmedFeature = feature.Trim();
+                var trimmedFeature = feature.Replace("\"", "").Trim();
                 if (string.IsNullOrWhiteSpace(trimmedFeature))
                 {
                     continue;
