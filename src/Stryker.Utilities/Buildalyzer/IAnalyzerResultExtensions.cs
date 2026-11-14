@@ -352,15 +352,10 @@ public static class IAnalyzerResultExtensions
             // the CompilerVisibleProperty / CompilerVisibleItemMetadata that generators such as CsWin32
             // read). They must be resolved against the project directory, not the current working
             // directory, or File.Exists silently drops them and the generator options are lost.
-            return analyzerResult.CompilerArguments.Where(ValidateArg)
+            return analyzerResult.CompilerArguments.Where(arg => arg[0] is '/' or '-' && arg.Length > ArgName.Length+2 && arg[1..(ArgName.Length+1)] == ArgName)
                 .Select(arg =>
                     ResolveAnalyzerConfigPath(arg[(ArgName.Length + 1)..].TrimQuotes(), projectDirectory, fileSystem))
                 .Distinct();
-
-            bool ValidateArg(string arg)
-            {
-                return arg[0] is '/' or '-' && arg.Length > ArgName.Length+2 && arg[1..(ArgName.Length+1)] == ArgName;
-            }
         }
     }
 
