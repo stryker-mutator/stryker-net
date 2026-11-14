@@ -106,8 +106,45 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     }
 }
     ";
-       ShouldMutateSourceInClassToExpected(source, expected);
+        ShouldMutateSourceInClassToExpected(source, expected);
 
+    }
+
+    [TestMethod]
+    [DataRow(OptimizationModes.None, false)]
+    [DataRow(OptimizationModes.SkipUncoveredMutants, false)]
+    [DataRow(OptimizationModes.CoverageBasedTest, true)]
+    [DataRow(OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest, true)]
+    [DataRow(OptimizationModes.CaptureCoveragePerTest, false)]
+    public void ShouldTrackStaticUsage_OnlyWhenCoverageBasedTestIsEnabled(OptimizationModes mode, bool expected)
+    {
+        var orchestrator = new CsharpMutantOrchestrator(new MutantPlacer(Injector),
+            options: new StrykerOptions { OptimizationMode = mode });
+
+        orchestrator.MustInjectCoverageLogic.ShouldBe(expected);
+    }
+
+    [TestMethod]
+    public void ShouldInjectStaticContextMarker_InPerTestCoverageMode()
+    {
+        // The static marker (the MutantContext using block) is now injected in the perTest mode too,
+        // so mutants evaluated during static initialization are tagged there as well. The injected
+        // marker itself is behavior-neutral (see MutantControlStaticTaggingTests).
+        Target = new CsharpMutantOrchestrator(new MutantPlacer(Injector), options: new StrykerOptions
+        {
+            MutationLevel = MutationLevel.Complete,
+            OptimizationMode = OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest,
+        });
+
+        var source = @"
+static string Value { get; }
+static TestClass() => Value = ""Hello, World!"";";
+
+        var expected = @"static string Value { get; }
+static TestClass() {using(new StrykerNamespace.MutantContext()){Value = (StrykerNamespace.MutantControl.IsActive(0)?"""":""Hello, World!"");
+        }}";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
     }
 
     [TestMethod]

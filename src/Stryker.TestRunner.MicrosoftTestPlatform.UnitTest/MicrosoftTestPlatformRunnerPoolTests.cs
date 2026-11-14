@@ -198,7 +198,7 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         var start = timeout.ElapsedMilliseconds;
         lock (createdRunners)
         {
-            while (createdRunners.Count < 3 && timeout.ElapsedMilliseconds-start < 2000)
+            while (createdRunners.Count < 3 && timeout.ElapsedMilliseconds - start < 2000)
             {
                 Monitor.Wait(createdRunners, 200);
             }
@@ -340,8 +340,10 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
                     // Populate the pool's shared dictionaries so it discovers the same tests set up above.
                     if (tba.Count == 0)
                     {
-                        foreach (var kvp in testsByAssembly) tba[kvp.Key] = kvp.Value;
-                        foreach (var kvp in testDescriptions) td[kvp.Key] = kvp.Value;
+                        foreach (var kvp in testsByAssembly)
+                            tba[kvp.Key] = kvp.Value;
+                        foreach (var kvp in testDescriptions)
+                            td[kvp.Key] = kvp.Value;
                     }
                     return new TestableRunner(id, tba, td, ts, dl,
                         () => { },
@@ -605,8 +607,10 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
                         {
                             if (tba.Count == 0)
                             {
-                                foreach (var kvp in testsByAssembly) tba[kvp.Key] = kvp.Value;
-                                foreach (var kvp in _descriptions) td[kvp.Key] = kvp.Value;
+                                foreach (var kvp in testsByAssembly)
+                                    tba[kvp.Key] = kvp.Value;
+                                foreach (var kvp in _descriptions)
+                                    td[kvp.Key] = kvp.Value;
                             }
                         }
 
@@ -634,6 +638,97 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
         }
 
         public string IdOf(string testUid) => _descriptions[testUid].Id;
+    }
+
+    [TestMethod]
+    public async Task TestMultipleMutants_ParallelPoolSessions_ReportKilledThroughUpdateHandler()
+    {
+        const string testUid = "covering-test";
+        const string assembly = "assembly.dll";
+        var testNode = new TestNode(testUid, testUid, "test", TestNodeStates.Discovered);
+        var testsByAssembly = new Dictionary<string, List<TestNode>> { [assembly] = [testNode] };
+        var testDescriptions = new Dictionary<string, MtpTestDescription> { [testUid] = new MtpTestDescription(testNode) };
+
+        var options = new Mock<IStrykerOptions>();
+        options.Setup(x => x.Concurrency).Returns(3);
+
+        var runnerFactory = new Mock<ISingleRunnerFactory>();
+        runnerFactory.Setup(x => x.CreateRunner(
+                It.IsAny<int>(),
+                It.IsAny<Dictionary<string, List<TestNode>>>(),
+                It.IsAny<Dictionary<string, MtpTestDescription>>(),
+                It.IsAny<TestSet>(),
+                It.IsAny<object>(),
+                It.IsAny<ILogger>(),
+                It.IsAny<IStrykerOptions>()))
+            .Returns<int, Dictionary<string, List<TestNode>>, Dictionary<string, MtpTestDescription>, TestSet, object, ILogger, IStrykerOptions>(
+                (id, tba, td, ts, dl, logger, opts) =>
+                {
+                    lock (dl)
+                    {
+                        if (tba.Count == 0)
+                        {
+                            foreach (var kvp in testsByAssembly)
+                            {
+                                tba[kvp.Key] = kvp.Value;
+                            }
+
+                            foreach (var kvp in testDescriptions)
+                            {
+                                td[kvp.Key] = kvp.Value;
+                            }
+                        }
+                    }
+
+                    return new FailingMutantSessionRunner(id, tba, td, ts, dl, testUid);
+                });
+
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance, runnerFactory.Object);
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns([assembly]);
+
+        var mutants = Enumerable.Range(1, 9).Select(id =>
+        {
+            var mutant = new Mock<IMutant>(MockBehavior.Loose);
+            mutant.Setup(x => x.Id).Returns(id);
+            mutant.Setup(x => x.AssessingTests).Returns(new TestIdentifierList(new[] { testUid }));
+            mutant.Setup(x => x.ResultStatus).Returns(MutantStatus.Pending);
+            mutant.Setup(x => x.AnalyzeTestRun(
+                    It.IsAny<ITestIdentifiers>(),
+                    It.IsAny<ITestIdentifiers>(),
+                    It.IsAny<ITestIdentifiers>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()))
+                .Callback<ITestIdentifiers, ITestIdentifiers, ITestIdentifiers, bool, bool>((failed, _, _, _, _) =>
+                {
+                    mutant.Setup(x => x.ResultStatus).Returns(
+                        failed.GetIdentifiers().Any() ? MutantStatus.Killed : MutantStatus.Survived);
+                });
+            return mutant;
+        }).ToList();
+
+        var failedTestsPerSession = new System.Collections.Concurrent.ConcurrentBag<int>();
+
+        var sessions = mutants.Select(m => pool.TestMultipleMutantsAsync(
+            project.Object,
+            null,
+            [m.Object],
+            (tested, failed, executed, timedOut) =>
+            {
+                foreach (var mutant in tested)
+                {
+                    mutant.AnalyzeTestRun(failed, executed, timedOut, sessionTimedOut: false, sessionRuntimeError: false);
+                }
+
+                failedTestsPerSession.Add(failed.GetIdentifiers().Count());
+                return true;
+            }));
+
+        await Task.WhenAll(sessions);
+
+        failedTestsPerSession.Count.ShouldBe(9);
+        failedTestsPerSession.ShouldAllBe(count => count > 0);
+        mutants.ShouldAllBe(m => m.Object.ResultStatus == MutantStatus.Killed);
     }
 
     [TestMethod]
