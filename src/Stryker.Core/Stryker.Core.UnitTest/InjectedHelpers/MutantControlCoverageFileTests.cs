@@ -24,6 +24,7 @@ public class MutantControlCoverageFileTests : TestBase
 {
     private const string CoverageFileEnvironmentVariable = "STRYKER_COVERAGE_FILE";
     private const string EpochFileEnvironmentVariable = "STRYKER_COVERAGE_EPOCH_FILE";
+    private const string HitLimitFileEnvironmentVariable = "STRYKER_HITLIMIT_FILE";
 
     private readonly List<Assembly> _loadedHelpers = new();
 
@@ -193,6 +194,74 @@ public class MutantControlCoverageFileTests : TestBase
             foreach (var file in FindCoverageFiles(coverageFileName))
             {
                 File.Delete(file);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void FlushCoverage_ShouldWriteHitCountsAlongsideCoverage()
+    {
+        var coverageFileName = $"stryker-coverage-test-{Guid.NewGuid():N}.txt";
+        var previousEnvironmentValue = Environment.GetEnvironmentVariable(CoverageFileEnvironmentVariable);
+
+        try
+        {
+            Environment.SetEnvironmentVariable(CoverageFileEnvironmentVariable, coverageFileName);
+
+            var assembly = CompileMutantControl("HitCountAssembly");
+            RegisterCoverage(assembly, 7);
+            RegisterCoverage(assembly, 7);
+            RegisterCoverage(assembly, 9);
+            FlushCoverage(assembly);
+
+            var content = File.ReadAllText(FindCoverageFiles(coverageFileName).ShouldHaveSingleItem());
+            var parts = content.Split(';');
+
+            parts.Length.ShouldBe(3);
+            parts[2].ShouldBe("7:2,9:1");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(CoverageFileEnvironmentVariable, previousEnvironmentValue);
+            DisableLoadedHelpers();
+            foreach (var file in FindCoverageFiles(coverageFileName))
+            {
+                File.Delete(file);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void IsActive_ShouldWriteOneMarkerWhenActiveMutantExceedsHitLimit()
+    {
+        var markerPath = Path.Combine(Path.GetTempPath(), $"stryker-hitlimit-test-{Guid.NewGuid():N}.txt");
+        var previousEnvironmentValue = Environment.GetEnvironmentVariable(HitLimitFileEnvironmentVariable);
+
+        try
+        {
+            Environment.SetEnvironmentVariable(HitLimitFileEnvironmentVariable, markerPath);
+            var assembly = CompileMutantControl("HitLimitAssembly");
+            var mutantControl = GetMutantControl(assembly);
+            mutantControl.GetField("ActiveMutant")!.SetValue(null, 9);
+            mutantControl.GetField("HitLimit")!.SetValue(null, 2L);
+
+            RegisterCoverage(assembly, 9);
+            RegisterCoverage(assembly, 9);
+            File.Exists(markerPath).ShouldBeFalse("the active mutant may reach its baseline limit");
+
+            RegisterCoverage(assembly, 9);
+            File.ReadAllText(markerPath).ShouldBe("9;3;2");
+
+            RegisterCoverage(assembly, 9);
+            File.ReadAllText(markerPath).ShouldBe("9;3;2", "the marker is written once when the limit is first exceeded");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(HitLimitFileEnvironmentVariable, previousEnvironmentValue);
+            DisableLoadedHelpers();
+            if (File.Exists(markerPath))
+            {
+                File.Delete(markerPath);
             }
         }
     }

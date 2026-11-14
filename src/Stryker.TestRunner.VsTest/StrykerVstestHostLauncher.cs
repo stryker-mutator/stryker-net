@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -12,12 +13,18 @@ public interface IStrykerTestHostLauncher : ITestHostLauncher
 {
 }
 
+public interface IStrykerTestHostLauncherWithEnvironmentVariables : IStrykerTestHostLauncher
+{
+    void SetEnvironmentVariable(string name, string value);
+}
+
 // can't be unit tested
 [ExcludeFromCodeCoverage]
-public class StrykerVsTestHostLauncher : IStrykerTestHostLauncher
+public class StrykerVsTestHostLauncher : IStrykerTestHostLauncherWithEnvironmentVariables
 {
     private readonly string _id;
     private readonly bool _devMode;
+    private readonly IDictionary<string, string> _environmentVariables = new Dictionary<string, string>();
 
     private static ILogger Logger { get; }
 
@@ -31,6 +38,8 @@ public class StrykerVsTestHostLauncher : IStrykerTestHostLauncher
     }
 
     public bool IsDebug => false;
+
+    public void SetEnvironmentVariable(string name, string value) => _environmentVariables[name] = value;
 
     public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo) =>
         LaunchTestHost(defaultTestHostStartInfo, CancellationToken.None);
@@ -47,6 +56,10 @@ public class StrykerVsTestHostLauncher : IStrykerTestHostLauncher
             };
 
         ExternalEnvironmentVariables.Add(processInfo.Environment);
+        foreach (var (name, value) in _environmentVariables)
+        {
+            processInfo.Environment[name] = value;
+        }
 
         var currentProcess = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
 
