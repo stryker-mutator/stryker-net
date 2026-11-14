@@ -11,9 +11,9 @@ public interface IReadOnlyMutant
     Mutation Mutation { get; }
     MutantStatus ResultStatus { get; }
     string ResultStatusReason { get; }
-    ITestIdentifiers CoveringTests { get; }
-    ITestIdentifiers KillingTests { get; }
-    ITestIdentifiers AssessingTests { get; }
+    ITestIdentifierSet CoveringTests { get; }
+    ITestIdentifierSet KillingTests { get; }
+    ITestIdentifierSet AssessingTests { get; }
     bool CountForStats { get; }
     bool IsStaticValue { get; }
 }

@@ -195,7 +195,7 @@ public class MutationTestProcess : IMutationTestProcess
         while (mutantsToGroup.Count > 0)
         {
             // we pick the first mutant
-            var usedTests = mutantsToGroup[0].AssessingTests;
+            ITestIdentifierSet usedTests = new TestIdentifierList(mutantsToGroup[0].AssessingTests);
             var nextBlock = new List<IMutant> { mutantsToGroup[0] };
             mutantsToGroup.RemoveAt(0);
             for (var j = 0; j < mutantsToGroup.Count; j++)

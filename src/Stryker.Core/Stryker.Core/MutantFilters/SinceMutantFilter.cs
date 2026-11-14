@@ -121,7 +121,7 @@ public class SinceMutantFilter : IMutantFilter
 
         foreach (var mutant in mutants)
         {
-            if (mutant.CoveringTests.IsEmpty || mutant.CoveringTests.Count == 0)
+            if (mutant.CoveringTests.IsEmpty)
             {
                 continue;
             }
