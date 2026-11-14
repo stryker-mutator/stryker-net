@@ -18,8 +18,7 @@ public abstract class BaseMutantOrchestrator
     }
 
     public bool MustInjectCoverageLogic =>
-        Options != null && Options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) &&
-        !Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest);
+        Options != null && Options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest);
 
         public ICollection<IMutant> Mutants { get; set; }
 

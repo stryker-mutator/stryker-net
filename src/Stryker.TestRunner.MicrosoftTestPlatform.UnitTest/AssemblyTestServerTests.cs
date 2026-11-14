@@ -46,8 +46,8 @@ public class AssemblyTestServerTests
         _client.Setup(client => client.WaitServerProcessExitAsync()).ReturnsAsync(0);
     }
 
-    private AssemblyTestServer CreateServer()
-        => new(TestAssembly, _environmentVariables, NullLogger.Instance, TestRunnerId, connectionFactory: _factory.Object);
+    private AssemblyTestServer CreateServer(ILogger? logger = null)
+        => new(TestAssembly, _environmentVariables, logger ?? NullLogger.Instance, TestRunnerId, connectionFactory: _factory.Object);
 
     [TestMethod]
     public void Constructor_StartsUninitialized()
@@ -291,6 +291,105 @@ public class AssemblyTestServerTests
     }
 
     [TestMethod]
+    public async Task RunTestsAsync_LogsTheStartAndTheEndOfARun_WhenDebugIsEnabled()
+    {
+        _client.Setup(client => client.RunTestsAsync(
+                It.IsAny<Func<TestNodeUpdate[], Task>>(),
+                null,
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var logger = new CapturingLogger();
+
+        using var server = CreateServer(logger);
+        await server.StartAsync();
+        await server.RunTestsAsync(null, TimeSpan.FromSeconds(1));
+
+        logger.Messages.ShouldContain(message => message.Contains("Test run started") && message.Contains(TestAssembly) && message.Contains("all test(s)"));
+        logger.Messages.ShouldContain(message => message.Contains("Test run finished") && message.Contains("timed out: False"));
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_LogsATimedOutRun()
+    {
+        _client.Setup(client => client.RunTestsAsync(
+                It.IsAny<Func<TestNodeUpdate[], Task>>(),
+                null,
+                It.IsAny<CancellationToken>()))
+            .Returns<Func<TestNodeUpdate[], Task>, TestNode[]?, CancellationToken>((_, _, cancellationToken) => Task.Delay(Timeout.Infinite, cancellationToken));
+        var logger = new CapturingLogger();
+
+        using var server = CreateServer(logger);
+        await server.StartAsync();
+        await server.RunTestsAsync(null, TimeSpan.FromMilliseconds(25));
+
+        logger.Messages.ShouldContain(message => message.Contains("Test run finished") && message.Contains("timed out: True"));
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_LogsAFailedRun_AndRethrows()
+    {
+        _client.Setup(client => client.RunTestsAsync(
+                It.IsAny<Func<TestNodeUpdate[], Task>>(),
+                null,
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new IOException("connection closed"));
+        var logger = new CapturingLogger();
+
+        using var server = CreateServer(logger);
+        await server.StartAsync();
+
+        await Should.ThrowAsync<IOException>(async () => await server.RunTestsAsync(null, TimeSpan.FromSeconds(1)));
+        logger.Messages.ShouldContain(message => message.Contains("Test run failed") && message.Contains(nameof(IOException)));
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_StillRuns_WhenDebugIsDisabled()
+    {
+        _client.Setup(client => client.RunTestsAsync(
+                It.IsAny<Func<TestNodeUpdate[], Task>>(),
+                null,
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var logger = new CapturingLogger(debugEnabled: false);
+
+        using var server = CreateServer(logger);
+        await server.StartAsync();
+        var (_, timedOut) = await server.RunTestsAsync(null, TimeSpan.FromSeconds(1));
+
+        timedOut.ShouldBeFalse();
+        logger.Messages.ShouldNotContain(message => message.Contains("Test run"));
+    }
+
+    [TestMethod]
+    public async Task RunCount_TracksRunsAcrossTheHostLifecycle()
+    {
+        _client.Setup(client => client.RunTestsAsync(
+                It.IsAny<Func<TestNodeUpdate[], Task>>(),
+                null,
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        using (var server = CreateServer(new CapturingLogger()))
+        {
+            await server.StartAsync();
+            server.RunCount.ShouldBe(0);
+            await server.RunTestsAsync(null);
+            await server.RunTestsAsync(null);
+            server.RunCount.ShouldBe(2);
+            await server.StopAsync();
+            server.RunCount.ShouldBe(0);
+        }
+
+        using (var server = CreateServer(new CapturingLogger(debugEnabled: false)))
+        {
+            await server.StartAsync();
+            await server.RunTestsAsync(null);
+            await server.RunTestsAsync(null);
+            server.RunCount.ShouldBe(2);
+        }
+    }
+
+    [TestMethod]
     public async Task RunTestsAsync_WhenHostCrashes_ThrowsTestHostCrashed()
     {
         _client.Setup(client => client.RunTestsAsync(
@@ -346,6 +445,18 @@ public class AssemblyTestServerTests
         await Should.NotThrowAsync(server.StopAsync());
         _client.Verify(client => client.Dispose(), Times.Once);
         _process.Verify(process => process.Dispose(), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task StopAsync_ResetsTheWarmedUpFlag_SoARestartedHostIsWarmedAgain()
+    {
+        using var server = CreateServer();
+        await server.StartAsync();
+        server.IsWarmedUp = true;
+
+        await server.RestartAsync();
+
+        server.IsWarmedUp.ShouldBeFalse();
     }
 
     [TestMethod]
