@@ -1,11 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.IO.MemoryMappedFiles;
 using System.Linq;
-using System.Reflection;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,9 +7,7 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Configuration;
 using Stryker.Configuration.Options;
-using Stryker.Core.Compiling;
 using Stryker.Core.Mutants;
-using Stryker.Core.UnitTest.Compiling;
 
 namespace Stryker.Core.UnitTest.Mutants;
 
@@ -522,11 +513,11 @@ return default(bool);}";
     {
         var source = @"void TestMethod() {
                 var labelNode = myAttribute?.ArgumentList.Arguments.First()?.Expression;
-                return test?.Other()?.Count;
+                return test?.Other()?.Count();
 		}";
         var expected = @"void TestMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
-            var labelNode = (StrykerNamespace.MutantControl.IsActive(1)?myAttribute?.ArgumentList.Arguments.FirstOrDefault()?.Expression:myAttribute?.ArgumentList.Arguments.First()?.Expression);
-                return (StrykerNamespace.MutantControl.IsActive(2)? test?.Other()?.Sum:test?.Other()?.Count);
+                var labelNode = (StrykerNamespace.MutantControl.IsActive(1)?myAttribute?.ArgumentList.Arguments.FirstOrDefault()?.Expression:myAttribute?.ArgumentList.Arguments.First()?.Expression);
+                return (StrykerNamespace.MutantControl.IsActive(2)?test?.Other()?.Sum():test?.Other()?.Count());
 		}}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
@@ -703,9 +694,9 @@ var (one, two) = ((StrykerNamespace.MutantControl.IsActive(1)?1 - 1:1 + 1), (Str
     [TestMethod]
     public void ShouldNotMutateAttributes()
     {
-        var source = @"[Obsolete(""thismustnotbemutated"")]
+        var source = @"[Obsolete(""thisMustNotBeMutated"")]
 public void SomeMethod() {}";
-        var expected = @"[Obsolete(""thismustnotbemutated"")]
+        var expected = @"[Obsolete(""thisMustNotBeMutated"")]
 public void SomeMethod() {}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
@@ -1167,9 +1158,9 @@ if(StrykerNamespace.MutantControl.IsActive(2)){;}else{Console.WriteLine((Stryker
 
         var mutants = Target.GetLatestMutantBatch().ToList();
         mutants.Count.ShouldBe(2);
-        var blockLinespan = mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan();
-        blockLinespan.StartLinePosition.Line.ShouldBe(1);
-        blockLinespan.EndLinePosition.Line.ShouldBe(3);
+        var blockLineSpan = mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan();
+        blockLineSpan.StartLinePosition.Line.ShouldBe(1);
+        blockLineSpan.EndLinePosition.Line.ShouldBe(3);
         mutants.Last().Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(2);
     }
 
@@ -1195,9 +1186,9 @@ namespace TestApp
         var mutants = Target.GetLatestMutantBatch().ToList();
         mutants.Count.ShouldBe(7);
 
-        var blockLinespan = mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan();
-        blockLinespan.StartLinePosition.Line.ShouldBe(9);
-        blockLinespan.EndLinePosition.Line.ShouldBe(11);
+        var blockLineSpan = mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan();
+        blockLineSpan.StartLinePosition.Line.ShouldBe(9);
+        blockLineSpan.EndLinePosition.Line.ShouldBe(11);
         foreach (var mutant in mutants.Skip(1))
         {
             mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(10);
@@ -1361,7 +1352,7 @@ int TestMethod()
     }
 
     [TestMethod]
-    public void ShouldMutatetringsInSwitchExpression()
+    public void ShouldMutateStringsInSwitchExpression()
     {
         var source = @"string TestMethod()
 {
