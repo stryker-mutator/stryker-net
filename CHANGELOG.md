@@ -9,6 +9,39 @@ For historical release notes prior to the consolidated changelog, see the packag
 
 <!-- changelog -->
 
+# [5.1.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@5.0.0...dotnet-stryker@5.1.0) (2026-11-10)
+
+
+### Bug Fixes
+
+* **dashboard:** print report uri after uploading the final report ([#3939](https://github.com/stryker-mutator/stryker-net/issues/3939)) ([e92aa5b](https://github.com/stryker-mutator/stryker-net/commit/e92aa5bd1f9acc3bf9b4068062fc5ff6965c788d)), closes [#3227](https://github.com/stryker-mutator/stryker-net/issues/3227)
+* **deps:** pin System.Security.Cryptography.Xml to a patched version ([#3846](https://github.com/stryker-mutator/stryker-net/issues/3846)) ([1ae2b3c](https://github.com/stryker-mutator/stryker-net/commit/1ae2b3c591a322d209cfdcd50bd2f10de20b8336)), closes [hi#severity](https://github.com/hi/issues/severity) [#3722](https://github.com/stryker-mutator/stryker-net/issues/3722) [#3835](https://github.com/stryker-mutator/stryker-net/issues/3835)
+* **initialization:** Improve support for F# test projects ([#3809](https://github.com/stryker-mutator/stryker-net/issues/3809)) ([54ef1a3](https://github.com/stryker-mutator/stryker-net/commit/54ef1a33b730c7c385255cc404da3d53ccffe95c)), closes [#3804](https://github.com/stryker-mutator/stryker-net/issues/3804)
+* **mtp:** Concurrency issue with multiple processes writing to the same mutant-control file ([#3724](https://github.com/stryker-mutator/stryker-net/issues/3724)) ([0dc7f04](https://github.com/stryker-mutator/stryker-net/commit/0dc7f045c89cd06c2b4b95c77ba96aa65a899ca7))
+* **mtp:** drop parameter types from MTP test's fully qualified name in report ([#3955](https://github.com/stryker-mutator/stryker-net/issues/3955)) ([920397e](https://github.com/stryker-mutator/stryker-net/commit/920397e64b6f42d5094301875de4b0a3dfd06590)), closes [#3954](https://github.com/stryker-mutator/stryker-net/issues/3954)
+* **mtp:** pass the test file location to the test description ([#3942](https://github.com/stryker-mutator/stryker-net/issues/3942)) ([2ebb6f2](https://github.com/stryker-mutator/stryker-net/commit/2ebb6f298ea3d80921397fed37d8f6496a78b69f)), closes [#3921](https://github.com/stryker-mutator/stryker-net/issues/3921)
+* **mutating:** Support mutations with out variables in constructor initializers ([#3811](https://github.com/stryker-mutator/stryker-net/issues/3811)) ([b3cf83c](https://github.com/stryker-mutator/stryker-net/commit/b3cf83cad2738fe919e1ab5ac80fc1906c5c08cc)), closes [#3810](https://github.com/stryker-mutator/stryker-net/issues/3810)
+* **regex-mutator:** support for interpolated string for regex mutator ([#3875](https://github.com/stryker-mutator/stryker-net/issues/3875)) ([f8bbbf2](https://github.com/stryker-mutator/stryker-net/commit/f8bbbf20d93ae45744b6add6925eb7315dcd511e)), closes [#3872](https://github.com/stryker-mutator/stryker-net/issues/3872)
+* **rollback:** Handle compilation error induced by mutation erasing throw statements ([#3796](https://github.com/stryker-mutator/stryker-net/issues/3796)) ([37590bf](https://github.com/stryker-mutator/stryker-net/commit/37590bf8a863893a976a01e4a6992175db2f3cf4)), closes [#3783](https://github.com/stryker-mutator/stryker-net/issues/3783)
+* **rollback:** Protect directives during roll back process ([#3817](https://github.com/stryker-mutator/stryker-net/issues/3817)) ([f74b4ce](https://github.com/stryker-mutator/stryker-net/commit/f74b4cef8e643952134a3e18d1415372eb7357b7)), closes [#3799](https://github.com/stryker-mutator/stryker-net/issues/3799)
+* **since:** remove last '.git' from repo path instead of first ([#3982](https://github.com/stryker-mutator/stryker-net/issues/3982)) ([2ec2d68](https://github.com/stryker-mutator/stryker-net/commit/2ec2d68614600d191de828675a10f1d91048a7be)), closes [#3974](https://github.com/stryker-mutator/stryker-net/issues/3974)
+* **test-runner:** distinguish discovery failures from empty test filters ([#3902](https://github.com/stryker-mutator/stryker-net/issues/3902)) ([81d392f](https://github.com/stryker-mutator/stryker-net/commit/81d392fd9a284935ea4c0f3a3aca940b2f9638e0)), closes [#3895](https://github.com/stryker-mutator/stryker-net/issues/3895)
+
+
+### Features
+
+* **cli:** expose test case filter option ([#3838](https://github.com/stryker-mutator/stryker-net/issues/3838)) ([98344e9](https://github.com/stryker-mutator/stryker-net/commit/98344e9660cd5281322d19ea712de8206e76aaf8)), closes [#3091](https://github.com/stryker-mutator/stryker-net/issues/3091)
+* **compilation:** follow project C# language version ([#3839](https://github.com/stryker-mutator/stryker-net/issues/3839)) ([5abfbe4](https://github.com/stryker-mutator/stryker-net/commit/5abfbe4a3902a028601d056b06ef7e95bae3e7f1)), closes [#3662](https://github.com/stryker-mutator/stryker-net/issues/3662)
+* **initialization:** Abort Stryker when using conflicting options ([#3807](https://github.com/stryker-mutator/stryker-net/issues/3807)) ([eaabae4](https://github.com/stryker-mutator/stryker-net/commit/eaabae406e0ed4b58fcf7eced99f72584345105a)), closes [#3795](https://github.com/stryker-mutator/stryker-net/issues/3795)
+* **mtp:** apply test-case-filter in Stryker when the test app has no --filter ([#3961](https://github.com/stryker-mutator/stryker-net/issues/3961)) ([0508a9f](https://github.com/stryker-mutator/stryker-net/commit/0508a9fa8919510b4c282f6e0f755493b800f735)), closes [#3960](https://github.com/stryker-mutator/stryker-net/issues/3960)
+* **MTP:** apply test-case-filter when using MTP testrunner ([#3848](https://github.com/stryker-mutator/stryker-net/issues/3848)) ([172799f](https://github.com/stryker-mutator/stryker-net/commit/172799f72e2abc46d03b907612b6556f2fe3a496)), closes [#3843](https://github.com/stryker-mutator/stryker-net/issues/3843) [#3843](https://github.com/stryker-mutator/stryker-net/issues/3843)
+* **unity:** fail fast for unsupported test projects ([#3840](https://github.com/stryker-mutator/stryker-net/issues/3840)) ([9f1ced7](https://github.com/stryker-mutator/stryker-net/commit/9f1ced72edbdb01786015ac03305fd744e1baf16)), closes [#2381](https://github.com/stryker-mutator/stryker-net/issues/2381)
+
+
+### Performance Improvements
+
+* **test-runner:** materialize executed identifiers once per result ([#3929](https://github.com/stryker-mutator/stryker-net/issues/3929)) ([6a2513a](https://github.com/stryker-mutator/stryker-net/commit/6a2513a9e2e925594945038f938e5fc68a3c5aab))
+
 # [5.0.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.16.0...dotnet-stryker@5.0.0) (2026-09-11)
 
 
