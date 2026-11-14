@@ -1,13 +1,16 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Configuration.Options;
 using Stryker.Utilities.Buildalyzer;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.UnitTest.Initialisation.Buildalyzer;
 
@@ -219,6 +222,9 @@ public class AnalyzerResultExtensionsTests
     [DataRow("8.0", LanguageVersion.CSharp8)]
     [DataRow("7.1", LanguageVersion.CSharp7_1)]
     [DataRow("latest", LanguageVersion.Latest)]
+    [DataRow("15.0", LanguageVersion.Preview)]
+    [DataRow("15", LanguageVersion.Preview)]
+    [DataRow("99.0", LanguageVersion.Preview)]
     [DataRow("dontCare", LanguageVersion.Default)]
     [DataRow(null, LanguageVersion.Default)]
     public void GetParseOptions_ShouldReturnProjectCSharpVersion(string actualLangVersion, LanguageVersion expected)
@@ -237,6 +243,63 @@ public class AnalyzerResultExtensionsTests
 
         // Assert
         parseOptions.SpecifiedLanguageVersion.ShouldBe(expected);
+    }
+
+    [TestMethod]
+    public void GetParseOptions_ShouldParseCollectionExpressionArgumentsForNewerLangVersion()
+    {
+        var analyzerResult = CreateAnalyzerResultWithProperties(new Dictionary<string, string> { ["LangVersion"] = "15.0" });
+        var parseOptions = analyzerResult.GetParseOptions();
+
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            "class C { System.Collections.Generic.HashSet<string> s = [with(System.StringComparer.Ordinal)]; }",
+            parseOptions);
+        var references = new[] { typeof(object).Assembly.Location, typeof(HashSet<>).Assembly.Location }
+            .Distinct()
+            .Select(location => MetadataReference.CreateFromFile(location));
+        var diagnostics = CSharpCompilation.Create("TestCompilation")
+            .AddReferences(references)
+            .AddSyntaxTrees(syntaxTree)
+            .GetDiagnostics();
+
+        diagnostics.ShouldNotContain(diagnostic => diagnostic.Id == "CS8652");
+    }
+
+    [TestMethod]
+    public void GetParseOptions_ShouldWarnAboutNewerLangVersionOncePerProject()
+    {
+        var previousLoggerFactory = ApplicationLogging.LoggerFactory;
+        var loggerFactoryMock = new Mock<ILoggerFactory>();
+        var loggerMock = new Mock<ILogger>();
+        loggerFactoryMock.Setup(factory => factory.CreateLogger(It.IsAny<string>())).Returns(loggerMock.Object);
+
+        try
+        {
+            ApplicationLogging.LoggerFactory = loggerFactoryMock.Object;
+            var projectFilePath = $"Project-{Guid.NewGuid():N}.csproj";
+            var analyzerResult = CreateAnalyzerResultWithProperties(new Dictionary<string, string> { ["LangVersion"] = "15.0" });
+            Mock.Get(analyzerResult)
+                .SetupGet(result => result.ProjectFilePath)
+                .Returns(projectFilePath);
+
+            var parseOptions = Enumerable.Range(0, 3)
+                .Select(_ => analyzerResult.GetParseOptions())
+                .ToArray();
+
+            parseOptions.ShouldAllBe(options => options.SpecifiedLanguageVersion == LanguageVersion.Preview);
+            loggerMock.Verify(
+                logger => logger.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((state, _) => (state.ToString() ?? string.Empty).Contains(projectFilePath, StringComparison.Ordinal)),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.Once);
+        }
+        finally
+        {
+            ApplicationLogging.LoggerFactory = previousLoggerFactory;
+        }
     }
 
     [TestMethod]

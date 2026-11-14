@@ -1,10 +1,15 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Options;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Utilities.Buildalyzer;
 
@@ -12,6 +17,7 @@ public static class IAnalyzerResultCSharpExtensions
 {
     private const string InterceptorsNamespacesKey = "InterceptorsNamespaces";
     private const string InterceptorsPreviewNamespacesKey = "InterceptorsPreviewNamespaces";
+    private static readonly ConcurrentDictionary<string, byte> ProjectsWarnedAboutNewerLanguageVersion = new(StringComparer.OrdinalIgnoreCase);
 
     public static CSharpCompilationOptions GetCompilationOptions(this IAnalyzerResult analyzerResult)
     {
@@ -40,12 +46,54 @@ public static class IAnalyzerResultCSharpExtensions
             documentationMode: DocumentationMode.None,
             preprocessorSymbols: analyzerResult.PreprocessorSymbols);
         var version = analyzerResult.GetProperty("LangVersion");
-        if (!string.IsNullOrWhiteSpace(version) && LanguageVersionFacts.TryParse(version, out var parsedVersion))
+        if (!string.IsNullOrWhiteSpace(version))
         {
-            parseOptions = parseOptions.WithLanguageVersion(parsedVersion);
+            if (LanguageVersionFacts.TryParse(version, out var parsedVersion))
+            {
+                parseOptions = parseOptions.WithLanguageVersion(parsedVersion);
+            }
+            else if (TryParseNumericLanguageVersion(version, out var requestedMajorVersion))
+            {
+                var latestSupportedVersion = LanguageVersionFacts.MapSpecifiedToEffectiveVersion(LanguageVersion.Latest);
+                var latestSupportedMajorVersion = GetMajorVersion(latestSupportedVersion);
+                if (requestedMajorVersion > latestSupportedMajorVersion)
+                {
+                    parseOptions = parseOptions.WithLanguageVersion(LanguageVersion.Preview);
+                    if (ProjectsWarnedAboutNewerLanguageVersion.TryAdd(analyzerResult.ProjectFilePath ?? string.Empty, 0))
+                    {
+                        var logger = ApplicationLogging.LoggerFactory?.CreateLogger(nameof(IAnalyzerResultCSharpExtensions));
+                        logger?.LogWarning(
+                            "Project {ProjectFileName} LangVersion {LangVersion} is newer than the C# versions supported by Stryker's compiler ({MaxVersion}); using Preview.",
+                            Path.GetFileName(analyzerResult.ProjectFilePath),
+                            version,
+                            latestSupportedMajorVersion);
+                    }
+                }
+            }
         }
 
         return parseOptions.WithFeatures(ExtractCSharpFeatures(analyzerResult));
+    }
+
+    private static bool TryParseNumericLanguageVersion(string version, out int majorVersion)
+    {
+        majorVersion = 0;
+        var parts = version.Split('.');
+        return parts.Length is 1 or 2
+            && int.TryParse(parts[0], NumberStyles.None, CultureInfo.InvariantCulture, out majorVersion)
+            && (parts.Length == 1 || int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out _));
+    }
+
+    private static int GetMajorVersion(LanguageVersion version)
+    {
+        var versionName = version.ToString().AsSpan("CSharp".Length);
+        var minorSeparator = versionName.IndexOf('_');
+        if (minorSeparator >= 0)
+        {
+            versionName = versionName[..minorSeparator];
+        }
+
+        return int.Parse(versionName, NumberStyles.None, CultureInfo.InvariantCulture);
     }
 
     public static CSharpParseOptions GetParseOptions(this IAnalyzerResult analyzerResult, IStrykerOptions _) =>
