@@ -332,7 +332,7 @@ public class AnalyzerResultExtensionsTests
         // Arrange
         var properties = new Dictionary<string, string>
         {
-            { "Features", "InterceptorsPreview;FunctionPointers=true;ExtendedPartialMethods=false" }
+            { "Features", "InterceptorsPreview=true;FunctionPointers=false;ExtendedPartialMethods=" }
         };
         var analyzerResult = CreateAnalyzerResultWithProperties(properties);
 
@@ -341,8 +341,8 @@ public class AnalyzerResultExtensionsTests
 
         // Assert
         parseOptions.Features.ShouldContain(f => f.Key == "InterceptorsPreview" && f.Value == "true");
-        parseOptions.Features.ShouldContain(f => f.Key == "FunctionPointers" && f.Value == "true");
-        parseOptions.Features.ShouldContain(f => f.Key == "ExtendedPartialMethods" && f.Value == "false");
+        parseOptions.Features.ShouldContain(f => f.Key == "FunctionPointers" && f.Value == "false");
+        parseOptions.Features.ShouldContain(f => f.Key == "ExtendedPartialMethods" && f.Value == "");
         parseOptions.Features.Count().ShouldBe(3);
     }
 
