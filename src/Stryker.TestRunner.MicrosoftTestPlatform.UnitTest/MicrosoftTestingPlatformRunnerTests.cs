@@ -844,8 +844,11 @@ public class MicrosoftTestingPlatformRunnerTests
     // TUnit's ErrorTestNode path), "timed-out" or "cancelled" were silently
     // dropped and their mutants were reported as Survived.
 
-    private static TestNodeUpdate Update(string uid, string state) =>
-        new(new TestNode(uid, uid, "test", state), ParentUid: "root");
+    private static TestNodeUpdate Update(string uid, string state, double? durationMs = null, double? finishedAtSeconds = null) =>
+        new(
+            new TestNode(uid, uid, "test", state, DurationMs: durationMs),
+            ParentUid: "root",
+            FinishedAtUtc: finishedAtSeconds is { } seconds ? new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(seconds) : null);
 
     [TestMethod, Timeout(1000)]
     public void BuildTestRunResult_FailedState_IsReportedAsFailing()
@@ -962,6 +965,218 @@ public class MicrosoftTestingPlatformRunnerTests
         result.TimedOutTests.GetIdentifiers().ShouldBe(["timed-out"]);
         result.ExecutedTests.GetIdentifiers()
             .ShouldBe(["passed", "skipped", "failed", "error", "timed-out", "cancelled"], ignoreOrder: true);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_UsesTheReportedDurationOfEachTest()
+    {
+        using var runner = CreateRunner();
+        var slow = new TestNode("slow", "slow", "test", TestNodeStates.Passed, DurationMs: 900);
+        var fast = new TestNode("fast", "fast", "test", TestNodeStates.Passed, DurationMs: 100);
+        _testDescriptions["slow"] = new MtpTestDescription(slow);
+        _testDescriptions["fast"] = new MtpTestDescription(fast);
+
+        runner.BuildTestRunResult(
+            [new TestNodeUpdate(slow, "root"), new TestNodeUpdate(fast, "root")],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromMilliseconds(2000));
+
+        _testDescriptions["slow"].InitialRunTime.TotalMilliseconds.ShouldBe(900);
+        _testDescriptions["fast"].InitialRunTime.TotalMilliseconds.ShouldBe(100);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_FallsBackToTheAverageDuration_WhenATestReportsNone()
+    {
+        using var runner = CreateRunner();
+        var reported = new TestNode("reported", "reported", "test", TestNodeStates.Passed, DurationMs: 100);
+        var unreported = new TestNode("unreported", "unreported", "test", TestNodeStates.Passed);
+        _testDescriptions["reported"] = new MtpTestDescription(reported);
+        _testDescriptions["unreported"] = new MtpTestDescription(unreported);
+
+        runner.BuildTestRunResult(
+            [new TestNodeUpdate(reported, "root"), new TestNodeUpdate(unreported, "root")],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromMilliseconds(600));
+
+        _testDescriptions["reported"].InitialRunTime.TotalMilliseconds.ShouldBe(100);
+        _testDescriptions["unreported"].InitialRunTime.TotalMilliseconds.ShouldBe(300);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_ReportsTheTimeSpentInTests_NotTheWallClockTimeOfTheRun()
+    {
+        // The initial-run timeout calculation takes (wall-clock - reported duration) as session overhead,
+        // so a result that reported the wall-clock time would hide that overhead and under-budget mutant runs.
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("t1", TestNodeStates.Passed, durationMs: 60), Update("t2", TestNodeStates.Passed, durationMs: 40)],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromMilliseconds(10100));
+
+        result.Duration.TotalMilliseconds.ShouldBe(100);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_Duration_IsCappedAtTheWallClockTime_WhenTestsRanInParallel()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("t1", TestNodeStates.Passed, durationMs: 400), Update("t2", TestNodeStates.Passed, durationMs: 400)],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromMilliseconds(500));
+
+        result.Duration.TotalMilliseconds.ShouldBe(500);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_Duration_KeepsTheSharedSetupOutOfTheTestsDuration_WhenTestsRanInParallel()
+    {
+        using var runner = CreateRunner();
+
+        // 20 s of shared setup, then 40 s, 40 s and 1 s tests running concurrently: 60 s in total.
+        var result = runner.BuildTestRunResult(
+            [
+                Update("t1", TestNodeStates.Passed, durationMs: 40000, finishedAtSeconds: 60),
+                Update("t2", TestNodeStates.Passed, durationMs: 40000, finishedAtSeconds: 60),
+                Update("t3", TestNodeStates.Passed, durationMs: 1000, finishedAtSeconds: 21)
+            ],
+            totalDiscoveredTests: 3,
+            duration: TimeSpan.FromSeconds(60));
+
+        result.Duration.TotalSeconds.ShouldBe(40);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_Duration_CountsATestNestedInALongerOneOnce()
+    {
+        using var runner = CreateRunner();
+
+        // 20 s - 60 s and 30 s - 31 s: the short test runs entirely inside the long one, so 40 s are covered.
+        // The shorter test finishes first, which a sweep by end time would not account for.
+        var result = runner.BuildTestRunResult(
+            [
+                Update("long", TestNodeStates.Passed, durationMs: 40000, finishedAtSeconds: 60),
+                Update("nested", TestNodeStates.Passed, durationMs: 1000, finishedAtSeconds: 31)
+            ],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromSeconds(60));
+
+        result.Duration.TotalSeconds.ShouldBe(40);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_Duration_DoesNotDependOnTheOrderOfTestsSharingTheirEnd()
+    {
+        using var runner = CreateRunner();
+
+        // Both tests end at 60 s but last 10 s and 40 s: the union is 40 s whichever is reported first
+        var result = runner.BuildTestRunResult(
+            [
+                Update("short", TestNodeStates.Passed, durationMs: 10000, finishedAtSeconds: 60),
+                Update("long", TestNodeStates.Passed, durationMs: 40000, finishedAtSeconds: 60)
+            ],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromSeconds(60));
+
+        result.Duration.TotalSeconds.ShouldBe(40);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_Duration_AddsUpTestsThatDoNotOverlap()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [
+                Update("t1", TestNodeStates.Passed, durationMs: 2000, finishedAtSeconds: 10),
+                Update("t2", TestNodeStates.Passed, durationMs: 3000, finishedAtSeconds: 20)
+            ],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromSeconds(30));
+
+        result.Duration.TotalSeconds.ShouldBe(5);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_Duration_UsesTheAverageForTestsWithoutReportedDuration()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("t1", TestNodeStates.Passed, durationMs: 100), Update("t2", TestNodeStates.Passed)],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromMilliseconds(600));
+
+        result.Duration.TotalMilliseconds.ShouldBe(400);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_Duration_IsTheWallClockTime_WhenNoTestReportsADuration()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("t1", TestNodeStates.Passed), Update("t2", TestNodeStates.Failed)],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromMilliseconds(600));
+
+        result.Duration.TotalMilliseconds.ShouldBe(600);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_Duration_IsTheWallClockTime_WhenNoTestFinished()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("t1", TestNodeStates.InProgress, durationMs: 50)],
+            totalDiscoveredTests: 1,
+            duration: TimeSpan.FromMilliseconds(600));
+
+        result.Duration.TotalMilliseconds.ShouldBe(600);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_Duration_IgnoresTestsThatHaveNotFinished()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("t1", TestNodeStates.Passed, durationMs: 100), Update("t2", TestNodeStates.InProgress, durationMs: 900)],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromMilliseconds(5000));
+
+        result.Duration.TotalMilliseconds.ShouldBe(100);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_Duration_CountsFinishedTestsUnknownToDiscovery()
+    {
+        using var runner = CreateRunner();
+        _testDescriptions.ShouldBeEmpty();
+
+        var result = runner.BuildTestRunResult(
+            [Update("never-discovered", TestNodeStates.Passed, durationMs: 70)],
+            totalDiscoveredTests: 1,
+            duration: TimeSpan.FromMilliseconds(5000));
+
+        result.Duration.TotalMilliseconds.ShouldBe(70);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_Duration_AcceptsZeroReportedDuration()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("t1", TestNodeStates.Passed, durationMs: 0), Update("t2", TestNodeStates.Passed, durationMs: 30)],
+            totalDiscoveredTests: 2,
+            duration: TimeSpan.FromMilliseconds(5000));
+
+        result.Duration.TotalMilliseconds.ShouldBe(30);
     }
 
     [TestMethod, Timeout(1000)]
