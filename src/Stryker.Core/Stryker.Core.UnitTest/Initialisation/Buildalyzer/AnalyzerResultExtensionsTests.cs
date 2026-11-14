@@ -289,6 +289,63 @@ public class AnalyzerResultExtensionsTests
         }
     }
 
+    // the Razor SDK sets <Features>use-roslyn-tokenizer=true;$(Features)</Features>
+    [TestMethod]
+    [DataRow("use-roslyn-tokenizer=true", "use-roslyn-tokenizer", "true")]
+    [DataRow("use-roslyn-tokenizer=true;", "use-roslyn-tokenizer", "true")]
+    [DataRow("strict;run-nullable-analysis=never", "run-nullable-analysis", "never")]
+    [DataRow(" name = value ", "name", "value")]
+    public void GetParseOptions_ShouldReadNameEqualsValue_AsTheCompilerDoes(string propertyValue, string expectedName, string expectedValue)
+    {
+        var analyzerResult = CreateAnalyzerResultWithProperties(new Dictionary<string, string> { { "Features", propertyValue } });
+
+        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+
+        parseOptions.Features.ShouldContainKeyAndValue(expectedName, expectedValue);
+        parseOptions.Features.Keys.ShouldNotContain(k => k.Contains('='));
+    }
+
+    [TestMethod]
+    public void GetParseOptions_ShouldLetTheLastEntryWin_WhenAFeatureIsGivenTwice()
+    {
+        var analyzerResult = CreateAnalyzerResultWithProperties(new Dictionary<string, string>
+        {
+            { "Features", "use-roslyn-tokenizer;use-roslyn-tokenizer=true;flag=a;flag=b" }
+        });
+
+        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+
+        parseOptions.Features.ShouldContainKeyAndValue("use-roslyn-tokenizer", "true");
+        parseOptions.Features.ShouldContainKeyAndValue("flag", "b");
+    }
+
+    // CSharpParseOptions.WithFeatures compares names ignoring case and throws on two that differ only in case
+    [TestMethod]
+    public void GetParseOptions_ShouldNotThrow_WhenTwoFeatureNamesDifferOnlyInCase()
+    {
+        var analyzerResult = CreateAnalyzerResultWithProperties(new Dictionary<string, string> { { "Features", "Flag=a;flag=b" } });
+
+        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+
+        parseOptions.Features.ShouldHaveSingleItem();
+        parseOptions.Features["flag"].ShouldBe("b");
+    }
+
+    // as csc reads /features:"name=quoted", /features:name="quoted" and /features:a=1,b=2
+    [TestMethod]
+    [DataRow("\"name=quoted\"", "name", "quoted")]
+    [DataRow("name=\"quoted\"", "name", "quoted")]
+    [DataRow("a=1,b=2", "b", "2")]
+    public void GetParseOptions_ShouldDropQuotesAndSplitOnCommas_AsTheCompilerDoes(string propertyValue, string expectedName, string expectedValue)
+    {
+        var analyzerResult = CreateAnalyzerResultWithProperties(new Dictionary<string, string> { { "Features", propertyValue } });
+
+        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+
+        parseOptions.Features.ShouldContainKeyAndValue(expectedName, expectedValue);
+        parseOptions.Features.Keys.ShouldNotContain(k => k.Contains('"') || k.Contains(','));
+    }
+
     [TestMethod]
     public void GetParseOptions_ShouldIncludeInterceptorsNamespaces_WhenInterceptorsNamespacesIsSet()
     {
