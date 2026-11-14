@@ -70,4 +70,32 @@ public class InitialTestProcessTests : TestBase
 
         result.TimeoutValueCalculator.DefaultTimeout.ShouldBeInRange(1, 200, "This test contains a Thread.Sleep to simulate time passing as this test is testing that a stopwatch is used correctly to measure time.\n If this test is failing for unclear reasons, perhaps the computer running the test is too slow causing the time estimation to be off");
     }
+
+    [TestMethod]
+    public async Task InitialTestProcess_ShouldLogMutantTimeoutBaseline()
+    {
+        var loggerMock = new Mock<ILogger<InitialTestProcess>>();
+        var target = new InitialTestProcess(loggerMock.Object);
+        var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
+        testRunnerMock.Setup(x => x.InitialTestAsync(It.IsAny<IProjectAndTests>())).Returns(Task.FromResult(new TestRunResult(true) as ITestRunResult));
+
+        var options = new StrykerOptions
+        {
+            AdditionalTimeout = 500,
+            TimeoutRatio = 2.0
+        };
+
+        var result = await target.InitialTestAsync(options, null, testRunnerMock.Object);
+
+        result.TimeoutValueCalculator.DefaultTimeout.ShouldBe(500);
+
+        loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("Stryker mutant per-test timeout baseline", StringComparison.Ordinal)),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
 }
