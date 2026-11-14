@@ -67,7 +67,8 @@ public class BuildalyzerHelperTests : TestBase
 
         var logger = new Mock<ILogger>(MockBehavior.Loose);
 
-        projectAnalyzerResult.GetSourceGenerators(logger.Object).ShouldBeEmpty();
+        var issues = new List<string>();
+        projectAnalyzerResult.GetSourceGenerators(logger.Object, issues).ShouldBeEmpty();
     }
 
     [TestMethod]
@@ -79,6 +80,7 @@ public class BuildalyzerHelperTests : TestBase
 
         var logger = new Mock<ILogger>(MockBehavior.Loose);
 
-        projectAnalyzerResult.GetSourceGenerators(logger.Object).ShouldBeEmpty();
+        var issues = new List<string>();
+        projectAnalyzerResult.GetSourceGenerators(logger.Object, issues).ShouldBeEmpty();
     }
 }

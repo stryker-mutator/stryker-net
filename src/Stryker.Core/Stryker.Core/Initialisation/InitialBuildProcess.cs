@@ -1,5 +1,5 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
@@ -14,7 +14,7 @@ public interface IInitialBuildProcess
 {
     void InitialBuild(bool fullFramework,
         string projectPath,
-        string solutionPath,
+        Dictionary<string, string> properties = null,
         string configuration = null,
         string platform = null,
         string targetFramework = null,
@@ -37,38 +37,42 @@ public class InitialBuildProcess : IInitialBuildProcess
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration = null,
-        string platform = null, string targetFramework = null,
+    public void InitialBuild(bool fullFramework,
+        string projectPath,
+        Dictionary<string, string> properties = null,
+        string configuration = null,
+        string platform = null,
+        string targetFramework = null,
         string msbuildPath = null)
     {
-        if (fullFramework)
+        if (fullFramework && Environment.OSVersion.Platform != PlatformID.Win32NT)
         {
             // ensure prerequisites for building .NETFramework projects are met
-            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
-            {
-                throw new InputException("Stryker cannot build .NET Framework projects on non-Windows platforms.");
-            }
-            if (string.IsNullOrEmpty(solutionPath))
-            {
-                throw new InputException("Stryker could not build your project as no solution file was presented. Please pass the solution path to stryker.");
-            }
+            throw new InputException("Stryker cannot build .NET Framework projects on non-Windows platforms.");
         }
 
         var msBuildHelper = new MsBuildHelper(fileSystem: _fileSystem, executor: _processExecutor, msBuildPath: msbuildPath);
 
         _logger.LogDebug("Started initial build using dotnet build");
-
-        var target = !string.IsNullOrEmpty(solutionPath) ? solutionPath : projectPath;
-        var buildPath = _fileSystem.Path.GetFileName(target);
-        var directoryName = _fileSystem.Path.GetDirectoryName(target);
+        var buildPath = _fileSystem.Path.GetFileName(projectPath);
+        var directoryName = _fileSystem.Path.GetDirectoryName(projectPath);
+        var localProperties = new Dictionary<string, string>(properties ?? new Dictionary<string, string>());
+        if (configuration is not null)
+        {
+            localProperties["Configuration"] = configuration;
+        }
+        if (platform is not null)
+        {
+            localProperties["Platform"] = platform;
+        }
         var (result, exe, args) = msBuildHelper.BuildProject(directoryName,
             buildPath,
             fullFramework,
-            configuration: configuration,
-            platform: platform,
-            forcedFramework: targetFramework);
+            localProperties);
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && result.ExitCode != ExitCodes.Success && !string.IsNullOrEmpty(solutionPath))
+        // if the build failed and we are on Windows and the project is a solution, try to build with MsBuild and force package restore
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && result.ExitCode != ExitCodes.Success
+                                                                && _fileSystem.Path.GetExtension(projectPath).StartsWith(".sln", StringComparison.OrdinalIgnoreCase))
         {
             // dump previous build result
             _logger.LogTrace("Initial build output: {0}", result.Output);
@@ -76,8 +80,8 @@ public class InitialBuildProcess : IInitialBuildProcess
             (result, _, _) = msBuildHelper.BuildProject(directoryName,
                 buildPath,
                 true,
-                configuration,
-                options: "-t:restore -p:RestorePackagesConfig=true", forcedFramework: targetFramework);
+                localProperties,
+                options: "-t:restore -p:RestorePackagesConfig=true");
 
             if (result.ExitCode != ExitCodes.Success)
             {
@@ -87,11 +91,10 @@ public class InitialBuildProcess : IInitialBuildProcess
             (result, exe, args) = msBuildHelper.BuildProject(directoryName,
                 buildPath,
                 true,
-                configuration,
-                forcedFramework: targetFramework);
+                localProperties);
         }
 
-        CheckBuildResult(result, target, exe, args);
+        CheckBuildResult(result, projectPath, exe, args);
     }
 
     private void CheckBuildResult(ProcessResult result, string path, string buildCommand, string options)
@@ -110,12 +113,8 @@ public class InitialBuildProcess : IInitialBuildProcess
         "Initial build of targeted project failed. Please make sure the targeted project is buildable." +
         $" You can reproduce this error yourself using: \"{QuotesIfNeeded(buildCommand)} {options}\"";
 
-    private static string QuotesIfNeeded(string parameter)
-    {
-        if (!parameter.Contains(' ') || parameter.Length < 3 || parameter[0] == '"' && parameter[^1] == '"')
-        {
-            return parameter;
-        }
-        return $"\"{parameter}\"";
-    }
+    private static string QuotesIfNeeded(string parameter) =>
+        parameter.Length < 3 || !parameter.Contains(' ') || (parameter[0] == '"' && parameter[^1] == '"')
+            ? parameter
+            : $"\"{parameter}\"";
 }

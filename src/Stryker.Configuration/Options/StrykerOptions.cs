@@ -16,7 +16,7 @@ public class StrykerOptions : IStrykerOptions
     /// <summary>
     /// A custom settable path to the msBuild exe for .NET Framework projects. When null stryker will search for the path itself.
     /// </summary>
-    public string MsBuildPath { get; init; }
+    public string? MsBuildPath { get; init; }
 
     /// <summary>
     /// when true: adjust Stryker logic to make it easier to analyse/debug
@@ -60,12 +60,12 @@ public class StrykerOptions : IStrykerOptions
     /// <summary>
     /// The full path of the solution file. Can be null.
     /// </summary>
-    public string SolutionPath { get; init; }
+    public string? SolutionPath { get; init; }
 
     /// <summary>
     /// The configuration (in the VS sense) that should be used when building the project under test.
     /// </summary>
-    /// <remarks>It may also contain the platform in the form of "<configuration>|<platform>".</remarks>
+    /// <remarks>it may also contain the platform in the form of "configuration|platform"</remarks>
     public string Configuration
     {
         get => _configuration;
@@ -97,6 +97,11 @@ public class StrykerOptions : IStrykerOptions
     /// The detected target framework for the current project under test.
     /// </summary>
     public string TargetFramework { get; init; }
+
+    /// <summary>
+    /// MsBuild properties that should be passed to the build process.
+    /// </summary>
+    public Dictionary<string, string> BuildProperties { get; init; } = new();
 
     /// <summary>
     /// The options passed to all logging systems
@@ -279,9 +284,9 @@ public class StrykerOptions : IStrykerOptions
     /// </summary>
     public bool BreakOnInitialTestFailure { get; set; }
 
-    /// </summary>
-    /// The test runner to use for executing tests
     /// <summary>
+    /// The test runner to use for executing tests
+    /// </summary>
     public TestRunner TestRunner { get; init; }
 
     /// <summary>
@@ -289,6 +294,6 @@ public class StrykerOptions : IStrykerOptions
     /// </summary>
     public IProvideId MutantIdProvider {get; set;}
 
-    private readonly string _workingDirectoryField;
-    private string _configuration;
+    private readonly string? _workingDirectoryField;
+    private string? _configuration;
 }

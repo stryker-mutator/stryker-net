@@ -7,7 +7,7 @@ using Stryker.Core.InjectedHelpers;
 
 namespace Stryker.Core.ProjectComponents.SourceProjects;
 
-public class SourceProjectInfo(IAnalyzerResult analyzerResult, ITestProjectsInfo? testProjectsInfo)
+public class SourceProjectInfo(IAnalyzerResult analyzerResult, ITestProjectsInfo? testProjectsInfo, bool valid=true)
     : IProjectAndTests
 {
     private readonly List<string> _warnings = [];
@@ -15,6 +15,8 @@ public class SourceProjectInfo(IAnalyzerResult analyzerResult, ITestProjectsInfo
     public Action OnProjectBuilt { get; set; }
 
     public IAnalyzerResult AnalyzerResult { get; } = analyzerResult;
+
+    public bool IsValid => valid;
 
     public ITestProjectsInfo? TestProjectsInfo { get; } = testProjectsInfo;
 

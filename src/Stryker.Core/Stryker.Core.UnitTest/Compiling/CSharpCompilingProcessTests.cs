@@ -85,7 +85,7 @@ public class Calculator
         var options = new StrykerOptions { LanguageVersion = LanguageVersion.CSharp7_3 };
         var syntaxTree = CSharpSyntaxTree.ParseText(
             "public class Calculator { public int GetValue(int value) => value switch { _ => value }; }",
-            analyzerResult.Object.GetParseOptions(options));
+            analyzerResult.Object.GetParseOptions());
         var input = new MutationTestInput
         {
             SourceProjectInfo = new SourceProjectInfo(analyzerResult.Object, null)

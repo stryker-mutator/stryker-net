@@ -58,6 +58,7 @@
       "s3-region": "us-east-1",
       "provider": ""
     },
-    "test-case-filter": "(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1"
+    "test-case-filter": "(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1",
+    "build-properties" : [ "DesignTimeBuild=false" ]
   }
 }
