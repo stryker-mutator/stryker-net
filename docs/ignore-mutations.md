@@ -35,6 +35,8 @@ Specific method calls can be ignored using the [ignore methods](./configuration.
 
 _Note that this only ignores mutation inside the method calls, not the method declaration._
 
+To also ignore mutations whose only effect is on an ignored call, such as the condition of an `if` that only logs, enable [ignore methods effects](./configuration.md#ignore-methods-effects-bool).
+
 ## Mutate option
 
 Whole files can be ignored using the [mutate](./configuration.md#mutate-glob) option.

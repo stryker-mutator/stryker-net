@@ -29,6 +29,7 @@ stryker-config:
   - linq.FirstOrDefault
   ignore-methods:
   - Log*
+  ignore-methods-effects: true
   thresholds:
     high: 40
     low: 30

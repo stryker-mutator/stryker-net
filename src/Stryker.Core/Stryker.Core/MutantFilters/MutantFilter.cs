@@ -13,6 +13,8 @@ public enum MutantFilter
 
     IgnoreMethod,
 
+    IgnoreMethodsEffects,
+
     FilePattern,
 
     Since,
