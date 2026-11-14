@@ -2,11 +2,13 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using LibGit2Sharp;
+using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Utilities;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.DiffProviders;
 
@@ -15,12 +17,14 @@ public class GitDiffProvider : IDiffProvider
     public ITestSet Tests { get; }
     private readonly IStrykerOptions _options;
     private readonly IGitInfoProvider _gitInfoProvider;
+    private readonly ILogger<GitDiffProvider> _logger;
 
-    public GitDiffProvider(IStrykerOptions options, ITestSet tests, IGitInfoProvider gitInfoProvider = null)
+    public GitDiffProvider(IStrykerOptions options, ITestSet tests, IGitInfoProvider gitInfoProvider = null, ILogger<GitDiffProvider> logger = null)
     {
         Tests = tests;
         _options = options;
         _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
+        _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<GitDiffProvider>();
     }
 
     public DiffResult ScanDiff()
@@ -39,6 +43,11 @@ public class GitDiffProvider : IDiffProvider
         {
             throw new InputException("Could not find a commit to diff. Please check you have provided the correct committish for 'since'.");
         }
+
+        _logger.LogInformation(
+            "Comparing working directory to since target '{SinceTarget}' at commit {CommitSha}.",
+            _options.SinceTarget,
+            commit.Sha);
 
         var testProjects = _options.TestProjects.ToList();
         if (!testProjects.Any())

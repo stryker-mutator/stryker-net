@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using LibGit2Sharp;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
@@ -687,5 +688,57 @@ public class GitDiffProviderTests : TestBase
         // Assert
         res.ChangedTestFiles.Count().ShouldBe(1);
         res.ChangedSourceFiles.Count().ShouldBe(4);
+    }
+
+    [TestMethod]
+    public void ScanDiffShouldLogSinceTargetAndCommitSha()
+    {
+        const string sinceTarget = "development";
+        const string commitSha = "d670460b4b4aece5915caf5c68d12f560a9fe3e4";
+        var options = new StrykerOptions()
+        {
+            ProjectPath = "C:\\",
+            SinceTarget = sinceTarget,
+        };
+
+        var (target, loggerMock) = CreateGitDiffProviderWithEmptyDiff(options, commitSha);
+
+        target.ScanDiff();
+
+        var formattedMessage = string.Format(
+            "Comparing working directory to since target '{0}' at commit {1}.",
+            sinceTarget,
+            commitSha);
+        loggerMock.Verify(Microsoft.Extensions.Logging.LogLevel.Information, formattedMessage);
+        loggerMock.VerifyNoOtherCalls();
+    }
+
+    private static (GitDiffProvider Target, Mock<ILogger<GitDiffProvider>> LoggerMock) CreateGitDiffProviderWithEmptyDiff(
+        StrykerOptions options,
+        string commitSha)
+    {
+        var gitInfoMock = new Mock<IGitInfoProvider>();
+        var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
+        var commitMock = new Mock<Commit>(MockBehavior.Loose);
+        var patchMock = new Mock<Patch>(MockBehavior.Strict);
+
+        commitMock.SetupGet(x => x.Tree).Returns(new Mock<Tree>(MockBehavior.Loose).Object);
+        commitMock.SetupGet(x => x.Sha).Returns(commitSha);
+
+        patchMock
+            .Setup(x => x.GetEnumerator())
+            .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges>()).GetEnumerator());
+
+        repositoryMock
+            .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.WorkingDirectory))
+            .Returns(patchMock.Object);
+
+        gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
+        gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
+        gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
+
+        var loggerMock = new Mock<ILogger<GitDiffProvider>>();
+        var target = new GitDiffProvider(options, null, gitInfoMock.Object, loggerMock.Object);
+        return (target, loggerMock);
     }
 }
