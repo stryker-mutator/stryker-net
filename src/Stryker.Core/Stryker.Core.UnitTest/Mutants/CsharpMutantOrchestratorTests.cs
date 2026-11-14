@@ -534,6 +534,15 @@ return default(bool);}";
 
 
     [TestMethod]
+    public void ShouldMutateConditionalMemberAccessWithIndexOperator()
+    {
+        var source = @"public static char? FirstCharOfLast(string[]? items) => items?.Last()[0];";
+        var expected = @"public static char? FirstCharOfLast(string[]? items) => (StrykerNamespace.MutantControl.IsActive(0)?items?.First()[0]:items?.Last()[0]);";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
     public void ShouldMutateConditionalExpressionOnArrayDeclaration()
     {
         var source =
