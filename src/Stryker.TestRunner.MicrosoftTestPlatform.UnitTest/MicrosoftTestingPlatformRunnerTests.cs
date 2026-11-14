@@ -965,6 +965,48 @@ public class MicrosoftTestingPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_WarnsOnce_ForAnUnexpectedTest()
+    {
+        var logger = new Mock<ILogger>();
+        using var runner = new MicrosoftTestingPlatformRunner(0, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, logger.Object);
+        var known = new TestNode("known", "known", "test", TestNodeStates.Passed);
+        _testDescriptions["known"] = new MtpTestDescription(known);
+        TestNodeUpdate[] updates = [new(known, "root"), Update("unexpected", TestNodeStates.Passed)];
+
+        runner.BuildTestRunResult(updates, totalDiscoveredTests: 2, duration: TimeSpan.FromMilliseconds(10));
+        runner.BuildTestRunResult(updates, totalDiscoveredTests: 2, duration: TimeSpan.FromMilliseconds(10));
+
+        logger.Verify(
+            l => l.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((state, _) => $"{state}".Contains("unexpected test case (unexpected)")),
+                null,
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_DoesNotWarn_WhenEveryTestWasDiscovered()
+    {
+        var logger = new Mock<ILogger>();
+        using var runner = new MicrosoftTestingPlatformRunner(0, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, logger.Object);
+        var known = new TestNode("known", "known", "test", TestNodeStates.Passed);
+        _testDescriptions["known"] = new MtpTestDescription(known);
+
+        runner.BuildTestRunResult([new TestNodeUpdate(known, "root")], totalDiscoveredTests: 1, duration: TimeSpan.FromMilliseconds(10));
+
+        logger.Verify(
+            l => l.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception?>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Never);
+    }
+
+    [TestMethod, Timeout(1000)]
     public void BuildTestRunResult_ExecutedTests_CollapsesToEveryTest_WhenAllFinished()
     {
         using var runner = CreateRunner();
