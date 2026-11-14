@@ -189,12 +189,21 @@ public class MicrosoftTestingPlatformRunnerTests
 
     private static async Task<Mock<ITestingPlatformClient>> AddDiscoveryServerAsync(MicrosoftTestingPlatformRunner runner, string assembly)
     {
+        var (server, client) = CreateMockServer(assembly);
+        await server.StartAsync();
+        runner._assemblyServers[assembly] = server;
+        return client;
+    }
+
+    private static (AssemblyTestServer Server, Mock<ITestingPlatformClient> Client) CreateMockServer(string assembly)
+    {
         var client = new Mock<ITestingPlatformClient>();
         client.Setup(x => x.InitializeAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         client.Setup(x => x.ExitAsync(true)).Returns(Task.CompletedTask);
         client.Setup(x => x.WaitServerProcessExitAsync()).ReturnsAsync(0);
         var process = new Mock<ITestServerProcess>();
         process.Setup(x => x.WaitForExitAsync()).Returns(new TaskCompletionSource().Task);
+        process.Setup(x => x.ProcessHandle).Returns(new Mock<IProcessHandle>().Object);
         var listener = new Mock<ITestServerListener>();
         listener.Setup(x => x.AcceptConnectionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new TcpClient());
         var factory = new Mock<ITestServerConnectionFactory>();
@@ -202,9 +211,130 @@ public class MicrosoftTestingPlatformRunnerTests
         factory.Setup(x => x.StartProcess(assembly, 12345, It.IsAny<Dictionary<string, string?>>())).Returns(process.Object);
         factory.Setup(x => x.CreateClient(It.IsAny<TcpClient>(), It.IsAny<IProcessHandle>(), It.IsAny<ILogger>())).Returns(client.Object);
         var server = new AssemblyTestServer(assembly, [], NullLogger.Instance, "test-runner", connectionFactory: factory.Object);
-        await server.StartAsync();
-        runner._assemblyServers[assembly] = server;
-        return client;
+        return (server, client);
+    }
+
+    private static Func<DateTime> Clock(params TimeSpan[] offsets)
+    {
+        var origin = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var index = 0;
+        return () => origin + offsets[Math.Min(index++, offsets.Length - 1)];
+    }
+
+    private async Task<(int RunCalls, bool TimedOut)> RunTimedOutAssemblyAsync(Func<DateTime> clock, bool alwaysHang = false)
+    {
+        const string Assembly = "/test/sleep.dll";
+        using var runner = new MicrosoftTestingPlatformRunner(0, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance)
+        {
+            UtcNow = clock
+        };
+        var runCalls = 0;
+        void ConfigureRun(Mock<ITestingPlatformClient> client) =>
+            client.Setup(x => x.RunTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<TestNode[]?>(), It.IsAny<CancellationToken>()))
+                .Returns<Func<TestNodeUpdate[], Task>, TestNode[]?, CancellationToken>(async (_, _, token) =>
+                {
+                    // A hanging call never ends by itself, so it only returns when the timeout cancels it.
+                    if (++runCalls == 1 || alwaysHang)
+                    {
+                        await Task.Delay(Timeout.Infinite, token);
+                    }
+                });
+
+        ConfigureRun(await AddDiscoveryServerAsync(runner, Assembly));
+        // A rerun after sleep starts on a fresh server, which behaves like the first one.
+        runner.ServerFactory = (_, _) =>
+        {
+            var (server, client) = CreateMockServer(Assembly);
+            ConfigureRun(client);
+            return server;
+        };
+        var (_, timedOut) = await runner.RunAssemblyTestsInternalAsync(Assembly, testUidFilter: null, timeout: TimeSpan.FromMilliseconds(25));
+        return (runCalls, timedOut);
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task RunAssemblyTestsInternalAsync_RerunsTheSession_WhenTheComputerSleptDuringTheRun()
+    {
+        // Wall clock: the first run appears to last an hour although it had a 25 ms timeout.
+        var (runCalls, timedOut) = await RunTimedOutAssemblyAsync(Clock(
+            TimeSpan.Zero, TimeSpan.FromHours(1),
+            TimeSpan.Zero, TimeSpan.FromSeconds(1)));
+
+        runCalls.ShouldBe(2);
+        timedOut.ShouldBeFalse();
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task RunAssemblyTestsInternalAsync_ReportsTimeout_WhenTheRunOnlySlightlyOvershotItsTimeout()
+    {
+        var (runCalls, timedOut) = await RunTimedOutAssemblyAsync(Clock(TimeSpan.Zero, TimeSpan.FromSeconds(5)));
+
+        runCalls.ShouldBe(1);
+        timedOut.ShouldBeTrue();
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task RunAssemblyTestsInternalAsync_StopsRerunning_WhenTheComputerKeepsSleeping()
+    {
+        // Every run appears to last an hour: the rerun budget is bounded, the last result is reported as a timeout.
+        var (runCalls, timedOut) = await RunTimedOutAssemblyAsync(Clock(
+            TimeSpan.Zero, TimeSpan.FromHours(1),
+            TimeSpan.Zero, TimeSpan.FromHours(1),
+            TimeSpan.Zero, TimeSpan.FromHours(1),
+            TimeSpan.Zero, TimeSpan.FromHours(1)), alwaysHang: true);
+
+        runCalls.ShouldBe(4);
+        timedOut.ShouldBeTrue();
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task RunAssemblyTestsInternalAsync_RerunsOnAFreshServer_WhenTheComputerSleptDuringTheRun()
+    {
+        const string Assembly = "/test/sleep.dll";
+        using var runner = new MicrosoftTestingPlatformRunner(0, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance)
+        {
+            UtcNow = Clock(TimeSpan.Zero, TimeSpan.FromHours(1), TimeSpan.Zero, TimeSpan.FromSeconds(1))
+        };
+        var staleClient = await AddDiscoveryServerAsync(runner, Assembly);
+        staleClient.Setup(x => x.RunTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<TestNode[]?>(), It.IsAny<CancellationToken>()))
+            .Returns<Func<TestNodeUpdate[], Task>, TestNode[]?, CancellationToken>((_, _, token) => Task.Delay(Timeout.Infinite, token));
+        var (freshServer, freshClient) = CreateMockServer(Assembly);
+        var serversCreated = 0;
+        runner.ServerFactory = (_, _) =>
+        {
+            serversCreated++;
+            return freshServer;
+        };
+
+        var (_, timedOut) = await runner.RunAssemblyTestsInternalAsync(Assembly, testUidFilter: null, timeout: TimeSpan.FromMilliseconds(25));
+
+        timedOut.ShouldBeFalse();
+        serversCreated.ShouldBe(1);
+        staleClient.Verify(x => x.RunTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<TestNode[]?>(), It.IsAny<CancellationToken>()), Times.Once);
+        freshClient.Verify(x => x.RunTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<TestNode[]?>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [TestMethod, Timeout(5000)]
+    public async Task RunAssemblyTestsInternalAsync_KeepsTheServer_WhenTheRunOnlySlightlyOvershotItsTimeout()
+    {
+        const string Assembly = "/test/sleep.dll";
+        using var runner = new MicrosoftTestingPlatformRunner(0, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance)
+        {
+            UtcNow = Clock(TimeSpan.Zero, TimeSpan.FromSeconds(5))
+        };
+        var client = await AddDiscoveryServerAsync(runner, Assembly);
+        client.Setup(x => x.RunTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<TestNode[]?>(), It.IsAny<CancellationToken>()))
+            .Returns<Func<TestNodeUpdate[], Task>, TestNode[]?, CancellationToken>((_, _, token) => Task.Delay(Timeout.Infinite, token));
+        var serversCreated = 0;
+        runner.ServerFactory = (_, _) =>
+        {
+            serversCreated++;
+            throw new InvalidOperationException("No new server expected");
+        };
+
+        await runner.RunAssemblyTestsInternalAsync(Assembly, testUidFilter: null, timeout: TimeSpan.FromMilliseconds(25));
+
+        serversCreated.ShouldBe(0);
     }
 
     [TestMethod, Timeout(1000)]
