@@ -14,6 +14,7 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
     /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
+    ///
     private static Dictionary<LinqExpression, LinqExpression> KindsToMutate { get; }
     /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
     private static HashSet<LinqExpression> RequireArguments { get; }
@@ -59,8 +60,8 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
             { LinqExpression.Append, LinqExpression.Prepend },
             { LinqExpression.Prepend, LinqExpression.Append }
         };
-        RequireArguments = new HashSet<LinqExpression>
-        {
+        RequireArguments =
+        [
             LinqExpression.All,
             LinqExpression.SkipWhile,
             LinqExpression.TakeWhile,
@@ -78,12 +79,12 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
             LinqExpression.UnionBy,
             LinqExpression.Append,
             LinqExpression.Prepend
-        };
+        ];
     }
+
     /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
     public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel)
     {
-
         string memberName;
         SyntaxNode toReplace;
         InvocationExpressionSyntax invocationExpression;
@@ -94,10 +95,7 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
                 toReplace = memberAccessExpression.Name;
                 memberName = memberAccessExpression.Name.Identifier.ValueText;
                 break;
-            case MemberBindingExpressionSyntax
-            {
-                Parent : InvocationExpressionSyntax memberParent
-            } memberBindingExpression:
+            case MemberBindingExpressionSyntax {Parent : InvocationExpressionSyntax memberParent} memberBindingExpression:
                 invocationExpression = memberParent;
                 toReplace = memberBindingExpression.Name;
                 memberName = memberBindingExpression.Name.Identifier.ValueText;
@@ -111,7 +109,6 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
         {
             yield break;
         }
-
 
         if (RequireArguments.Contains(replacementExpression) &&
             invocationExpression.ArgumentList.Arguments.Count == 0)
