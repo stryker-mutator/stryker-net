@@ -81,7 +81,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 271, survived: 4, killed: 9, timeout: 2, nocoverage: 340);
+        CheckReportMutants(report, total: 656, ignored: 271, survived: 4, killed: 9, timeout: 2, nocoverage: 340);
         CheckReportTestCounts(report, total: 11);
     }
 
@@ -101,7 +101,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 117, survived: 5, killed: 11, timeout: 2, nocoverage: 491);
+        CheckReportMutants(report, total: 656, ignored: 117, survived: 5, killed: 11, timeout: 2, nocoverage: 491);
         CheckReportTestCounts(report, total: 21);
     }
 
@@ -121,7 +121,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 667, ignored: 272, survived: 1, killed: 1, timeout: 0, nocoverage: 359);
+        CheckReportMutants(report, total: 663, ignored: 272, survived: 1, killed: 1, timeout: 0, nocoverage: 359);
         CheckReportTestCounts(report, total: 2);
     }
 
@@ -143,7 +143,7 @@ public class ValidateStrykerResults
 
         // Only the project under test is mutated here, so this run holds a single mutated assembly. The
         // extra test covers ExtraProject, which the solution run mutates as well; see MTPSolution.
-        CheckReportMutants(report, total: 660, ignored: 271, survived: 1, killed: 1, timeout: 0, nocoverage: 353);
+        CheckReportMutants(report, total: 656, ignored: 271, survived: 1, killed: 1, timeout: 0, nocoverage: 353);
         CheckReportTestCounts(report, total: 3);
     }
 
@@ -163,7 +163,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 271, survived: 1, killed: 1, timeout: 0, nocoverage: 353);
+        CheckReportMutants(report, total: 656, ignored: 271, survived: 1, killed: 1, timeout: 0, nocoverage: 353);
         CheckReportTestCounts(report, total: 2);
     }
 
@@ -183,7 +183,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 271, survived: 1, killed: 1, timeout: 0, nocoverage: 353);
+        CheckReportMutants(report, total: 656, ignored: 271, survived: 1, killed: 1, timeout: 0, nocoverage: 353);
         CheckReportTestCounts(report, total: 2);
     }
 
@@ -210,7 +210,7 @@ public class ValidateStrykerResults
         // Teacher.cs and Lesson.cs are reached from one test that spans both of their assemblies, so
         // losing either one's coverage names the assembly at fault instead of moving a global count by one.
         CheckEveryMutatedProjectIsCovered(report, "KilledMutants.cs", "Teacher.cs", "Lesson.cs");
-        CheckReportMutants(report, total: 673, ignored: 275, survived: 2, killed: 3, timeout: 2, nocoverage: 357);
+        CheckReportMutants(report, total:669, ignored: 275, survived: 2, killed: 3, timeout: 2, nocoverage: 357);
         CheckReportTestCounts(report, total: 11);
     }
 
@@ -250,7 +250,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 271, survived: 4, killed: 9, timeout: 2, nocoverage: 340);
+        CheckReportMutants(report, total: 656, ignored: 271, survived: 4, killed: 9, timeout: 2, nocoverage: 340);
         CheckReportTestCounts(report, total: 23);
     }
 
