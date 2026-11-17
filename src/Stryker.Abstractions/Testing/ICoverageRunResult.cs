@@ -6,6 +6,7 @@ public interface ICoverageRunResult
 {
     string TestId { get; }
     Dictionary<int, MutationTestingRequirements> MutationFlags { get; }
+    IReadOnlyDictionary<int, int> MutationHitCounts { get; }
     IReadOnlyCollection<int> MutationsCovered { get; }
     MutationTestingRequirements this[int mutation] { get; }
     CoverageConfidence Confidence { get; }

@@ -1,3 +1,4 @@
+using System;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.Tests;
@@ -12,6 +13,9 @@ public class Mutant : IMutant
     public int Id { get; set; }
 
     public Mutation Mutation { get; set; }
+    public TimeSpan? TestDuration { get; set; }
+    public long? HitCount { get; set; }
+    public long? HitLimit { get; set; }
 
     public MutantStatus ResultStatus { get; set; }
 
