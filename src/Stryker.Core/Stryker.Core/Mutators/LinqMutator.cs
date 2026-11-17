@@ -14,6 +14,7 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
     /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
+    ///
     private static Dictionary<LinqExpression, LinqExpression> KindsToMutate { get; }
     /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
     private static HashSet<LinqExpression> RequireArguments { get; }
@@ -59,8 +60,8 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
             { LinqExpression.Append, LinqExpression.Prepend },
             { LinqExpression.Prepend, LinqExpression.Append }
         };
-        RequireArguments = new HashSet<LinqExpression>
-        {
+        RequireArguments =
+        [
             LinqExpression.All,
             LinqExpression.SkipWhile,
             LinqExpression.TakeWhile,
@@ -78,21 +79,24 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
             LinqExpression.UnionBy,
             LinqExpression.Append,
             LinqExpression.Prepend
-        };
+        ];
     }
+
     /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
     public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel)
     {
-
         string memberName;
         SyntaxNode toReplace;
+        InvocationExpressionSyntax invocationExpression;
         switch (node)
         {
-            case MemberAccessExpressionSyntax memberAccessExpression:
+            case MemberAccessExpressionSyntax {Parent: InvocationExpressionSyntax memberParent} memberAccessExpression:
+                invocationExpression = memberParent;
                 toReplace = memberAccessExpression.Name;
                 memberName = memberAccessExpression.Name.Identifier.ValueText;
                 break;
-            case MemberBindingExpressionSyntax memberBindingExpression:
+            case MemberBindingExpressionSyntax {Parent : InvocationExpressionSyntax memberParent} memberBindingExpression:
+                invocationExpression = memberParent;
                 toReplace = memberBindingExpression.Name;
                 memberName = memberBindingExpression.Name.Identifier.ValueText;
                 break;
@@ -100,38 +104,26 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
                 yield break;
         }
 
-        if (Enum.TryParse(memberName, out LinqExpression expression) &&
-            KindsToMutate.TryGetValue(expression, out var replacementExpression))
+        if (!Enum.TryParse(memberName, out LinqExpression expression) ||
+            !KindsToMutate.TryGetValue(expression, out var replacementExpression))
         {
-            if (RequireArguments.Contains(replacementExpression) &&
-                FindEnclosingInvocation(node)?.ArgumentList.Arguments.Count == 0)
-            {
-                yield break;
-            }
-
-            yield return new Mutation
-            {
-                DisplayName =
-                    $"Linq method mutation ({memberName}() to {SyntaxFactory.IdentifierName(replacementExpression.ToString())}())",
-                OriginalNode = node,
-                ReplacementNode = node.ReplaceNode(toReplace,
-                    SyntaxFactory.IdentifierName(replacementExpression.ToString())).WithCleanTrivia(),
-                Type = Mutator.Linq
-            };
+            yield break;
         }
-    }
 
-    private static InvocationExpressionSyntax FindEnclosingInvocation(ExpressionSyntax node)
-    {
-        var current = node.Parent;
-        while (current is MemberAccessExpressionSyntax or MemberBindingExpressionSyntax)
+        if (RequireArguments.Contains(replacementExpression) &&
+            invocationExpression.ArgumentList.Arguments.Count == 0)
         {
-            current = current.Parent;
-            if (current is InvocationExpressionSyntax invocationExpression)
-            {
-                return invocationExpression;
-            }
+            yield break;
         }
-        return null;
+
+        yield return new Mutation
+        {
+            DisplayName =
+                $"Linq method mutation ({memberName}() to {SyntaxFactory.IdentifierName(replacementExpression.ToString())}())",
+            OriginalNode = node,
+            ReplacementNode = node.ReplaceNode(toReplace,
+                SyntaxFactory.IdentifierName(replacementExpression.ToString())).WithCleanTrivia(),
+            Type = Mutator.Linq
+        };
     }
 }
