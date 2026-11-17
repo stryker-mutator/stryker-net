@@ -406,7 +406,11 @@ public class InitialisationProcessTests : TestBase
     }
 
     [TestMethod]
-    public async Task InitialisationProcess_ShouldThrowIfHalfTestsAreFailing()
+    [DataRow(true, true)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(false, false)]
+    public async Task InitialisationProcess_ShouldCheckFailTestsRatio(bool shouldPass, bool useEveryTest)
     {
         var fileSystemMock = new MockFileSystem();
         var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
@@ -439,22 +443,34 @@ public class InitialisationProcessTests : TestBase
             It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
             null,It.IsAny<string>()));
         var failedTest = "testid";
-        var ranTests = new TestIdentifierList(failedTest, "othertest");
         var testSet = new TestSet();
-        foreach (var ranTest in ranTests.GetIdentifiers())
+
+        var tests = shouldPass ? new[]{ failedTest, "othertest", "anothertest"} : new[]{ failedTest, "othertest"};
+        foreach (var ranTest in tests)
         {
-            testSet.RegisterTest(new TestDescription(ranTest, "test", "test.cpp"));
+            testSet.RegisterTest(new TestDescription(ranTest, ranTest, "test.cpp"));
         }
-        testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
+        var ranTests = useEveryTest ? TestIdentifierList.EveryTest():new TestIdentifierList(tests);;
         testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(testSet);
         var failedTests = new TestIdentifierList(failedTest);
         initialTestProcessMock.Setup(x => x.InitialTestAsync(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>())).ReturnsAsync(
             new InitialTestRun(
             new TestRunResult(Array.Empty<VsTestDescription>(), ranTests, failedTests, TestIdentifierList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), new TimeoutValueCalculator(0))); // failing test
 
+        testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
+
         var projects = target.GetMutableProjectsInfo(options);
         target.BuildProjects(options, projects);
-        await Should.ThrowAsync<InputException>(async () => await target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object));
+        if (shouldPass)
+        {
+            var testInputs = await target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object);
+
+            testInputs.ShouldNotBeEmpty();
+        }
+        else
+        {
+            await Should.ThrowAsync<InputException>(async () => await target.GetMutationTestInputsAsync(options, projects, testRunnerMock.Object));
+        }
         inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>()), Times.Once);
         initialTestProcessMock.Verify(x => x.InitialTestAsync(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), testRunnerMock.Object), Times.Once);
     }
