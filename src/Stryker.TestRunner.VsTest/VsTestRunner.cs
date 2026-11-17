@@ -58,17 +58,18 @@ public sealed class VsTestRunner : IDisposable
         // initial test run, register test results
         foreach (var result in testResults.TestResults)
         {
-            if (!_context.VsTests.ContainsKey(result.TestCase.Id))
+            if (!_context.VsTests.TryGetValue(result.TestCase.Id, out var value))
             {
                 var vsTestDescription = new VsTestDescription(new VsTestCase(result.TestCase));
-                _context.VsTests[result.TestCase.Id] = vsTestDescription;
+                value = vsTestDescription;
+                _context.VsTests[result.TestCase.Id] = value;
                 _context.RegisterDiscoveredTest(vsTestDescription);
                 _logger.LogWarning(
                     "{RunnerId}: Initial test run encounter an unexpected test case ({DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if you have doubts.",
                 RunnerId, result.TestCase.DisplayName);
             }
 
-            _context.VsTests[result.TestCase.Id].RegisterInitialTestResult(new VsTestResult(result));
+            value.RegisterInitialTestResult(new VsTestResult(result));
         }
 
         var totalCountOfTests = _context.GetTestsForSources(project.GetTestAssemblies()).Count;
