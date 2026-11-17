@@ -57,6 +57,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
             t.Parent is ExpressionStatementSyntax or ForStatementSyntax),
         // prevent mutations to happen within member access expression
         new MemberAccessExpressionOrchestrator<MemberAccessExpressionSyntax>(),
+        new MemberAccessExpressionOrchestrator<ElementAccessExpressionSyntax>(),
         new MemberAccessExpressionOrchestrator<MemberBindingExpressionSyntax>(),
         new MemberAccessExpressionOrchestrator<SimpleNameSyntax>(),
         new MemberAccessExpressionOrchestrator<PostfixUnaryExpressionSyntax>(t =>
