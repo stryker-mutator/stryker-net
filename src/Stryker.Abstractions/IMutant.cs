@@ -8,9 +8,9 @@ public interface IMutant : IReadOnlyMutant
     new Mutation Mutation { get; set; }
     new MutantStatus ResultStatus { get; set; }
     new string ResultStatusReason { get; set; }
-    new ITestIdentifiers CoveringTests { get; set; }
-    new ITestIdentifiers KillingTests { get; set; }
-    new ITestIdentifiers AssessingTests { get; set; }
+    new ITestIdentifierSet CoveringTests { get; set; }
+    new ITestIdentifierSet KillingTests { get; set; }
+    new ITestIdentifierSet AssessingTests { get; set; }
     new bool CountForStats { get; }
     new bool IsStaticValue { get; set; }
 
