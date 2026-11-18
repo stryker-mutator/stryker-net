@@ -4,11 +4,11 @@
     "net10.0": {
       "AWSSDK.S3": {
         "type": "Direct",
-        "requested": "[4.1.0.1, )",
-        "resolved": "4.1.0.1",
-        "contentHash": "ZgNjIc7GwxRvkKbbZVjzEm7Q2H5ZDCAWxsryGahq1/xF292U4UTUEwoiqsSAAPG2kvfmejI1cuVj3VMkKnXJKg==",
+        "requested": "[4.1.1, )",
+        "resolved": "4.1.1",
+        "contentHash": "iqT0dNuaUHkh4hHyG40/brQj0220YomPzAmhSrx82xul+LNTUTMzxcQSQrD+rvtHMlOwxmqaN+xhCnthgKNIFw==",
         "dependencies": {
-          "AWSSDK.Core": "[4.1.1, 5.0.0)"
+          "AWSSDK.Core": "[4.1.1.1, 5.0.0)"
         }
       },
       "Azure.Storage.Files.Shares": {
@@ -243,8 +243,8 @@
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "4.1.1",
-        "contentHash": "MGURtuvtalMXUaRKCTJv4f3XrwLTcZgrIGfthnOt1Qqol6rTtNKoF0ZusQc12+Z7V9e/UsarZ7AXhh8vMIm76A==",
+        "resolved": "4.1.1.1",
+        "contentHash": "paZNy+g/hXMCsEpWvmOFr14x9gVzIY2JRSzSk+nXpKcnaASxEFBMWE4CNBuI/WwGN1ygTwojRTsPRn3yXuhSYQ==",
         "dependencies": {
           "AWSSDK.Extensions.Numerics": "[4.1.0, 5.0.0)",
           "System.IO.Hashing": "11.0.0"
