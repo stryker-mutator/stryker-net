@@ -12,7 +12,8 @@ public class IgnoreMethodsInput : Input<IEnumerable<string>>
 
     public IEnumerable<Regex> Validate() => SuppliedInput is not null ? ParseRegex(SuppliedInput) : ParseRegex(Default);
 
-    private static IEnumerable<Regex> ParseRegex(IEnumerable<string> methodPatterns) =>
+    // Shared with IgnoreMethodArgumentsInput so both options accept the same patterns.
+    internal static IEnumerable<Regex> ParseRegex(IEnumerable<string> methodPatterns) =>
         methodPatterns
             .Where(x => !string.IsNullOrEmpty(x))
             .Select(methodPattern => new Regex("^(?:[^.]*\\.)*" + Regex.Escape(methodPattern).Replace("\\*", "[^.]*") + "(<[^>]*>)?$", RegexOptions.IgnoreCase))

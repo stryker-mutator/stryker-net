@@ -398,18 +398,26 @@ The mutants of the ignored types will not be tested. They will show up in your r
 
 Default: `null`  
 Command line: `N/A`  
-Config file: `"ignore-methods": ['ToString', 'ConfigureAwait', '*Exception.ctor', 'Console.Write*']`
+Config file: `"ignore-methods": ['ToString', '*Exception.ctor', 'Console.Write*']`
 
-Skip specified method signatures from being mutated. 
+Skip the mutations in calls to the specified methods. This suits calls whose whole effect is noise to your tests, such as logging.
+
+Besides the arguments of a matching call, Stryker also skips the mutations in:
+
+- the calls it is chained on, and their arguments. With `ToList` ignored, `x > 5` in `items.Where(x => x > 5).ToList()` is skipped;
+- the statement that holds the call, such as the removal of `logger.LogDebug("Done");`, and a block that only holds such statements;
+- the `await` around the call.
 
 ```csharp
-// This mutation will be skipped
-ConfigureAwait(true); 
+// With "ignore-methods": ["Log*"], these mutations are skipped
+logger.LogDebug("Saved order"); // the string, and the removal of the statement
 
-// This mutation won't because we cannot currently detect this
-var t = true;
-ConfigureAwait(t); 
+// This mutation is not skipped, because Stryker cannot see where message is used
+var message = "Saved order";
+logger.LogDebug(message);
 ```
+
+To skip only the arguments of a call, such as the `false` in `ConfigureAwait(false)`, use [`ignore-method-arguments`](#ignore-method-arguments-string).
 
 You can also ignore constructors by specifying the type and adding the `.ctor` suffix.
 
@@ -423,6 +431,37 @@ Both, method names and constructor names support wildcards.
         "*Log", // Ignores all methods ending with Log
         "Console.Write*", // Ignores all methods starting with Write in the class Console
         "*Exception.ctor" // Ignores all exception constructors
+    ]
+}
+```
+
+### `ignore-method-arguments` &lt;`string[]`&gt;
+
+Default: `null`  
+Command line: `N/A`  
+Config file: `"ignore-method-arguments": ['ConfigureAwait']`
+
+Skip the mutations in the arguments of calls to the specified methods, and nothing else. Unlike [`ignore-methods`](#ignore-methods-string), Stryker still mutates the calls the method is chained on, the statement that holds the call and the `await` around it.
+
+Use it for a call whose arguments your tests cannot observe, but whose receiver does the real work. Without a `SynchronizationContext`, no test can tell `ConfigureAwait(false)` from `ConfigureAwait(true)`, yet `ConfigureAwait` ends every awaited chain:
+
+```csharp
+// With "ignore-method-arguments": ["ConfigureAwait"]
+// skipped:       false -> true
+// still mutated: o.Total > limit, and the removal of the statement
+await store.ListAsync(o => o.Total > limit, ct).ConfigureAwait(false);
+
+// This mutation is not skipped, because Stryker cannot see where continueOnCapturedContext is used
+var continueOnCapturedContext = false;
+await store.SaveAsync(order, ct).ConfigureAwait(continueOnCapturedContext);
+```
+
+It takes the same method patterns as `ignore-methods`, with qualified names and wildcards. It does not support constructors (`.ctor`).
+
+```json
+"stryker-config": {
+    "ignore-method-arguments": [
+        "ConfigureAwait"
     ]
 }
 ```
