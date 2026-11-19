@@ -7,6 +7,10 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 internal class InvocationExpressionOrchestrator : MemberAccessExpressionOrchestrator<InvocationExpressionSyntax>
 {
+    protected override ExpressionSyntax InjectMutations(InvocationExpressionSyntax sourceNode, ExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context) =>
+        sourceNode.Parent is ExpressionStatementSyntax || semanticModel?.GetTypeInfo(sourceNode).Type?.SpecialType == SpecialType.System_Void
+            ? targetNode
+            : base.InjectMutations(sourceNode, targetNode, semanticModel, context);
 
     protected override MutationContext StoreMutations(InvocationExpressionSyntax node,
         IEnumerable<Mutant> mutations,

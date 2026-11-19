@@ -2018,5 +2018,149 @@ if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.Mutant
         ShouldMutateSourceInClassToExpected(source, expected);
     }
 
+    [TestMethod]
+    public void ShouldMutateInterpolatedStringHandlerInStringCreate()
+    {
+        var source = """
+            public static string Describe(IReadOnlyList<int> items) =>
+                string.Create(System.Globalization.CultureInfo.InvariantCulture, $"First is {items[0]}");
+            """;
+
+        var expected = """
+            public static string Describe(IReadOnlyList<int> items) =>
+                (StrykerNamespace.MutantControl.IsActive(0) ? string.Create(System.Globalization.CultureInfo.InvariantCulture, $"") : string.Create(System.Globalization.CultureInfo.InvariantCulture, $"First is {items[0]}"));
+            """;
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateInterpolatedStringHandlerWithInnerMutation()
+    {
+        var source = """
+            public static string Describe(int a, int b) =>
+                string.Create(System.Globalization.CultureInfo.InvariantCulture, $"Sum is {a + b}");
+            """;
+
+        var expected = """
+            public static string Describe(int a, int b) =>
+                (StrykerNamespace.MutantControl.IsActive(0) ? string.Create(System.Globalization.CultureInfo.InvariantCulture, $"") : string.Create(System.Globalization.CultureInfo.InvariantCulture, $"Sum is {(StrykerNamespace.MutantControl.IsActive(1) ? a - b : a + b)}"));
+            """;
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateInterpolatedStringHandlerInExpressionStatement()
+    {
+        var source = """
+            public void AppendValue(StringBuilder sb, int x)
+            {
+                sb.AppendLine($"Value is {x}");
+            }
+            """;
+
+        var expected = """
+            public void AppendValue(StringBuilder sb, int x)
+            {
+                if (StrykerNamespace.MutantControl.IsActive(0)) { } else
+                {
+                    if (StrykerNamespace.MutantControl.IsActive(1))
+                    {
+                        ;
+                    }
+                    else
+                    {
+                        if (StrykerNamespace.MutantControl.IsActive(2))
+                        {
+                            sb.AppendLine($"");
+                        }
+                        else
+                        {
+                            sb.AppendLine($"Value is {x}");
+                        }
+                    }
+                }
+            }
+            """;
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateInterpolatedStringHandlerInVoidExpressionBodiedMethod()
+    {
+        var source = """
+            public void Log(int x) => Write($"Value is {x}");
+            private void Write(ref System.Runtime.CompilerServices.DefaultInterpolatedStringHandler handler) { }
+            """;
+
+        var expected = """
+            public void Log(int x)
+            {
+                if (StrykerNamespace.MutantControl.IsActive(0))
+                {
+                    Write($"");
+                }
+                else
+                {
+                    Write($"Value is {x}");
+                }
+            }
+            private void Write(ref System.Runtime.CompilerServices.DefaultInterpolatedStringHandler handler) { }
+            """;
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateFormattableStringInterpolatedString()
+    {
+        var source = """
+            public static string Format(int x) => FormattableString.Invariant($"Value is {x}");
+            """;
+
+        var expected = """
+            public static string Format(int x) =>
+                (StrykerNamespace.MutantControl.IsActive(0) ? FormattableString.Invariant($"") : FormattableString.Invariant($"Value is {x}"));
+            """;
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateFormattableStringLocalDeclaration()
+    {
+        var source = """
+            public static string Format(int x)
+            {
+                FormattableString f = $"Value is {x}";
+                return FormattableString.Invariant(f);
+            }
+            """;
+
+        var expected = """
+            public static string Format(int x)
+            {
+                if (StrykerNamespace.MutantControl.IsActive(0)) { } else
+                {
+                    if (StrykerNamespace.MutantControl.IsActive(1))
+                    {
+                        FormattableString f = $"";
+                        return FormattableString.Invariant(f);
+                    }
+                    else
+                    {
+                        FormattableString f = $"Value is {x}";
+                        return FormattableString.Invariant(f);
+                    }
+                }
+                return default(string);
+            }
+            """;
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
 
 }
