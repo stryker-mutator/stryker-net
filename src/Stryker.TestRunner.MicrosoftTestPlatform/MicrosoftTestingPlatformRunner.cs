@@ -1326,7 +1326,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
         lock (_discoveryLock)
         {
-            // MTP doesn't report per-test timing, so approximate with the average
+            // use the suite average when an adapter omits the test duration
             var perTestDuration = finishedTests.Count > 0
                 ? TimeSpan.FromTicks(duration.Ticks / finishedTests.Count)
                 : TimeSpan.Zero;
@@ -1334,7 +1334,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             foreach (var testResult in finishedTests.Where(tr => _testDescriptions.ContainsKey(tr.Node.Uid)))
             {
                 var testDescription = _testDescriptions[testResult.Node.Uid];
-                testDescription.RegisterInitialTestResult(new MtpTestResult(perTestDuration));
+                var testDuration = testResult.Node.DurationMilliseconds is { } milliseconds
+                    && milliseconds >= 0 && double.IsFinite(milliseconds)
+                    ? TimeSpan.FromMilliseconds(milliseconds)
+                    : perTestDuration;
+                testDescription.RegisterInitialTestResult(new MtpTestResult(testDuration));
             }
         }
 

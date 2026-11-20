@@ -36,4 +36,8 @@ public sealed record TestNode
 
     [property: JsonPropertyName("location.method")]
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    string? LocationMethod = null);
+    string? LocationMethod = null,
+
+    [property: JsonPropertyName("time.duration-ms")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    double? DurationMilliseconds = null);

@@ -69,6 +69,29 @@ public class TestingPlatformClientTests
     }
 
     [TestMethod]
+    [DataRow(31_000d, 31_000d)]
+    [DataRow(12L, 12d)]
+    [DataRow(null, null)]
+    public async Task RunTestsAsync_MapsTheReportedDuration(object? reported, double? expected)
+    {
+        var sourceUpdate = CreateUpdate(durationMilliseconds: reported);
+        _mtpClient.Setup(client => client.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => RaiseUpdates(sourceUpdate))
+            .ReturnsAsync(new MtpRunResult([]));
+
+        TestNodeUpdate[]? updates = null;
+        using var client = CreateClient();
+        await client.RunTestsAsync(received =>
+        {
+            updates = received;
+            return Task.CompletedTask;
+        });
+
+        updates.ShouldNotBeNull();
+        updates.Single().Node.DurationMilliseconds.ShouldBe(expected);
+    }
+
+    [TestMethod]
     public async Task DiscoverTestsAsync_AwaitsUpdateCallback()
     {
         var callbackCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -255,7 +278,8 @@ public class TestingPlatformClientTests
         int? lineStart = null,
         int? lineEnd = null,
         string? typeName = null,
-        string? methodName = null)
+        string? methodName = null,
+        object? durationMilliseconds = null)
     {
         var node = new Dictionary<string, object?>
         {
@@ -270,6 +294,7 @@ public class TestingPlatformClientTests
         AddIfNotNull(node, "location.line-end", lineEnd);
         AddIfNotNull(node, "location.type", typeName);
         AddIfNotNull(node, "location.method", methodName);
+        AddIfNotNull(node, "time.duration-ms", durationMilliseconds);
 
         return new MtpTestNodeUpdate(node, "parent");
     }
