@@ -105,9 +105,10 @@ public class InitialisationProcess(
         }
 
         // initial test
+        var foundTests = testRunner.GetTests(projectInfo).Count;
         _logger.LogInformation(
             "Number of tests found: {TestCount} for project {ProjectFilePath}. Initial test run started.",
-        testRunner.GetTests(projectInfo).Count,
+        foundTests,
         projectInfo.AnalyzerResult.ProjectFilePath);
 
         var result = await _initialTestProcess.InitialTestAsync(options, projectInfo, testRunner);
@@ -126,21 +127,7 @@ public class InitialisationProcess(
 
         if (!result.Result.FailingTests.IsEmpty)
         {
-            var failingTestsCount = result.Result.FailingTests.Count;
-            if (options.BreakOnInitialTestFailure)
-            {
-                throw new InputException("Initial testrun has failing tests.", result.Result.ResultMessage);
-            }
-
-            if (throwIfFails && (double)failingTestsCount / result.Result.ExecutedTests.Count >= .5)
-            {
-                throw new InputException("Initial testrun has more than 50% failing tests.",
-                        result.Result.ResultMessage);
-            }
-
-            _logger.LogWarning(
-                "{FailingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.",
-                failingTestsCount);
+            AnalyzeTestFailures(options, throwIfFails, result, foundTests);
         }
 
         if (!result.Result.ExecutedTests.IsEmpty || !throwIfFails)
@@ -162,6 +149,30 @@ public class InitialisationProcess(
 
         var message = $"No test result reported. Make sure your test project contains tests and is compatible with {runnerName}.";
         throw new InputException(string.Join(Environment.NewLine, projectInfo.Warnings.Prepend(message)));
+    }
+
+    private void AnalyzeTestFailures(IStrykerOptions options, bool throwIfFails, InitialTestRun result, int foundTests)
+    {
+        var failingTestsCount = result.Result.FailingTests.Count;
+        if (options.BreakOnInitialTestFailure)
+        {
+            throw new InputException("Initial testrun has failing tests.", result.Result.ResultMessage);
+        }
+
+        if (result.Result.ExecutedTests.Count != 0)
+        {
+            foundTests = result.Result.ExecutedTests.Count;
+        }
+
+        if (throwIfFails && (double)failingTestsCount / foundTests >= .5)
+        {
+            throw new InputException("Initial testrun has 50% or more failing tests.",
+                result.Result.ResultMessage);
+        }
+
+        _logger.LogWarning(
+            "{FailingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.",
+            failingTestsCount);
     }
 
     private void LogFilteredProject(SourceProjectInfo projectInfo) =>

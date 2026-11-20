@@ -4,11 +4,11 @@
     "net10.0": {
       "AWSSDK.S3": {
         "type": "Direct",
-        "requested": "[4.1.0, )",
-        "resolved": "4.1.0",
-        "contentHash": "uV//Txuga5jW6wIE5UXi6RaqAvc0eg76i7vmUDgK2H4yOtrSG4BxF+IdXYOu4sbPG/L6q/k2UbK5L6ptysj9oA==",
+        "requested": "[4.1.2, )",
+        "resolved": "4.1.2",
+        "contentHash": "vGRpeXIxK7uRRHzVIrp2dYDri4wwlerUutG8TG7jHMolb3hX6Zu6VVDZpmwB8AlTIZ9BKLIV+V4Oi4xEsamZsQ==",
         "dependencies": {
-          "AWSSDK.Core": "[4.1.0, 5.0.0)"
+          "AWSSDK.Core": "[4.1.1.1, 5.0.0)"
         }
       },
       "Azure.Storage.Files.Shares": {
@@ -234,17 +234,17 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "Direct",
-        "requested": "[23.0.0, )",
-        "resolved": "23.0.0",
-        "contentHash": "WfbIVmdi/Yh3eKLDzprsctUXziXVP60lPfPRrAFxR+YPT++yGpsgBsen0vC5N3HeXANCHP7xRukgn/kZcUqusg==",
+        "requested": "[23.0.1, )",
+        "resolved": "23.0.1",
+        "contentHash": "9lqN5ITRYWqu54eqgobIuFSFUKIqfNedI3+9LuxVBETqGht+UTvk8aQcfUQX2z2fL2WCHGUbTHuBWbZaIV8AGg==",
         "dependencies": {
           "Testably.Abstractions.FileSystem.Interface": "11.0.0"
         }
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "4.1.0",
-        "contentHash": "7a4eOI65Mn4dzc9kmRiI+y3EiS80NCMnu/j3ZR9H2dyO3d597eVPVV+ClzSFXnQkA0r8n2iig+Vg/Q/mozh5MQ==",
+        "resolved": "4.1.1.1",
+        "contentHash": "paZNy+g/hXMCsEpWvmOFr14x9gVzIY2JRSzSk+nXpKcnaASxEFBMWE4CNBuI/WwGN1ygTwojRTsPRn3yXuhSYQ==",
         "dependencies": {
           "AWSSDK.Extensions.Numerics": "[4.1.0, 5.0.0)",
           "System.IO.Hashing": "11.0.0"
@@ -568,7 +568,7 @@
           "Microsoft.CodeAnalysis.Common": "[5.9.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[18.12.0, )",
           "Serilog": "[4.4.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[23.0.0, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[23.0.1, )"
         }
       },
       "stryker.configuration": {
@@ -630,7 +630,7 @@
           "Stryker.DataCollector": "[5.1.0, )",
           "Stryker.TestRunner": "[5.1.0, )",
           "Stryker.Utilities": "[5.1.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[23.0.0, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[23.0.1, )"
         }
       },
       "stryker.utilities": {

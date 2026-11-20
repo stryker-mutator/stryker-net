@@ -22,8 +22,8 @@ internal class FullRunScenario
     private readonly Dictionary<int, Mutant> _mutants = new();
     private readonly Dictionary<int, TestDescription> _tests = new();
 
-    private readonly Dictionary<int, TestIdentifierList> _coverageResult = new();
-    private readonly Dictionary<int, TestIdentifierList> _failedTestsPerRun = new();
+    private readonly Dictionary<int, ITestIdentifiers> _coverageResult = new();
+    private readonly Dictionary<int, ITestIdentifiers> _failedTestsPerRun = new();
     private readonly Dictionary<Guid, List<int>> _testCoverage = new();
     private const int InitialRunId = -1;
     private OptimizationModes _mode = OptimizationModes.CoverageBasedTest | OptimizationModes.SkipUncoveredMutants;
@@ -124,7 +124,7 @@ internal class FullRunScenario
     /// </summary>
     /// <param name="ids"></param>
     /// <returns></returns>
-    public TestIdentifierList GetGuidList(params int[] ids)
+    private TestIdentifierList GetGuidList(params int[] ids)
     {
         var selectedIds = ids.Length > 0 ? ids.Select(i => _tests[i]) : _tests.Values;
         return new TestIdentifierList(selectedIds.Select(t => t.Id));
@@ -145,7 +145,7 @@ internal class FullRunScenario
         // if this is the initial test run, we must return the complete list of tests.
         if (id == InitialRunId)
         {
-            return new TestIdentifierList(_tests.Values.Select(t => t.Id));
+            return new WrappedIdentifierEnumeration(_tests.Values.Select(t => t.Id));
         }
 
         if (!_mode.HasFlag(OptimizationModes.CoverageBasedTest))
