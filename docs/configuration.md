@@ -545,7 +545,7 @@ Enable or disable [with-baseline](#with-baseline-flag-committish). If the enable
 
 ### `baseline.fallback-version` &lt;`string`&gt;
 
-Default: [since-target](#since-flag-committish)  
+Default: [since-target](#sincetarget-committish)  
 Command line: `N/A`  
 Config file: `"baseline": { "fallback-version": 'develop' }`
 

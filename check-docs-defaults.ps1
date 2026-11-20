@@ -78,6 +78,14 @@ if (-not (Test-Path $inputsPath)) { throw "Inputs directory not found: $inputsPa
 # Docs extraction: "### `<option-name>`" sections with a "Default:" line
 # -----------------------------------------------------------------------------
 
+function ConvertTo-HeadingSlug([string]$headingLine) {
+    $text = $headingLine -replace '^#+\s*', ''
+    $text = [System.Net.WebUtility]::HtmlDecode($text)
+    $text = $text.ToLowerInvariant()
+    $text = $text -replace '[^\w\s-]', ''
+    return ($text.Trim() -replace ' ', '-')
+}
+
 function Get-DocsDefaults([string]$path) {
     $lines = Get-Content -LiteralPath $path
     $sections = [ordered]@{}
@@ -90,6 +98,7 @@ function Get-DocsDefaults([string]$path) {
                 $current = [pscustomobject]@{
                     Name          = $Matches['name']
                     HeadingLine   = $i + 1
+                    HeadingSlug   = ConvertTo-HeadingSlug $lines[$i]
                     DefaultRaw    = $null
                     DefaultLine   = 0
                 }
@@ -306,6 +315,22 @@ $optionModes = @{
     'baseline.fallback-version' = 'crossref'
 }
 
+# Options whose runtime parsing ignores case (Enum.TryParse ignoreCase / ToLower).
+# All other string and list comparisons stay case-sensitive so branch names, file names,
+# and similar runtime-sensitive values cannot drift in casing.
+$caseInsensitiveOptions = [System.Collections.Generic.HashSet[string]]::new(
+    [string[]]@(
+        'test-runner',
+        'mutation-level',
+        'reporter',
+        'open-report',
+        'coverage-analysis',
+        'baseline.provider',
+        'verbosity'
+    ),
+    [System.StringComparer]::Ordinal
+)
+
 # For 'crossref' mode: the option the docs link must point at.
 $crossReferences = @{
     'baseline.fallback-version' = 'since.target'
@@ -369,7 +394,7 @@ function Get-CustomCodeValue([hashtable]$location, [string]$repoRoot) {
 
 # Docs convention: optional inputs without a value are documented as `null`,
 # while the code uses string.Empty / empty collections for the same state.
-function Test-DocsValueMatchesCode([string]$docsValue, [pscustomobject]$code, [string]$comparisonMode = 'set') {
+function Test-DocsValueMatchesCode([string]$docsValue, [pscustomobject]$code, [string]$comparisonMode = 'set', [bool]$ignoreCase = $false) {
     # Docs convention: optional inputs are documented as `null`, while the code uses
     # string.Empty / empty collections for the same "not set" state - treat them as equal.
     $docsTrimmed = $docsValue.Trim()
@@ -415,7 +440,8 @@ function Test-DocsValueMatchesCode([string]$docsValue, [pscustomobject]$code, [s
                 return $null -ne $docsBool -and $docsBool -eq ($code.Value -ieq 'true')
             }
             if ($docsInner -ieq 'null') { return [string]$code.Value -eq '' }
-            return $docsInner -ieq [string]$code.Value
+            if ($ignoreCase) { return $docsInner -ieq [string]$code.Value }
+            return $docsInner -ceq [string]$code.Value
         }
         'list' {
             if (-not $docsIsBackticked) { return $false }
@@ -425,13 +451,24 @@ function Test-DocsValueMatchesCode([string]$docsValue, [pscustomobject]$code, [s
             # 'member' mode: the docs document one of several code fallbacks (e.g. config file names)
             if ($comparisonMode -eq 'member') {
                 if ($docsItems.Count -ne 1) { return $false }
-                return @($codeItems | Where-Object { $_ -ieq $docsItems[0] }).Count -gt 0
+                if ($ignoreCase) {
+                    return @($codeItems | Where-Object { $_ -ieq $docsItems[0] }).Count -gt 0
+                }
+                return @($codeItems | Where-Object { $_ -ceq $docsItems[0] }).Count -gt 0
             }
             if ($docsItems.Count -ne $codeItems.Count) { return $false }
-            $sortedDocs = @($docsItems | Sort-Object { $_.ToLowerInvariant() })
-            $sortedCode = @($codeItems | Sort-Object { $_.ToLowerInvariant() })
-            for ($i = 0; $i -lt $sortedDocs.Count; $i++) {
-                if ($sortedDocs[$i] -ine $sortedCode[$i]) { return $false }
+            if ($ignoreCase) {
+                $sortedDocs = @($docsItems | Sort-Object { $_.ToLowerInvariant() })
+                $sortedCode = @($codeItems | Sort-Object { $_.ToLowerInvariant() })
+                for ($i = 0; $i -lt $sortedDocs.Count; $i++) {
+                    if ($sortedDocs[$i] -ine $sortedCode[$i]) { return $false }
+                }
+            } else {
+                $sortedDocs = @($docsItems | Sort-Object -CaseSensitive)
+                $sortedCode = @($codeItems | Sort-Object -CaseSensitive)
+                for ($i = 0; $i -lt $sortedDocs.Count; $i++) {
+                    if ($sortedDocs[$i] -cne $sortedCode[$i]) { return $false }
+                }
             }
             return $true
         }
@@ -465,6 +502,10 @@ function Add-SummaryRow([string]$name, [string]$docsValue, [string]$codeValue, [
 }
 
 $docsDefaults = Get-DocsDefaults $docsPath
+$docsByName = @{}
+foreach ($entry in $docsDefaults) {
+    $docsByName[$entry.Name] = $entry
+}
 $codeDefaults = Get-CodeDefaults $inputsPath
 
 # Resolve cross-class defaults (Kind 'crossref') now that every class is parsed; an
@@ -492,7 +533,7 @@ foreach ($docsEntry in $docsDefaults) {
     if ($compositeChecks.Contains($name)) {
         $checks = $compositeChecks[$name]
         $pairs = @{}
-        foreach ($pair in [regex]::Matches($docsEntry.DefaultRaw, '(?<key>\w+):\s*(?<value>-?\d+)')) {
+        foreach ($pair in [regex]::Matches($docsEntry.DefaultRaw, '(?<key>\w+):\s*(?<value>[^,}\s`]+)')) {
             $pairs[$pair.Groups['key'].Value.ToLowerInvariant()] = $pair.Groups['value'].Value
         }
         $checked++
@@ -505,7 +546,8 @@ foreach ($docsEntry in $docsDefaults) {
                 continue
             }
             $keyCode = if ($codeDefaults.ContainsKey($inputName)) { $codeDefaults[$inputName].Parsed } else { $null }
-            if ($null -eq $keyCode -or $keyCode.Kind -ne 'number' -or [double]$pairs[$key] -ne [double]$keyCode.Value) {
+            $isNumber = $pairs[$key] -match '^-?\d+(\.\d+)?$'
+            if ($null -eq $keyCode -or $keyCode.Kind -ne 'number' -or -not $isNumber -or [double]$pairs[$key] -ne [double]$keyCode.Value) {
                 $keyValue = if ($null -ne $keyCode) { Format-CodeValue $keyCode } else { '<missing>' }
                 Write-Annotation "option '${name}' key '${key}': documented value '$($pairs[$key])' does not match code default '$keyValue' ($inputName)" $DocsRelativePath $docsEntry.DefaultLine
                 $compositeOk = $false
@@ -525,9 +567,13 @@ foreach ($docsEntry in $docsDefaults) {
         Add-SummaryRow $name $docsEntry.DefaultRaw $compositeCode $status 'threshold input classes'
         if ($compositeOk) {
             Write-Host "[ OK ] $name = $($docsEntry.DefaultRaw)" -ForegroundColor Green
+        } else {
+            $mismatches++
         }
         continue
     }
+
+    $ignoreCase = $caseInsensitiveOptions.Contains($name)
 
     # Option with a concrete code anchor outside the Input classes
     if ($customCodeLocations.ContainsKey($name)) {
@@ -539,7 +585,7 @@ foreach ($docsEntry in $docsDefaults) {
             continue
         }
         $checked++
-        if (-not (Test-DocsValueMatchesCode $docsEntry.DefaultRaw $customCode $location.Mode)) {
+        if (-not (Test-DocsValueMatchesCode $docsEntry.DefaultRaw $customCode $location.Mode $ignoreCase)) {
             $message = "option '$name': documented default '$($docsEntry.DefaultRaw)' does not match code default '$(Format-CodeValue $customCode)' defined in $($location.File):$($customCode.Line)"
             Write-Annotation $message $DocsRelativePath $docsEntry.DefaultLine
             Add-SummaryRow $name $docsEntry.DefaultRaw (Format-CodeValue $customCode) 'MISMATCH' "$(ConvertTo-RelativePath (Join-Path $RepoRoot $location.File)):$($customCode.Line)"
@@ -575,16 +621,29 @@ foreach ($docsEntry in $docsDefaults) {
 
     if ($mode -eq 'crossref') {
         $reference = $crossReferences[$name]
-        $label = if ($docsEntry.DefaultRaw -match '^\[(?<label>[^\]]+)\]\(') { $Matches['label'] } else { $null }
+        $linkMatch = [regex]::Match($docsEntry.DefaultRaw, '^\[(?<label>[^\]]+)\]\(#(?<fragment>[^)]+)\)$')
+        $label = if ($linkMatch.Success) { $linkMatch.Groups['label'].Value } else { $null }
+        $fragment = if ($linkMatch.Success) { $linkMatch.Groups['fragment'].Value } else { $null }
+        $expectedFragment = if ($docsByName.ContainsKey($reference)) { $docsByName[$reference].HeadingSlug } else { $null }
         # the code must keep delegating to the referenced input (enforced by the
         # cross-reference resolution pass) and the docs link must keep pointing at it
-        $delegates = $code.Expression -match '^new\s+\w+\(\)\.Default$'
+        $expectedRefClass = Get-InputClassName $reference $codeDefaults
+        $delegatedClass = if ($code.Expression -match '^new\s+(?<class>\w+)\(\)\.Default$') { $Matches['class'] } else { $null }
+        $delegates = $null -ne $expectedRefClass -and $delegatedClass -ceq $expectedRefClass
+        $linkMatches = $null -ne $label -and
+            (ConvertTo-NormalizedOptionName $label) -eq (ConvertTo-NormalizedOptionName $reference) -and
+            $null -ne $expectedFragment -and
+            $fragment -ceq $expectedFragment
         $checked++
-        if ($delegates -and $null -ne $label -and (ConvertTo-NormalizedOptionName $label) -eq (ConvertTo-NormalizedOptionName $reference)) {
+        if ($delegates -and $linkMatches) {
             Add-SummaryRow $name $docsEntry.DefaultRaw "delegates to $reference" 'ok' $source
             Write-Host "[ OK ] $name -> $reference (cross-reference)" -ForegroundColor Green
         } else {
-            $reason = if (-not $delegates) { "code default '$($code.Expression)' no longer delegates to $reference" } else { "docs must link to '$reference' (found '$($docsEntry.DefaultRaw)')" }
+            $reason = if (-not $delegates) {
+                "code default '$($code.Expression)' does not delegate to $expectedRefClass ($reference)"
+            } else {
+                "docs must link to '$reference' (#$expectedFragment) (found '$($docsEntry.DefaultRaw)')"
+            }
             Write-Annotation "option '$name': $reason" $DocsRelativePath $docsEntry.DefaultLine
             Add-SummaryRow $name $docsEntry.DefaultRaw "must delegate to $reference" 'MISMATCH' $source
             $mismatches++
@@ -593,7 +652,7 @@ foreach ($docsEntry in $docsDefaults) {
     }
 
     $checked++
-    if (-not (Test-DocsValueMatchesCode $docsEntry.DefaultRaw $code.Parsed $mode)) {
+    if (-not (Test-DocsValueMatchesCode $docsEntry.DefaultRaw $code.Parsed $mode $ignoreCase)) {
         $message = "option '$name': documented default '$($docsEntry.DefaultRaw)' does not match code default '$(Format-CodeValue $code.Parsed)' ($className)"
         Write-Annotation $message $DocsRelativePath $docsEntry.DefaultLine
         Write-Host "       code default defined at $source"
