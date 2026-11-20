@@ -130,6 +130,7 @@ namespace MyProject.NUnit
 
         // act
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
+        target.EnrichWithInitialTestRunInfo(input);
 
         // assert
         var testFile = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
@@ -159,6 +160,7 @@ namespace MyProject.NUnit
 
         // act
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
+        target.EnrichWithInitialTestRunInfo(input);
 
         // assert
         var testFile = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
@@ -188,6 +190,7 @@ namespace MyProject.MSTest
 
         // act
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
+        target.EnrichWithInitialTestRunInfo(input);
 
         // assert
         var testFile = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
@@ -217,6 +220,7 @@ namespace MyProject.MSTest
 
         // act
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
+        target.EnrichWithInitialTestRunInfo(input);
 
         // assert
         var testFile = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
@@ -255,6 +259,7 @@ namespace MyProject.XUnit
 
         // act
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
+        target.EnrichWithInitialTestRunInfo(input);
 
         // assert
         var testFiles = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ToList();
@@ -286,6 +291,7 @@ namespace MyProject.Tests
 
         // act
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
+        target.EnrichWithInitialTestRunInfo(input);
 
         // assert
         var testFile = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
@@ -328,6 +334,7 @@ namespace MyProject.Tests
         _mutationTestInput.InitialTestRun = initialTestrun;
         // act
         var result = target.MutateProject(options, _mutationTestInput, _reporterMock.Object, _mutationTestProcessMock.Object);
+        target.EnrichWithInitialTestRunInfo(_mutationTestInput);
 
         // assert
         result.ShouldNotBeNull();

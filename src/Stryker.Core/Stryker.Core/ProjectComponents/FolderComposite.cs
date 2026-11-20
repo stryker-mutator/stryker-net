@@ -16,7 +16,8 @@ public class FolderComposite : ProjectComponent, IFolderComposite
 
     public override IEnumerable<IMutant> Mutants
     {
-        get => Children.SelectMany(x => x.Mutants);
+        // a file that was never mutated has no mutants yet, treat it as an empty collection
+        get => Children.SelectMany(x => x.Mutants ?? []);
         set => throw new NotSupportedException("Folders do not contain mutants.");
     }
 
