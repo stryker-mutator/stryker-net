@@ -51,6 +51,7 @@ public static class FileConfigGenerator
                 DisableBail = inputs.DisableBailInput.SuppliedInput ?? inputs.DisableBailInput.Default,
                 DisableMixMutants = inputs.DisableMixMutantsInput.SuppliedInput ?? inputs.DisableMixMutantsInput.Default,
                 AdditionalTimeout = inputs.AdditionalTimeoutInput.SuppliedInput ?? inputs.AdditionalTimeoutInput.Default,
+                TimeoutRatio = inputs.TimeoutRatioInput.SuppliedInput ?? inputs.TimeoutRatioInput.Default,
                 Mutate = inputs.MutateInput.SuppliedInput?.ToArray() ?? inputs.MutateInput.Default.ToArray(),
                 MutationLevel = inputs.MutationLevelInput.SuppliedInput ?? inputs.MutationLevelInput.Default,
                 Reporters = inputs.ReportersInput.SuppliedInput?.ToArray() ?? inputs.ReportersInput.Default.ToArray(),

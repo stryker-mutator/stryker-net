@@ -1,7 +1,6 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -21,44 +20,55 @@ public interface IInitialisationProcess
     /// </summary>
     /// <param name="options">stryker options</param>
     /// <returns>an enumeration of <see cref="SourceProjectInfo"/>, one for each found project (if any).</returns>
-    IReadOnlyCollection<SourceProjectInfo> GetMutableProjectsInfo(IStrykerOptions options);
+    RelatedSourceProjectsInfo GetMutableProjectsInfo(IStrykerOptions options);
 
-    void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects);
+    void BuildProjects(IStrykerOptions options, RelatedSourceProjectsInfo projects);
 
     /// <summary>
-    /// Creates mutation test inputs for the given projects without running the initial tests.
+    /// Discovers the tests and creates the mutation test inputs, without running the initial tests.
+    /// The initial tests can be run later via <see cref="RunInitialTestsAsync"/>, allowing mutating to run in parallel with them.
     /// </summary>
     IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(IStrykerOptions options,
-        IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner);
+        RelatedSourceProjectsInfo projects, ITestRunner runner);
 
     /// <summary>
     /// Runs the initial tests for all mutation test inputs and returns a dictionary mapping the input to its test run result.
+    /// Inputs whose tests are all filtered out by the test case filter are not part of the result.
     /// </summary>
     Task<IReadOnlyDictionary<MutationTestInput, InitialTestRun>> RunInitialTestsAsync(IStrykerOptions options,
         IReadOnlyCollection<MutationTestInput> inputs);
 }
 
-public class InitialisationProcess : IInitialisationProcess
+public class InitialisationProcess(
+    IInputFileResolver inputFileResolver,
+    IInitialBuildProcess initialBuildProcess,
+    IInitialTestProcess initialTestProcess,
+    ILogger<InitialisationProcess> logger = null)
+    : IInitialisationProcess
 {
-    private readonly IInputFileResolver _inputFileResolver;
-    private readonly IInitialBuildProcess _initialBuildProcess;
-    private readonly IInitialTestProcess _initialTestProcess;
-    private readonly ILogger _logger;
+    private const string NoMatchingTestsMessage =
+        "No test cases matched `test-case-filter`. Skipping this project. Change your configuration and try again.";
+    private const string NoMatchingProjectsMessage =
+        "No projects have test cases matching `test-case-filter`. Change your configuration and try again.";
 
-    public InitialisationProcess(
-        IInputFileResolver inputFileResolver,
-        IInitialBuildProcess initialBuildProcess,
-        IInitialTestProcess initialTestProcess,
-        ILogger<InitialisationProcess> logger = null)
+    private interface IProjectPreparation
     {
-        _inputFileResolver = inputFileResolver ?? throw new ArgumentNullException(nameof(inputFileResolver));
-        _initialBuildProcess = initialBuildProcess ?? throw new ArgumentNullException(nameof(initialBuildProcess));
-        _initialTestProcess = initialTestProcess ?? throw new ArgumentNullException(nameof(initialTestProcess));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
+    private sealed record ReadyProject(MutationTestInput Input) : IProjectPreparation;
+    private sealed record SkippedByTestCaseFilter : IProjectPreparation;
+
+    private readonly IInputFileResolver _inputFileResolver = inputFileResolver ?? throw new ArgumentNullException(nameof(inputFileResolver));
+    private readonly IInitialBuildProcess _initialBuildProcess = initialBuildProcess ?? throw new ArgumentNullException(nameof(initialBuildProcess));
+    private readonly IInitialTestProcess _initialTestProcess = initialTestProcess ?? throw new ArgumentNullException(nameof(initialTestProcess));
+    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+    /// <summary>
+    /// Results of the discovery phase (GetMutationTestInputs), needed by the initial test phase (RunInitialTestsAsync).
+    /// </summary>
+    private readonly ConcurrentDictionary<MutationTestInput, (bool HasDiscoveredTests, bool ThrowIfFails)> _preparationStates = new();
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<SourceProjectInfo> GetMutableProjectsInfo(IStrykerOptions options)
+    public RelatedSourceProjectsInfo GetMutableProjectsInfo(IStrykerOptions options)
     {
         _logger.LogInformation("Analysis starting.");
         try
@@ -73,120 +83,134 @@ public class InitialisationProcess : IInitialisationProcess
     }
 
     /// <inheritdoc/>
-    public void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects)
+    public void BuildProjects(IStrykerOptions options, RelatedSourceProjectsInfo projects)
     {
-        var solutionInfo = projects.First().SolutionInfo;
-        // pick configuration and platform from solution if available
-        var configuration = solutionInfo?.Configuration ?? options.Configuration;
-        var platform = solutionInfo?.Platform ?? options.Platform;
-        var solutionFilePath = solutionInfo?.SolutionFilePath ?? options.SolutionPath;
-        // we build the whole solution if we have a solution file path, even in project mode
-        if (!string.IsNullOrEmpty(solutionFilePath))
-        {
-            var framework = projects.Any(p => p.AnalyzerResult.TargetsDesktop());
-            // Build the complete solution
-            _logger.LogInformation("Building solution {SolutionPathName}.", FileSystem.Path.GetRelativePath(options.WorkingDirectory, solutionFilePath));
-
-            _initialBuildProcess.InitialBuild(
-                framework,
-                _inputFileResolver.FileSystem.Path.GetDirectoryName(solutionFilePath),
-                solutionFilePath, configuration, platform,
-                options.TargetFramework, options.MsBuildPath);
-        }
-        else
-        {
-            // build every test projects
-            var testProjects = projects.SelectMany(p => p.TestProjectsInfo.AnalyzerResults).Distinct().ToList();
-            for (var i = 0; i < testProjects.Count; i++)
-            {
-                _logger.LogInformation(
-                    "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
-                    testProjects[i].ProjectFilePath, i + 1,
-                    testProjects.Count);
-
-                _initialBuildProcess.InitialBuild(
-                    testProjects[i].TargetsDesktop(),
-                    testProjects[i].ProjectFilePath,
-                    options.SolutionPath,
-                    testProjects[i].GetProperty("Configuration"),
-                    testProjects[i].GetProperty("Platform"),
-                    msbuildPath: options.MsBuildPath ?? testProjects[i].MsBuildPath());
-            }
-        }
-
+        // ensure test projects are built
+        projects.BuildTestProjects(_initialBuildProcess);
         // perform post build update (to capture some content files in C# project for example)
-        foreach (var project in projects)
+        foreach (var project in projects.SourceProjectInfos)
         {
             project.OnProjectBuilt?.Invoke();
         }
     }
 
-    private IFileSystem FileSystem => _inputFileResolver.FileSystem;
-
     /// <inheritdoc/>
     public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(IStrykerOptions options,
-        IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner)
-    {
-        Parallel.ForEach(projects, project =>
-        {
-            DiscoverTests(project, runner);
-        });
-
-        return projects.Select(info => new MutationTestInput
-        {
-            SourceProjectInfo = info,
-            TestProjectsInfo = info.TestProjectsInfo,
-            TestRunner = runner
-        }).ToList();
-    }
+        RelatedSourceProjectsInfo projects, ITestRunner runner) =>
+        DiscoverProjectsAsync(options, projects, runner).GetAwaiter().GetResult();
 
     /// <inheritdoc/>
     public async Task<IReadOnlyDictionary<MutationTestInput, InitialTestRun>> RunInitialTestsAsync(IStrykerOptions options,
         IReadOnlyCollection<MutationTestInput> inputs)
     {
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        var throwIfFails = inputs.Count == 1;
-        var tasks = inputs.Select(async input =>
+        var results = await Task.WhenAll(inputs.Select(async input =>
         {
-            var initialTestRun = await InitialTestAsync(options, input.SourceProjectInfo, input.TestRunner, throwIfFails);
+            var (hasDiscoveredTests, throwIfFails) = PreparationStateFor(input, inputs.Count);
+            var initialTestRun = await RunInitialTestAsync(options, input, hasDiscoveredTests, throwIfFails);
             return (input, initialTestRun);
-        });
-
-        var results = await Task.WhenAll(tasks);
+        }));
         stopwatch.Stop();
-        var numberOfTests = results.Sum(r => r.initialTestRun.Result.ExecutedTests.Count);
+
+        var testedInputs = results.Where(r => r.initialTestRun is not null).ToList();
+        var numberOfTests = testedInputs.Sum(r => r.initialTestRun!.Result.ExecutedTests.Count);
         _logger.LogInformation("Initial testrun ran {NumberOfTests} tests in {ElapsedMilliseconds} ms", numberOfTests, stopwatch.ElapsedMilliseconds);
-        return results.ToDictionary(r => r.input, r => r.initialTestRun);
+
+        if (inputs.Count > 0 && testedInputs.Count == 0)
+        {
+            throw new InputException(NoMatchingProjectsMessage);
+        }
+
+        return testedInputs.ToDictionary(r => r.input, r => r.initialTestRun!);
     }
 
-    private async Task<InitialTestRun> InitialTestAsync(IStrykerOptions options, SourceProjectInfo projectInfo,
+    /// <summary>
+    /// Convenience method combining test discovery and the initial test run, for callers that need both in a single call.
+    /// </summary>
+    public async Task<IReadOnlyCollection<MutationTestInput>> GetMutationTestInputsAsync(IStrykerOptions options,
+        RelatedSourceProjectsInfo projects,
+        ITestRunner runner)
+    {
+        var inputs = await DiscoverProjectsAsync(options, projects, runner);
+        var initialTestRuns = await RunInitialTestsAsync(options, inputs);
+
+        var readyInputs = new List<MutationTestInput>();
+        foreach (var input in inputs)
+        {
+            if (initialTestRuns.TryGetValue(input, out var initialTestRun))
+            {
+                input.InitialTestRun = initialTestRun;
+                readyInputs.Add(input);
+            }
+        }
+        return readyInputs;
+    }
+
+    private async Task<IReadOnlyCollection<MutationTestInput>> DiscoverProjectsAsync(IStrykerOptions options,
+        RelatedSourceProjectsInfo projects, ITestRunner runner)
+    {
+        var preparations = await Task.WhenAll(projects.SourceProjectInfos.Select(info =>
+            PrepareProjectAsync(options, info, runner, projects.SourceProjectInfos.Count == 1)));
+        var inputs = preparations.OfType<ReadyProject>().Select(project => project.Input).ToList();
+        if (preparations.Length > 0 && inputs.Count == 0)
+        {
+            throw new InputException(NoMatchingProjectsMessage);
+        }
+
+        return inputs;
+    }
+
+    private async Task<IProjectPreparation> PrepareProjectAsync(IStrykerOptions options, SourceProjectInfo projectInfo,
         ITestRunner testRunner, bool throwIfFails)
     {
+        var hasDiscoveredTests = await DiscoverTestsAsync(options, projectInfo, testRunner);
+        var hasTestCaseFilter = !string.IsNullOrWhiteSpace(options.TestCaseFilter);
+        if (!hasDiscoveredTests && hasTestCaseFilter && projectInfo.TestProjectsInfo.AnalyzerResults.Any())
+        {
+            LogFilteredProject(projectInfo);
+            return new SkippedByTestCaseFilter();
+        }
+
+        var input = new MutationTestInput
+        {
+            SourceProjectInfo = projectInfo,
+            TestRunner = testRunner
+        };
+        _preparationStates[input] = (hasDiscoveredTests, throwIfFails);
+        return new ReadyProject(input);
+    }
+
+    private async Task<InitialTestRun?> RunInitialTestAsync(IStrykerOptions options, MutationTestInput input,
+        bool hasDiscoveredTests, bool throwIfFails)
+    {
+        var projectInfo = input.SourceProjectInfo;
+        var testRunner = input.TestRunner;
+        var hasTestCaseFilter = !string.IsNullOrWhiteSpace(options.TestCaseFilter);
+
         // initial test
+        var foundTests = testRunner.GetTests(projectInfo).Count;
         _logger.LogInformation(
             "Number of tests found: {TestCount} for project {ProjectFilePath}. Initial test run started.",
-        testRunner.GetTests(projectInfo).Count,
+        foundTests,
         projectInfo.AnalyzerResult.ProjectFilePath);
 
         var result = await _initialTestProcess.InitialTestAsync(options, projectInfo, testRunner);
 
+        if (result.Result.SessionTimedOut || result.Result.SessionHadRuntimeIssue || !result.Result.TimedOutTests.IsEmpty)
+        {
+            throw new InputException("Initial test run could not be completed.", result.Result.ResultMessage);
+        }
+
+        if (result.Result.ExecutedTests.IsEmpty && hasTestCaseFilter &&
+            result.Result.FailingTests.IsEmpty && hasDiscoveredTests)
+        {
+            LogFilteredProject(projectInfo);
+            return null;
+        }
+
         if (!result.Result.FailingTests.IsEmpty)
         {
-            var failingTestsCount = result.Result.FailingTests.Count;
-            if (options.BreakOnInitialTestFailure)
-            {
-                throw new InputException("Initial testrun has failing tests.", result.Result.ResultMessage);
-            }
-
-            if (throwIfFails && (double)failingTestsCount / result.Result.ExecutedTests.Count >= .5)
-            {
-                throw new InputException("Initial testrun has more than 50% failing tests.",
-                        result.Result.ResultMessage);
-            }
-
-            _logger.LogWarning(
-                "{FailingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.",
-                failingTestsCount);
+            AnalyzeTestFailures(options, throwIfFails, result, foundTests);
         }
 
         if (!result.Result.ExecutedTests.IsEmpty || !throwIfFails)
@@ -194,9 +218,46 @@ public class InitialisationProcess : IInitialisationProcess
             return result;
         }
 
-        const string Message = "No test result reported. Make sure your test project contains test and is compatible with VsTest.";
-        throw new InputException(string.Join(Environment.NewLine, projectInfo.Warnings.Prepend(Message)));
+        var runnerName = testRunner.RunnerType switch
+        {
+            Abstractions.Options.TestRunner.MicrosoftTestPlatform => "Microsoft Testing Platform",
+            Abstractions.Options.TestRunner.VsTest => "VsTest",
+            _ => "Unknown Test Runner"
+        };
+
+        var message = $"No test result reported. Make sure your test project contains tests and is compatible with {runnerName}.";
+        throw new InputException(string.Join(Environment.NewLine, projectInfo.Warnings.Prepend(message)));
     }
+
+    private (bool HasDiscoveredTests, bool ThrowIfFails) PreparationStateFor(MutationTestInput input, int inputCount) =>
+        _preparationStates.TryGetValue(input, out var state) ? state : (true, inputCount == 1);
+
+    private void AnalyzeTestFailures(IStrykerOptions options, bool throwIfFails, InitialTestRun result, int foundTests)
+    {
+        var failingTestsCount = result.Result.FailingTests.Count;
+        if (options.BreakOnInitialTestFailure)
+        {
+            throw new InputException("Initial testrun has failing tests.", result.Result.ResultMessage);
+        }
+
+        if (result.Result.ExecutedTests.Count != 0)
+        {
+            foundTests = result.Result.ExecutedTests.Count;
+        }
+
+        if (throwIfFails && (double)failingTestsCount / foundTests >= .5)
+        {
+            throw new InputException("Initial testrun has 50% or more failing tests.",
+                result.Result.ResultMessage);
+        }
+
+        _logger.LogWarning(
+            "{FailingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.",
+            failingTestsCount);
+    }
+
+    private void LogFilteredProject(SourceProjectInfo projectInfo) =>
+        _logger.LogWarning("{Message} Project: {ProjectFilePath}", NoMatchingTestsMessage, projectInfo.AnalyzerResult.ProjectFilePath);
 
     private static readonly Dictionary<string, (string assembly, string package)> TestFrameworks = new()
     {
@@ -206,18 +267,26 @@ public class InitialisationProcess : IInitialisationProcess
                 ("Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter", "MSTest.TestAdapter")
     };
 
-    private void DiscoverTests(SourceProjectInfo projectInfo, ITestRunner testRunner)
+    private async Task<bool> DiscoverTestsAsync(IStrykerOptions options, SourceProjectInfo projectInfo, ITestRunner testRunner)
     {
+        var hasDiscoveredTests = false;
         foreach (var testProject in projectInfo.TestProjectsInfo.AnalyzerResults)
         {
-            if (testRunner.DiscoverTestsAsync(testProject.GetAssemblyPath()).GetAwaiter().GetResult())
+            if (await testRunner.DiscoverTestsAsync(testProject.GetAssemblyPath()))
+            {
+                hasDiscoveredTests = true;
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(options.TestCaseFilter))
             {
                 continue;
             }
 
             var causeFound = false;
             foreach (var (framework, (adapter, package)) in
-                     TestFrameworks.Where(t => testProject.References.Any(r => r.Contains(t.Key))))
+                     TestFrameworks.Where(t => options.TestRunner == Abstractions.Options.TestRunner.VsTest &&
+                         testProject.References.Any(r => r.Contains(t.Key))))
             {
                 if (testProject.References.Any(r => r.Contains(adapter)))
                 {
@@ -243,15 +312,6 @@ public class InitialisationProcess : IInitialisationProcess
                 _logger.LogWarning(message);
             }
 
-            if (!causeFound && testProject.References.Any(r => r.Contains("Microsoft.Testing.Platform")))
-            {
-                causeFound = true;
-                var message = $"Project '{testProject.ProjectFilePath}' is using Microsoft.Testing.Platform which is not yet supported by Stryker, " +
-                              $"see https://github.com/stryker-mutator/stryker-net/issues/3094";
-                projectInfo.LogError(message);
-                _logger.LogWarning(message);
-            }
-
             if (causeFound)
             {
                 continue;
@@ -261,5 +321,7 @@ public class InitialisationProcess : IInitialisationProcess
             projectInfo.LogError(messageForNoReason);
             _logger.LogWarning(messageForNoReason);
         }
+
+        return hasDiscoveredTests;
     }
 }

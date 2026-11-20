@@ -1,8 +1,9 @@
-<Project Sdk="MSTest.Sdk/4.2.2">
+<Project Sdk="MSTest.Sdk/4.5.3">
 
     <PropertyGroup>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     </PropertyGroup>
 
     <ItemGroup>

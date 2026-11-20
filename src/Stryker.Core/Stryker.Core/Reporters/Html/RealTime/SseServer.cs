@@ -23,7 +23,7 @@ public class SseServer : ISseServer, IDisposable
     }
 
     private readonly HttpListener _listener;
-    private readonly List<StreamWriter> _writers;
+    internal readonly List<StreamWriter> _writers;
     private readonly object _writersLock = new();
     private readonly TaskCompletionSource<bool> _disposeCompletion =
         new(TaskCreationOptions.RunContinuationsAsynchronously);

@@ -513,16 +513,25 @@ return default(bool);}";
     {
         var source = @"void TestMethod() {
                 var labelNode = myAttribute?.ArgumentList.Arguments.First()?.Expression;
-                return test?.Other()?.Count;
+                return test?.Other()?.Count();
 		}";
         var expected = @"void TestMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
-            var labelNode = (StrykerNamespace.MutantControl.IsActive(1)?myAttribute?.ArgumentList.Arguments.FirstOrDefault()?.Expression:myAttribute?.ArgumentList.Arguments.First()?.Expression);
-                return (StrykerNamespace.MutantControl.IsActive(2)? test?.Other()?.Sum:test?.Other()?.Count);
+                var labelNode = (StrykerNamespace.MutantControl.IsActive(1)?myAttribute?.ArgumentList.Arguments.FirstOrDefault()?.Expression:myAttribute?.ArgumentList.Arguments.First()?.Expression);
+                return (StrykerNamespace.MutantControl.IsActive(2)?test?.Other()?.Sum():test?.Other()?.Count());
 		}}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
     }
 
+
+    [TestMethod]
+    public void ShouldMutateConditionalMemberAccessWithIndexOperator()
+    {
+        var source = @"public static char? FirstCharOfLast(string[]? items) => items?.Last()[0];";
+        var expected = @"public static char? FirstCharOfLast(string[]? items) => (StrykerNamespace.MutantControl.IsActive(0)?items?.First()[0]:items?.Last()[0]);";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
 
     [TestMethod]
     public void ShouldMutateConditionalExpressionOnArrayDeclaration()
@@ -694,9 +703,9 @@ var (one, two) = ((StrykerNamespace.MutantControl.IsActive(1)?1 - 1:1 + 1), (Str
     [TestMethod]
     public void ShouldNotMutateAttributes()
     {
-        var source = @"[Obsolete(""thismustnotbemutated"")]
+        var source = @"[Obsolete(""thisMustNotBeMutated"")]
 public void SomeMethod() {}";
-        var expected = @"[Obsolete(""thismustnotbemutated"")]
+        var expected = @"[Obsolete(""thisMustNotBeMutated"")]
 public void SomeMethod() {}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
@@ -761,9 +770,19 @@ if(StrykerNamespace.MutantControl.IsActive(2)){for (var i = Method(true); ; i--)
     }
 
     [TestMethod]
+    public void ShouldConstructorInvokingOutVar()
+    {
+        var source = @"public TestClass(string value): base(int.TryParse(value, out var parsed) && parsed == 1){}";
+        var expected =
+            @"public TestClass(string value): base(int.TryParse(value, out var parsed) && (StrykerNamespace.MutantControl.IsActive(1)?parsed != 1:parsed == 1)){}";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
     public void ShouldMutateExpressionBodiedStaticConstructor()
     {
-        var source = @"static Test()  => (true && SomeOtherMethod(out var x)) ? x : 5;";
+        var source = "static Test()  => (true && SomeOtherMethod(out var x)) ? x : 5;";
         var expected =
             @"static Test()  {using(new StrykerNamespace.MutantContext()){if(StrykerNamespace.MutantControl.IsActive(1)){(false?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(0)){(true?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(2)){(true || SomeOtherMethod(out var x)) ? x : 5;}else{((StrykerNamespace.MutantControl.IsActive(3)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}}}}";
 
@@ -1148,9 +1167,9 @@ if(StrykerNamespace.MutantControl.IsActive(2)){;}else{Console.WriteLine((Stryker
 
         var mutants = Target.GetLatestMutantBatch().ToList();
         mutants.Count.ShouldBe(2);
-        var blockLinespan = mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan();
-        blockLinespan.StartLinePosition.Line.ShouldBe(1);
-        blockLinespan.EndLinePosition.Line.ShouldBe(3);
+        var blockLineSpan = mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan();
+        blockLineSpan.StartLinePosition.Line.ShouldBe(1);
+        blockLineSpan.EndLinePosition.Line.ShouldBe(3);
         mutants.Last().Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(2);
     }
 
@@ -1176,9 +1195,9 @@ namespace TestApp
         var mutants = Target.GetLatestMutantBatch().ToList();
         mutants.Count.ShouldBe(7);
 
-        var blockLinespan = mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan();
-        blockLinespan.StartLinePosition.Line.ShouldBe(9);
-        blockLinespan.EndLinePosition.Line.ShouldBe(11);
+        var blockLineSpan = mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan();
+        blockLineSpan.StartLinePosition.Line.ShouldBe(9);
+        blockLineSpan.EndLinePosition.Line.ShouldBe(11);
         foreach (var mutant in mutants.Skip(1))
         {
             mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(10);
@@ -1342,7 +1361,7 @@ int TestMethod()
     }
 
     [TestMethod]
-    public void ShouldMutatetringsInSwitchExpression()
+    public void ShouldMutateStringsInSwitchExpression()
     {
         var source = @"string TestMethod()
 {

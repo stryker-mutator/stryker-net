@@ -107,17 +107,17 @@ public class VsTestMockingHelper : TestBase
     {
         var content = new FolderComposite();
         content.Add(new CsharpFileLeaf { Mutants = mutants ?? new[] { Mutant, OtherMutant } });
-        return new SourceProjectInfo
-        {
-            AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+        return new SourceProjectInfo(
+            TestHelper.SetupProjectAnalyzerResult(
                 properties: new Dictionary<string, string>
                 {
                     { "TargetDir", Path.Combine(_filesystemRoot, "app", "bin", "Debug") },
                     { "TargetFileName", "AppToTest.dll" },
                     { "Language", "C#" }
                 }, targetFramework: "netcoreapp2.1").Object,
+            _testProjectsInfo)
+        {
             ProjectContents = content,
-            TestProjectsInfo = _testProjectsInfo
         };
     }
 
@@ -142,7 +142,7 @@ public class VsTestMockingHelper : TestBase
     }
 
     protected VsTestObjModel.TestCase BuildCase(string name, TestFrameworks framework = TestFrameworks.xUnit, string displayName = null)
-        => new(name, framework == TestFrameworks.xUnit ? _xUnitUri : _NUnitUri, _testAssemblyPath) { Id = new Guid(), DisplayName = displayName ?? name };
+        => new(name, framework == TestFrameworks.xUnit ? _xUnitUri : _NUnitUri, _testAssemblyPath) { Id = Guid.NewGuid(), DisplayName = displayName ?? name };
 
     protected VsTestObjModel.TestCase FindOrBuildCase(string testResultId) => TestCases.FirstOrDefault(t => t.FullyQualifiedName == testResultId) ?? BuildCase(testResultId);
 
@@ -537,7 +537,7 @@ public class VsTestMockingHelper : TestBase
 
     protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, IStrykerOptions options, IReadOnlyList<VsTestObjModel.TestCase> tests = null, SourceProjectInfo sourceProject = null)
     {
-        var testRunResult = new TestRunResult(new List<VsTestDescription>(), new TestIdentifierList((tests ?? TestCases).Select(t => t.Id.ToString())),
+        var testRunResult = new TestRunResult(new List<VsTestDescription>(), new WrappedIdentifierEnumeration((tests ?? TestCases).Select(t => t.Id.ToString())),
             TestIdentifierList.NoTest(),
             TestIdentifierList.NoTest(),
             string.Empty,
@@ -548,7 +548,6 @@ public class VsTestMockingHelper : TestBase
             SourceProjectInfo = sourceProject ?? SourceProjectInfo,
             TestRunner = runner,
             InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500)),
-            TestProjectsInfo = _testProjectsInfo
         };
         var mutator = new CsharpMutationProcess(_fileSystem, TestLoggerFactory.CreateLogger<CsharpMutationProcess>());
         var executor = new MutationTestExecutor(TestLoggerFactory.CreateLogger<MutationTestExecutor>());
@@ -569,7 +568,5 @@ public class VsTestMockingHelper : TestBase
         public int LaunchTestHost(VsTestObjModel.TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         public bool IsDebug { get; }
-
-        public int ErrorCode { get; }
     }
 }

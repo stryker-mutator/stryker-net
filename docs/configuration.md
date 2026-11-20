@@ -98,10 +98,19 @@ When you have multiple test projects covering one project under test you may spe
 ### `test-case-filter` &lt;`string`&gt;
 
 Default: `""`  
-Command line: `N/A`  
+Command line: `--test-case-filter "(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1"`\
 Config file: `"test-case-filter": "(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1"`
 
 Filter expression to run selective tests. Uses `dotnet test --filter` option syntax, [detailed here](https://docs.microsoft.com/en-us/dotnet/core/testing/selective-unit-tests). Use this option if you wish to run stryker only on a selective subset of tests from your test suite.
+
+When using Microsoft Testing Platform, the filter is passed to test applications
+that expose the `--filter` command-line option (for example MSTest and NUnit).
+For test applications that do not (for example xUnit v3 and TUnit), Stryker
+applies the filter itself to the discovered tests. It then supports the
+`FullyQualifiedName`, `Name`, `DisplayName` and `ClassName` properties with the
+`=`, `!=`, `~` and `!~` operators, combined with `&`, `|` and parentheses. A
+value without a property (`MyTests`) is read as `FullyQualifiedName~MyTests`.
+Other properties, such as traits or categories, are rejected with an error.
 
 ### `mutate` &lt;`glob[]`&gt;
 
@@ -134,34 +143,19 @@ dotnet stryker -m "MyFolder/MyService.cs{10..100}"
 
 ### `language-version` &lt;`string`&gt;
 
-Default: `latest`  
-Command line: `N/A`  
-Config file: `"language-version": 'CSharp7_3'`
+Default: project setting
 
-Stryker compiles using the project language settings (latest by default); but note that since Stryker embeds the Roslyn compiler, `preview` and `latest` are relative to this compiler 
-and may be different from your set up. If you do have compilation errors regarding language features you can explicitly set the language version.
-Note that there is always a delay between C# SDK beta releases and Roslyn and Stryker supporting them, some new features may not be supported immediately.
+Command line: `N/A`
 
-Valid language versions:
-- Default (Latest)
-- Latest (Default)
-- Csharp2
-- Csharp3
-- Csharp4
-- Csharp5
-- Csharp6
-- Csharp7
-- Csharp7_1
-- Csharp7_2
-- Csharp7_3
-- Csharp8
-- Csharp9
-- Csharp10
-- Csharp11
-- Csharp12
-- Preview (next language version)
+Config file (deprecated): `"language-version": 'CSharp7_3'`
 
-*\* Csharp version 1 is not allowed because stryker injects helper code that uses csharp 2 language features.*
+This option is deprecated and ignored. Configure `LangVersion` in the project
+file instead. Stryker uses the language version reported by the project build;
+when the project does not report one, Stryker leaves language-version resolution
+to Roslyn.
+
+Existing configuration values remain accepted for compatibility and produce a
+deprecation warning.
 
 ### `configuration` &lt;`string`&gt;
 Default: default for SDK, usually `Debug`
@@ -301,18 +295,29 @@ If HTML and/or JSON reporting is being used you can use this option to change th
 
 ### `additional-timeout` &lt;`number`&gt;
 
-Default: `5000`  
+Default: `3000`  
 Command line: `N/A`  
-Config file: `"additional-timeout": 3000`
+Config file: `"additional-timeout": 1000`
 
 Some mutations can create endless loops inside your code. To detect and stop these loops Stryker cancels a unit test run after a set time.
-The formula to calculate the timeout is:
 
-`timeout = initialTestTime + additionalTimeout`
+Stryker calculates the timeout **per mutant**, based on the time the tests covering that mutant took during the initial (unmutated) test run, rather than on the full test run. When several mutants are tested together in a single test session, their covering tests are disjoint, so the timeout is based on the combined run time of exactly the tests that session executes. The formula is:
+
+`timeout = (initialTestRunTime + coveringTestsTime) * timeout-ratio + additional-timeout`
+
+Where `coveringTestsTime` is the estimated run time of the tests covering the mutant(s) being tested (based on the initial test run) and `initialTestRunTime` is the test framework initialization time measured during the initial test run.
 
 If you have a lot of timeouts you might need to increase the additional timeout. If you have a lot of endless loops causing a long mutation testrun you might want to decrease the additional timeout. Only decrease the additional timeout if you are certain that the mutations are endless loops.
 
 *\* Timeout is in milliseconds.*
+
+### `timeout-ratio` &lt;`number`&gt;
+
+Default: `1.5`  
+Command line: `N/A`  
+Config file: `"timeout-ratio": 2.0`
+
+The ratio the estimated test time is multiplied by when calculating the [timeout](#additional-timeout-number) for a mutant. A higher ratio gives mutants more time to run before they are cancelled, a lower ratio catches endless loops faster. Must be higher than `1`.
 
 ### `concurrency` &lt;`number`&gt;
 
@@ -469,6 +474,8 @@ Command line: `N/A`
 Config file: `"disable-mix-mutants": true`
 
 Stryker combines multiple mutants in the same testrun when the mutants are not covered by the same unit tests. This reduces the total runtime. You can disable this behavior and run every mutation in an isolated testrun. This can be useful when mixed mutants have unintended side effects.
+
+*\* This flag is only applicable to the vstest testrunner. When using the MTP testrunner, this flag will be ignored since our MTP implementation doesn't combine mutants.*
 
 ### `since` &lt;`flag`&gt; [`:committish`]
 
@@ -685,14 +692,23 @@ When creating an issue on github you can include a logfile so the issue can be d
 
 *\* File logging always uses loglevel `trace`.*
 
-### `dev-mode` &lt;`flag`&gt;
+### `diag` &lt;`flag`&gt;
 
 Default: `false`  
-Command line: `--dev-mode`  
+Command line: `--diag`  
 Config file: `N/A`
 
-You should activate `dev mode` when diagnosing an issue with Stryker. This will enable additional logging, specific checks, disable some optimizations...
-As a result, Stryker will be slower, but the log file should help diagnose the hardest issues.
+You should activate `diag` mode when diagnosing an issue with Stryker. It replaces the old `dev-mode` option.
+
+When `diag` is enabled:
+* The console log level is raised to `debug` if it was lower.
+* File logging is turned on, as if `--log-to-file` was set, and the log file gets the `trace` level.
+* Stryker logs the analysis result of each project and the build log of each project that fails analysis. Projects are analyzed one at a time.
+* Stryker logs the mutated source code and the compilation errors that it rolls back.
+* If the mutated project cannot be compiled, Stryker also tries to build the project without mutations to help find the cause.
+* The output of the test host processes is added to the log.
+
+As a result, Stryker can be slower, but the log file should help diagnose the hardest issues. Attach it when you create an issue on GitHub.
 
 ## Misc
 

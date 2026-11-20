@@ -24,31 +24,22 @@ public interface IProjectOrchestrator : IDisposable
     Task<IEnumerable<IMutationTestProcess>> MutateAndTestProjectsAsync(IStrykerOptions options, IReporter reporters, ITestRunner runner = null);
 }
 
-public sealed class ProjectOrchestrator : IProjectOrchestrator
+public sealed class ProjectOrchestrator(
+    IProjectMutator projectMutator,
+    IInitialisationProcess initializationProcess,
+    IInputFileResolver fileResolver,
+    IServiceProvider serviceProvider,
+    IMutationTestExecutor mutationTestExecutor,
+    ILogger<ProjectOrchestrator> logger)
+    : IProjectOrchestrator
 {
-    private IInitialisationProcess _initializationProcess;
-    private readonly ILogger _logger;
-    private readonly IProjectMutator _projectMutator;
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IMutationTestExecutor _mutationTestExecutor;
-    private readonly IInputFileResolver _fileResolver;
+    private IInitialisationProcess _initializationProcess = initializationProcess ?? throw new ArgumentNullException(nameof(initializationProcess));
+    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IProjectMutator _projectMutator = projectMutator ?? throw new ArgumentNullException(nameof(projectMutator));
+    private readonly IServiceProvider _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+    private readonly IMutationTestExecutor _mutationTestExecutor = mutationTestExecutor ?? throw new ArgumentNullException(nameof(mutationTestExecutor));
+    private readonly IInputFileResolver _fileResolver = fileResolver ?? throw new ArgumentNullException(nameof(fileResolver));
     private ITestRunner _runner;
-
-    public ProjectOrchestrator(
-        IProjectMutator projectMutator,
-        IInitialisationProcess initializationProcess,
-        IInputFileResolver fileResolver,
-        IServiceProvider serviceProvider,
-        IMutationTestExecutor mutationTestExecutor,
-        ILogger<ProjectOrchestrator> logger)
-    {
-        _projectMutator = projectMutator ?? throw new ArgumentNullException(nameof(projectMutator));
-        _initializationProcess = initializationProcess ?? throw new ArgumentNullException(nameof(initializationProcess));
-        _fileResolver = fileResolver ?? throw new ArgumentNullException(nameof(fileResolver));
-        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        _mutationTestExecutor = mutationTestExecutor ?? throw new ArgumentNullException(nameof(mutationTestExecutor));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
 
     public async Task<IEnumerable<IMutationTestProcess>> MutateAndTestProjectsAsync(IStrykerOptions options, IReporter reporters,
         ITestRunner runner = null)
@@ -56,7 +47,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         _initializationProcess ??= _serviceProvider.GetRequiredService<IInitialisationProcess>();
         var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
 
-        if (projectInfos.Count == 0)
+        if (projectInfos.SourceProjectInfos.Count == 0)
         {
             _logger.LogWarning("No project to mutate. Stryker will exit prematurely.");
             return [];
@@ -66,18 +57,19 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
 
         _runner = runner ?? CreateTestRunner(options);
         _mutationTestExecutor.TestRunner = _runner;
-        InitializeDashboardProjectInformation(options, projectInfos.First());
+        InitializeDashboardProjectInformation(options, projectInfos.SourceProjectInfos.First());
 
         var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
 
-        // Backup assemblies before running tests in parallel to prevent file access conflicts
+        // Backup the original assemblies before the initial tests run, so the mutated
+        // assembly is only written after the initial tests complete (avoids file conflicts).
         foreach (var input in inputs)
         {
-            input.TestProjectsInfo.BackupOriginalAssembly(input.SourceProjectInfo.AnalyzerResult);
+            input.SourceProjectInfo.BackupOriginalAssembly(input.SourceProjectInfo.AnalyzerResult);
         }
 
         var initialTestRunTask = _initializationProcess.RunInitialTestsAsync(options, inputs);
-        var mutationTask =  Task.Run(() => MutateProjects(options, reporters, inputs).ToList());
+        var mutationTask = Task.Run(() => MutateProjects(options, reporters, inputs).ToList());
 
         // Run initial test and mutation in parallel for better performance
         await Task.WhenAll(initialTestRunTask, mutationTask);
@@ -91,7 +83,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
             _projectMutator.CompileProject(process);
         }
 
-        foreach (var input in processes.Select(p => p.Input).Where(initialTestResults.ContainsKey))  
+        foreach (var input in processes.Select(p => p.Input).Where(initialTestResults.ContainsKey))
         {
             input.InitialTestRun = initialTestResults[input];
             _projectMutator.EnrichWithInitialTestRunInfo(input);
@@ -109,19 +101,17 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
             mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
         }
         stopwatch.Stop();
-        _logger.LogInformation("{MutantsCount} mutants created in {ElapsedMilliseconds} ms", mutationTestProcesses.SelectMany(x => x.Input.SourceProjectInfo.ProjectContents.Mutants).Count(), stopwatch.ElapsedMilliseconds);
+        _logger.LogInformation("{MutantsCount} mutants created in {ElapsedMilliseconds} ms", mutationTestProcesses.SelectMany(x => x.Input.SourceProjectInfo.ProjectContents?.Mutants ?? []).Count(), stopwatch.ElapsedMilliseconds);
         return mutationTestProcesses;
     }
 
-    private ITestRunner CreateTestRunner(IStrykerOptions options)
-    {
-        return options.TestRunner switch
+    private ITestRunner CreateTestRunner(IStrykerOptions options) =>
+        options.TestRunner switch
         {
             Stryker.Abstractions.Options.TestRunner.VsTest => new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem),
             Stryker.Abstractions.Options.TestRunner.MicrosoftTestPlatform => new MicrosoftTestPlatformRunnerPool(options),
             _ => throw new InputException($"Unknown test runner: {options.TestRunner}")
         };
-    }
 
     private void InitializeDashboardProjectInformation(IStrykerOptions options, SourceProjectInfo projectInfo)
     {
@@ -130,7 +120,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         var requiresProjectInformation = dashboardReporterEnabled || dashboardBaselineEnabled;
         var missingProjectName = string.IsNullOrEmpty(options.ProjectName);
         var missingProjectVersion = string.IsNullOrEmpty(options.ProjectVersion);
-        if (!requiresProjectInformation || !missingProjectVersion && !missingProjectName)
+        if (!requiresProjectInformation || (!missingProjectVersion && !missingProjectName))
         {
             return;
         }

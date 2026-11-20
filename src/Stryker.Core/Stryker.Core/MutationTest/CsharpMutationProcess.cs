@@ -3,7 +3,6 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;

@@ -10,6 +10,7 @@ using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
 using Stryker.Abstractions.Options;
 using Stryker.Core.MutationTest;
+using Stryker.TestRunner.Tests;
 
 namespace Stryker.Core.Initialisation;
 
@@ -69,17 +70,20 @@ public class ProjectMutator : IProjectMutator
             return;
         }
 
-        EnrichTestProjectsWithTestInfo(input.InitialTestRun, input.TestProjectsInfo);
+        EnrichTestProjectsWithTestInfo(input.InitialTestRun, input.SourceProjectInfo.TestProjectsInfo);
     }
 
     private void EnrichTestProjectsWithTestInfo(InitialTestRun initialTestRun, ITestProjectsInfo testProjectsInfo)
     {
-        var unitTests = initialTestRun.Result.TestDescriptions.Select(desc => desc.Case);
+        var executedTests = new TestIdentifierList(initialTestRun.Result.ExecutedTests);
+        var unitTests = initialTestRun.Result.TestDescriptions.
+            Where(desc => executedTests.Contains(desc.Id)).
+            Select(desc => desc.Case);
 
         foreach (var unitTest in unitTests)
         {
             // Primary: use location info when the framework provides it (e.g. XUnit v3, TUnit)
-            if (unitTest.LineNumber != Stryker.Abstractions.Testing.ITestCase.LineNumberNotFound
+            if (unitTest.LineNumber != Abstractions.Testing.ITestCase.LineNumberNotFound
                 && TryAddTestByLineNumber(unitTest, testProjectsInfo))
             {
                 continue;
@@ -136,7 +140,7 @@ public class ProjectMutator : IProjectMutator
         var sourceName = isGuid ? unitTest.Name : unitTest.FullyQualifiedName;
 
         var (methodName, className, namespaceName) = ParseMethodComponents(sourceName);
-        if (string.IsNullOrEmpty(methodName))
+        if (string.IsNullOrEmpty(methodName) || testFiles == null)
         {
             return (null, null);
         }

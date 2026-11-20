@@ -50,7 +50,7 @@ public sealed class VsTestContextInformation : IDisposable
     public IStrykerOptions Options { get; }
 
     /// <summary>
-    ///     Log folder path
+    /// Log folder path
     /// </summary>
     public string LogPath =>
         Options.OutputPath == null ? "logs" : _fileSystem.Path.Combine(Options.OutputPath, "logs");
@@ -178,13 +178,21 @@ public sealed class VsTestContextInformation : IDisposable
     {
         if (!_fileSystem.File.Exists(source))
         {
-            throw new GeneralStrykerException(
+            throw new InputException(
                 $"The test project binaries could not be found at {source}, exiting...");
         }
 
         if (!TestsPerSource.ContainsKey(source))
         {
-            DiscoverTestsInSources(source, frameworkVersion, platform);
+            try
+            {
+                DiscoverTestsInSources(source, frameworkVersion, platform);
+            }
+            catch (Exception ex) when (ex is not InputException && ex is not OperationCanceledException)
+            {
+                _logger.LogError(ex, "Test discovery failed for assembly {Assembly}", source);
+                throw new InputException($"Test discovery failed for assembly '{source}'.", ex.Message);
+            }
         }
 
         return TestsPerSource[source].Count > 0;
@@ -196,17 +204,32 @@ public sealed class VsTestContextInformation : IDisposable
         var messages = new List<string>();
         var handler = new DiscoveryEventHandler(messages);
         var settings = GenerateRunSettingsForDiscovery(frameworkVersion, platform);
-        wrapper.DiscoverTests([newSource], settings, handler);
-
-        handler.WaitEnd();
-        if (handler.Aborted)
+        try
         {
-            _logger.LogDebug("TestDiscoverer: Discovery settings: {discoverySettings}", settings);
-            _logger.LogDebug("TestDiscoverer: {messages}", string.Join(Environment.NewLine, messages));
-            _logger.LogError("TestDiscoverer: Test discovery has been aborted!");
+            wrapper.DiscoverTests([newSource], settings, handler);
+            handler.WaitEnd();
+            if (handler.Aborted || handler.HasErrors)
+            {
+                _logger.LogDebug("TestDiscoverer: Discovery settings: {discoverySettings}", settings);
+                _logger.LogError("TestDiscoverer: Test discovery failed for {Assembly}: {Messages}",
+                    newSource, string.Join(Environment.NewLine, messages));
+                throw new InputException($"Test discovery failed for assembly '{newSource}'.",
+                    handler.Aborted
+                        ? string.Join(Environment.NewLine, messages.Prepend("Test discovery was aborted."))
+                        : string.Join(Environment.NewLine, messages));
+            }
         }
-
-        wrapper.EndSession();
+        finally
+        {
+            try
+            {
+                wrapper.EndSession();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Test discovery cleanup failed for assembly {Assembly}", newSource);
+            }
+        }
 
         TestsPerSource[newSource] = handler.DiscoveredTestCases.Select(c => c.Id).ToHashSet();
         VsTests ??= new Dictionary<Guid, VsTestDescription>(handler.DiscoveredTestCases.Count);
@@ -255,7 +278,7 @@ public sealed class VsTestContextInformation : IDisposable
 
         if (tests.Any(testCase => testCase.Framework == TestFrameworks.MsTest))
         {
-            _testFramework &= ~TestFrameworks.MsTest;
+            _testFramework |= TestFrameworks.MsTest;
         }
     }
 
@@ -293,7 +316,7 @@ public sealed class VsTestContextInformation : IDisposable
         var dataCollectorSettings = needDataCollector
             ? CoverageCollector.GetVsTestSettings(
                 forCoverage,
-                mutantTestsMap?.Select(e => (e.Key, e.Value.GetIdentifiers().Select(x => Guid.Parse(x)))),
+                mutantTestsMap?.Select(e => (e.Key, e.Value.GetIdentifiers()?.Select(Guid.Parse))),
                 helperNameSpace)
             : string.Empty;
         if (_testFramework.HasFlag(TestFrameworks.NUnit))

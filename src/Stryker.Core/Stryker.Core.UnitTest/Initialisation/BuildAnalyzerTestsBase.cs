@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
@@ -86,21 +87,6 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
         var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
         var projectReferences = string.IsNullOrEmpty(csProj) ? [] : GetProjectResult(csProj, frameworks.First()).ProjectReferences.Append(csProj).ToList();
         return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, projectReferences, frameworks, () => success, [], dontGenerateProjectReference);
-    }
-
-    /// <summary>
-    /// Build a simple test project
-    /// </summary>
-    /// <param name="testCsprojPathName">test project pathname</param>
-    /// <param name="csProj">production code project pathname</param>
-    /// <param name="frameworks"></param>
-    /// <returns>a mock project analyzer</returns>
-    /// <remarks>project analysis will fully fail</remarks>
-    protected Mock<IProjectAnalyzer> TestProjectFailedAnalyzerMock(string testCsprojPathName, string csProj, IEnumerable<string> frameworks = null)
-    {
-        frameworks??=[DefaultFramework];
-        var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
-        return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, [], frameworks, () => false, []);
     }
 
     private IAnalyzerResult GetProjectResult(string projectFile, string expectedFramework, bool returnDefaultIfNotFound = true)
@@ -254,6 +240,7 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
                     Select( iar => GetProjectResult(iar, framework).GetAssemblyPath()).Union(rawReferences).ToArray());
             }
 
+            projectAnalyzerResultMock.Setup(x => x.ReferenceAliases).Returns(new Dictionary<string, ImmutableArray<string>>().ToImmutableDictionary());
             projectAnalyzerResultMock.Setup(x => x.SourceFiles).Returns(sourceFiles);
             projectAnalyzerResultMock.Setup(x => x.PackageReferences).Returns(new Dictionary<string, IReadOnlyDictionary<string, string>>());
             projectAnalyzerResultMock.Setup(x => x.PreprocessorSymbols).Returns(["NET"]);
@@ -266,6 +253,7 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
             projectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns(csprojPathName);
             projectAnalyzerResultMock.Setup(x => x.TargetFramework).Returns(framework);
             projectAnalyzerResultMock.Setup(x => x.Succeeded).Returns(success);
+            projectAnalyzerResultMock.Setup(x => x.Command).Returns($"build command for {csprojPathName} with {framework}");
 
             projectAnalyzerResultMock.Setup(x => x.Analyzer).Returns<AnalyzerManager>(null);
             projectAnalyzerResults[framework] = projectAnalyzerResultMock.Object;
@@ -287,6 +275,7 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
         projectFileMock.Setup(x => x.Path).Returns(csprojPathName);
         projectFileMock.Setup(x => x.Name).Returns(FileSystem.Path.GetFileName(csprojPathName));
         projectFileMock.Setup(x=> x.TargetFrameworks).Returns(frameworks.ToArray() );
+        projectFileMock.Setup(x => x.RequiresNetFramework).Returns(frameworks.Any(f => f.StartsWith("net") && f[3]>='1' && f[3]<='4'));
         return projectAnalyzerMock;
     }
 
@@ -329,6 +318,6 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
         {
             throw new InvalidOperationException($"Solution file {solutionPath} does not exist in the file system.");
         }
-        return SolutionFile.BuildFromProjectList(_projectCache.Keys.ToList());
+        return SolutionFile.BuildFromProjectList(solutionPath, _projectCache.Keys.ToList());
     }
 }

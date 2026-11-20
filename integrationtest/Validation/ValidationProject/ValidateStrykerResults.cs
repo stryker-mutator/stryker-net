@@ -81,7 +81,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 271, survived: 4, killed: 9, timeout: 2, nocoverage: 340);
+        CheckReportMutants(report, total: 656, ignored: 271, survived: 4, killed: 9, timeout: 2, nocoverage: 340);
         CheckReportTestCounts(report, total: 11);
     }
 
@@ -101,7 +101,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 117, survived: 5, killed: 11, timeout: 2, nocoverage: 491);
+        CheckReportMutants(report, total: 656, ignored: 117, survived: 5, killed: 11, timeout: 2, nocoverage: 491);
         CheckReportTestCounts(report, total: 21);
     }
 
@@ -121,8 +121,8 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 667, ignored: 272, survived: 3, killed: 4, timeout: 2, nocoverage: 350, runtimeError: 2);
-        CheckReportTestCounts(report, total: 4);
+        CheckReportMutants(report, total: 663, ignored: 272, survived: 1, killed: 1, timeout: 0, nocoverage: 359);
+        CheckReportTestCounts(report, total: 2);
     }
 
     [Fact]
@@ -141,8 +141,10 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 271, survived: 1, killed: 1, timeout: 0, nocoverage: 353);
-        CheckReportTestCounts(report, total: 2);
+        // Only the project under test is mutated here, so this run holds a single mutated assembly. The
+        // extra test covers ExtraProject, which the solution run mutates as well; see MTPSolution.
+        CheckReportMutants(report, total: 656, ignored: 271, survived: 1, killed: 1, timeout: 0, nocoverage: 353);
+        CheckReportTestCounts(report, total: 3);
     }
 
     [Fact]
@@ -161,7 +163,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 271, survived: 1, killed: 1, timeout: 0, nocoverage: 353);
+        CheckReportMutants(report, total: 656, ignored: 271, survived: 1, killed: 1, timeout: 0, nocoverage: 353);
         CheckReportTestCounts(report, total: 2);
     }
 
@@ -181,7 +183,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 271, survived: 1, killed: 1, timeout: 0, nocoverage: 353);
+        CheckReportMutants(report, total: 656, ignored: 271, survived: 1, killed: 1, timeout: 0, nocoverage: 353);
         CheckReportTestCounts(report, total: 2);
     }
 
@@ -205,8 +207,11 @@ public class ValidateStrykerResults
         // by the MSTest project count as covered (1 survived + 2 timeout), like in the MSTestMTP run.
         // Before coverage files were split per test host, the final flush overwrote the shared
         // file, usually losing exactly those three mutants to NoCoverage.
-        CheckReportMutants(report, total: 670, ignored: 274, survived: 2, killed: 1, timeout: 2, nocoverage: 357);
-        CheckReportTestCounts(report, total: 10);
+        // Teacher.cs and Lesson.cs are reached from one test that spans both of their assemblies, so
+        // losing either one's coverage names the assembly at fault instead of moving a global count by one.
+        CheckEveryMutatedProjectIsCovered(report, "KilledMutants.cs", "Teacher.cs", "Lesson.cs");
+        CheckReportMutants(report, total:669, ignored: 275, survived: 2, killed: 3, timeout: 2, nocoverage: 357);
+        CheckReportTestCounts(report, total: 11);
     }
 
     [Fact]
@@ -245,7 +250,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 660, ignored: 271, survived: 4, killed: 9, timeout: 2, nocoverage: 340);
+        CheckReportMutants(report, total: 656, ignored: 271, survived: 4, killed: 9, timeout: 2, nocoverage: 340);
         CheckReportTestCounts(report, total: 23);
     }
 
@@ -293,6 +298,26 @@ public class ValidateStrykerResults
         }
     }
 
+    /// <summary>
+    /// Asserts that every mutated project contributed its own coverage to the report.
+    /// A global count can stay correct while one assembly loses its coverage and another gains some,
+    /// so each source file is checked on its own and the failure message names the assembly at fault.
+    /// </summary>
+    private void CheckEveryMutatedProjectIsCovered(IJsonReport report, params string[] sourceFiles)
+    {
+        foreach (var sourceFile in sourceFiles)
+        {
+            var file = report.Files.SingleOrDefault(f => f.Key.EndsWith(sourceFile, StringComparison.Ordinal));
+            file.Key.ShouldNotBeNull($"{sourceFile} is missing from the report entirely");
+
+            // An assembly whose coverage is lost has every one of its mutants reported as uncovered, so
+            // one killed mutant is enough to prove its coverage arrived. Asserting no uncovered mutants
+            // instead would be wrong: these files also hold code no test exercises.
+            file.Value.Mutants.Count(m => m.Status == MutantStatus.Killed.ToString())
+                .ShouldBeGreaterThan(0, $"no mutant of {sourceFile} was killed: the coverage of its assembly was lost");
+        }
+    }
+
     private void CheckReportMutants(IJsonReport report, int total, int ignored, int survived, int killed, int timeout, int nocoverage, int runtimeError = 0)
     {
         var actualTotal = report.Files.Select(f => f.Value.Mutants.Count()).Sum();
@@ -318,8 +343,8 @@ public class ValidateStrykerResults
 
     private void CheckReportTestCounts(IJsonReport report, int total)
     {
-        var actualTotal = report.TestFiles.Sum(tf => tf.Value.Tests.Count);
+        var actualTestCount = report.TestFiles.Sum(tf => tf.Value.Tests.Count);
 
-        actualTotal.ShouldBe(total);
+        actualTestCount.ShouldBe(total);
     }
 }

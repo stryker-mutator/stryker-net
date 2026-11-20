@@ -19,16 +19,29 @@ public sealed record TestNode
     string ExecutionState,
 
     [property: JsonPropertyName("location.file")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     string? LocationFile = null,
 
     [property: JsonPropertyName("location.line-start")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     int? LocationLineStart = null,
 
     [property: JsonPropertyName("location.line-end")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     int? LocationLineEnd = null,
 
     [property: JsonPropertyName("location.type")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     string? LocationType = null,
 
     [property: JsonPropertyName("location.method")]
-    string? LocationMethod = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? LocationMethod = null,
+
+    [property: JsonPropertyName("error.message")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? ErrorMessage = null,
+
+    [property: JsonPropertyName("error.stacktrace")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? ErrorStackTrace = null);

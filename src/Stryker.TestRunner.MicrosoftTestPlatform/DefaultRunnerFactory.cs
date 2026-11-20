@@ -6,11 +6,11 @@ using Stryker.TestRunner.Tests;
 namespace Stryker.TestRunner.MicrosoftTestPlatform;
 
 /// <summary>
-/// A factory to create SingleMicrosoftTestPlatformRunner instances. Useful for dependency injection and mocking in tests.
+/// A factory to create MicrosoftTestingPlatformRunner instances. Useful for dependency injection and mocking in tests.
 /// </summary>
 public interface ISingleRunnerFactory
 {
-    SingleMicrosoftTestPlatformRunner CreateRunner(
+    MicrosoftTestingPlatformRunner CreateRunner(
         int id,
         Dictionary<string, List<TestNode>> testsByAssembly,
         Dictionary<string, MtpTestDescription> testDescriptions,
@@ -21,11 +21,11 @@ public interface ISingleRunnerFactory
 }
 
 /// <summary>
-/// The default implementation of ISingleRunnerFactory that creates SingleMicrosoftTestPlatformRunner instances.
+/// The default implementation of ISingleRunnerFactory that creates MicrosoftTestingPlatformRunner instances.
 /// </summary>
 public class DefaultRunnerFactory : ISingleRunnerFactory
 {
-    public SingleMicrosoftTestPlatformRunner CreateRunner(
+    public MicrosoftTestingPlatformRunner CreateRunner(
         int id,
         Dictionary<string, List<TestNode>> testsByAssembly,
         Dictionary<string, MtpTestDescription> testDescriptions,
@@ -33,6 +33,6 @@ public class DefaultRunnerFactory : ISingleRunnerFactory
         object discoveryLock,
         ILogger logger,
         IStrykerOptions? options = null) =>
-        new(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger, options);
+        new MicrosoftTestingPlatformRunner(id, testsByAssembly, testDescriptions, testSet, discoveryLock, logger, options);
 }
 

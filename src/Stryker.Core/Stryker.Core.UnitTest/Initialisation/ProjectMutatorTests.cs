@@ -31,31 +31,40 @@ public class ProjectMutatorTests : TestBase
     private readonly Mock<IReporter> _reporterMock = new(MockBehavior.Strict);
     private readonly Mock<IInitialisationProcess> _initialisationProcessMock = new(MockBehavior.Strict);
     private readonly MutationTestInput _mutationTestInput;
-    private readonly IFileSystem _fileSystemMock = new MockFileSystem();
-    private readonly string _testFilePath = "c:\\mytestfile.cs";
-    private readonly string _testFileContents = @"using Microsoft.VisualStudio.TestTools.UnitTesting;
+    private readonly MockFileSystem _fileSystemMock = new();
+    private readonly IPath _iPath;
+    private readonly string _testFilePath;
 
-namespace ExtraProject.XUnit
-{
-    public class UnitTest1
-    {
-        [TestMethod]
-        public void Test1()
-        {
-            // example test
-        }
+    private const string _testFileContents = """
+                                             using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-        [TestMethod]
-        public void Test2()
-        {
-            // example test
-        }
-    }
-}
-";
+                                             namespace ExtraProject.XUnit
+                                             {
+                                                 public class UnitTest1
+                                                 {
+                                                     [TestMethod]
+                                                     public void Test1()
+                                                     {
+                                                         // example test
+                                                     }
+
+                                                     [TestMethod]
+                                                     public void Test2()
+                                                     {
+                                                         // example test
+                                                     }
+                                                 }
+                                             }
+
+                                             """;
+
+    private string _pathRoot;
 
     public ProjectMutatorTests()
     {
+        _iPath = _fileSystemMock.Path;
+        _pathRoot = _iPath.GetPathRoot(_fileSystemMock.Directory.GetCurrentDirectory()) ?? "";
+        _testFilePath = _iPath.Combine(_pathRoot, "mytestfile.cs");
         _mutationTestProcessMock.Setup(x => x.Mutate());
         _mutationTestProcessMock.Setup(x => x.Initialize(It.IsAny<MutationTestInput>(), It.IsAny<IStrykerOptions>(), It.IsAny<IReporter>()));
         _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
@@ -65,37 +74,36 @@ namespace ExtraProject.XUnit
             {
                 { "Language", "C#" },
                 { "AssemblyName", "TestProject" },
-                { "TargetDir", "c:\\bin\\Debug\\netcoreapp3.1" },
+                { "TargetDir", _iPath.Combine(_pathRoot, "bin","Debug","netcoreapp3.1") },
                 { "TargetFileName", "TestProject.dll" }
             },
-            projectFilePath: "c:\\project.csproj",
+            projectFilePath: _iPath.Combine(_pathRoot, "project.csproj"),
             targetFramework: "netcoreapp3.1",
-            projectReferences: Array.Empty<string>(),
-            sourceFiles: Array.Empty<string>()).Object;
+            projectReferences: [],
+            sourceFiles: []).Object;
 
         var folder = new FolderComposite();
         folder.Add(new CsharpFileLeaf
         {
-            FullPath = "c:\\TestClass.cs",
+            FullPath = _iPath.Combine(_pathRoot, "TestClass.cs"),
             SyntaxTree = CSharpSyntaxTree.ParseText("class TestClass { }")
         });
 
+        var testProjectsInfo = new TestProjectsInfo(_fileSystemMock)
+        {
+            TestProjects = new List<TestProject>
+            {
+                new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
+                    projectFilePath: _iPath.Combine(_pathRoot, "testproject.csproj"),
+                    targetFramework: "netcoreapp3.1",
+                    sourceFiles: [_testFilePath]).Object)
+            }
+        };
         _mutationTestInput = new MutationTestInput()
         {
-            SourceProjectInfo = new Stryker.Core.ProjectComponents.SourceProjects.SourceProjectInfo()
+            SourceProjectInfo = new SourceProjectInfo(analyzerResult, testProjectsInfo)
             {
-                AnalyzerResult = analyzerResult,
                 ProjectContents = folder
-            },
-            TestProjectsInfo = new TestProjectsInfo(_fileSystemMock)
-            {
-                TestProjects = new List<TestProject>
-                {
-                    new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
-                        projectFilePath: "c:\\testproject.csproj",
-                        targetFramework: "netcoreapp3.1",
-                        sourceFiles: new [] { _testFilePath }).Object)
-                }
             }
         };
     }
@@ -104,10 +112,9 @@ namespace ExtraProject.XUnit
     public void MutateProject_WithNunitFqnId_RegistersTestToFile()
     {
         // arrange
-        var fileSystem = new MockFileSystem();
-        const string filePath = "C:\\tests\\SampleTests.cs";
-        fileSystem.Directory.CreateDirectory("C:\\tests");
-        fileSystem.File.WriteAllText(filePath, @"
+         var filePath = _iPath.Combine(_pathRoot,"tests", "SampleTests.cs");
+        _fileSystemMock.Directory.CreateDirectory(_iPath.Combine(_pathRoot, "tests"));
+        _fileSystemMock.File.WriteAllText(filePath, @"
 namespace MyProject.NUnit
 {
     public class SampleTests
@@ -119,13 +126,14 @@ namespace MyProject.NUnit
         var target = new ProjectMutator(TestLoggerFactory.CreateLogger<ProjectMutator>(), serviceProviderMock.Object);
         const string fqn = "MyProject.NUnit.SampleTests.TestAgeExplicit";
         var description = CreateFallbackDescription(id: fqn, name: "TestAgeExplicit", fqn: fqn);
-        var input = CreateInput(fileSystem, [description], [filePath]);
+        var input = CreateInput(_fileSystemMock, [description], [filePath]);
 
         // act
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
+        target.EnrichWithInitialTestRunInfo(input);
 
         // assert
-        var testFile = input.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
+        var testFile = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
         testFile.Tests.ShouldHaveSingleItem();
         testFile.Tests[0].Id.ShouldBe(fqn);
     }
@@ -134,10 +142,9 @@ namespace MyProject.NUnit
     public void MutateProject_WithNunitFqnIdAndParameters_StripsParameterListBeforeMatching()
     {
         // arrange
-        var fileSystem = new MockFileSystem();
-        const string filePath = "C:\\tests\\SampleTests.cs";
-        fileSystem.Directory.CreateDirectory("C:\\tests");
-        fileSystem.File.WriteAllText(filePath, @"
+        var filePath = _iPath.Combine(_pathRoot,"tests", "SampleTests.cs");
+        _fileSystemMock.Directory.CreateDirectory(_iPath.Combine(_pathRoot, "tests"));
+        _fileSystemMock.File.WriteAllText(filePath, @"
 namespace MyProject.NUnit
 {
     public class SampleTests
@@ -149,13 +156,14 @@ namespace MyProject.NUnit
         var target = new ProjectMutator(TestLoggerFactory.CreateLogger<ProjectMutator>(), serviceProviderMock.Object);
         const string fqnWithParams = "MyProject.NUnit.SampleTests.TestAgeExplicit(29,False)";
         var description = CreateFallbackDescription(id: fqnWithParams, name: "TestAgeExplicit(29,False)", fqn: fqnWithParams);
-        var input = CreateInput(fileSystem, [description], [filePath]);
+        var input = CreateInput(_fileSystemMock, [description], [filePath]);
 
         // act
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
+        target.EnrichWithInitialTestRunInfo(input);
 
         // assert
-        var testFile = input.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
+        var testFile = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
         testFile.Tests.ShouldHaveSingleItem();
         testFile.Tests[0].Id.ShouldBe(fqnWithParams);
     }
@@ -164,10 +172,9 @@ namespace MyProject.NUnit
     public void MutateProject_WithMstestGuidId_FindsMethodByDisplayName()
     {
         // arrange
-        var fileSystem = new MockFileSystem();
-        const string filePath = "C:\\tests\\SampleTests.cs";
-        fileSystem.Directory.CreateDirectory("C:\\tests");
-        fileSystem.File.WriteAllText(filePath, @"
+        var filePath = _iPath.Combine(_pathRoot,"tests", "SampleTests.cs");
+        _fileSystemMock.Directory.CreateDirectory(_iPath.Combine(_pathRoot, "tests"));
+        _fileSystemMock.File.WriteAllText(filePath, @"
 namespace MyProject.MSTest
 {
     public class SampleTests
@@ -179,13 +186,14 @@ namespace MyProject.MSTest
         var target = new ProjectMutator(TestLoggerFactory.CreateLogger<ProjectMutator>(), serviceProviderMock.Object);
         var guid = Guid.NewGuid().ToString();
         var description = CreateFallbackDescription(id: guid, name: "TestTimeout", fqn: guid);
-        var input = CreateInput(fileSystem, [description], [filePath]);
+        var input = CreateInput(_fileSystemMock, [description], [filePath]);
 
         // act
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
+        target.EnrichWithInitialTestRunInfo(input);
 
         // assert
-        var testFile = input.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
+        var testFile = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
         testFile.Tests.ShouldHaveSingleItem();
         testFile.Tests[0].Id.ShouldBe(guid);
     }
@@ -194,10 +202,9 @@ namespace MyProject.MSTest
     public void MutateProject_WithMstestGuidIdAndParameters_StripsParameterListBeforeMatching()
     {
         // arrange
-        var fileSystem = new MockFileSystem();
-        const string filePath = "C:\\tests\\SampleTests.cs";
-        fileSystem.Directory.CreateDirectory("C:\\tests");
-        fileSystem.File.WriteAllText(filePath, @"
+        var filePath = _iPath.Combine(_pathRoot,"tests", "SampleTests.cs");
+        _fileSystemMock.Directory.CreateDirectory(_iPath.Combine(_pathRoot, "tests"));
+        _fileSystemMock.File.WriteAllText(filePath, @"
 namespace MyProject.MSTest
 {
     public class SampleTests
@@ -209,13 +216,14 @@ namespace MyProject.MSTest
         var target = new ProjectMutator(TestLoggerFactory.CreateLogger<ProjectMutator>(), serviceProviderMock.Object);
         var guid = Guid.NewGuid().ToString();
         var description = CreateFallbackDescription(id: guid, name: "TestAgeExplicit (29,False)", fqn: guid);
-        var input = CreateInput(fileSystem, [description], [filePath]);
+        var input = CreateInput(_fileSystemMock, [description], [filePath]);
 
         // act
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
+        target.EnrichWithInitialTestRunInfo(input);
 
         // assert
-        var testFile = input.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
+        var testFile = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
         testFile.Tests.ShouldHaveSingleItem();
         testFile.Tests[0].Id.ShouldBe(guid);
     }
@@ -224,11 +232,10 @@ namespace MyProject.MSTest
     public void MutateProject_WithMultipleFilesWithSameClassAndMethod_UsesNamespaceToSelectCorrectFile()
     {
         // arrange
-        var fileSystem = new MockFileSystem();
-        const string fileA = "C:\\tests\\NUnitTests.cs";
-        const string fileB = "C:\\tests\\XUnitTests.cs";
-        fileSystem.Directory.CreateDirectory("C:\\tests");
-        fileSystem.File.WriteAllText(fileA, @"
+        var fileA = _iPath.Combine(_pathRoot, "tests","NUnitTests.cs");
+        var fileB = _iPath.Combine(_pathRoot, "tests","XUnitTests.cs");
+        _fileSystemMock.Directory.CreateDirectory(_iPath.Combine(_pathRoot, "tests"));
+        _fileSystemMock.File.WriteAllText(fileA, @"
 namespace MyProject.NUnit
 {
     public class SampleTests
@@ -236,7 +243,7 @@ namespace MyProject.NUnit
         public void TestAgeExplicit() { }
     }
 }");
-        fileSystem.File.WriteAllText(fileB, @"
+        _fileSystemMock.File.WriteAllText(fileB, @"
 namespace MyProject.XUnit
 {
     public class SampleTests
@@ -248,13 +255,14 @@ namespace MyProject.XUnit
         var target = new ProjectMutator(TestLoggerFactory.CreateLogger<ProjectMutator>(), serviceProviderMock.Object);
         const string nunitFqn = "MyProject.NUnit.SampleTests.TestAgeExplicit";
         var description = CreateFallbackDescription(id: nunitFqn, name: "TestAgeExplicit", fqn: nunitFqn);
-        var input = CreateInput(fileSystem, [description], [fileA, fileB]);
+        var input = CreateInput(_fileSystemMock, [description], [fileA, fileB]);
 
         // act
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
+        target.EnrichWithInitialTestRunInfo(input);
 
         // assert
-        var testFiles = input.TestProjectsInfo.TestFiles.ToList();
+        var testFiles = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ToList();
         testFiles.ShouldContain(tf => tf.FilePath == fileA);
         testFiles.ShouldContain(tf => tf.FilePath == fileB);
         testFiles.Single(tf => tf.FilePath == fileA).Tests.ShouldHaveSingleItem();
@@ -264,11 +272,10 @@ namespace MyProject.XUnit
     [TestMethod]
     public void MutateProject_WhenMethodNotFoundInAnyFile_RegistersNoTest()
     {
+        var filePath = _iPath.Combine(_pathRoot, "tests","SampleTests.cs");
         // arrange
-        var fileSystem = new MockFileSystem();
-        const string filePath = "c:\\tests\\SampleTests.cs";
-        fileSystem.Directory.CreateDirectory("c:\\tests");
-        fileSystem.File.WriteAllText(filePath, @"
+        _fileSystemMock.Directory.CreateDirectory("tests");
+        _fileSystemMock.File.WriteAllText(filePath, @"
 namespace MyProject.Tests
 {
     public class SampleTests
@@ -280,13 +287,14 @@ namespace MyProject.Tests
         var target = new ProjectMutator(TestLoggerFactory.CreateLogger<ProjectMutator>(), serviceProviderMock.Object);
         const string fqn = "MyProject.Tests.SampleTests.NonExistingTest";
         var description = CreateFallbackDescription(id: fqn, name: "NonExistingTest", fqn: fqn);
-        var input = CreateInput(fileSystem, [description], [filePath]);
+        var input = CreateInput(_fileSystemMock, [description], [filePath]);
 
         // act
         target.MutateProject(new StrykerOptions(), input, _reporterMock.Object, _mutationTestProcessMock.Object);
+        target.EnrichWithInitialTestRunInfo(input);
 
         // assert
-        var testFile = input.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
+        var testFile = input.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
         testFile.Tests.ShouldBeEmpty();
     }
 
@@ -317,7 +325,7 @@ namespace MyProject.Tests
             executedTests: new TestIdentifierList(failedTest, successfulTest),
             failedTests: new TestIdentifierList(failedTest),
             timedOutTest: TestIdentifierList.NoTest(),
-            message: "testrun succesful",
+            message: "testrun successful",
             Enumerable.Empty<string>(),
             timeSpan: TimeSpan.FromSeconds(2));
 
@@ -330,7 +338,7 @@ namespace MyProject.Tests
 
         // assert
         result.ShouldNotBeNull();
-        var testFile = _mutationTestInput.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
+        var testFile = _mutationTestInput.SourceProjectInfo.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
         testFile.Tests.Count.ShouldBe(2);
     }
 
@@ -350,7 +358,7 @@ namespace MyProject.Tests
         return descriptionMock.Object;
     }
 
-    private static MutationTestInput CreateInput(IFileSystem fileSystem, IList<IFrameworkTestDescription> descriptions, string[] testFilePaths)
+    private MutationTestInput CreateInput(IFileSystem fileSystem, IList<IFrameworkTestDescription> descriptions, string[] testFilePaths)
     {
         var testRunResult = new TestRunResult(
             vsTestDescriptions: descriptions,
@@ -365,31 +373,31 @@ namespace MyProject.Tests
             properties: new Dictionary<string, string>
             {
                 { "Language", "C#" }, { "AssemblyName", "SourceProject" },
-                { "TargetDir", "c:\\bin\\Debug\\net" }, { "TargetFileName", "SourceProject.dll" }
+                { "TargetDir", _iPath.Combine(_pathRoot, "bin", "Debug", "net") }, { "TargetFileName", "SourceProject.dll" }
             },
-            projectFilePath: "c:\\source.csproj",
+            projectFilePath: _iPath.Combine(_pathRoot, "source.csproj"),
             targetFramework: "net",
             projectReferences: [],
             sourceFiles: []);
 
         var testAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-            projectFilePath: "c:\\testproject.csproj",
+            properties: new Dictionary<string, string>
+            {
+                { "Language", "C#" }
+            },
+            projectFilePath: _iPath.Combine(_pathRoot, "testproject.csproj"),
             targetFramework: "net",
             sourceFiles: testFilePaths);
 
         var sourceFolder = new FolderComposite();
-        sourceFolder.Add(new CsharpFileLeaf { FullPath = "c:\\Source.cs", SyntaxTree = CSharpSyntaxTree.ParseText("class Source { }") });
+        sourceFolder.Add(new CsharpFileLeaf { FullPath = _iPath.Combine(_pathRoot, "Source.cs"), SyntaxTree = CSharpSyntaxTree.ParseText("class Source { }") });
 
         return new MutationTestInput
         {
-            SourceProjectInfo = new SourceProjectInfo
+            SourceProjectInfo = new SourceProjectInfo(sourceAnalyzerResult.Object, new TestProjectsInfo(fileSystem)
+            { TestProjects = [new TestProject(fileSystem, testAnalyzerResult.Object)]})
             {
-                AnalyzerResult = sourceAnalyzerResult.Object,
                 ProjectContents = sourceFolder
-            },
-            TestProjectsInfo = new TestProjectsInfo(fileSystem)
-            {
-                TestProjects = [new TestProject(fileSystem, testAnalyzerResult.Object)]
             },
             InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500))
         };
