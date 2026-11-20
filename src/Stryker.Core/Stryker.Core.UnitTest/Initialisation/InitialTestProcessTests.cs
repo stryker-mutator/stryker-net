@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
@@ -14,7 +13,6 @@ using Stryker.Core.Initialisation;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.VsTest;
-using Stryker.Utilities;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 
@@ -46,8 +44,8 @@ public class InitialTestProcessTests : TestBase
         {
             testList.Add("test"+i);
         }
-        var ranTests = new TestIdentifierList(testList);
-        var failedTests = new TestIdentifierList(test1);
+        var ranTests = new WrappedIdentifierEnumeration(testList);
+        var failedTests = new WrappedIdentifierEnumeration([test1]);
         var testRunResult = Task.FromResult(new TestRunResult(Enumerable.Empty<VsTestDescription>(), ranTests, failedTests,
             TestIdentifierList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero) as ITestRunResult);
         testRunnerMock.Setup(x => x.InitialTestAsync(It.IsAny<IProjectAndTests>())).Returns(testRunResult);
