@@ -9,4 +9,9 @@ public sealed record TestNodeUpdate(
     TestNode Node,
 
     [property: JsonPropertyName("parent")]
-    string ParentUid);
+    string ParentUid,
+
+    // Time at which the test finished, used to place it on the timeline of the run: the stop time reported by
+    // the test framework, or the time the update was received when the framework reports none
+    [property: JsonIgnore]
+    DateTime? FinishedAtUtc = null);

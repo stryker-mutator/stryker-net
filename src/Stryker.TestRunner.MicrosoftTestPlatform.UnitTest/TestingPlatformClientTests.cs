@@ -69,6 +69,61 @@ public class TestingPlatformClientTests
     }
 
     [TestMethod]
+    public async Task RunTestsAsync_MapsReportedDuration()
+    {
+        _mtpClient.Setup(client => client.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => RaiseUpdates(
+                CreateUpdate(uid: "timed", durationMs: 12.5),
+                CreateUpdate(uid: "untimed")))
+            .ReturnsAsync(new MtpRunResult([]));
+
+        TestNodeUpdate[]? updates = null;
+        using var client = CreateClient();
+        await client.RunTestsAsync(received =>
+        {
+            updates = received;
+            return Task.CompletedTask;
+        });
+
+        updates.ShouldNotBeNull();
+        updates[0].Node.DurationMs.ShouldBe(12.5);
+        updates[1].Node.DurationMs.ShouldBeNull();
+    }
+
+    [TestMethod]
+    public async Task RunTestsAsync_UsesTheReportedStopTimeAsTheFinishTime()
+    {
+        _mtpClient.Setup(client => client.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => RaiseUpdates(
+                CreateUpdate(uid: "first", stopUtc: "2026-01-01T00:00:22.0000000Z"),
+                CreateUpdate(uid: "second", stopUtc: "2026-01-01T00:00:24.0000000+00:00")))
+            .ReturnsAsync(new MtpRunResult([]));
+
+        var updates = await RunAndCollectAsync();
+
+        // A batch is received back-to-back: the finish times must come from the reported stop times, not from the receipt
+        updates[0].FinishedAtUtc.ShouldBe(new DateTime(2026, 1, 1, 0, 0, 22, DateTimeKind.Utc));
+        updates[1].FinishedAtUtc.ShouldBe(new DateTime(2026, 1, 1, 0, 0, 24, DateTimeKind.Utc));
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("not a date")]
+    public async Task RunTestsAsync_FallsBackToTheReceiptTime_WhenNoValidStopTimeIsReported(string? stopUtc)
+    {
+        _mtpClient.Setup(client => client.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => RaiseUpdates(CreateUpdate(uid: "untimed", stopUtc: stopUtc)))
+            .ReturnsAsync(new MtpRunResult([]));
+
+        var before = DateTime.UtcNow;
+        var updates = await RunAndCollectAsync();
+        var after = DateTime.UtcNow;
+
+        updates[0].FinishedAtUtc.ShouldNotBeNull();
+        updates[0].FinishedAtUtc!.Value.ShouldBeInRange(before, after);
+    }
+
+    [TestMethod]
     public async Task DiscoverTestsAsync_AwaitsUpdateCallback()
     {
         var callbackCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -231,6 +286,20 @@ public class TestingPlatformClientTests
         _mtpClient.Verify(sourceClient => sourceClient.Dispose(), Times.Once);
     }
 
+    private async Task<TestNodeUpdate[]> RunAndCollectAsync()
+    {
+        TestNodeUpdate[]? updates = null;
+        using var client = CreateClient();
+        await client.RunTestsAsync(received =>
+        {
+            updates = received;
+            return Task.CompletedTask;
+        });
+
+        updates.ShouldNotBeNull();
+        return updates;
+    }
+
     private void RaiseUpdates(params MtpTestNodeUpdate[] updates)
         => _mtpClient.Raise(
             client => client.TestNodesUpdated += null,
@@ -255,7 +324,9 @@ public class TestingPlatformClientTests
         int? lineStart = null,
         int? lineEnd = null,
         string? typeName = null,
-        string? methodName = null)
+        string? methodName = null,
+        double? durationMs = null,
+        string? stopUtc = null)
     {
         var node = new Dictionary<string, object?>
         {
@@ -270,6 +341,8 @@ public class TestingPlatformClientTests
         AddIfNotNull(node, "location.line-end", lineEnd);
         AddIfNotNull(node, "location.type", typeName);
         AddIfNotNull(node, "location.method", methodName);
+        AddIfNotNull(node, "time.duration-ms", durationMs);
+        AddIfNotNull(node, "time.stop-utc", stopUtc);
 
         return new MtpTestNodeUpdate(node, "parent");
     }

@@ -1324,19 +1324,34 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             .Select(x => x.Node.Uid)
             .ToList();
 
+        // Not every test framework reports a duration, so fall back to the average for the tests that don't
+        var averageDuration = finishedTests.Count > 0
+            ? TimeSpan.FromTicks(duration.Ticks / finishedTests.Count)
+            : TimeSpan.Zero;
+        TimeSpan DurationOf(TestNodeUpdate testResult) => testResult.Node.DurationMs is { } durationMs
+            ? TimeSpan.FromMilliseconds(durationMs)
+            : averageDuration;
+        static bool IsTimed(TestNodeUpdate testResult) => testResult.FinishedAtUtc.HasValue && testResult.Node.DurationMs.HasValue;
+
         lock (_discoveryLock)
         {
-            // MTP doesn't report per-test timing, so approximate with the average
-            var perTestDuration = finishedTests.Count > 0
-                ? TimeSpan.FromTicks(duration.Ticks / finishedTests.Count)
-                : TimeSpan.Zero;
-
             foreach (var testResult in finishedTests.Where(tr => _testDescriptions.ContainsKey(tr.Node.Uid)))
             {
-                var testDescription = _testDescriptions[testResult.Node.Uid];
-                testDescription.RegisterInitialTestResult(new MtpTestResult(perTestDuration));
+                _testDescriptions[testResult.Node.Uid].RegisterInitialTestResult(new MtpTestResult(DurationOf(testResult)));
             }
         }
+
+        // Like the VsTest runner, report the time spent in the tests rather than the wall-clock time of the run:
+        // the timeout calculation treats the difference as session overhead and adds it to every mutant's timeout.
+        // Tests running in parallel overlap, so their durations are not simply added: a test that was timed and
+        // placed on the timeline of the run contributes the time it covers, so overlapping tests count once and
+        // the shared setup time stays in the overhead. The others contribute their duration.
+        var testsDuration = finishedTests.Count > 0
+            ? TimeSpan.FromTicks(Math.Min(
+                CoveredTicks(finishedTests.Where(IsTimed).Select(t => (End: t.FinishedAtUtc!.Value, Duration: DurationOf(t))))
+                    + finishedTests.Where(t => !IsTimed(t)).Sum(t => DurationOf(t).Ticks),
+                duration.Ticks))
+            : duration;
 
         var errorMessagesStr = string.Join(Environment.NewLine,
             finishedTests
@@ -1370,7 +1385,31 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             timedOutTestIds,
             errorMessagesStr,
             messages,
-            duration);
+            testsDuration);
+    }
+
+    /// <summary>
+    /// Length of the union of the intervals each ending at <c>End</c> and lasting <c>Duration</c>,
+    /// so that overlapping intervals are counted once.
+    /// </summary>
+    private static long CoveredTicks(IEnumerable<(DateTime End, TimeSpan Duration)> tests)
+    {
+        long covered = 0;
+        var coveredUntil = long.MinValue;
+
+        // Sweep by start time: sorting by end time would skip the time of an interval nested in a longer one
+        foreach (var (end, testDuration) in tests.OrderBy(t => t.End.Ticks - t.Duration.Ticks))
+        {
+            var start = Math.Max(end.Ticks - testDuration.Ticks, coveredUntil);
+            if (end.Ticks > start)
+            {
+                covered += end.Ticks - start;
+            }
+
+            coveredUntil = Math.Max(coveredUntil, end.Ticks);
+        }
+
+        return covered;
     }
 
     public void Dispose()

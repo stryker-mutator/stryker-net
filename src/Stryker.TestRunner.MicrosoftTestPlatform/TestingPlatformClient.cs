@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Testing.Platform.ServerMode.Client;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
@@ -8,6 +9,7 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
 {
     private const string LocationType = "location.type";
     private const string LocationMethod = "location.method";
+    private const string StopTimeUtc = "time.stop-utc";
     private static readonly TimeSpan RequestTimeout = TimeSpan.FromMinutes(3);
 
     private readonly IMtpServerClient _client;
@@ -128,10 +130,19 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
             update.LineStart,
             update.LineEnd,
             GetString(update.Node, LocationType),
-            GetString(update.Node, LocationMethod));
+            GetString(update.Node, LocationMethod),
+            update.DurationInMilliseconds);
 
-        return new TestNodeUpdate(node, update.ParentUid ?? string.Empty);
+        // Updates of a whole batch are received back-to-back, so the receipt time only stands in when no stop time is reported
+        return new TestNodeUpdate(node, update.ParentUid ?? string.Empty, GetUtcTime(update.Node, StopTimeUtc) ?? DateTime.UtcNow);
     }
+
+    private static DateTime? GetUtcTime(IReadOnlyDictionary<string, object?> properties, string key)
+        => properties.TryGetValue(key, out var value)
+            && value is string text
+            && DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var time)
+                ? time.UtcDateTime
+                : null;
 
     private static string? GetString(IReadOnlyDictionary<string, object?> properties, string key)
         => properties.TryGetValue(key, out var value) ? value as string : null;
