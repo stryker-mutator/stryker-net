@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
-using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
@@ -95,7 +94,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
             throw new CompilationException("Internal error: project contents type does not support unmutated compilation.");
         }
         InitCSharpCompilation(projectContents.UnmutatedSyntaxTrees);
-        var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger);
+        var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources();
 
         // reset the memoryStreams
         ilStream.SetLength(0);
@@ -200,7 +199,11 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
             .Create(analyzerResult.GetSourceGenerators(_logger, _problems),
                 parseOptions: analyzerResult.GetParseOptions(),
                 additionalTexts:[..analyzerResult.GetAdditionalTexts()],
-                optionsProvider: new SimpleAnalyserConfigOptionsProvider(analyzerResult));
+                optionsProvider: analyzerResult.GetAnalyzerConfigOptionsProvider(new FileSystem(), path =>
+                {
+                    _logger.LogWarning("Failed to load config files {Path}", path);
+                    return false;
+                }));
         // run the generators
         _needToRunGenerators = true;
         RunSourceGenerators();
@@ -218,7 +221,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         _logger.LogDebug("Trying compilation for the {retryCount} time.", ReadableNumber(retryCount));
         var emitOptions = symbolStream == null ? null : new EmitOptions(false, DebugInformationFormat.PortablePdb,
             _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
-        var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger);
+        var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources();
         if (previousEmitResult != null)
         {
             // remove broken mutations
@@ -302,12 +305,14 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
                 using var ms = new MemoryStream();
                 local.Emit(
                     ms,
-                    manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
+                    manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(),
                     options: null);
+                // it appears to work, keep it
                 cleanedSyntaxTrees.Add(st);
             }
             catch (Exception e)
             {
+                // mutated the source file triggers an exception, use the original instead
                 _logger.LogError(e, "Failed to compile {FilePath} (compiler crash)", st.FilePath);
                 _logger.LogTrace("source code:\n {Source}", st.GetText());
                 var cleanUpFile = _originalSyntaxTrees.FirstOrDefault(x => x.FilePath == st.FilePath);
@@ -320,7 +325,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
             }
         }
         _logger.LogError("Please report an issue and provide the source code of the file that caused the exception for analysis.");
-        _compilation = _compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(cleanedSyntaxTrees);
+        _compilation = _compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(cleanedSyntaxTrees).AddSyntaxTrees(GeneratedTrees);
         _needToRunGenerators = true;
         RunSourceGenerators();
     }
@@ -375,48 +380,4 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess, ICompilationConte
         _ => number + "th"
     };
 
-    // This class is used to provide the options to the source generators
-    [ExcludeFromCodeCoverage]
-    private sealed class SimpleAnalyserConfigOptionsProvider : AnalyzerConfigOptionsProvider
-    {
-        private readonly NullAnalyzerConfigOptions _nullProvider = new();
-
-        internal SimpleAnalyserConfigOptionsProvider(IAnalyzerResult result) => GlobalOptions = new SimpleAnalyzerConfigOptions(result);
-
-        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => _nullProvider;
-
-        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => _nullProvider;
-
-        public override AnalyzerConfigOptions GlobalOptions { get; }
-
-        private sealed class SimpleAnalyzerConfigOptions(IAnalyzerResult result) : AnalyzerConfigOptions
-        {
-            private const string Prefix = "build_property.";
-            private readonly IReadOnlyDictionary<string, string> _options = result.Properties;
-
-            public override bool TryGetValue(string key, out string value)
-            {
-                if (key.StartsWith(Prefix))
-                {
-                    return _options.TryGetValue(key[Prefix.Length..], out value);
-                }
-
-                value = null;
-                return false;
-            }
-
-            public override IEnumerable<string> Keys => _options.Keys.Select(key => Prefix + key);
-        }
-
-        private sealed class NullAnalyzerConfigOptions : AnalyzerConfigOptions
-        {
-            public override bool TryGetValue(string key, out string value)
-            {
-                value = null;
-                return false;
-            }
-
-            public override IEnumerable<string> Keys => [];
-        }
-    }
 }

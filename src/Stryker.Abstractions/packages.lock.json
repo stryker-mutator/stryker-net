@@ -74,9 +74,9 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "Direct",
-        "requested": "[23.0.0, )",
-        "resolved": "23.0.0",
-        "contentHash": "WfbIVmdi/Yh3eKLDzprsctUXziXVP60lPfPRrAFxR+YPT++yGpsgBsen0vC5N3HeXANCHP7xRukgn/kZcUqusg==",
+        "requested": "[23.0.1, )",
+        "resolved": "23.0.1",
+        "contentHash": "9lqN5ITRYWqu54eqgobIuFSFUKIqfNedI3+9LuxVBETqGht+UTvk8aQcfUQX2z2fL2WCHGUbTHuBWbZaIV8AGg==",
         "dependencies": {
           "Testably.Abstractions.FileSystem.Interface": "11.0.0"
         }
