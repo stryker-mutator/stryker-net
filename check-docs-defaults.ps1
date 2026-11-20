@@ -241,7 +241,7 @@ $explicitMapping = @{
     'baseline.s3-bucket-name'       = 'S3BucketNameInput'
     'baseline.s3-region'            = 'S3RegionInput'
     'baseline.s3-endpoint'          = 'S3EndpointInput'
-    'dev-mode'                      = 'DiagModeInput'
+    'diag'                          = 'DiagModeInput'
     'output'                        = 'OutputPathInput'
     'dashboard-url'                 = 'DashboardUrlInput'
 }
