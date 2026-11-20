@@ -26,27 +26,6 @@ namespace Stryker.Utilities.Buildalyzer;
 public static class IAnalyzerResultExtensions
 {
 
-    [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]
-    private static void LogAnalyzerLoadError(ILogger? logger, object? sender, AnalyzerLoadFailureEventArgs e)
-    {
-        var source = (sender as AnalyzerReference)?.Display ?? "unknown";
-        logger?.LogWarning(
-            "Failed to load analyzer '{Source}': {Message} (error : {Error}, analyzer: {Analyzer}).",
-            source, e.Message, Enum.GetName(e.ErrorCode.GetType(), e.ErrorCode) ?? e.ErrorCode.ToString(),
-            e.TypeName ?? "All");
-        if (e.ErrorCode == AnalyzerLoadFailureEventArgs.FailureErrorCode.ReferencesNewerCompiler)
-        {
-            logger?.LogWarning(
-                "The analyzer '{Source}' references a newer version ({ReferencedCompilerVersion}) of the compiler than the one used by Stryker.NET.",
-                source, e.ReferencedCompilerVersion);
-        }
-
-        if (e.Exception != null)
-        {
-            logger?.LogWarning("Failed to load analyzer '{Source}': Exception {Exception}.", source, e.Exception);
-        }
-    }
-
     private static readonly string[] KnownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit", "nunit"];
     private static readonly string[] UnityTestAssemblyReferences = ["nunit.framework", "UnityEngine.TestRunner"];
 
@@ -59,9 +38,6 @@ public static class IAnalyzerResultExtensions
     public static bool IsValidFor(this IAnalyzerResults br, string[] targetFrameworks) => br.OverallSuccess
         || (targetFrameworks.Length > 0
             && Array.TrueForAll(targetFrameworks, fmw => br.Results.Any(r => r.IsValidFor(fmw))));
-
-    public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) =>
-        analyzerResults.Any(x => x.IsTestProject());
 
     private static IEnumerable<string> ParseDiagnostics(string diagnostics)
     {
@@ -187,6 +163,8 @@ public static class IAnalyzerResultExtensions
         /// </summary>
         /// <returns>true if result is complete enough</returns>
         public bool IsValid() => analyzerResult.Succeeded || (analyzerResult.SourceFiles.Length > 0 && analyzerResult.References.Length > 0)
+                                                          || (analyzerResult.IsTestProject() && analyzerResult.Properties.ContainsKey("TargetDir") && analyzerResult.ProjectReferences.Any());
+
 
         /// <summary>
         /// Checks if a project analysis is valid for all given target frameworks. If no target frameworks are given, it checks if the overall analysis was successful.
@@ -194,29 +172,6 @@ public static class IAnalyzerResultExtensions
         /// <param name="framework">framework to check for</param>
         /// <returns>true if analysis was successful</returns>
         private bool IsValidFor(string framework) => analyzerResult.IsValid() && analyzerResult.TargetFramework == framework;
-
-        /// <summary>
-        /// Checks if a project analysis is valid for all given target frameworks. If no target frameworks are given, it checks if the overall analysis was successful.
-        /// </summary>
-        /// <param name="targetFrameworks">list of frameworks to check for</param>
-        /// <returns>true if analysis was successful</returns>
-        public bool IsValidFor(string[] targetFrameworks) => br.OverallSuccess
-                                                             || (targetFrameworks.Length>0
-                                                                && Array.TrueForAll(targetFrameworks, fmw => br.Results.Any( r=> r.IsValidFor(fmw))));
-    public static IEnumerable<MetadataReference> LoadReferences(this IAnalyzerResult analyzerResult)
-    {
-        foreach (var reference in analyzerResult.References)
-        {
-            if (!analyzerResult.ReferenceAliases.TryGetValue(reference, out var aliases))
-            {
-                aliases = [];
-            }
-
-            // If no alias is found, return the reference without aliases
-            yield return MetadataReference.CreateFromFile(reference).WithAliases(aliases);
-        }
-    }
-
 
     /// <summary>
     /// Checks whether an analysis result references the assemblies that identify a Unity test assembly.
@@ -374,9 +329,24 @@ public static class IAnalyzerResultExtensions
                     ResolveAnalyzerConfigPath(arg[(ArgName.Length + 1)..].TrimQuotes(), projectDirectory, fileSystem))
                 .Distinct();
         }
+
+        public IEnumerable<MetadataReference> LoadReferences()
+        {
+            foreach (var reference in analyzerResult.References)
+            {
+                if (!analyzerResult.ReferenceAliases.TryGetValue(reference, out var aliases))
+                {
+                    aliases = [];
+                }
+
+                // If no alias is found, return the reference without aliases
+                yield return MetadataReference.CreateFromFile(reference).WithAliases(aliases);
+            }
+        }
     }
 
-    public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
+    public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults, List<string> details)
+        => analyzerResults.Any(x => x.IsTestProject(details));
 
     private static string ResolveAnalyzerConfigPath(string path, string? projectDirectory, IFileSystem fileSystem) =>
         string.IsNullOrEmpty(projectDirectory) || fileSystem.Path.IsPathRooted(path)
@@ -439,35 +409,23 @@ public static class IAnalyzerResultExtensions
         public override IEnumerable<string> Keys => options.Keys;
     }
 
-    // Roslyn does not appear to expose usable implementations of these types (required for additional files support)
-    private sealed class AdditionalTextFromFile(string path) : AdditionalText
-    {
-        private readonly Lazy<string> _source = new(() => File.ReadAllText(path));
-
-        public override SourceText? GetText(CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return SourceText.From(_source.Value, Encoding.UTF8);
-        }
-
-        public override string Path => path;
-    }
-
     [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]
-    private static void LogAnalyzerLoadError(ILogger? logger, object? sender, AnalyzerLoadFailureEventArgs e)
+    private static void LogAnalyzerLoadError(ILogger? logger, List<string> issues, object? sender,
+        AnalyzerLoadFailureEventArgs e)
     {
         var source = (sender as AnalyzerReference)?.Display ?? "unknown";
-        logger?.LogWarning(
-            "Failed to load analyzer '{Source}': {Message} (error : {Error}, analyzer: {Analyzer}).",
-            source, e.Message, Enum.GetName(e.ErrorCode.GetType(), e.ErrorCode) ?? e.ErrorCode.ToString(),
-            e.TypeName ?? "All");
+        string message;
         if (e.ErrorCode == AnalyzerLoadFailureEventArgs.FailureErrorCode.ReferencesNewerCompiler)
         {
-            logger?.LogWarning(
-                "The analyzer '{Source}' references a newer version ({ReferencedCompilerVersion}) of the compiler than the one used by Stryker.NET.",
-                source, e.ReferencedCompilerVersion);
+            message = $"The analyzer '{source}' references a newer Roslyn version ({e.ReferencedCompilerVersion}) than Stryker's ({typeof(CSharpCompilation).Assembly.GetName().Version}). This may cause issues during analysis.";
+        }
+        else
+        {
+            message = $"Failed to load analyzer '{source}': {e.Message} (error : {Enum.GetName(e.ErrorCode.GetType(), e.ErrorCode) ?? e.ErrorCode.ToString()}, analyzer: {e.TypeName ?? "All"}).";
         }
 
+        issues.Add(message);
+        logger?.LogWarning(message);
         if (e.Exception != null)
         {
             logger?.LogWarning("Failed to load analyzer '{Source}': Exception {Exception}.", source, e.Exception);
@@ -538,5 +496,4 @@ public static class IAnalyzerResultExtensions
             }
         }
     }
-
 }

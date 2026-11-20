@@ -173,7 +173,7 @@ public class AnalyzerResultExtensionsTests
             .Returns(new Dictionary<string, IReadOnlyDictionary<string, string>>());
 
         // Act
-        var isTestProject = IAnalyzerResultExtensions.IsTestProject([analyzerResult]);
+        var isTestProject = IAnalyzerResultExtensions.IsTestProject([analyzerResult], []);
 
         // Assert
         isTestProject.ShouldBe(expected);
@@ -198,7 +198,7 @@ public class AnalyzerResultExtensionsTests
             .SetupGet(result => result.References)
             .Returns(references.Split(';'));
 
-        var isTestProject = IAnalyzerResultExtensions.IsTestProject([analyzerResult]);
+        var isTestProject = IAnalyzerResultExtensions.IsTestProject([analyzerResult], []);
 
         isTestProject.ShouldBe(expected);
     }
@@ -338,7 +338,7 @@ public class AnalyzerResultExtensionsTests
         var analyzerResult = CreateAnalyzerResultWithProperties(properties);
 
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+        var parseOptions = analyzerResult.GetParseOptions();
 
         // Assert
         parseOptions.Features.ShouldContain(f => f.Key == "InterceptorsPreview" && f.Value == "true");

@@ -151,7 +151,7 @@ public class InputFileResolver(
         var analyzedProjects = AnalyzeAllNeededProjects(solution, options,
             p => ShouldScanProjectInSingleProjectMode(p, normalizedProjectUnderTestNameFilter, testProjectFileNames));
         // we match test projects to mutable projects
-            var (findMutableAnalyzerResults, orphans) = ExtractMutableProjectTrees(analyzedProjects, options);
+        var (findMutableAnalyzerResults, orphans) = ExtractMutableProjectTrees(analyzedProjects, options);
 
         var result = AnalyzeAndIdentifyProjects(options, findMutableAnalyzerResults, orphans);
         result = SelectSingleProject(normalizedProjectUnderTestNameFilter, result, targetProjectMode, testProjectFileNames);
