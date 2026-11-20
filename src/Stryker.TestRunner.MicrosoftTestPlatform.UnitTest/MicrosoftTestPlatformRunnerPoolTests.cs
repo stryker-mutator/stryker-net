@@ -637,6 +637,97 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
     }
 
     [TestMethod]
+    public async Task TestMultipleMutants_ParallelPoolSessions_ReportKilledThroughUpdateHandler()
+    {
+        const string testUid = "covering-test";
+        const string assembly = "assembly.dll";
+        var testNode = new TestNode(testUid, testUid, "test", TestNodeStates.Discovered);
+        var testsByAssembly = new Dictionary<string, List<TestNode>> { [assembly] = [testNode] };
+        var testDescriptions = new Dictionary<string, MtpTestDescription> { [testUid] = new MtpTestDescription(testNode) };
+
+        var options = new Mock<IStrykerOptions>();
+        options.Setup(x => x.Concurrency).Returns(3);
+
+        var runnerFactory = new Mock<ISingleRunnerFactory>();
+        runnerFactory.Setup(x => x.CreateRunner(
+                It.IsAny<int>(),
+                It.IsAny<Dictionary<string, List<TestNode>>>(),
+                It.IsAny<Dictionary<string, MtpTestDescription>>(),
+                It.IsAny<TestSet>(),
+                It.IsAny<object>(),
+                It.IsAny<ILogger>(),
+                It.IsAny<IStrykerOptions>()))
+            .Returns<int, Dictionary<string, List<TestNode>>, Dictionary<string, MtpTestDescription>, TestSet, object, ILogger, IStrykerOptions>(
+                (id, tba, td, ts, dl, logger, opts) =>
+                {
+                    lock (dl)
+                    {
+                        if (tba.Count == 0)
+                        {
+                            foreach (var kvp in testsByAssembly)
+                            {
+                                tba[kvp.Key] = kvp.Value;
+                            }
+
+                            foreach (var kvp in testDescriptions)
+                            {
+                                td[kvp.Key] = kvp.Value;
+                            }
+                        }
+                    }
+
+                    return new FailingMutantSessionRunner(id, tba, td, ts, dl, testUid);
+                });
+
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, NullLogger.Instance, runnerFactory.Object);
+        var project = new Mock<IProjectAndTests>();
+        project.Setup(x => x.GetTestAssemblies()).Returns([assembly]);
+
+        var mutants = Enumerable.Range(1, 9).Select(id =>
+        {
+            var mutant = new Mock<IMutant>(MockBehavior.Loose);
+            mutant.Setup(x => x.Id).Returns(id);
+            mutant.Setup(x => x.AssessingTests).Returns(new TestIdentifierList(new[] { testUid }));
+            mutant.Setup(x => x.ResultStatus).Returns(MutantStatus.Pending);
+            mutant.Setup(x => x.AnalyzeTestRun(
+                    It.IsAny<ITestIdentifiers>(),
+                    It.IsAny<ITestIdentifiers>(),
+                    It.IsAny<ITestIdentifiers>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()))
+                .Callback<ITestIdentifiers, ITestIdentifiers, ITestIdentifiers, bool, bool>((failed, _, _, _, _) =>
+                {
+                    mutant.Setup(x => x.ResultStatus).Returns(
+                        failed.GetIdentifiers().Any() ? MutantStatus.Killed : MutantStatus.Survived);
+                });
+            return mutant;
+        }).ToList();
+
+        var failedTestsPerSession = new System.Collections.Concurrent.ConcurrentBag<int>();
+
+        var sessions = mutants.Select(m => pool.TestMultipleMutantsAsync(
+            project.Object,
+            null,
+            [m.Object],
+            (tested, failed, executed, timedOut) =>
+            {
+                foreach (var mutant in tested)
+                {
+                    mutant.AnalyzeTestRun(failed, executed, timedOut, sessionTimedOut: false, sessionRuntimeError: false);
+                }
+
+                failedTestsPerSession.Add(failed.GetIdentifiers().Count());
+                return true;
+            }));
+
+        await Task.WhenAll(sessions);
+
+        failedTestsPerSession.Count.ShouldBe(9);
+        failedTestsPerSession.ShouldAllBe(count => count > 0);
+        mutants.ShouldAllBe(m => m.Object.ResultStatus == MutantStatus.Killed);
+    }
+
+    [TestMethod]
     public void Constructor_ShouldUseProvidedLogger()
     {
         // Arrange
@@ -663,6 +754,84 @@ public class MicrosoftTestPlatformRunnerPoolTests : TestBase
 
         // Assert
         pool.ShouldNotBeNull();
+    }
+
+    [TestMethod]
+    [DataRow(OptimizationModes.None, true, "off")]
+    [DataRow(OptimizationModes.SkipUncoveredMutants, false, "")]
+    [DataRow(OptimizationModes.CoverageBasedTest, false, "")]
+    [DataRow(OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest, false, "")]
+    public void Constructor_LogsStaticStateLimitation_OnlyWhenCoverageAnalysisIsOff(
+        OptimizationModes mode,
+        bool expectLog,
+        string modeLabel)
+    {
+        var options = new Mock<IStrykerOptions>();
+        options.Setup(x => x.Concurrency).Returns(1);
+        options.Setup(x => x.OptimizationMode).Returns(mode);
+        var logger = new CapturingLogger(debugEnabled: false);
+
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, logger);
+
+        // The reached-signal retest protects every mode with coverage data; only "off" keeps the limitation.
+        var infos = logger.Entries
+            .Where(entry => entry.Level == LogLevel.Information && entry.Message.Contains("Coverage analysis", StringComparison.Ordinal))
+            .ToList();
+        if (expectLog)
+        {
+            infos.Count.ShouldBe(1);
+            infos[0].Message.ShouldContain($"Coverage analysis {modeLabel}");
+        }
+        else
+        {
+            infos.ShouldBeEmpty();
+        }
+    }
+
+    [TestMethod]
+    public void Dispose_LogsTheRetestSummary_WhenARunnerRetestedMutants()
+    {
+        // Arrange
+        var options = new Mock<IStrykerOptions>();
+        options.Setup(x => x.Concurrency).Returns(1);
+        var logger = new CapturingLogger(debugEnabled: false);
+
+        TestableRunner? created = null;
+        var runnerFactory = new Mock<ISingleRunnerFactory>();
+        runnerFactory.Setup(x => x.CreateRunner(
+                It.IsAny<int>(),
+                It.IsAny<Dictionary<string, List<TestNode>>>(),
+                It.IsAny<Dictionary<string, MtpTestDescription>>(),
+                It.IsAny<TestSet>(),
+                It.IsAny<object>(),
+                It.IsAny<ILogger>(),
+                It.IsAny<IStrykerOptions>()))
+            .Returns<int, Dictionary<string, List<TestNode>>, Dictionary<string, MtpTestDescription>, TestSet, object, ILogger, IStrykerOptions>(
+                (id, _, _, _, _, _, _) =>
+                {
+                    created = new TestableRunner(id, () => { });
+                    return created;
+                });
+
+        using var pool = new MicrosoftTestPlatformRunnerPool(options.Object, logger, runnerFactory.Object);
+        created.ShouldNotBeNull("the pool creates its runners before the constructor returns");
+
+        // Simulate the fresh-host retest having run twice and killed once
+        typeof(MicrosoftTestingPlatformRunner)
+            .GetField("_retestCount", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .SetValue(created, 2);
+        typeof(MicrosoftTestingPlatformRunner)
+            .GetField("_retestedKilledCount", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .SetValue(created, 1);
+
+        // Act
+        pool.Dispose();
+
+        // Assert
+        logger.Entries.ShouldContain(entry =>
+            entry.Level == LogLevel.Information &&
+            entry.Message.Contains("2 mutant(s) retested", StringComparison.Ordinal) &&
+            entry.Message.Contains("1 killed", StringComparison.Ordinal));
     }
 }
 
