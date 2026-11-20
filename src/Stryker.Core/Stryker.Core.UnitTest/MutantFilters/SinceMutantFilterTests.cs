@@ -130,7 +130,7 @@ public class SinceMutantFilterTests : TestBase
         var file = new CsharpFileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };
         var mutant = new Mutant
         {
-            CoveringTests = new TestIdentifierList(new[] { test })
+            CoveringTests = new TestIdentifierList(test.Id)
         };
 
 
@@ -257,8 +257,8 @@ public class SinceMutantFilterTests : TestBase
         tests.RegisterTests(new[] { test1, test2 });
         diffProvider.SetupGet(x => x.Tests).Returns(tests);
         var target = new SinceMutantFilter(diffProvider.Object);
-        var testFile1 = new TestIdentifierList(new[] { test1 });
-        var testFile2 = new TestIdentifierList(new[] { test2 });
+        var testFile1 = new TestIdentifierList(test1.Id);
+        var testFile2 = new TestIdentifierList(test2.Id);
 
         var expectedToStay1 = new Mutant { CoveringTests = testFile1 };
         var expectedToStay2 = new Mutant { CoveringTests = testFile1 };

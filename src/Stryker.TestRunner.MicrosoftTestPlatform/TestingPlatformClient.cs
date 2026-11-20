@@ -128,7 +128,9 @@ internal sealed class TestingPlatformClient : ITestingPlatformClient
             update.LineStart,
             update.LineEnd,
             GetString(update.Node, LocationType),
-            GetString(update.Node, LocationMethod));
+            GetString(update.Node, LocationMethod),
+            update.ErrorMessage,
+            update.ErrorStackTrace);
 
         return new TestNodeUpdate(node, update.ParentUid ?? string.Empty);
     }
