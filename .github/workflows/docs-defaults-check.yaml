@@ -3,13 +3,6 @@ run-name: docs defaults check ${{ github.head_ref || github.ref_name }}
 
 on:
   pull_request:
-  push:
-    branches:
-      - master
-  release:
-    types:
-      - published
-  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
