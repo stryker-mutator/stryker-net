@@ -58,17 +58,18 @@ public sealed class VsTestRunner : IDisposable
         // initial test run, register test results
         foreach (var result in testResults.TestResults)
         {
-            if (!_context.VsTests.ContainsKey(result.TestCase.Id))
+            if (!_context.VsTests.TryGetValue(result.TestCase.Id, out var value))
             {
                 var vsTestDescription = new VsTestDescription(new VsTestCase(result.TestCase));
-                _context.VsTests[result.TestCase.Id] = vsTestDescription;
+                value = vsTestDescription;
+                _context.VsTests[result.TestCase.Id] = value;
                 _context.RegisterDiscoveredTest(vsTestDescription);
                 _logger.LogWarning(
                     "{RunnerId}: Initial test run encounter an unexpected test case ({DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if you have doubts.",
                 RunnerId, result.TestCase.DisplayName);
             }
 
-            _context.VsTests[result.TestCase.Id].RegisterInitialTestResult(new VsTestResult(result));
+            value.RegisterInitialTestResult(new VsTestResult(result));
         }
 
         var totalCountOfTests = _context.GetTestsForSources(project.GetTestAssemblies()).Count;
@@ -117,7 +118,7 @@ public sealed class VsTestRunner : IDisposable
         void HandleUpdate(IRunResults handler)
         {
             var handlerTestResults = handler.TestResults;
-            var tests = handlerTestResults.Select(p => p.TestCase.Id).Distinct().Count() >= totalCountOfTests
+            ITestIdentifiers tests = handlerTestResults.Select(p => p.TestCase.Id).Distinct().Count() >= totalCountOfTests
                 ? TestIdentifierList.EveryTest()
                 : new WrappedIdentifierEnumeration(handlerTestResults.Select(t => t.TestCase.Id.ToString()));
             var failedTest = new WrappedIdentifierEnumeration(handlerTestResults
@@ -197,7 +198,7 @@ public sealed class VsTestRunner : IDisposable
         // this is needed when the tests list is not stable (mutations can generate variation for theories) and also helps for performance
         // so we assume that if executed at least as much test as have been detected, it means all tests have been executed
         // EXCEPT when no test have been found. Otherwise, an empty test project would transform non-covered mutants to survivors.
-        var ranTests = compressAll && totalCountOfTests > 0 && ranTestsCount >= totalCountOfTests
+        ITestIdentifiers ranTests = compressAll && totalCountOfTests > 0 && ranTestsCount >= totalCountOfTests
             ? TestIdentifierList.EveryTest()
             : new WrappedIdentifierEnumeration(testCases);
         var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(t => t.TestCase.Id.ToString());
@@ -256,8 +257,8 @@ public sealed class VsTestRunner : IDisposable
         foreach (var source in projectAndTests.TestProjectsInfo.AnalyzerResults)
         {
             var testForSource = _context.TestsPerSource[source.GetAssemblyPath()];
-            var testsForAssembly = new TestIdentifierList(tests.GetIdentifiers().Where(id => testForSource.Contains(Guid.Parse(id))));
-            if (!tests.IsEveryTest && testsForAssembly.Count == 0)
+            var testsForAssembly = new WrappedIdentifierEnumeration(tests.GetIdentifiers()?.Where(id => testForSource.Contains(Guid.Parse(id)))??[]);
+            if (!tests.IsEveryTest && testsForAssembly.IsEmpty)
             {
                 // skip empty assemblies
                 continue;
