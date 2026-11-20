@@ -85,6 +85,32 @@ public class TestingPlatformClientTests
     }
 
     [TestMethod]
+    public async Task RunTestsAsync_MapsFailureDetails()
+    {
+        var sourceUpdate = CreateUpdate(
+            executionState: TestNodeStates.Failed,
+            errorMessage: "Expected 1 but was 2",
+            errorStackTrace: "   at Tests.MyTest() in Tests.cs:line 42");
+
+        _mtpClient.Setup(client => client.RunTestsAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => RaiseUpdates(sourceUpdate))
+            .ReturnsAsync(new MtpRunResult([]));
+
+        TestNodeUpdate[]? updates = null;
+        using var client = CreateClient();
+        await client.RunTestsAsync(received =>
+        {
+            updates = received;
+            return Task.CompletedTask;
+        });
+
+        updates.ShouldNotBeNull();
+        updates.Length.ShouldBe(1);
+        updates[0].Node.ErrorMessage.ShouldBe("Expected 1 but was 2");
+        updates[0].Node.ErrorStackTrace.ShouldBe("   at Tests.MyTest() in Tests.cs:line 42");
+    }
+
+    [TestMethod]
     public async Task RunTestsAsync_WithoutSelection_RunsAllTests()
     {
         _mtpClient.Setup(client => client.RunTestsAsync(It.IsAny<CancellationToken>()))
@@ -255,7 +281,9 @@ public class TestingPlatformClientTests
         int? lineStart = null,
         int? lineEnd = null,
         string? typeName = null,
-        string? methodName = null)
+        string? methodName = null,
+        string? errorMessage = null,
+        string? errorStackTrace = null)
     {
         var node = new Dictionary<string, object?>
         {
@@ -270,6 +298,8 @@ public class TestingPlatformClientTests
         AddIfNotNull(node, "location.line-end", lineEnd);
         AddIfNotNull(node, "location.type", typeName);
         AddIfNotNull(node, "location.method", methodName);
+        AddIfNotNull(node, "error.message", errorMessage);
+        AddIfNotNull(node, "error.stacktrace", errorStackTrace);
 
         return new MtpTestNodeUpdate(node, "parent");
     }
