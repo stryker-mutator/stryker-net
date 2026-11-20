@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="MtpParallelAttributionMini.Tests\**" />
+    <None Remove="MtpParallelAttributionMini.Tests\**" />
+    <EmbeddedResource Remove="MtpParallelAttributionMini.Tests\**" />
+  </ItemGroup>
+
+</Project>
