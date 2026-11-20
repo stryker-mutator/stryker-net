@@ -171,26 +171,26 @@ function Convert-CodeExpression([string]$expr, [string]$file) {
     if ($expr -imatch '^new\s+(?<class>\w+)\(\)\.Default$') {
         return [pscustomobject]@{ Kind = 'crossref'; Value = $Matches['class'] }
     }
-    # string collections: new List<string> { "A", "B" }, string[] { "A" }
-    if ($expr -match '^(new\s|string\[\s*\]\s*\{)') {
-        if ($expr -match '\{(?<items>[^}]*)\}') {
-            $items = @(Get-QuotedLiterals $Matches['items'])
-            # non-string members (e.g. `new List<string> { _defaultInput }`) are resolved
-            # as constants defined in the same file; anything unresolvable is non-literal
-            $residual = ($Matches['items'] -replace '"(?:[^"\\]|\\.)*"', '') -replace '\s', ''
-            if ($residual -ne '') {
-                foreach ($token in ($residual -split ',' | Where-Object { $_ -ne '' })) {
-                    $resolved = Resolve-ConstantInFile $token $file
-                    if ($null -eq $resolved) {
-                        return [pscustomobject]@{ Kind = 'nonliteral'; Value = $expr }
-                    }
-                    $items += $resolved
+    # string collections: new List<string> { "A", "B" }, new List<string>() { "A" }, new string[] { "A" }
+    # Require the full initializer expression (empty or omitted constructor args, nothing after '}')
+    # so constructor arguments and chained calls fall through to nonliteral.
+    if ($expr -match '^(?:new(?:\s+[\w\.<>,\s]+)?(?:\s*\(\s*\)|\s*\[\s*\])?|string\[\s*\])\s*\{(?<items>[^}]*)\}$') {
+        $items = @(Get-QuotedLiterals $Matches['items'])
+        # non-string members (e.g. `new List<string> { _defaultInput }`) are resolved
+        # as constants defined in the same file; anything unresolvable is non-literal
+        $residual = ($Matches['items'] -replace '"(?:[^"\\]|\\.)*"', '') -replace '\s', ''
+        if ($residual -ne '') {
+            foreach ($token in ($residual -split ',' | Where-Object { $_ -ne '' })) {
+                $resolved = Resolve-ConstantInFile $token $file
+                if ($null -eq $resolved) {
+                    return [pscustomobject]@{ Kind = 'nonliteral'; Value = $expr }
                 }
+                $items += $resolved
             }
-            return [pscustomobject]@{ Kind = 'list'; Value = $items }
         }
+        return [pscustomobject]@{ Kind = 'list'; Value = $items }
     }
-    if ($expr -match 'Enumerable\.Empty<[\w<>\s]+>\(\)') {
+    if ($expr -match '^Enumerable\.Empty<[\w<>\s]+>\(\)$') {
         return [pscustomobject]@{ Kind = 'list'; Value = @() }
     }
     # bare identifier: try to resolve a constant like `private const string DefaultUrl = "..."` in the same file
@@ -251,12 +251,12 @@ $explicitMapping = @{
 # knowable code location belongs here instead - a skip-list entry without one is a
 # silent blind spot for docs drift.
 $customCodeLocations = @{
-    # Docs documents the first of the fallback config file names, so compare as a
-    # member of the code list rather than as an exact set.
+    # Docs documents the first (highest-precedence) fallback config file name, so
+    # compare against the first element of the code list rather than any member.
     'config-file' = @{
         File    = 'src/Stryker.CLI/Stryker.CLI/ConfigBuilder.cs'
         Pattern = '_defaultConfigFileNames\s*=\s*\[(?<items>[^\]]*)\]'
-        Mode    = 'member'
+        Mode    = 'first'
     }
     # skip-version-check's default is documented in the CLI option help text
     'skip-version-check' = @{
@@ -287,7 +287,7 @@ $customCodeLocations = @{
 
 # Validate custom locations up front: a typo in Mode or a pattern without the expected
 # capture group would otherwise fail silently (or fall through mid-loop).
-$knownModes = @('set', 'member', 'string', 'formula', 'autoDetect')
+$knownModes = @('set', 'first', 'string', 'formula', 'autoDetect')
 foreach ($entry in $customCodeLocations.Values) {
     if ($knownModes -notcontains $entry.Mode) {
         throw "Unknown comparison mode '$($entry.Mode)' in a custom code location (expected one of: $($knownModes -join ', '))"
@@ -448,13 +448,11 @@ function Test-DocsValueMatchesCode([string]$docsValue, [pscustomobject]$code, [s
             $docsItems = @($docsInner -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_.Length -gt 0 })
             $codeItems = @([string[]]$code.Value)
             if ($docsInner -ieq 'null') { return $codeItems.Count -eq 0 }
-            # 'member' mode: the docs document one of several code fallbacks (e.g. config file names)
-            if ($comparisonMode -eq 'member') {
-                if ($docsItems.Count -ne 1) { return $false }
-                if ($ignoreCase) {
-                    return @($codeItems | Where-Object { $_ -ieq $docsItems[0] }).Count -gt 0
-                }
-                return @($codeItems | Where-Object { $_ -ceq $docsItems[0] }).Count -gt 0
+            # 'first' mode: the docs document the highest-precedence fallback (e.g. config file names)
+            if ($comparisonMode -eq 'first') {
+                if ($docsItems.Count -ne 1 -or $codeItems.Count -eq 0) { return $false }
+                if ($ignoreCase) { return $codeItems[0] -ieq $docsItems[0] }
+                return $codeItems[0] -ceq $docsItems[0]
             }
             if ($docsItems.Count -ne $codeItems.Count) { return $false }
             if ($ignoreCase) {
