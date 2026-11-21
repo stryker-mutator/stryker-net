@@ -13,12 +13,12 @@
       },
       "Azure.Storage.Files.Shares": {
         "type": "Direct",
-        "requested": "[12.28.0, )",
-        "resolved": "12.28.0",
-        "contentHash": "M8CZmCyb84UR6XbyOTEC7L8iSEsNkRqNtvUzHi0J0ylcJXaCvz9mgS8oz8hwNskRMqZuuBjUpmPqzonemQFQ2A==",
+        "requested": "[12.28.1, )",
+        "resolved": "12.28.1",
+        "contentHash": "mZtySrSuaXQL6VN159jQCRfwdyZPETF/HZ05Jkyx6SwTFzo6qKZo6J3GCyV4kwENIcMGd9IffhKqqwE+Y1/qnw==",
         "dependencies": {
           "Azure.Core": "1.60.0",
-          "Azure.Storage.Common": "12.29.0"
+          "Azure.Storage.Common": "12.29.1"
         }
       },
       "Buildalyzer": {
@@ -271,8 +271,8 @@
       },
       "Azure.Storage.Common": {
         "type": "Transitive",
-        "resolved": "12.29.0",
-        "contentHash": "0VqPcAinzXFJDAELqC+VPFUL6AaU1mmIpDAHarr7DVw3zcJrlo4k3Xc3TCTVBkDgY6YUOjJ00Fd9ZB9En5H2Jg==",
+        "resolved": "12.29.1",
+        "contentHash": "T0CHonZVqUhIze/357Sbbg2ite4YM41rIvf+cEJMas/uRp5YiPGq3MV1E8/nvdWClJrzmmorXv4bg3qu1FuXIg==",
         "dependencies": {
           "Azure.Core": "1.60.0",
           "System.IO.Hashing": "10.0.9"
