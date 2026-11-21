@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -15,12 +17,15 @@ public class GitDiffProvider : IDiffProvider
     public ITestSet Tests { get; }
     private readonly IStrykerOptions _options;
     private readonly IGitInfoProvider _gitInfoProvider;
+    private readonly IEnumerable<string> _testProjectPaths;
 
-    public GitDiffProvider(IStrykerOptions options, ITestSet tests, IGitInfoProvider gitInfoProvider = null)
+    public GitDiffProvider(IStrykerOptions options, ITestSet tests, IGitInfoProvider gitInfoProvider = null,
+        IEnumerable<string> testProjectPaths = null)
     {
         Tests = tests;
         _options = options;
         _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
+        _testProjectPaths = testProjectPaths;
     }
 
     public DiffResult ScanDiff()
@@ -41,16 +46,18 @@ public class GitDiffProvider : IDiffProvider
         }
 
         var testProjects = _options.TestProjects.ToList();
-        if (!testProjects.Any())
+        if (testProjects.Count == 0)
         {
-            testProjects.Add(_options.ProjectPath);
+            // Use the test projects identified during analysis (e.g. in solution mode), before
+            // falling back to the working directory.
+            testProjects.AddRange(_testProjectPaths ?? []);
+            if (testProjects.Count == 0)
+            {
+                testProjects.Add(_options.ProjectPath);
+            }
         }
 
-        var testPaths = testProjects
-            .Select(testProject => testProject.EndsWith(Path.DirectorySeparatorChar)
-                    ? testProject
-                    : testProject + Path.DirectorySeparatorChar)
-            .ToArray();
+        var testPaths = testProjects.Select(ToTestDirectoryPath).ToArray();
 
         foreach (var patchChanges in repository.Diff.Compare<Patch>(commit.Tree, DiffTargets.WorkingDirectory))
         {
@@ -68,6 +75,21 @@ public class GitDiffProvider : IDiffProvider
         RemoveFilteredOutFiles(diffResult);
 
         return diffResult;
+    }
+
+    // A test project can be provided as a project file path or as a directory; in both cases the
+    // files inside its directory are test files.
+    private static string ToTestDirectoryPath(string testProject)
+    {
+        var path = FilePathUtils.NormalizePathSeparators(testProject);
+        if (path.EndsWith("sproj", StringComparison.OrdinalIgnoreCase))
+        {
+            path = Path.GetDirectoryName(path);
+        }
+
+        return path.EndsWith(Path.DirectorySeparatorChar)
+            ? path
+            : path + Path.DirectorySeparatorChar;
     }
 
     private void RemoveFilteredOutFiles(DiffResult diffResult)

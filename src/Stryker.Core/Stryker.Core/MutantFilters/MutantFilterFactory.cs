@@ -50,7 +50,10 @@ public static class MutantFilterFactory
         }
         if (options.Since || options.WithBaseline)
         {
-            enabledFilters.Add(new SinceMutantFilter(_diffProvider ?? new GitDiffProvider(options, _input.TestRunner.GetTests(_input.SourceProjectInfo))));
+            enabledFilters.Add(new SinceMutantFilter(_diffProvider ?? new GitDiffProvider(options,
+                _input.TestRunner.GetTests(_input.SourceProjectInfo),
+                testProjectPaths: _input.SourceProjectInfo.TestProjectsInfo?.TestProjects?
+                    .Select(testProject => testProject.ProjectFilePath))));
         }
         if (options.ExcludedLinqExpressions.Any())
         {

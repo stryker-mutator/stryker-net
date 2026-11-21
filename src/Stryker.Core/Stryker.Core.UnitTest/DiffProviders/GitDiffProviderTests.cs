@@ -688,4 +688,164 @@ public class GitDiffProviderTests : TestBase
         res.ChangedTestFiles.Count().ShouldBe(1);
         res.ChangedSourceFiles.Count().ShouldBe(4);
     }
+
+    [TestMethod]
+    public void ScanDiffReturnsListOfFiles_ShouldCorrectlyAssignTestAndSourceFiles_WhenTestProjectsAreProjectFiles()
+    {
+        // Arrange
+        var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Source");
+        var test1Path = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests/Tests1/Tests1.csproj");
+        var options = new StrykerOptions()
+        {
+            ProjectPath = basePath,
+            TestProjects = new[] { test1Path },
+            SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4",
+        };
+        var gitInfoMock = new Mock<IGitInfoProvider>();
+        var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
+        var commitMock = new Mock<Commit>(MockBehavior.Loose);
+        var branchMock = new Mock<Branch>(MockBehavior.Strict);
+        var patchMock = new Mock<Patch>(MockBehavior.Strict);
+        var patchEntrySourceFileMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
+        var patchEntryTestFile1Mock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
+        var patchEntryTestFile2Mock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
+
+        // Setup of mocks
+        commitMock
+            .SetupGet(x => x.Tree)
+            .Returns(new Mock<Tree>(MockBehavior.Loose).Object);
+
+        branchMock
+            .SetupGet(x => x.Tip)
+            .Returns(commitMock.Object);
+
+        branchMock.SetupGet(x => x.UpstreamBranchCanonicalName).Returns("origin/branch");
+        branchMock.SetupGet(x => x.CanonicalName).Returns("refs/heads/branch");
+        branchMock.SetupGet(x => x.FriendlyName).Returns("branch");
+
+        repositoryMock
+            .Setup(x => x.Branches.GetEnumerator())
+            .Returns(new List<Branch> { branchMock.Object }.GetEnumerator())
+            .Verifiable();
+
+        patchEntrySourceFileMock
+            .SetupGet(x => x.Path)
+            .Returns(FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Source/Category/Source1.cs"));
+
+        patchEntryTestFile1Mock
+            .SetupGet(x => x.Path)
+            .Returns(FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests/Tests1/Test.cs"));
+
+        patchEntryTestFile2Mock
+            .SetupGet(x => x.Path)
+            .Returns(FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests/Tests2/CategoryA/Test2.cs"));
+
+        patchMock
+            .Setup(x => x.GetEnumerator())
+            .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges>
+            {
+                patchEntrySourceFileMock.Object,
+                patchEntryTestFile1Mock.Object,
+                patchEntryTestFile2Mock.Object
+            }).GetEnumerator());
+
+        repositoryMock
+            .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.WorkingDirectory))
+            .Returns(patchMock.Object);
+
+        repositoryMock
+            .Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
+
+        gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
+
+        gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
+        gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
+        var target = new GitDiffProvider(options, null, gitInfoMock.Object);
+
+        // Act
+        var res = target.ScanDiff();
+
+        // Assert
+        res.ChangedTestFiles.Count().ShouldBe(1);
+        res.ChangedSourceFiles.Count().ShouldBe(2);
+    }
+
+    [TestMethod]
+    public void ScanDiffReturnsListOfFiles_WithoutTestProjects_ShouldUseProvidedTestProjectPaths()
+    {
+        // Arrange: in solution mode ProjectPath is the repository root, so falling back to it
+        // would classify every changed file as a test file. The test projects identified during
+        // analysis must be used instead.
+        var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project");
+        var options = new StrykerOptions()
+        {
+            ProjectPath = basePath,
+            SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4",
+        };
+        var testProjectPaths = new[]
+        {
+            FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests/Tests1/Tests1.csproj")
+        };
+        var gitInfoMock = new Mock<IGitInfoProvider>();
+        var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
+        var commitMock = new Mock<Commit>(MockBehavior.Loose);
+        var branchMock = new Mock<Branch>(MockBehavior.Strict);
+        var patchMock = new Mock<Patch>(MockBehavior.Strict);
+        var patchEntrySourceFileMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
+        var patchEntryTestFileMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
+
+        // Setup of mocks
+        commitMock
+            .SetupGet(x => x.Tree)
+            .Returns(new Mock<Tree>(MockBehavior.Loose).Object);
+
+        branchMock
+            .SetupGet(x => x.Tip)
+            .Returns(commitMock.Object);
+
+        branchMock.SetupGet(x => x.UpstreamBranchCanonicalName).Returns("origin/branch");
+        branchMock.SetupGet(x => x.CanonicalName).Returns("refs/heads/branch");
+        branchMock.SetupGet(x => x.FriendlyName).Returns("branch");
+
+        repositoryMock
+            .Setup(x => x.Branches.GetEnumerator())
+            .Returns(new List<Branch> { branchMock.Object }.GetEnumerator())
+            .Verifiable();
+
+        patchEntrySourceFileMock
+            .SetupGet(x => x.Path)
+            .Returns(FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Source/B.cs"));
+
+        patchEntryTestFileMock
+            .SetupGet(x => x.Path)
+            .Returns(FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests/Tests1/Test.cs"));
+
+        patchMock
+            .Setup(x => x.GetEnumerator())
+            .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges>
+            {
+                patchEntrySourceFileMock.Object,
+                patchEntryTestFileMock.Object
+            }).GetEnumerator());
+
+        repositoryMock
+            .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.WorkingDirectory))
+            .Returns(patchMock.Object);
+
+        repositoryMock
+            .Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
+
+        gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
+
+        gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
+        gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
+        var target = new GitDiffProvider(options, null, gitInfoMock.Object, testProjectPaths);
+
+        // Act
+        var res = target.ScanDiff();
+
+        // Assert
+        res.ChangedTestFiles.Count().ShouldBe(1);
+        res.ChangedSourceFiles.Count().ShouldBe(1);
+    }
 }
