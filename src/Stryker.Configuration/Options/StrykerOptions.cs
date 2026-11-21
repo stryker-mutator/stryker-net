@@ -248,8 +248,8 @@ public class StrykerOptions : IStrykerOptions
     public IEnumerable<Regex> IgnoredMethods { get; init; } = [];
 
     /// <summary>
-    /// Method calls whose arguments should not be mutated. Unlike <see cref="IgnoredMethods"/>, the receiver of the call,
-    /// the statement that holds it and the await around it are still mutated.
+    /// Method calls whose arguments should not be mutated: the ignore-methods patterns with the (*) suffix.
+    /// Unlike <see cref="IgnoredMethods"/>, the receiver of the call, the statement that holds it and the await around it are still mutated.
     /// </summary>
     public IEnumerable<Regex> IgnoredMethodArguments { get; init; } = [];
 

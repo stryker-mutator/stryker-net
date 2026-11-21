@@ -13,30 +13,19 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.UnitTest.MutantFilters;
 
+/// <summary>
+/// The ignore-methods patterns with the (*) suffix, which only ignore the mutants in the arguments of a call.
+/// </summary>
 [TestClass]
-public class IgnoredMethodArgumentMutantFilterTests : TestBase
+public class IgnoredMethodArgumentsMutantFilterTests : TestBase
 {
-    [TestMethod]
-    public void ShouldHaveName()
-    {
-        var target = new IgnoredMethodArgumentMutantFilter() as IMutantFilter;
-        target.DisplayName.ShouldBe("method argument filter");
-    }
-
-    [TestMethod]
-    public void ShouldHaveType()
-    {
-        var target = new IgnoredMethodArgumentMutantFilter() as IMutantFilter;
-        target.Type.ShouldBe(MutantFilter.IgnoreMethodArgument);
-    }
-
     // The mutant is the smallest expression that covers the anchor.
     [TestMethod]
     [DataRow("IgnoredMethod(true);", "true")]
     [DataRow("x.IgnoredMethod(true);", "true")]
     [DataRow("x?.IgnoredMethod(true);", "true")]
     [DataRow("IgnoredMethod<int>(true);", "true")]
-    [DataRow("IgnoredMethod(x == 1 ? true : false);", "==")]
+    [DataRow("IgnoredMethod(1, x == 1 ? true : false);", "==")]
     [DataRow("IgnoredMethod(y => y > 1);", "y > 1")]
     [DataRow("Other(IgnoredMethod(true));", "true")]
     [DataRow("await Task.Delay(1).IgnoredMethod(false);", "false")]
@@ -44,12 +33,12 @@ public class IgnoredMethodArgumentMutantFilterTests : TestBase
     {
         var mutant = BuildMutant<ExpressionSyntax>(statement, anchor);
 
-        var filteredMutants = new IgnoredMethodArgumentMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring("IgnoredMethod"));
+        var filteredMutants = new IgnoredMethodMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring("IgnoredMethod(*)"));
 
         filteredMutants.ShouldNotContain(mutant);
     }
 
-    // None of these mutants sits inside the argument list of the ignored call. ignore-methods filters the first three.
+    // None of these mutants sits inside the argument list of the ignored call. Without (*), ignore-methods filters the first three.
     [TestMethod]
     [DataRow("SomeMethod(true).IgnoredMethod(false);", "true")]
     [DataRow("await store.ListAsync(o => o.Total > limit).IgnoredMethod(false);", "o.Total > limit")]
@@ -61,7 +50,7 @@ public class IgnoredMethodArgumentMutantFilterTests : TestBase
     {
         var mutant = BuildMutant<ExpressionSyntax>(statement, anchor);
 
-        var filteredMutants = new IgnoredMethodArgumentMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring("IgnoredMethod"));
+        var filteredMutants = new IgnoredMethodMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring("IgnoredMethod(*)"));
 
         filteredMutants.ShouldContain(mutant);
     }
@@ -73,7 +62,7 @@ public class IgnoredMethodArgumentMutantFilterTests : TestBase
     {
         var mutant = BuildMutant<StatementSyntax>(statement, statement);
 
-        var filteredMutants = new IgnoredMethodArgumentMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring("IgnoredMethod"));
+        var filteredMutants = new IgnoredMethodMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring("IgnoredMethod(*)"));
 
         filteredMutants.ShouldContain(mutant);
     }
@@ -83,7 +72,7 @@ public class IgnoredMethodArgumentMutantFilterTests : TestBase
     {
         var mutant = BuildMutant<BlockSyntax>("{ IgnoredMethod(true); }", "IgnoredMethod(true);");
 
-        var filteredMutants = new IgnoredMethodArgumentMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring("IgnoredMethod"));
+        var filteredMutants = new IgnoredMethodMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring("IgnoredMethod(*)"));
 
         filteredMutants.ShouldContain(mutant);
     }
@@ -94,7 +83,7 @@ public class IgnoredMethodArgumentMutantFilterTests : TestBase
         // The negate-expression mutant of a while condition.
         var mutant = BuildMutant<AwaitExpressionSyntax>("while (await cursor.MoveNextAsync(ct).IgnoredMethod(false)) { }", "await");
 
-        var filteredMutants = new IgnoredMethodArgumentMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring("IgnoredMethod"));
+        var filteredMutants = new IgnoredMethodMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring("IgnoredMethod(*)"));
 
         filteredMutants.ShouldContain(mutant);
     }
@@ -105,24 +94,50 @@ public class IgnoredMethodArgumentMutantFilterTests : TestBase
         var source = "class Test { void IgnoredMethod(bool b) { Foo(true); } }";
         var mutant = BuildMutantFromSource<ExpressionSyntax>(source, "true");
 
-        var filteredMutants = new IgnoredMethodArgumentMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring("IgnoredMethod"));
+        var filteredMutants = new IgnoredMethodMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring("IgnoredMethod(*)"));
 
         filteredMutants.ShouldContain(mutant);
     }
 
     [TestMethod]
-    [DataRow("ConfigureAwait", true)]
-    [DataRow("Configure*", true)]
-    [DataRow("*Await", true)]
-    [DataRow("configureawait", true)]
-    [DataRow("Configure", false)]
-    [DataRow("ListAsync", false)]
-    [DataRow("", false)]
+    [DataRow("new IgnoredType(true);", "true")]
+    [DataRow("var x = new IgnoredType(y => y > 1);", "y > 1")]
+    [DataRow("IgnoredType x = new(true);", "true")]
+    public void ShouldFilterMutantsInsideTheArgumentsOfAnIgnoredConstructor(string statement, string anchor)
+    {
+        var mutant = BuildMutant<ExpressionSyntax>(statement, anchor);
+
+        var filteredMutants = new IgnoredMethodMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring("IgnoredType.ctor(*)"));
+
+        filteredMutants.ShouldNotContain(mutant);
+    }
+
+    [TestMethod]
+    [DataRow("var x = new IgnoredType(true) { Flag = false };", "false")]
+    [DataRow("new IgnoredType(true).Run(false);", "false")]
+    [DataRow("new OtherType(true);", "true")]
+    public void ShouldKeepMutantsOutsideTheArgumentsOfAnIgnoredConstructor(string statement, string anchor)
+    {
+        var mutant = BuildMutant<ExpressionSyntax>(statement, anchor);
+
+        var filteredMutants = new IgnoredMethodMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring("IgnoredType.ctor(*)"));
+
+        filteredMutants.ShouldContain(mutant);
+    }
+
+    [TestMethod]
+    [DataRow("ConfigureAwait(*)", true)]
+    [DataRow("Configure*(*)", true)]
+    [DataRow("*Await(*)", true)]
+    [DataRow("configureawait(*)", true)]
+    [DataRow("Task.ConfigureAwait(*)", false)]
+    [DataRow("Configure(*)", false)]
+    [DataRow("ListAsync(*)", false)]
     public void ShouldMatchCallsWithTheIgnoreMethodsPatternSyntax(string pattern, bool shouldSkipMutant)
     {
         var mutant = BuildMutant<ExpressionSyntax>("await store.ListAsync(ct).ConfigureAwait(false);", "false");
 
-        var filteredMutants = new IgnoredMethodArgumentMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring(pattern));
+        var filteredMutants = new IgnoredMethodMutantFilter().FilterMutants(new[] { mutant }, null, OptionsIgnoring(pattern));
 
         if (shouldSkipMutant)
         {
@@ -135,13 +150,36 @@ public class IgnoredMethodArgumentMutantFilterTests : TestBase
     }
 
     [TestMethod]
-    public void ShouldKeepEveryMutantWhenNoMethodIsIgnored()
+    public void ShouldApplyBothKindsOfPatternsTogether()
     {
-        var mutant = BuildMutant<ExpressionSyntax>("await store.ListAsync(ct).ConfigureAwait(false);", "false");
+        var source = """
+            class Test
+            {
+                async Task StubMethod()
+                {
+                    logger.LogDebug("Saving");
+                    await store.SaveAsync(id, total > limit).ConfigureAwait(false);
+                }
+            }
+            """;
+        var root = CSharpSyntaxTree.ParseText(source).GetRoot();
+        var ignored = new[]
+        {
+            AsMutant(Find<ExpressionStatementSyntax>(root, "logger.LogDebug")),
+            AsMutant(Find<LiteralExpressionSyntax>(root, "\"Saving\"")),
+            AsMutant(Find<LiteralExpressionSyntax>(root, "false")),
+        };
+        var kept = new[]
+        {
+            AsMutant(Find<ExpressionStatementSyntax>(root, "await store.SaveAsync")),
+            AsMutant(Find<BinaryExpressionSyntax>(root, "total > limit")),
+        };
 
-        var filteredMutants = new IgnoredMethodArgumentMutantFilter().FilterMutants(new[] { mutant }, null, new StrykerOptions());
+        var filteredMutants = new IgnoredMethodMutantFilter()
+            .FilterMutants(ignored.Concat(kept).ToList(), null, OptionsIgnoring("Log*", "ConfigureAwait(*)"))
+            .ToList();
 
-        filteredMutants.ShouldContain(mutant);
+        filteredMutants.ShouldBe(kept);
     }
 
     // The scenario that ignore-methods: ["ConfigureAwait"] gets wrong: only the ConfigureAwait arguments may be ignored.
@@ -191,18 +229,24 @@ public class IgnoredMethodArgumentMutantFilterTests : TestBase
             AsMutant(Find<ForEachStatementSyntax>(root, "foreach").Statement),
         };
 
-        var filteredMutants = new IgnoredMethodArgumentMutantFilter()
-            .FilterMutants(configureAwaitArguments.Concat(otherMutants).ToList(), null, OptionsIgnoring("ConfigureAwait"))
+        var filteredMutants = new IgnoredMethodMutantFilter()
+            .FilterMutants(configureAwaitArguments.Concat(otherMutants).ToList(), null, OptionsIgnoring("ConfigureAwait(*)"))
             .ToList();
 
         configureAwaitArguments.Count.ShouldBe(4);
         filteredMutants.ShouldBe(otherMutants);
     }
 
-    private static StrykerOptions OptionsIgnoring(string pattern) => new()
+    // Built like StrykerInputs.ValidateAll builds them.
+    private static StrykerOptions OptionsIgnoring(params string[] patterns)
     {
-        IgnoredMethodArguments = new IgnoreMethodArgumentsInput { SuppliedInput = new[] { pattern } }.Validate()
-    };
+        var input = new IgnoreMethodsInput { SuppliedInput = patterns };
+        return new StrykerOptions
+        {
+            IgnoredMethods = input.Validate(),
+            IgnoredMethodArguments = input.ValidateArgumentsOnly(),
+        };
+    }
 
     private static IMutant BuildMutant<T>(string statement, string anchor) where T : SyntaxNode =>
         BuildMutantFromSource<T>($"class Test {{ async Task StubMethod() {{ {statement} }} }}", anchor);

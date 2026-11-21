@@ -36,9 +36,6 @@
     "ignore-methods": [
       "Log*"
     ],
-    "ignore-method-arguments": [
-      "ConfigureAwait"
-    ],
     "thresholds": {
       "high": 40,
       "low": 30,

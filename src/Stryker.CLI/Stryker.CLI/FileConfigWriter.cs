@@ -66,7 +66,6 @@ public static class FileConfigGenerator
                 DashboardUrl = inputs.DashboardUrlInput.SuppliedInput ?? inputs.DashboardUrlInput.Default,
                 IgnoreMutations = inputs.IgnoreMutationsInput.SuppliedInput?.ToArray() ?? inputs.IgnoreMutationsInput.Default.ToArray(),
                 IgnoreMethods = inputs.IgnoredMethodsInput.SuppliedInput?.ToArray() ?? inputs.IgnoredMethodsInput.Default.ToArray(),
-                IgnoreMethodArguments = inputs.IgnoredMethodArgumentsInput.SuppliedInput?.ToArray() ?? inputs.IgnoredMethodArgumentsInput.Default.ToArray(),
                 ReportFileName = inputs.ReportFileNameInput.SuppliedInput ?? inputs.ReportFileNameInput.Default,
                 BreakOnInitialTestFailure = inputs.BreakOnInitialTestFailureInput.SuppliedInput ?? inputs.BreakOnInitialTestFailureInput.Default,
                 Concurrency = inputs.ConcurrencyInput.SuppliedInput ?? inputs.ConcurrencyInput.Default

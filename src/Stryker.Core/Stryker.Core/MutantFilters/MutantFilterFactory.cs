@@ -56,10 +56,6 @@ public static class MutantFilterFactory
         {
             enabledFilters.Add(new ExcludeLinqExpressionFilter());
         }
-        if (options.IgnoredMethodArguments.Any())
-        {
-            enabledFilters.Add(new IgnoredMethodArgumentMutantFilter());
-        }
 
         return enabledFilters;
     }

@@ -93,10 +93,10 @@ public class StrykerInputsTests : TestBase
     [TestMethod]
     public void ShouldSetIgnoredMethodArguments()
     {
-        _target.IgnoredMethodArgumentsInput.SuppliedInput = new[] { "ConfigureAwait" };
+        _target.IgnoredMethodsInput.SuppliedInput = new[] { "Log*", "ConfigureAwait(*)" };
         var result = _target.ValidateAll();
+        result.IgnoredMethods.ShouldHaveSingleItem().IsMatch("logger.LogDebug").ShouldBeTrue();
         result.IgnoredMethodArguments.ShouldHaveSingleItem().IsMatch("task.ConfigureAwait").ShouldBeTrue();
-        result.IgnoredMethods.ShouldBeEmpty();
     }
 
     [TestMethod]

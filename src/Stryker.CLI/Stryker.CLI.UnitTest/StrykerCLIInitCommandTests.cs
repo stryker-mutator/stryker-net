@@ -55,7 +55,6 @@ public class StrykerCLIInitCommandTests
         config.DisableBail.ShouldBe(new DisableBailInput().Default);
         config.IgnoreMutations.ShouldBe(new IgnoreMutationsInput().Default);
         config.IgnoreMethods.ShouldBe(new IgnoreMethodsInput().Default);
-        config.IgnoreMethodArguments.ShouldBe(new IgnoreMethodArgumentsInput().Default);
         config.TestCaseFilter.ShouldBe(new TestCaseFilterInput().Default);
         config.TestProjects.ShouldBe(new TestProjectsInput().Default);
         config.DashboardUrl.ShouldBe(new DashboardUrlInput().Default);
