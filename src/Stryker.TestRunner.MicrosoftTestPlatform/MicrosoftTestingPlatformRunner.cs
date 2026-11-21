@@ -46,6 +46,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     private readonly IStrykerOptions? _options;
     private readonly object _serverLock = new();
     private readonly HashSet<string> _initializedPerTestFiles = new();
+    private readonly HashSet<string> _reportedUnexpectedTests = new();
     private readonly Dictionary<string, int> _perTestEpochCounters = new();
 
     private TestCaseFilterExpression? _strykerSideFilter;
@@ -1330,6 +1331,16 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             var perTestDuration = finishedTests.Count > 0
                 ? TimeSpan.FromTicks(duration.Ticks / finishedTests.Count)
                 : TimeSpan.Zero;
+
+            foreach (var unexpectedTest in finishedTests.Where(tr => !_testDescriptions.ContainsKey(tr.Node.Uid)))
+            {
+                if (_reportedUnexpectedTests.Add(unexpectedTest.Node.Uid))
+                {
+                    _logger.LogWarning(
+                        "{RunnerId}: Test run encountered an unexpected test case ({DisplayName}) that was not found during discovery, mutation tests may be inaccurate. Disable coverage analysis if you have doubts.",
+                        RunnerId, unexpectedTest.Node.DisplayName);
+                }
+            }
 
             foreach (var testResult in finishedTests.Where(tr => _testDescriptions.ContainsKey(tr.Node.Uid)))
             {
