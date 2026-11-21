@@ -947,6 +947,96 @@ public class MicrosoftTestingPlatformRunnerCoverageTests
         }
     }
 
+    [TestMethod, Timeout(10000)]
+    public async Task RunSingleTestForCoverageInReusedProcessAsync_ShouldForgetTheRelaysOfADiscardedHost()
+    {
+        // A host is discarded when a test times out or crashes during capture. Its relays are named per
+        // mutated assembly, not per process, and the host that replaces it only starts a poller for an
+        // assembly once that assembly's mutated code runs. A relay the discarded host left behind is
+        // therefore never acknowledged again, and waiting for it marked every later test of the
+        // assembly Dubious after the first timeout.
+        const string assembly = "/nonexistent/assembly.dll";
+
+        using var runner = CreateRunner(715);
+        runner.SetPerTestCoverageMode(true);
+        var epochFilePath = runner.GetPerTestEpochFilePath(assembly);
+
+        // Registers the assembly the way a real capture does, then fails for want of a test host
+        await runner.RunSingleTestForCoverageInReusedProcessAsync(
+            assembly, new TestNode("test-1", "Test1", "test", "discovered"), "test-1");
+
+        // What the copies of the injected MutantControl in the host would have left behind
+        var leftByTheHost = new[]
+        {
+            WriteEpochRelayFile(epochFilePath, "FirstMutatedAssembly", request: 3, ack: 3),
+            WriteEpochRelayFile(epochFilePath, "SecondMutatedAssembly", request: 3, ack: 3)
+        };
+
+        try
+        {
+            // The next test finds no host either, so this one is discarded as well
+            await runner.RunSingleTestForCoverageInReusedProcessAsync(
+                assembly, new TestNode("test-2", "Test2", "test", "discovered"), "test-2");
+
+            foreach (var path in leftByTheHost)
+            {
+                File.Exists(path).ShouldBeFalse($"{Path.GetFileName(path)} belonged to a discarded host and must not be waited on");
+            }
+            runner.BroadcastEpochRequest(epochFilePath, 1).ShouldBeEmpty(
+                "no relay of a discarded host should be asked to acknowledge");
+        }
+        finally
+        {
+            foreach (var path in leftByTheHost.Concat(new[] { epochFilePath }))
+            {
+                if (File.Exists(path)) File.Delete(path);
+            }
+        }
+    }
+
+    [TestMethod, Timeout(10000)]
+    public async Task GetOrCreateServerAsync_ShouldForgetTheRelaysOfADeadHost()
+    {
+        // A host can also exit on its own between two tests. It is then replaced when the next test
+        // asks for a server, not discarded, and its relays must not outlive it either.
+        const string assembly = "/nonexistent/assembly.dll";
+
+        using var runner = CreateRunner(716);
+        runner.SetPerTestCoverageMode(true);
+        var epochFilePath = runner.GetPerTestEpochFilePath(assembly);
+
+        // Registers the assembly the way a real capture does, then fails for want of a test host
+        await runner.RunSingleTestForCoverageInReusedProcessAsync(
+            assembly, new TestNode("test-1", "Test1", "test", "discovered"), "test-1");
+
+        var leftByTheHost = WriteEpochRelayFile(epochFilePath, "FirstMutatedAssembly", request: 3, ack: 3);
+        // Never started, so not alive: stands in for a host whose process has exited
+        runner._assemblyServers[assembly] = new AssemblyTestServer(assembly, new(), NullLogger.Instance, "716");
+
+        try
+        {
+            try
+            {
+                await runner.GetOrCreateServerAsync(assembly);
+            }
+            catch (Exception)
+            {
+                // The replacement cannot start without a real test assembly; only what happens before matters here
+            }
+
+            File.Exists(leftByTheHost).ShouldBeFalse("the relay belonged to a dead host and must not be waited on");
+            runner.BroadcastEpochRequest(epochFilePath, 1).ShouldBeEmpty(
+                "no relay of a dead host should be asked to acknowledge");
+        }
+        finally
+        {
+            foreach (var path in new[] { leftByTheHost, epochFilePath })
+            {
+                if (File.Exists(path)) File.Delete(path);
+            }
+        }
+    }
+
     private static string SuffixedPath(string path, string suffix) =>
         Path.Combine(
             Path.GetDirectoryName(path)!,
