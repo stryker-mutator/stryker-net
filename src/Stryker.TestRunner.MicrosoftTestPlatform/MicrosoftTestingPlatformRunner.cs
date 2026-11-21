@@ -1105,10 +1105,19 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
             var testUidFilter = BuildTestUidFilter(mutants);
             var accumulator = new TestRunAccumulator();
+            var bailCheck = BuildBailCheck(mutants, update);
+            var stopRequested = false;
+            Func<IReadOnlyCollection<TestNodeUpdate>, bool>? shouldStop = bailCheck is null
+                ? null
+                : updates =>
+                {
+                    stopRequested = bailCheck(updates);
+                    return stopRequested;
+                };
 
             foreach (var assembly in assemblies)
             {
-                var (result, timedOut, discoveredTests) = await RunAssemblyTestsAsync(assembly, timeoutCalc, mutants, testUidFilter).ConfigureAwait(false);
+                var (result, timedOut, discoveredTests) = await RunAssemblyTestsAsync(assembly, timeoutCalc, mutants, testUidFilter, shouldStop).ConfigureAwait(false);
 
                 if (discoveredTests is not null)
                 {
@@ -1124,6 +1133,12 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                 if (result is not null)
                 {
                     accumulator.Aggregate(result, discoveredTests);
+                }
+
+                if (stopRequested)
+                {
+                    // The fate of every mutant is established: the remaining assemblies cannot change it.
+                    break;
                 }
             }
 
@@ -1186,11 +1201,46 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         }
     }
 
+    /// <summary>
+    /// Builds the check that stops a test run as soon as the outcome of every mutant under test is established,
+    /// like the VsTest runner does. Returns <c>null</c> when bailing is disabled or there is nothing to analyze.
+    /// </summary>
+    private Func<IReadOnlyCollection<TestNodeUpdate>, bool>? BuildBailCheck(IReadOnlyList<IMutant>? mutants, TestUpdateHandler? update)
+    {
+        if (update is null || mutants is null || _options?.OptimizationMode.HasFlag(OptimizationModes.DisableBail) == true)
+        {
+            return null;
+        }
+
+        return finishedUpdates =>
+        {
+            var failedTests = new TestIdentifierList(finishedUpdates
+                .Where(x => TestNodeStates.IsFailure(x.Node.ExecutionState))
+                .Select(x => x.Node.Uid));
+            var executedTests = new TestIdentifierList(finishedUpdates
+                .Where(x => TestNodeStates.IsFinished(x.Node.ExecutionState))
+                .Select(x => x.Node.Uid));
+
+            var timedOutTests = new TestIdentifierList(finishedUpdates
+                .Where(x => TestNodeStates.IsTimeout(x.Node.ExecutionState))
+                .Select(x => x.Node.Uid));
+
+            var continueTestRun = update(mutants, failedTests, executedTests, timedOutTests);
+            if (!continueTestRun)
+            {
+                _logger.LogDebug("{RunnerId}: Each mutant's fate has been established, we can stop.", RunnerId);
+            }
+
+            return !continueTestRun;
+        };
+    }
+
     internal virtual async Task<(TestRunResult? Result, bool TimedOut, List<TestNode>? DiscoveredTests)> RunAssemblyTestsAsync(
         string assembly,
         ITimeoutValueCalculator? timeoutCalc,
         IReadOnlyList<IMutant>? mutants = null,
-        Func<TestNode, bool>? testUidFilter = null)
+        Func<TestNode, bool>? testUidFilter = null,
+        Func<IReadOnlyCollection<TestNodeUpdate>, bool>? shouldStop = null)
     {
         if (!File.Exists(assembly))
         {
@@ -1214,7 +1264,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
             timeout = CalculateAssemblyTimeout(discoveredTests, timeoutCalc, assembly, mutants);
         }
 
-        var (testResults, timedOut) = await RunAssemblyTestsInternalAsync(assembly, testUidFilter, timeout).ConfigureAwait(false);
+        var (testResults, timedOut) = await RunAssemblyTestsInternalAsync(assembly, testUidFilter, timeout, shouldStop).ConfigureAwait(false);
 
         return (testResults as TestRunResult, timedOut, discoveredTests);
     }
@@ -1222,7 +1272,8 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     internal async Task<(ITestRunResult Result, bool TimedOut)> RunAssemblyTestsInternalAsync(
         string assembly,
         Func<TestNode, bool>? testUidFilter,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        Func<IReadOnlyCollection<TestNodeUpdate>, bool>? shouldStop = null)
     {
         // A crashed test host tears down the RPC connection, so the run throws (rather than timing out).
         // Retry once on a freshly started server: a crash caused by a *previous* mutant then self-heals
@@ -1267,7 +1318,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
                 var testsToRun = tests?.Where(t => testUidFilter is null || testUidFilter(t)).ToArray();
 
-                var (testResults, timedOut) = await server.RunTestsAsync(testsToRun, timeout).ConfigureAwait(false);
+                var (testResults, timedOut) = await server.RunTestsAsync(testsToRun, timeout, shouldStop).ConfigureAwait(false);
 
                 var duration = DateTime.UtcNow - startTime;
                 var result = BuildTestRunResult(testResults, tests?.Count ?? 0, duration);

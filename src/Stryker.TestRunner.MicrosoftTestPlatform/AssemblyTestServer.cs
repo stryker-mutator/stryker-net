@@ -131,7 +131,20 @@ internal sealed class AssemblyTestServer : IDisposable
         return results;
     }
 
-    public async Task<(List<TestNodeUpdate> Results, bool TimedOut)> RunTestsAsync(TestNode[]? testsToRun, TimeSpan? timeout)
+    /// <summary>
+    /// Runs the tests and collects their updates.
+    /// </summary>
+    /// <param name="testsToRun">The tests to run, or <c>null</c> to run every test.</param>
+    /// <param name="timeout">The time after which the run is cancelled and reported as timed out.</param>
+    /// <param name="shouldStop">
+    /// Called with the finished tests received so far whenever an update reports a failing test.
+    /// When it returns <c>true</c>, the run is cancelled and the results collected so far are returned
+    /// without flagging a timeout.
+    /// </param>
+    public async Task<(List<TestNodeUpdate> Results, bool TimedOut)> RunTestsAsync(
+        TestNode[]? testsToRun,
+        TimeSpan? timeout,
+        Func<IReadOnlyCollection<TestNodeUpdate>, bool>? shouldStop = null)
     {
         if (!_isInitialized || _client is null)
         {
@@ -139,22 +152,47 @@ internal sealed class AssemblyTestServer : IDisposable
         }
 
         var testResults = new System.Collections.Concurrent.ConcurrentBag<TestNodeUpdate>();
+        using var cancellationTokenSource = timeout.HasValue ? new CancellationTokenSource(timeout.Value) : new CancellationTokenSource();
+        var stopRequested = false;
+        var updateLock = new object();
 
         Func<TestNodeUpdate[], Task> onUpdate = updates =>
         {
-            foreach (var update in updates)
+            // Updates may arrive concurrently, while the stop check is not thread safe
+            lock (updateLock)
             {
-                testResults.Add(update);
+                if (stopRequested)
+                {
+                    return Task.CompletedTask;
+                }
+
+                foreach (var update in updates)
+                {
+                    testResults.Add(update);
+                }
+
+                if (shouldStop is not null
+                    && updates.Any(u => TestNodeStates.IsFailure(u.Node.ExecutionState))
+                    && shouldStop(testResults.ToList()))
+                {
+                    stopRequested = true;
+                    cancellationTokenSource.Cancel();
+                }
             }
+
             return Task.CompletedTask;
         };
 
-        if (timeout.HasValue)
+        if (timeout.HasValue || shouldStop is not null)
         {
-            using var cancellationTokenSource = new CancellationTokenSource(timeout.Value);
             try
             {
                 await _client.RunTestsAsync(onUpdate, testsToRun, cancellationTokenSource.Token).ConfigureAwait(false);
+                return (testResults.ToList(), false);
+            }
+            catch (OperationCanceledException) when (Volatile.Read(ref stopRequested))
+            {
+                _logger.LogDebug("{RunnerId}: Stopping the test run for {Assembly}, the outcome of the mutant(s) is established", _runnerId, _assembly);
                 return (testResults.ToList(), false);
             }
             catch (OperationCanceledException ex) when (cancellationTokenSource.IsCancellationRequested)
