@@ -95,6 +95,9 @@ public class FileBasedInput : IExtraData
     [JsonPropertyName("ignore-methods")]
     public string[] IgnoreMethods { get; init; }
 
+    [JsonPropertyName("ignore-method-arguments")]
+    public string[] IgnoreMethodArguments { get; init; }
+
     [JsonPropertyName("report-file-name")]
     public string ReportFileName { get; init; }
 

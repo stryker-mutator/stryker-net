@@ -35,6 +35,16 @@ Specific method calls can be ignored using the [ignore methods](./configuration.
 
 _Note that this only ignores mutation inside the method calls, not the method declaration._
 
+Ignoring a method also ignores the calls it is chained on, the statement that holds it and the `await` around it. To ignore only the arguments of a call, use the [ignore method arguments](./configuration.md#ignore-method-arguments-string) option:
+
+``` json
+"stryker-config": {
+    "ignore-method-arguments": [
+        "ConfigureAwait" // Ignores false -> true in ConfigureAwait(false), but not the awaited call
+    ]
+}
+```
+
 ## Mutate option
 
 Whole files can be ignored using the [mutate](./configuration.md#mutate-glob) option.

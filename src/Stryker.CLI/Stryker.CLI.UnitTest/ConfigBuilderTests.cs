@@ -223,6 +223,7 @@ public class ConfigBuilderTests
         inputs.Setup(x => x.DashboardUrlInput).Returns(new DashboardUrlInput());
         inputs.Setup(x => x.IgnoreMutationsInput).Returns(new IgnoreMutationsInput());
         inputs.Setup(x => x.IgnoredMethodsInput).Returns(new IgnoreMethodsInput());
+        inputs.Setup(x => x.IgnoredMethodArgumentsInput).Returns(new IgnoreMethodArgumentsInput());
         inputs.Setup(x => x.ReportFileNameInput).Returns(new ReportFileNameInput());
         inputs.Setup(x => x.BreakOnInitialTestFailureInput).Returns(new BreakOnInitialTestFailureInput());
         inputs.Setup(x => x.OutputPathInput).Returns(new OutputPathInput());
