@@ -8,11 +8,12 @@ namespace Stryker.TestRunner.VsTest;
 public sealed class VsTestDescription : IFrameworkTestDescription
 {
     private readonly ICollection<ITestResult> _initialResults = [];
+    private readonly VsTestCase _case;
     private int _subCases;
 
-    public VsTestDescription(ITestCase testCase)
+    public VsTestDescription(VsTestCase testCase)
     {
-        Case = testCase;
+        _case = testCase;
         Description = new TestDescription(testCase.Id, testCase.Name, testCase.CodeFilePath);
     }
 
@@ -46,10 +47,10 @@ public sealed class VsTestDescription : IFrameworkTestDescription
 
     public string Id => Case.Id;
 
-    public ITestCase Case { get; }
-
+    public ITestCase Case => _case;
     public int NbSubCases => Math.Max(_subCases, _initialResults.Count);
-
+    public bool IsExplicit => _case.OriginalTestCase.Properties.Any(p => p.Id == "NUnit.Explicit" &&  _case.OriginalTestCase.GetPropertyValue(p) is true);
+    public bool IsIgnored => _initialResults.Count == 0;
     public void RegisterInitialTestResult(ITestResult result) => _initialResults.Add(result);
 
     public void AddSubCase() => _subCases++;

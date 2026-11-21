@@ -52,7 +52,7 @@ public sealed class VsTestContextInformation : IDisposable
     /// <summary>
     /// Log folder path
     /// </summary>
-    public string LogPath =>
+    private string LogPath =>
         Options.OutputPath == null ? "logs" : _fileSystem.Path.Combine(Options.OutputPath, "logs");
 
     /// <param name="options">Configuration options</param>
@@ -121,15 +121,14 @@ public sealed class VsTestContextInformation : IDisposable
     }
 
     /// <summary>
-    ///     Builds a new process launcher used for a test session.
+    /// Builds a new process launcher used for a test session.
     /// </summary>
     /// <param name="runnerId">Name of the instance to create (used in log files)</param>
     /// <returns>a <see cref="IStrykerTestHostLauncher" /> </returns>
     public IStrykerTestHostLauncher BuildHostLauncher(string runnerId) => _hostBuilder(runnerId);
 
-    private IVsTestConsoleWrapper BuildActualVsTestWrapper(ConsoleParameters parameters) =>
-        new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(),
-            parameters);
+    private VsTestConsoleWrapper BuildActualVsTestWrapper(ConsoleParameters parameters) =>
+        new(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), parameters);
 
     private ConsoleParameters DetermineConsoleParameters(string runnerId)
     {
@@ -168,6 +167,16 @@ public sealed class VsTestContextInformation : IDisposable
         }
 
         return result;
+    }
+
+    public void RemoveIgnoredExplicitTests()
+    {
+        var ignoredTests = VsTests.Where(t => t.Value.IsExplicit && t.Value.IsIgnored).Select(t => t.Key).ToList();
+        foreach (var testId in ignoredTests)
+        {
+            TestsPerSource[VsTests[testId].Case.Source].Remove(testId);
+            VsTests.Remove(testId);
+        }
     }
 
     // keeps only test assemblies which have tests.
