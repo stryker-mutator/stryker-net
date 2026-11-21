@@ -20,7 +20,7 @@ public class LanguageVersionInputTests : TestBase
     public void ShouldHaveHelpText()
     {
         var target = new LanguageVersionInput();
-        target.HelpText.ShouldBe(@"Deprecated: configure the C# language version in the project file. This option is ignored. | allowed: Default, CSharp2, CSharp3, CSharp4, CSharp5, CSharp6, CSharp7, CSharp7_1, CSharp7_2, CSharp7_3, CSharp8, CSharp9, CSharp10, CSharp11, CSharp12, CSharp13, CSharp14, LatestMajor, Preview, Latest");
+        target.HelpText.ShouldBe(@"Deprecated: configure the C# language version in the project file. This option is ignored. | allowed: Default, CSharp2, CSharp3, CSharp4, CSharp5, CSharp6, CSharp7, CSharp7_1, CSharp7_2, CSharp7_3, CSharp8, CSharp9, CSharp10, CSharp11, CSharp12, CSharp13, CSharp14, CSharp15, LatestMajor, Preview, Latest");
     }
 
     [TestMethod]
