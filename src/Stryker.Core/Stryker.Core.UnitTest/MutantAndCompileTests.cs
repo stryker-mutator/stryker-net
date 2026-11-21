@@ -52,7 +52,7 @@ public static class Consumer
         Type[] typeToLoad = [typeof(object), typeof(List<>), typeof(Enumerable), typeof(Nullable<>), typeof(MemoryMappedFile),
             typeof(ExperimentalAttribute), typeof(MemoryMappedViewAccessor)];
         var syntaxTrees = new List<SyntaxTree> { syntaxTree };
-        syntaxTrees.AddRange(_injector.GetHelpersSyntaxTreesToInject(new CSharpParseOptions(LanguageVersion.CSharp14)));
+        syntaxTrees.AddRange(_injector.GetHelpersSyntaxTreesToInject((CSharpParseOptions)syntaxTree.Options));
         var mutator = new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: new StrykerOptions
         {
             MutationLevel = MutationLevel.Complete,
