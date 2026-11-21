@@ -52,6 +52,10 @@ public static class MutantFilterFactory
         {
             enabledFilters.Add(new SinceMutantFilter(_diffProvider ?? new GitDiffProvider(options, _input.TestRunner.GetTests(_input.SourceProjectInfo))));
         }
+        if (options.IgnoreMethodsEffects && options.IgnoredMethods.Any())
+        {
+            enabledFilters.Add(new IgnoreMethodsEffectsMutantFilter());
+        }
         if (options.ExcludedLinqExpressions.Any())
         {
             enabledFilters.Add(new ExcludeLinqExpressionFilter());
