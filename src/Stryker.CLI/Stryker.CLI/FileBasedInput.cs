@@ -29,7 +29,7 @@ public class FileBasedInput : IExtraData
     public string MutationLevel { get; init; }
 
     [JsonPropertyName("language-version")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string LanguageVersion { get; init; }
 
     [JsonPropertyName("additional-timeout")]
@@ -103,6 +103,9 @@ public class FileBasedInput : IExtraData
 
     [JsonExtensionData]
     public Dictionary<string, JsonElement> ExtraData { get; init; }
+
+    [JsonPropertyName("build-properties")]
+    public List<string> BuildProperties { get; init; }
 }
 
 public class Since : IExtraData

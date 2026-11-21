@@ -19,14 +19,14 @@ public class RelatedSourceProjectsInfo(
 
     private ProjectsTracker Tracker { get; } = projectsTracker;
 
-    public bool BuildTestProjects(IInitialBuildProcess buildProcess)
+    public bool BuildTestProjects(IInitialBuildProcess buildProcess, Dictionary<string, string> optionsBuildProperties)
     {
         if (!string.IsNullOrEmpty(Tracker.SolutionFilePath))
         {
             Tracker.BuildSolution(buildProcess, SourceProjectInfos.Select(p => p.AnalyzerResult));
-
             return true;
         }
+
         var testProjects = SourceProjectInfos.SelectMany(p => p.TestProjectsInfo.AnalyzerResults)
             .Distinct().GroupBy(p => p.ProjectFilePath).Select(g => g.First()).ToList();
         for (var i = 0; i < testProjects.Count; i++)
@@ -39,7 +39,7 @@ public class RelatedSourceProjectsInfo(
             buildProcess.InitialBuild(
                 testProjects[i].TargetsDesktop(),
                 testProjects[i].ProjectFilePath,
-                null,
+                optionsBuildProperties,
                 testProjects[i].GetProperty("Configuration"),
                 testProjects[i].GetProperty("Platform"),
                 msbuildPath: testProjects[i].MsBuildPath());

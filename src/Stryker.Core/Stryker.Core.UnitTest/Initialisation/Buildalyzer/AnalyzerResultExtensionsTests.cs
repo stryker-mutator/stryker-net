@@ -173,7 +173,7 @@ public class AnalyzerResultExtensionsTests
             .Returns(new Dictionary<string, IReadOnlyDictionary<string, string>>());
 
         // Act
-        var isTestProject = IAnalyzerResultExtensions.IsTestProject([analyzerResult]);
+        var isTestProject = IAnalyzerResultExtensions.IsTestProject([analyzerResult], []);
 
         // Assert
         isTestProject.ShouldBe(expected);
@@ -198,7 +198,7 @@ public class AnalyzerResultExtensionsTests
             .SetupGet(result => result.References)
             .Returns(references.Split(';'));
 
-        var isTestProject = IAnalyzerResultExtensions.IsTestProject([analyzerResult]);
+        var isTestProject = IAnalyzerResultExtensions.IsTestProject([analyzerResult], []);
 
         isTestProject.ShouldBe(expected);
     }
@@ -265,7 +265,7 @@ public class AnalyzerResultExtensionsTests
             ["DEBUG"]);
         var options = CreateStrykerOptions(LanguageVersion.CSharp12);
 
-        var parseOptions = analyzerResult.GetParseOptions(options);
+        var parseOptions = analyzerResult.GetParseOptions();
 
         parseOptions.SpecifiedLanguageVersion.ShouldBe(LanguageVersion.CSharp8);
     }
@@ -280,7 +280,7 @@ public class AnalyzerResultExtensionsTests
         var analyzerResult = CreateAnalyzerResultWithProperties(properties);
 
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+        var parseOptions = analyzerResult.GetParseOptions();
 
         // Assert
         parseOptions.Features.ShouldContain(f => f.Key == expectedFeature1 && f.Value == "true");
@@ -301,7 +301,7 @@ public class AnalyzerResultExtensionsTests
         var analyzerResult = CreateAnalyzerResultWithProperties(properties);
 
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+        var parseOptions = analyzerResult.GetParseOptions();
 
         // Assert
         parseOptions.Features.ShouldContain(f => f.Key == "InterceptorsNamespaces" && f.Value == "Microsoft.Extensions.DependencyInjection");
@@ -318,7 +318,7 @@ public class AnalyzerResultExtensionsTests
         var analyzerResult = CreateAnalyzerResultWithProperties(properties);
 
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+        var parseOptions = analyzerResult.GetParseOptions();
 
         // Assert
         parseOptions.Features.ShouldContain(f => f.Key == "InterceptorsPreview" && f.Value == "true");
@@ -338,7 +338,7 @@ public class AnalyzerResultExtensionsTests
         var analyzerResult = CreateAnalyzerResultWithProperties(properties);
 
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+        var parseOptions = analyzerResult.GetParseOptions();
 
         // Assert
         parseOptions.Features.ShouldContain(f => f.Key == "InterceptorsPreview" && f.Value == "true");
@@ -359,7 +359,7 @@ public class AnalyzerResultExtensionsTests
         var analyzerResult = CreateAnalyzerResultWithProperties(properties);
 
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+        var parseOptions = analyzerResult.GetParseOptions();
 
         // Assert
         var interceptorsPreviewCount = parseOptions.Features.Count(f => f.Key == "InterceptorsPreview");
@@ -387,7 +387,7 @@ public class AnalyzerResultExtensionsTests
         var analyzerResult = CreateAnalyzerResultWithProperties(properties);
 
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+        var parseOptions = analyzerResult.GetParseOptions();
 
         // Assert
         parseOptions.Features.ShouldBeEmpty();
@@ -403,7 +403,7 @@ public class AnalyzerResultExtensionsTests
         var analyzerResult = CreateAnalyzerResultWithProperties(properties);
 
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+        var parseOptions = analyzerResult.GetParseOptions();
 
         // Assert
         parseOptions.Features.ShouldContain(f => f.Key == "InterceptorsPreview");
@@ -423,7 +423,7 @@ public class AnalyzerResultExtensionsTests
         var analyzerResult = CreateAnalyzerResultWithProperties(properties);
 
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+        var parseOptions = analyzerResult.GetParseOptions();
 
         // Assert
         parseOptions.Features.Count().ShouldBe(2);
@@ -443,7 +443,7 @@ public class AnalyzerResultExtensionsTests
         var analyzerResult = CreateAnalyzerResultWithProperties(properties);
 
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+        var parseOptions = analyzerResult.GetParseOptions();
 
         // Assert
         parseOptions.Features.ShouldContain(f =>
@@ -463,7 +463,7 @@ public class AnalyzerResultExtensionsTests
         };
         var analyzerResult = CreateAnalyzerResultWithProperties(properties);
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+        var parseOptions = analyzerResult.GetParseOptions();
         // Assert
         parseOptions.Features.ShouldNotContain(f => f.Key == "InterceptorsNamespaces");
     }
@@ -480,7 +480,7 @@ public class AnalyzerResultExtensionsTests
         var analyzerResult = CreateAnalyzerResultWithProperties(properties);
 
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+        var parseOptions = analyzerResult.GetParseOptions();
 
         // Assert
         parseOptions.Features.ShouldNotContain(f => f.Key == "InterceptorsNamespaces");

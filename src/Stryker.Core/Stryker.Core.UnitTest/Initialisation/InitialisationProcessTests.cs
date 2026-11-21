@@ -393,7 +393,7 @@ public class InitialisationProcessTests : TestBase
 
         inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
         initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(),
-            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+            It.IsAny<string>(), It.IsAny<Dictionary<string, string>>(),It.IsAny<string>(),
             It.IsAny<string>(), null, It.IsAny<string>()));
         testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
         testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
@@ -440,7 +440,7 @@ public class InitialisationProcessTests : TestBase
 
         inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(fileSystemMock);
         initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(),
-            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+            It.IsAny<string>(), It.IsAny<Dictionary<string,string>>(),It.IsAny<string>(), It.IsAny<string>(),
             null,It.IsAny<string>()));
         var failedTest = "testid";
         var testSet = new TestSet();
@@ -510,8 +510,7 @@ public class InitialisationProcessTests : TestBase
         [new SourceProjectInfo(TestHelper.SetupProjectAnalyzerResult(references: []).Object, new TestProjectsInfo(new MockFileSystem()))]));
 
         inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
-        initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(),
-            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<string>()));
+        initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(),It.IsAny<Dictionary<string,string>>(),It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<string>()));
         const string failedTest = "testid";
         var ranTests = new TestIdentifierList(failedTest, "othertest", "anothertest");
         var testSet = new TestSet();
@@ -572,8 +571,7 @@ public class InitialisationProcessTests : TestBase
 
         var fileSystem = new MockFileSystem();
         inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(fileSystem);
-        initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(),
-            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<string>()));
+        initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<Dictionary<string,string>>(), It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<string>()));
         var testSet = new TestSet();
         testSet.RegisterTest(new TestDescription("id", "name", "test.cs"));
         testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
@@ -638,8 +636,7 @@ public class InitialisationProcessTests : TestBase
                 )
         ]));
 
-        initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(),
-            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<string>()));
+        initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<Dictionary<string,string>>(),It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<string>()));
         testRunnerMock.SetupGet(x => x.RunnerType).Returns(TestRunnerOption.VsTest);
         testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(false));
         testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
@@ -697,8 +694,7 @@ public class InitialisationProcessTests : TestBase
                 references: []).Object
             , new TestProjectsInfo(new MockFileSystem()){TestProjects = new List<TestProject> {new(new MockFileSystem(), testProjectAnalyzerResult)}})]));
 
-        initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(),
-            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<string>()));
+        initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<Dictionary<string,string>>(),It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<string>()));
         testRunnerMock.SetupGet(x => x.RunnerType).Returns(TestRunnerOption.VsTest);
         testRunnerMock.Setup(x => x.DiscoverTestsAsync(It.IsAny<string>())).Returns(Task.FromResult(false));
         testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
