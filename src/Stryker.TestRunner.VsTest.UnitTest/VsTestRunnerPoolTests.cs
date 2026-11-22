@@ -144,6 +144,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         result.ExecutedTests.IsEmpty.ShouldBeTrue();
     }
 
+
     // If no tests are present in the assembly, VsTest raises no event at all
     // previous versions of Stryker froze when this happened
     [TestMethod]
@@ -419,6 +420,30 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         result = runner.TestMultipleMutantsAsync(SourceProjectInfo, null, new[] { Mutant }, null).Result;
         result.FailingTests.IsEmpty.ShouldBeTrue();
         result.ExecutedTests.IsEveryTest.ShouldBeTrue();
+    }
+
+    [TestMethod]
+    public void ShouldDetectTimeOutInInitialTest()
+    {
+        var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+        SetupMockTestRun(mockVsTest, [("T1", true)]);
+        var result = runner.InitialTestAsync(SourceProjectInfo).Result;
+        result.SessionTimedOut.ShouldBeTrue();
+        result.FailingTests.IsEmpty.ShouldBeTrue();
+        result.ExecutedTests.Count.ShouldBe(1);
+    }
+
+    [TestMethod]
+    public void ShouldHandleIgnoredTest()
+    {
+        var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+        var ignoreProperty = VsTestObjModel.TestProperty.Register("NUnit.Explicit", "NUnit.Explicit", typeof(bool), typeof(bool));
+        TestCases.First().SetPropertyValue(ignoreProperty, true);
+        SetupMockTestRun(mockVsTest, [("T1", true)]);
+        var result = runner.InitialTestAsync(SourceProjectInfo).Result;
+        result.SessionTimedOut.ShouldBeFalse();
+        result.FailingTests.IsEmpty.ShouldBeTrue();
+        result.ExecutedTests.Count.ShouldBe(1);
     }
 
     [TestMethod]

@@ -209,39 +209,39 @@ public static class IAnalyzerResultExtensions
         private bool IsValidFor(string framework) => analyzerResult.IsValid() && analyzerResult.TargetFramework == framework;
 
 
-    /// <summary>
-    /// Checks whether an analysis result references the assemblies that identify a Unity test assembly.
-    /// </summary>
-    public bool IsUnityTestProject() =>
-        UnityTestAssemblyReferences.All(reference =>
-            analyzerResult.References?.Any(path =>
-                string.Equals(Path.GetFileNameWithoutExtension(path), reference, StringComparison.OrdinalIgnoreCase)) == true);
+        /// <summary>
+        /// Checks whether an analysis result references the assemblies that identify a Unity test assembly.
+        /// </summary>
+        public bool IsUnityTestProject() =>
+            UnityTestAssemblyReferences.All(reference =>
+                analyzerResult.References?.Any(path =>
+                    string.Equals(Path.GetFileNameWithoutExtension(path), reference, StringComparison.OrdinalIgnoreCase)) == true);
 
-    private bool IsTestProject()
-    {
-        // if 'IsTestingPlatformApplication' is defined and true, this is a test project
-        if (analyzerResult.TryGetProperty("IsTestingPlatformApplication", out var value)
-            && bool.TryParse(value, out var isMtp)
-            && isMtp)
+        private bool IsTestProject()
         {
-            return true;
-        }
+            // if 'IsTestingPlatformApplication' is defined and true, this is a test project
+            if (analyzerResult.TryGetProperty("IsTestingPlatformApplication", out var value)
+                && bool.TryParse(value, out var isMtp)
+                && isMtp)
+            {
+                return true;
+            }
 
-        // if 'IsTestProject' is defined, we use its value to check if it's a test project (or not)
-        if (analyzerResult.TryGetProperty("IsTestProject", out value))
-        {
-            return bool.TryParse(value, out var isTestProject) && isTestProject;
-        }
+            // if 'IsTestProject' is defined, we use its value to check if it's a test project (or not)
+            if (analyzerResult.TryGetProperty("IsTestProject", out value))
+            {
+                return bool.TryParse(value, out var isTestProject) && isTestProject;
+            }
 
-        if (Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n)))
-        {
-            return true;
-        }
+            if (Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n)))
+            {
+                return true;
+            }
 
-        if (analyzerResult.IsUnityTestProject())
-        {
-            return true;
-        }
+            if (analyzerResult.IsUnityTestProject())
+            {
+                return true;
+            }
 
             const string TestProjectTypeGuid = "{3AC096D0-A1C2-E12C-1390-A8335801FDAB}";
             return analyzerResult
@@ -405,9 +405,7 @@ public static class IAnalyzerResultExtensions
             .ToImmutableDictionary(
                 keyValuePair => $"build_property.{keyValuePair.Key}",
                 keyValuePair => keyValuePair.Value,
-                keyComparer: KeyComparer))
-    {
-    }
+                keyComparer: KeyComparer));
 
     private sealed class EmptyAnalyzerConfigOptions()
         : DictionaryAnalyzerConfigOptions(
