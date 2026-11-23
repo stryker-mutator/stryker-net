@@ -10,10 +10,12 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Moq;
 using Serilog.Events;
 using Shouldly;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Configuration.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
@@ -70,7 +72,7 @@ public class VsTextContextInformationTests : TestBase
             { Path.Combine(filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
             { Path.Combine(filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
             { testProjectPath, new MockFileData(DefaultTestProjectFileContents)},
-            { _testAssemblyPath!, new MockFileData("Bytecode") },
+            { _testAssemblyPath, new MockFileData("Bytecode") },
             { Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"), new MockFileData("Bytecode") },
         });
         content.Add(new CsharpFileLeaf());
@@ -103,9 +105,9 @@ public class VsTextContextInformationTests : TestBase
 
     public List<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> TestCases { get; set; }
 
-    private Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCase(string name) => new(name, _executorUri, _testAssemblyPath) { Id = new Guid() };
+    private Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCase(string name) => new(name, _executorUri, _testAssemblyPath) { Id = Guid.NewGuid() };
 
-    private Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCaseMsTest(string name) => new(name, _msTestExecutorUri, _testAssemblyPath) { Id = new Guid() };
+    private Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCaseMsTest(string name) => new(name, _msTestExecutorUri, _testAssemblyPath) { Id = Guid.NewGuid() };
 
     private VsTestContextInformation BuildVsTextContext(IStrykerOptions options, out Mock<IVsTestConsoleWrapper> mockedVsTestConsole)
     {
@@ -136,6 +138,88 @@ public class VsTextContextInformationTests : TestBase
     }
 
     [TestMethod]
+    public void Discovery_ShouldReturnFalseForSuccessfulEmptyDiscovery()
+    {
+        using var context = BuildVsTextContext(new StrykerOptions { TestCaseFilter = "FullyQualifiedName~MissingTest" }, out var mock);
+        mock.Setup(x => x.DiscoverTests(It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), It.IsAny<ITestDiscoveryEventsHandler>()))
+            .Callback((IEnumerable<string> _, string settings, ITestDiscoveryEventsHandler handler) =>
+            {
+                settings.ShouldContain("<TestCaseFilter>FullyQualifiedName~MissingTest</TestCaseFilter>");
+                handler.HandleLogMessage(TestMessageLevel.Warning, "No tests matched.");
+                handler.HandleDiscoveryComplete(0, [], false);
+            });
+
+        context.AddTestSource(_testAssemblyPath).ShouldBeFalse();
+        context.AddTestSource(_testAssemblyPath).ShouldBeFalse();
+
+        context.TestsPerSource[_testAssemblyPath].ShouldBeEmpty();
+        mock.Verify(x => x.EndSession(), Times.Once);
+        mock.Verify(x => x.DiscoverTests(It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), It.IsAny<ITestDiscoveryEventsHandler>()), Times.Once);
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    public void Discovery_ShouldRejectFailuresWithoutCachingPartialTests(bool aborted, bool partialTests)
+    {
+        using var context = BuildVsTextContext(new StrykerOptions { TestCaseFilter = "FullyQualifiedName~MissingTest" }, out var mock);
+        mock.Setup(x => x.DiscoverTests(It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), It.IsAny<ITestDiscoveryEventsHandler>()))
+            .Callback((IEnumerable<string> _, string _, ITestDiscoveryEventsHandler handler) =>
+            {
+                if (!aborted)
+                {
+                    handler.HandleLogMessage(TestMessageLevel.Error, "Test adapter could not load.");
+                }
+                handler.HandleDiscoveryComplete(partialTests ? TestCases.Count : 0, partialTests ? TestCases : [], aborted);
+            });
+
+        var exception = Should.Throw<InputException>(() => context.AddTestSource(_testAssemblyPath));
+
+        exception.Message.ShouldContain(_testAssemblyPath);
+        exception.Details.ShouldContain(aborted ? "aborted" : "Test adapter could not load.");
+        context.TestsPerSource.ShouldNotContainKey(_testAssemblyPath);
+        context.Tests.Count.ShouldBe(0);
+        mock.Verify(x => x.EndSession(), Times.Once);
+
+        mock.Setup(x => x.DiscoverTests(It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), It.IsAny<ITestDiscoveryEventsHandler>()))
+            .Callback((IEnumerable<string> _, string _, ITestDiscoveryEventsHandler handler) =>
+                handler.HandleDiscoveryComplete(TestCases.Count, TestCases, false));
+        context.AddTestSource(_testAssemblyPath).ShouldBeTrue();
+        mock.Verify(x => x.EndSession(), Times.Exactly(2));
+    }
+
+    [TestMethod]
+    public void Discovery_ShouldPreserveExceptionsAndCloseSession()
+    {
+        using var context = BuildVsTextContext(new StrykerOptions(), out var mock);
+        mock.Setup(x => x.DiscoverTests(It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), It.IsAny<ITestDiscoveryEventsHandler>()))
+            .Throws(new InvalidOperationException("Test host disconnected."));
+        mock.Setup(x => x.EndSession()).Throws(new InvalidOperationException("Could not end test session."));
+
+        var exception = Should.Throw<InputException>(() => context.AddTestSource(_testAssemblyPath));
+
+        exception.Message.ShouldContain(_testAssemblyPath);
+        exception.Details.ShouldBe("Test host disconnected.");
+        context.TestsPerSource.ShouldNotContainKey(_testAssemblyPath);
+        mock.Verify(x => x.EndSession(), Times.Once);
+    }
+
+    [TestMethod]
+    public void Discovery_ShouldPropagateCancellation()
+    {
+        using var context = BuildVsTextContext(new StrykerOptions(), out var mock);
+        mock.Setup(x => x.DiscoverTests(It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), It.IsAny<ITestDiscoveryEventsHandler>()))
+            .Throws(new OperationCanceledException());
+
+        Should.Throw<OperationCanceledException>(() => context.AddTestSource(_testAssemblyPath));
+
+        context.TestsPerSource.ShouldNotContainKey(_testAssemblyPath);
+        mock.Verify(x => x.EndSession(), Times.Once);
+    }
+
+    [TestMethod]
     public void InitializeAndDiscoverTests()
     {
         using var runner = BuildVsTextContext(new StrykerOptions(), out _);
@@ -150,7 +234,7 @@ public class VsTextContextInformationTests : TestBase
     [TestMethod]
     public void CleanupProperly()
     {
-        using var runner = BuildVsTextContext(new StrykerOptions(), out var mock);
+        var runner = BuildVsTextContext(new StrykerOptions(), out var mock);
         // make sure we have discovered first and second tests
         foreach (var testAssembly in _testProjectsInfo.GetTestAssemblies())
         {

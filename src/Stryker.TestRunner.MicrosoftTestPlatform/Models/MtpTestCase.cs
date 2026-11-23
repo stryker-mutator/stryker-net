@@ -35,7 +35,13 @@ public sealed class MtpTestCase : ITestCase
     {
         if (testNode.LocationType is not null && testNode.LocationMethod is not null)
         {
-            return $"{testNode.LocationType}.{testNode.LocationMethod}";
+            // MTP reports the method with its parameter types, e.g. "TestMethod(System.Int32)" for a theory.
+            // Drop them so the name matches the fully qualified name VsTest reports for the same test.
+            var parameterListStart = testNode.LocationMethod.IndexOf('(');
+            var methodName = parameterListStart >= 0
+                ? testNode.LocationMethod[..parameterListStart]
+                : testNode.LocationMethod;
+            return $"{testNode.LocationType}.{methodName}";
         }
 
         return testNode.Uid;

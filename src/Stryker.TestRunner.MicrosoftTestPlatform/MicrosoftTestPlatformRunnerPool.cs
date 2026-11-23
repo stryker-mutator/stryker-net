@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
@@ -17,6 +18,9 @@ namespace Stryker.TestRunner.MicrosoftTestPlatform;
 /// </summary>
 public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
 {
+    public Abstractions.Options.TestRunner RunnerType =>
+        Abstractions.Options.TestRunner.MicrosoftTestPlatform;
+
     private readonly AutoResetEvent _runnerAvailableHandler = new(false);
     private readonly ConcurrentBag<MicrosoftTestingPlatformRunner> _availableRunners = new();
     private readonly ConcurrentBag<MicrosoftTestingPlatformRunner> _allRunners = new();
@@ -74,7 +78,7 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
     {
         if (string.IsNullOrEmpty(assembly) || !File.Exists(assembly))
         {
-            return false;
+            throw new InputException($"The test project binaries could not be found at '{assembly}'.");
         }
 
         return await RunThisAsync(runner => runner.DiscoverTestsAsync(assembly)).ConfigureAwait(false);
@@ -368,4 +372,3 @@ public sealed class MicrosoftTestPlatformRunnerPool : ITestRunner
         _runnerAvailableHandler.Dispose();
     }
 }
-

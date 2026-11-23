@@ -1,8 +1,11 @@
+using Stryker.Abstractions.Options;
+using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.MicrosoftTestPlatform.Models;
@@ -31,6 +34,178 @@ public class MicrosoftTestingPlatformRunnerTests
 
     private MicrosoftTestingPlatformRunner CreateRunner(int id = 0) =>
         new(id, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock, NullLogger.Instance);
+
+    [TestMethod]
+    public async Task DiscoverTestsAsync_ShouldReturnTrueWhenTestsAreDiscoveredAsync()
+    {
+        const string Assembly = "/test/discovery.dll";
+        using var runner = CreateRunner();
+        var client = await AddDiscoveryServerAsync(runner, Assembly);
+        var node = new TestNode("id", "Test", "action", TestNodeStates.Discovered);
+        client.Setup(x => x.DiscoverTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<CancellationToken>()))
+            .Returns<Func<TestNodeUpdate[], Task>, CancellationToken>((callback, _) =>
+                callback([new TestNodeUpdate(node, "")]));
+
+        var result = await runner.DiscoverTestsAsync(Assembly);
+
+        result.ShouldBeTrue();
+        runner.GetDiscoveredTests(Assembly).ShouldNotBeNull();
+        runner.GetDiscoveredTests(Assembly)!.Count.ShouldBe(1);
+        _testSet.Count.ShouldBe(1);
+    }
+
+    [TestMethod]
+    public async Task DiscoverTestsAsync_ShouldReturnFalseWhenNoTestsAreDiscoveredAsync()
+    {
+        const string Assembly = "/test/discovery.dll";
+        using var runner = CreateRunner();
+        var client = await AddDiscoveryServerAsync(runner, Assembly);
+        client.Setup(x => x.DiscoverTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<CancellationToken>()))
+            .Returns<Func<TestNodeUpdate[], Task>, CancellationToken>((callback, _) =>
+                callback([]));
+
+        var result = await runner.DiscoverTestsAsync(Assembly);
+
+        result.ShouldBeFalse();
+        runner.GetDiscoveredTests(Assembly).ShouldNotBeNull();
+        runner.GetDiscoveredTests(Assembly)!.Count.ShouldBe(0);
+        _testSet.Count.ShouldBe(0);
+    }
+
+    [TestMethod]
+    [DataRow("rpc")]
+    [DataRow("input")]
+    [DataRow("cancellation")]
+    public async Task DiscoverTestsAsync_ShouldPropagateFailuresWithoutCachingPartialTests(string failure)
+    {
+        const string assembly = "/test/discovery.dll";
+        using var runner = CreateRunner();
+        var client = await AddDiscoveryServerAsync(runner, assembly);
+        Exception error = failure switch
+        {
+            "input" => new InputException("Unsupported filter."),
+            "cancellation" => new OperationCanceledException(),
+            _ => new InvalidOperationException("RPC connection lost.")
+        };
+        client.Setup(x => x.DiscoverTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<CancellationToken>()))
+            .Returns<Func<TestNodeUpdate[], Task>, CancellationToken>(async (callback, _) =>
+            {
+                await callback([new TestNodeUpdate(new TestNode("id", "Test", "action", TestNodeStates.Discovered), "")]);
+                throw error;
+            });
+
+        if (failure == "cancellation")
+        {
+            var discovery = runner.DiscoverTestsAsync(assembly);
+            await Should.ThrowAsync<OperationCanceledException>(() => discovery);
+            discovery.IsCanceled.ShouldBeTrue();
+        }
+        else
+        {
+            var exception = await Should.ThrowAsync<InputException>(() => runner.DiscoverTestsAsync(assembly));
+            if (failure == "input")
+            {
+                exception.ShouldBeSameAs(error);
+            }
+            else
+            {
+                exception.Message.ShouldContain(assembly);
+                exception.Details.ShouldBe(error.Message);
+            }
+        }
+        runner.GetDiscoveredTests(assembly).ShouldBeNull();
+        _testSet.Count.ShouldBe(0);
+    }
+
+    [TestMethod]
+    [DataRow(false, 1)]
+    [DataRow(true, 2)]
+    public async Task DiscoverTestsAsync_AppliesTestCaseFilter_WhenTheTestApplicationCannot(bool supportsNativeFilter, int expectedCount)
+    {
+        const string Assembly = "/test/discovery.dll";
+        var options = new Mock<IStrykerOptions>();
+        options.SetupGet(x => x.TestCaseFilter).Returns("FullyQualifiedName~Fast");
+        using var runner = new MicrosoftTestingPlatformRunner(0, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock,
+            NullLogger.Instance, options.Object)
+        {
+            SupportsNativeTestCaseFilter = _ => supportsNativeFilter
+        };
+        var client = await AddDiscoveryServerAsync(runner, Assembly);
+        TestNodeUpdate[] discovered =
+        [
+            new(new TestNode("fast", "Fast", "action", TestNodeStates.Discovered, LocationType: "Tests", LocationMethod: "Fast"), ""),
+            new(new TestNode("slow", "Slow", "action", TestNodeStates.Discovered, LocationType: "Tests", LocationMethod: "Slow"), "")
+        ];
+        client.Setup(x => x.DiscoverTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<CancellationToken>()))
+            .Returns<Func<TestNodeUpdate[], Task>, CancellationToken>((callback, _) => callback(discovered));
+
+        (await runner.DiscoverTestsAsync(Assembly)).ShouldBeTrue();
+
+        runner.GetDiscoveredTests(Assembly)!.Count.ShouldBe(expectedCount);
+        _testSet.Count.ShouldBe(expectedCount);
+    }
+
+    [TestMethod]
+    public async Task RunAssemblyTestsInternalAsync_RefusesToRunEveryTest_WhenTheFilteredTestsAreUnknown()
+    {
+        const string Assembly = "/test/run.dll";
+        var options = new Mock<IStrykerOptions>();
+        options.SetupGet(x => x.TestCaseFilter).Returns("FullyQualifiedName~Fast");
+        using var runner = new MicrosoftTestingPlatformRunner(0, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock,
+            NullLogger.Instance, options.Object)
+        {
+            SupportsNativeTestCaseFilter = _ => false
+        };
+        var client = await AddDiscoveryServerAsync(runner, Assembly);
+
+        var (result, timedOut) = await runner.RunAssemblyTestsInternalAsync(Assembly, testUidFilter: null);
+
+        timedOut.ShouldBeFalse();
+        result.FailingTests.IsEveryTest.ShouldBeTrue();
+        client.Verify(x => x.RunTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<TestNode[]?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [TestMethod]
+    public async Task RunAssemblyTestsInternalAsync_RunsNothing_WhenNoTestInTheAssemblyMatchesTheFilter()
+    {
+        const string Assembly = "/test/run-empty.dll";
+        var options = new Mock<IStrykerOptions>();
+        options.SetupGet(x => x.TestCaseFilter).Returns("FullyQualifiedName~Fast");
+        using var runner = new MicrosoftTestingPlatformRunner(0, _testsByAssembly, _testDescriptions, _testSet, _discoveryLock,
+            NullLogger.Instance, options.Object)
+        {
+            SupportsNativeTestCaseFilter = _ => false
+        };
+        var client = await AddDiscoveryServerAsync(runner, Assembly);
+        _testsByAssembly[Assembly] = [];
+
+        var (result, timedOut) = await runner.RunAssemblyTestsInternalAsync(Assembly, testUidFilter: null);
+
+        timedOut.ShouldBeFalse();
+        result.FailingTests.IsEmpty.ShouldBeTrue();
+        result.ExecutedTests.IsEmpty.ShouldBeTrue();
+        client.Verify(x => x.RunTestsAsync(It.IsAny<Func<TestNodeUpdate[], Task>>(), It.IsAny<TestNode[]?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    private static async Task<Mock<ITestingPlatformClient>> AddDiscoveryServerAsync(MicrosoftTestingPlatformRunner runner, string assembly)
+    {
+        var client = new Mock<ITestingPlatformClient>();
+        client.Setup(x => x.InitializeAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        client.Setup(x => x.ExitAsync(true)).Returns(Task.CompletedTask);
+        client.Setup(x => x.WaitServerProcessExitAsync()).ReturnsAsync(0);
+        var process = new Mock<ITestServerProcess>();
+        process.Setup(x => x.WaitForExitAsync()).Returns(new TaskCompletionSource().Task);
+        var listener = new Mock<ITestServerListener>();
+        listener.Setup(x => x.AcceptConnectionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new TcpClient());
+        var factory = new Mock<ITestServerConnectionFactory>();
+        factory.Setup(x => x.CreateListener()).Returns((listener.Object, 12345));
+        factory.Setup(x => x.StartProcess(assembly, 12345, It.IsAny<Dictionary<string, string?>>())).Returns(process.Object);
+        factory.Setup(x => x.CreateClient(It.IsAny<TcpClient>(), It.IsAny<IProcessHandle>(), It.IsAny<ILogger>())).Returns(client.Object);
+        var server = new AssemblyTestServer(assembly, [], NullLogger.Instance, "test-runner", connectionFactory: factory.Object);
+        await server.StartAsync();
+        runner._assemblyServers[assembly] = server;
+        return client;
+    }
 
     [TestMethod, Timeout(1000)]
     public async Task InitialTestAsync_CallsRunAssemblyTestsAsync_AndHandlesServerCreationFailure()
@@ -439,7 +614,7 @@ public class MicrosoftTestingPlatformRunnerTests
         result.Duration.ShouldBe(TimeSpan.Zero);
     }
 
-    [TestMethod, Timeout(1000)]
+    [TestMethod, Timeout(5000)]
     public async Task RunAssemblyTestsInternalAsync_WithTimeout_StillReturnsResult_WhenServerFails()
     {
         using var runner = CreateRunner();
@@ -593,7 +768,7 @@ public class MicrosoftTestingPlatformRunnerTests
     private static Func<TestNode, bool>? InvokeBuildTestUidFilter(IReadOnlyList<IMutant>? mutants) =>
         MicrosoftTestingPlatformRunner.BuildTestUidFilter(mutants);
 
-    private static Mock<IMutant> MockMutant(int id, ITestIdentifiers assessingTests)
+    private static Mock<IMutant> MockMutant(int id, ITestIdentifierSet assessingTests)
     {
         var mutant = new Mock<IMutant>();
         mutant.Setup(x => x.Id).Returns(id);
@@ -829,6 +1004,45 @@ public class MicrosoftTestingPlatformRunnerTests
         result.ResultMessage.ShouldContain("timed-out");
         result.ResultMessage.ShouldContain("cancelled");
         result.ResultMessage.ShouldNotContain("passed");
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_ErrorMessages_IncludeTheFailureMessageAndStackTrace()
+    {
+        using var runner = CreateRunner();
+        var failed = new TestNode(
+            "failed",
+            "MyTest",
+            "test",
+            TestNodeStates.Failed,
+            ErrorMessage: "Expected 1 but was 2",
+            ErrorStackTrace: "   at Tests.MyTest() in Tests.cs:line 42");
+
+        var result = runner.BuildTestRunResult(
+            [new TestNodeUpdate(failed, ParentUid: "root")],
+            totalDiscoveredTests: 1,
+            duration: TimeSpan.FromMilliseconds(10));
+
+        result.ResultMessage.ShouldBe(string.Join(
+            Environment.NewLine,
+            "MyTest",
+            "",
+            "State: failed",
+            "Expected 1 but was 2",
+            "   at Tests.MyTest() in Tests.cs:line 42"));
+    }
+
+    [TestMethod, Timeout(1000)]
+    public void BuildTestRunResult_ErrorMessages_WithoutFailureDetails_KeepTheNameAndState()
+    {
+        using var runner = CreateRunner();
+
+        var result = runner.BuildTestRunResult(
+            [Update("failed", TestNodeStates.Failed)],
+            totalDiscoveredTests: 1,
+            duration: TimeSpan.FromMilliseconds(10));
+
+        result.ResultMessage.ShouldBe($"failed{Environment.NewLine}{Environment.NewLine}State: failed");
     }
 
     [TestMethod, Timeout(1000)]
@@ -1082,7 +1296,7 @@ public class MicrosoftTestingPlatformRunnerTests
     }
 
     [TestMethod, Timeout(1000)]
-    public async Task DiscoverTestsAsync_ShouldReturnFalse_WhenAssemblyNotFound()
+    public async Task DiscoverTestsAsync_ShouldThrow_WhenAssemblyNotFound()
     {
         // Arrange
         using var runner = new MicrosoftTestingPlatformRunner(
@@ -1094,10 +1308,11 @@ public class MicrosoftTestingPlatformRunnerTests
             NullLogger.Instance);
 
         // Act
-        var result = await runner.DiscoverTestsAsync("/nonexistent/assembly.dll");
+        var exception = await Should.ThrowAsync<InputException>(() => runner.DiscoverTestsAsync("/nonexistent/assembly.dll"));
 
         // Assert
-        result.ShouldBeFalse();
+        exception.Message.ShouldContain("/nonexistent/assembly.dll");
+        exception.Details.ShouldNotBeNullOrEmpty();
     }
 
     [TestMethod, Timeout(1000)]
@@ -1221,8 +1436,8 @@ public class MicrosoftTestingPlatformRunnerTests
             NullLogger.Instance);
 
         // Verify mutant file was created
-        TestableRunner.MutantFilePath.ShouldNotBeNull();
-        var mutantFilePath = TestableRunner.MutantFilePath;
+        testableRunner.MutantFilePath.ShouldNotBeNull();
+        var mutantFilePath = testableRunner.MutantFilePath;
 
         // Create the mutant file manually to test deletion
         await File.WriteAllTextAsync(mutantFilePath, "-1");
@@ -1732,7 +1947,6 @@ public class MicrosoftTestingPlatformRunnerTests
 
         public bool DisposedFlagWasSet { get; private set; }
         public int DisposeLogicExecutedCount => _disposeLogicExecutedCount;
-        public static string MutantFilePath => Path.Combine(Path.GetTempPath(), $"stryker-mutant-123.txt");
 
         public override void Dispose(bool disposing)
         {

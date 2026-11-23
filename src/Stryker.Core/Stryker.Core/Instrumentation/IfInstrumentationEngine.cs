@@ -11,6 +11,7 @@ namespace Stryker.Core.Instrumentation;
 /// </summary>
 internal class IfInstrumentationEngine : BaseEngine<IfStatementSyntax>
 {
+    private readonly SyntaxAnnotation _blockmarker = new SyntaxAnnotation("Blocked");
     /// <summary>
     /// Injects an if statement with the original code or the mutated one, depending on condition's result.
     /// </summary>
@@ -20,13 +21,35 @@ internal class IfInstrumentationEngine : BaseEngine<IfStatementSyntax>
     /// <returns>A statement containing the expected construct.</returns>
     /// <remarks>This method works with statement and block.</remarks>
     public IfStatementSyntax InjectIf(ExpressionSyntax condition, StatementSyntax originalNode, StatementSyntax mutatedNode)
-        =>  SyntaxFactory.IfStatement(condition,
-            AsBlock(mutatedNode),
-            SyntaxFactory.ElseClause(AsBlock(originalNode.WithoutTrivia()))).
-            WithTriviaFrom(originalNode).
-            WithAdditionalAnnotations(Marker);
+    {
+        if (originalNode is BlockSyntax)
+        {
+            return SyntaxFactory.IfStatement(condition,
+                AsBlock(mutatedNode),
+                SyntaxFactory.ElseClause(originalNode))
+                .WithAdditionalAnnotations(Marker);
+        }
+        // if we mutate a single statement, we move the directives and comment around the control structure
+        var block = AsBlock(originalNode);
+        return SyntaxFactory.IfStatement(condition,
+                AsBlock(mutatedNode),
+                SyntaxFactory.ElseClause(block.WithoutTrivia()))
+            .WithTriviaFrom(block)
+            .WithAdditionalAnnotations(Marker);
+    }
 
-    private static BlockSyntax AsBlock(StatementSyntax code) => code as BlockSyntax ?? SyntaxFactory.Block(code);
+    private BlockSyntax AsBlock(StatementSyntax code) =>
+        // we create a single statement block and surface the trivia to the block
+        code is BlockSyntax block ? block : SyntaxFactory.Block(code.WithoutTrivia()).WithTriviaFrom(code).WithAdditionalAnnotations(_blockmarker);
+
+    private StatementSyntax RemoveBlockIfNeeded(StatementSyntax code)
+    {
+        if (code.HasAnnotation(_blockmarker) && code is BlockSyntax { Statements.Count: 1 } block)
+        {
+            return block.Statements[0].WithTriviaFrom(code);
+        }
+        return code;
+    }
 
     /// <summary>
     /// Returns the original code.
@@ -38,7 +61,7 @@ internal class IfInstrumentationEngine : BaseEngine<IfStatementSyntax>
     {
         if (ifNode.Else?.Statement is BlockSyntax block)
         {
-            return (block.Statements.Count == 1 ? block.Statements[0] : block).WithTriviaFrom(ifNode);
+            return RemoveBlockIfNeeded(block).WithTriviaFrom(ifNode);
         }
 
         throw new InvalidOperationException(

@@ -176,6 +176,34 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
         result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
     }
 
+    [TestMethod]
+    public void ShouldFailFastForUnityTestProjects()
+    {
+        var fileSystem = BuildMockFileSystem();
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath,
+            [.. fileSystem.AllFiles.Where(s => s.EndsWith(".cs"))]);
+        var unityTestProjectManagerMock = BuildProjectAnalyzerMock(
+            _testProjectFilePath,
+            [],
+            new Dictionary<string, string> { { "Language", "C#" } },
+            [_sourceProjectFilePath],
+            rawReferences:
+            [
+                Path.Combine(_testPath, "nunit.framework.dll"),
+                Path.Combine(_testPath, "UnityEngine.TestRunner.dll")
+            ]);
+        BuildBuildAnalyzerMock(new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnityTests", unityTestProjectManagerMock.Object }
+        });
+
+        var exception = Should.Throw<InputException>(() => BuildTestResolver(fileSystem).ResolveSourceProjectInfos(_options));
+
+        exception.Message.ShouldContain("was detected. Running Unity tests is not supported yet.");
+        exception.Details.ShouldContain("A dedicated Unity test runner is required");
+    }
+
     // build a default set of mocks simulating a test project called "MyProject.UnitTests" referring
     // to a project named "MyProject" some files.
     private MockFileSystem InitializeAllMocks(Dictionary<string, MockFileData> files = null, bool analysisResult = true)

@@ -142,7 +142,7 @@ public class VsTestMockingHelper : TestBase
     }
 
     protected VsTestObjModel.TestCase BuildCase(string name, TestFrameworks framework = TestFrameworks.xUnit, string displayName = null)
-        => new(name, framework == TestFrameworks.xUnit ? _xUnitUri : _NUnitUri, _testAssemblyPath) { Id = new Guid(), DisplayName = displayName ?? name };
+        => new(name, framework == TestFrameworks.xUnit ? _xUnitUri : _NUnitUri, _testAssemblyPath) { Id = Guid.NewGuid(), DisplayName = displayName ?? name };
 
     protected VsTestObjModel.TestCase FindOrBuildCase(string testResultId) => TestCases.FirstOrDefault(t => t.FullyQualifiedName == testResultId) ?? BuildCase(testResultId);
 
@@ -537,7 +537,7 @@ public class VsTestMockingHelper : TestBase
 
     protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, IStrykerOptions options, IReadOnlyList<VsTestObjModel.TestCase> tests = null, SourceProjectInfo sourceProject = null)
     {
-        var testRunResult = new TestRunResult(new List<VsTestDescription>(), new TestIdentifierList((tests ?? TestCases).Select(t => t.Id.ToString())),
+        var testRunResult = new TestRunResult(new List<VsTestDescription>(), new WrappedIdentifierEnumeration((tests ?? TestCases).Select(t => t.Id.ToString())),
             TestIdentifierList.NoTest(),
             TestIdentifierList.NoTest(),
             string.Empty,

@@ -13,6 +13,7 @@ public class DiscoveryEventHandler : ITestDiscoveryEventsHandler
     private bool _discoveryDone;
     public List<TestCase> DiscoveredTestCases { get; private set; }
     public bool Aborted { get; private set; }
+    public bool HasErrors { get; private set; }
 
     public DiscoveryEventHandler(List<string> messages)
     {
@@ -56,5 +57,13 @@ public class DiscoveryEventHandler : ITestDiscoveryEventsHandler
 
     public void HandleRawMessage(string rawMessage) => _messages.Add("Test Discovery Raw Message: " + rawMessage);
 
-    public void HandleLogMessage(TestMessageLevel level, string message) => _messages.Add("Test Discovery Message: " + message);
+    public void HandleLogMessage(TestMessageLevel level, string message)
+    {
+        if (level == TestMessageLevel.Error)
+        {
+            HasErrors = true;
+        }
+
+        _messages.Add($"Test Discovery {level} Message: {message}");
+    }
 }

@@ -34,6 +34,21 @@ public class MtpTestCaseTests
     }
 
     [TestMethod]
+    [DataRow("TestMethod1(System.Int32)", "MyNamespace.MyTestClass.TestMethod1")]
+    [DataRow("TestMethod1(System.String,System.Collections.Generic.List`1[System.Int32])", "MyNamespace.MyTestClass.TestMethod1")]
+    [DataRow("TestMethod1()", "MyNamespace.MyTestClass.TestMethod1")]
+    public void MtpTestCase_WithParameterizedLocationMethod_OmitsTheParameterTypes(string locationMethod, string expected)
+    {
+        var testNode = new TestNode("uid-1", "TestMethod1(value: 1)", "action", "discovered",
+            LocationType: "MyNamespace.MyTestClass",
+            LocationMethod: locationMethod);
+
+        var testCase = new MtpTestCase(testNode);
+
+        testCase.FullyQualifiedName.ShouldBe(expected);
+    }
+
+    [TestMethod]
     public void MtpTestCase_WithoutLocationProperties_UsesDefaults()
     {
         var testNode = new TestNode("uid-1", "TestMethod1", "action", "discovered");

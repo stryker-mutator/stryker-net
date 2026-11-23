@@ -85,9 +85,10 @@ We advise to use the `.NET Compiler Platform SDK` during development. The `Synta
 ## Maintainers
 When merging pull requests or creating commits, please conform to the [Conventional Commit guidelines](https://github.com/github/awesome-copilot/blob/main/instructions/conventional-commit.prompt.md), so our changelog will be updated.
    Namely in the form `<type>(<scope>): <subject>\n\n[body]`
-   * Type: feat, fix, docs, style, refactor, test, chore.
-   * Scope: the file or group of files (not a strict right or wrong)
+   * Type: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert (lowercase only).
+   * Scope: required; use the file or group of files in lowercase.
    * Subject and body: present tense (~changed~*change*, ~added~*add*) and include motivation and contrasts with previous behavior
+   * Breaking changes: use a `BREAKING CHANGE: <description>` footer in the squash commit message. Include it in the PR description and preserve it when merging; do not use `!` in the title.
 
 ## Community
 Do you want to help? Great! These are a few things you can do:

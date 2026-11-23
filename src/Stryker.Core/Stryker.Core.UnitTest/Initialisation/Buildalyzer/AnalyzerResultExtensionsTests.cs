@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
@@ -179,25 +180,65 @@ public class AnalyzerResultExtensionsTests
     }
 
     [TestMethod]
+    [DataRow("/Unity/nunit.framework.dll;/Unity/UnityEngine.TestRunner.dll", true)]
+    [DataRow("/Unity/NUNIT.FRAMEWORK.DLL;/Unity/UNITYENGINE.TESTRUNNER.DLL", true)]
+    [DataRow("nunit.framework.dll;UnityEditor.TestRunner.dll", false)]
+    [DataRow("UnityEngine.TestRunner.dll", false)]
+    [DataRow("nunit.framework.dll", false)]
+    public void IsTestProjectRecognizesUnityTestAssemblies(string references, bool expected)
+    {
+        var analyzerResult = Mock.Of<IAnalyzerResult>();
+        Mock.Get(analyzerResult)
+            .SetupGet(result => result.Properties)
+            .Returns(new Dictionary<string, string>());
+        Mock.Get(analyzerResult)
+            .SetupGet(result => result.PackageReferences)
+            .Returns(new Dictionary<string, IReadOnlyDictionary<string, string>>());
+        Mock.Get(analyzerResult)
+            .SetupGet(result => result.References)
+            .Returns(references.Split(';'));
+
+        var isTestProject = IAnalyzerResultExtensions.IsTestProject([analyzerResult]);
+
+        isTestProject.ShouldBe(expected);
+    }
+
+    [TestMethod]
+    [DataRow("/Unity/nunit.framework.dll;/Unity/UnityEngine.TestRunner.dll", true)]
+    [DataRow("/Unity/nunit.framework.dll;/Unity/UnityEditor.TestRunner.dll", false)]
+    public void IsUnityTestProjectRequiresUnityEngineTestRunner(string references, bool expected)
+    {
+        var analyzerResult = Mock.Of<IAnalyzerResult>();
+        Mock.Get(analyzerResult)
+            .SetupGet(result => result.References)
+            .Returns(references.Split(';'));
+
+        analyzerResult.IsUnityTestProject().ShouldBe(expected);
+    }
+
+    [TestMethod]
     [DataRow("8.0", LanguageVersion.CSharp8)]
     [DataRow("7.1", LanguageVersion.CSharp7_1)]
-    [DataRow("latest", LanguageVersion.CSharp14)]
-    [DataRow("dontCare", LanguageVersion.CSharp14)] // it will return the latest version
-    public void GetParseOptions_ShouldReturnActualCSharpVersion(string actualLangVersion, LanguageVersion expected)
+    [DataRow("latest", LanguageVersion.Latest)]
+    [DataRow("dontCare", LanguageVersion.Default)]
+    [DataRow(null, LanguageVersion.Default)]
+    public void GetParseOptions_ShouldReturnProjectCSharpVersion(string actualLangVersion, LanguageVersion expected)
     {
         // Arrange
         var properties = new Dictionary<string, string>();
         var preprocessorSymbols = new[] { "DEBUG" };
-        properties["LangVersion"] = actualLangVersion;
+        if (actualLangVersion is not null)
+        {
+            properties["LangVersion"] = actualLangVersion;
+        }
         var analyzerResult = CreateAnalyzerResultWithProperties(properties, preprocessorSymbols);
-        var options = CreateStrykerOptions(LanguageVersion.Default);
 
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(options);
+        var parseOptions = analyzerResult.GetParseOptions();
 
         // Assert
-        parseOptions.LanguageVersion.ShouldBe(expected);
-        }
+        parseOptions.SpecifiedLanguageVersion.ShouldBe(expected);
+    }
 
     [TestMethod]
     public void GetParseOptions_ShouldReturnBasicOptions_WhenNoFeaturesAreUsed()
@@ -206,17 +247,28 @@ public class AnalyzerResultExtensionsTests
         var properties = new Dictionary<string, string>();
         var preprocessorSymbols = new[] { "DEBUG" };
         var analyzerResult = CreateAnalyzerResultWithProperties(properties, preprocessorSymbols);
-        var options = CreateStrykerOptions(LanguageVersion.CSharp12);
 
         // Act
-        var parseOptions = analyzerResult.GetParseOptions(options);
+        var parseOptions = analyzerResult.GetParseOptions();
 
         // Assert
-        parseOptions.LanguageVersion.ShouldBe(LanguageVersion.CSharp12);
+        parseOptions.SpecifiedLanguageVersion.ShouldBe(LanguageVersion.Default);
         parseOptions.PreprocessorSymbolNames.ShouldContain("DEBUG");
         parseOptions.Features.ShouldBeEmpty();
     }
 
+    [TestMethod]
+    public void GetParseOptions_ShouldIgnoreStrykerLanguageVersion()
+    {
+        var analyzerResult = CreateAnalyzerResultWithProperties(
+            new Dictionary<string, string> { ["LangVersion"] = "8.0" },
+            ["DEBUG"]);
+        var options = CreateStrykerOptions(LanguageVersion.CSharp12);
+
+        var parseOptions = analyzerResult.GetParseOptions(options);
+
+        parseOptions.SpecifiedLanguageVersion.ShouldBe(LanguageVersion.CSharp8);
+    }
 
     [TestMethod]
     [DataRow("Features", "InterceptorsPreview", "InterceptorsPreview", null)]
@@ -272,6 +324,26 @@ public class AnalyzerResultExtensionsTests
         parseOptions.Features.ShouldContain(f => f.Key == "InterceptorsPreview" && f.Value == "true");
         parseOptions.Features.ShouldContain(f => f.Key == "FunctionPointers" && f.Value == "true");
         parseOptions.Features.ShouldContain(f => f.Key == "ExtendedPartialMethods" && f.Value == "true");
+        parseOptions.Features.Count().ShouldBe(3);
+    }
+
+    [TestMethod]
+    public void GetParseOptions_ShouldSupportFeaturesWithExplicitValue()
+    {
+        // Arrange
+        var properties = new Dictionary<string, string>
+        {
+            { "Features", "InterceptorsPreview=true;FunctionPointers=false;ExtendedPartialMethods=" }
+        };
+        var analyzerResult = CreateAnalyzerResultWithProperties(properties);
+
+        // Act
+        var parseOptions = analyzerResult.GetParseOptions(CreateStrykerOptions());
+
+        // Assert
+        parseOptions.Features.ShouldContain(f => f.Key == "InterceptorsPreview" && f.Value == "true");
+        parseOptions.Features.ShouldContain(f => f.Key == "FunctionPointers" && f.Value == "false");
+        parseOptions.Features.ShouldContain(f => f.Key == "ExtendedPartialMethods" && f.Value == "");
         parseOptions.Features.Count().ShouldBe(3);
     }
 
@@ -412,6 +484,45 @@ public class AnalyzerResultExtensionsTests
 
         // Assert
         parseOptions.Features.ShouldNotContain(f => f.Key == "InterceptorsNamespaces");
+    }
+
+     [TestMethod]
+    public void GetAnalyzerConfigOptionsProvider_ShouldParseAnalyzerConfigFiles_WhenProvided()
+    {
+        var fileSystem = new MockFileSystem();
+        var testFolder = fileSystem.Path.GetFullPath("stryker-config");
+        var sentinelMetadataPath = "metadata.json";
+        var additionalFilePath = fileSystem.Path.Combine(testFolder, "NativeMethods.txt");
+        fileSystem.AddDirectory(testFolder);
+        fileSystem.AddFile(fileSystem.Path.Combine(testFolder, "global.editorconfig"),
+            new MockFileData($@"is_global = true
+build_property.CsWin32InputMetadataPaths = {sentinelMetadataPath}
+
+[{additionalFilePath.Replace('\\', '/')}]
+build_metadata.AdditionalFiles.SourceItemGroup = AdditionalFiles"));
+        fileSystem.AddFile(fileSystem.Path.Combine(testFolder, "NativeMethods.txt"), new MockFileData("content"));
+        var analyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>(), projectFilePath: fileSystem.Path.Combine(testFolder, "test.csproj")).Object;
+        Mock.Get(analyzerResult)
+            .SetupGet(x => x.AdditionalFiles)
+            .Returns([additionalFilePath]);
+        // Use a PROJECT-RELATIVE analyzer config path (as MSBuild emits for the generated
+        // editorconfig) to prove it is resolved against the project directory, not the CWD.
+        Mock.Get(analyzerResult)
+            .SetupGet(x => x.CompilerArguments)
+            .Returns([$"/analyzerconfig:global.editorconfig"]);
+
+        var provider = analyzerResult.GetAnalyzerConfigOptionsProvider(fileSystem);
+        provider.GlobalOptions.TryGetValue("build_property.CsWin32InputMetadataPaths", out var globalValue).ShouldBe(true);
+        globalValue.ShouldBe(sentinelMetadataPath);
+
+        var additionalText = analyzerResult.GetAdditionalTexts().Single(x => x.Path == additionalFilePath);
+        provider.GetOptions(additionalText).TryGetValue("build_metadata.AdditionalFiles.SourceItemGroup", out var additionalValue).ShouldBe(true);
+        additionalValue.ShouldBe("AdditionalFiles");
+
+        var fallbackResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string> { { "Foo", "Bar" } }).Object;
+        var fallbackProvider = fallbackResult.GetAnalyzerConfigOptionsProvider(fileSystem);
+        fallbackProvider.GlobalOptions.TryGetValue("build_property.Foo", out var fallbackValue).ShouldBe(true);
+        fallbackValue.ShouldBe("Bar");
     }
 
     private static IAnalyzerResult CreateAnalyzerResultWithProperties(Dictionary<string, string> properties, string[] preprocessorSymbols = null)
