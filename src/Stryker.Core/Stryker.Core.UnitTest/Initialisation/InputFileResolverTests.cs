@@ -1544,10 +1544,10 @@ using System.Reflection;
         };
 
         // Act
-        target.ResolveSourceProjectInfos(options);
+        var result = target.ResolveSourceProjectInfos(options);
 
         // Assert
-        sourceProjectManagerMock.Verify(x => x.SetGlobalProperty("SolutionDir", _filesystemRoot), Times.AtLeastOnce);
+        result.SourceProjectInfos.First().AnalyzerResult.Properties.ShouldContainKey("SolutionDir");
     }
 
     [TestMethod]

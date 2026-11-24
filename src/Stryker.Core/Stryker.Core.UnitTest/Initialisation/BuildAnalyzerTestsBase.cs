@@ -30,7 +30,6 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
         ProjectPath = FileSystem.Path.Combine(filesystemRoot, "sourceproject");
     }
 
-
     /// <summary>
     /// Build a simple production project
     /// </summary>
@@ -293,7 +292,18 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
         var projectAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
         projectAnalyzerMock.Setup(x => x.Build(It.IsAny<string[]>())).Returns(sourceProjectAnalyzerResultsMock);
         projectAnalyzerMock.Setup(x => x.Build(It.IsAny<string[]>(), It.IsAny<EnvironmentOptions>())).Returns(sourceProjectAnalyzerResultsMock);
-        projectAnalyzerMock.Setup(x => x.Build(It.IsAny<EnvironmentOptions>())).Returns(sourceProjectAnalyzerResultsMock);
+        projectAnalyzerMock.Setup(x => x.Build(It.IsAny<EnvironmentOptions>())).Returns( (EnvironmentOptions x)=>
+        {
+            // set the global properties in the analyzer results
+            foreach (var (name, value) in x.GlobalProperties)
+            {
+                foreach (var analyzerResult in sourceProjectAnalyzerResultsMock.Results)
+                {
+                    ((IDictionary<string, string>)analyzerResult.Properties)[name] = value;
+                }
+            }
+            return sourceProjectAnalyzerResultsMock;
+        });
         projectAnalyzerMock.Setup(x => x.Build()).Returns(sourceProjectAnalyzerResultsMock);
 
         projectAnalyzerMock.Setup(x => x.ProjectFile).Returns(projectFileMock.Object);
