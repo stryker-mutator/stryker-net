@@ -1479,6 +1479,75 @@ using System.Reflection;
     }
 
     [TestMethod]
+    public void ShouldRemoveSolutionDirProperty()
+    {
+        var fileSystem = BuildMockFileSystem(null);
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath,
+            [.. fileSystem.AllFiles.Where(s => s.EndsWith(".cs"))]);
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"], true);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        BuildBuildAnalyzerMock(analyzerResults);
+
+        var target = BuildTestResolver(fileSystem);
+
+        var result = target.ResolveSourceProjectInfos(_options).SourceProjectInfos.First();
+
+        // Assert
+        sourceProjectManagerMock.Verify(x => x.RemoveGlobalProperty("SolutionDir"), Times.AtLeastOnce);
+    }
+
+
+    [TestMethod]
+    public void ShouldDefineSolutionDirProperty()
+    {
+        // Arrange
+        var solutionPath = Path.Combine(_filesystemRoot, "solution.sln");
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            { _sourceProjectFilePath, new MockFileData(_defaultSourceProjectFileContents)},
+            { Path.Combine(_sourcePath, "source.cs"), new MockFileData(_sourceFile)},
+            { _testProjectFilePath, new MockFileData(_defaultTestProjectFileContents)},
+            { solutionPath, new MockFileData("") },
+        });
+
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectFilePath, fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectFilePath, _sourceProjectFilePath, ["netcoreapp2.1"]);
+
+        var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectManagerMock.Object },
+            { "MyProject.UnitTests", testProjectManagerMock.Object }
+        };
+        var managerMock = BuildBuildAnalyzerMock(analyzerResults);
+
+        // Build a solution that assigns x64 platform to projects
+        var solution = SolutionFile.BuildFromProjectList(solutionPath,
+            [_sourceProjectFilePath, _testProjectFilePath], ["x64"]);
+
+        var target = BuildTestResolverWithSolutionProvider(fileSystem,
+            new CustomSolutionProvider(_ => solution));
+
+        // IsSolutionContext is true when WorkingDirectory matches solution's parent dir
+        var options = new StrykerOptions
+        {
+            ProjectPath = _sourcePath,
+            SolutionPath = solutionPath,
+            WorkingDirectory = _filesystemRoot
+        };
+
+        // Act
+        target.ResolveSourceProjectInfos(options);
+
+        // Assert
+        sourceProjectManagerMock.Verify(x => x.SetGlobalProperty("SolutionDir", _filesystemRoot), Times.AtLeastOnce);
+    }
+
+    [TestMethod]
     public void ShouldPassPlatformFromSolutionToBuildalyzer()
     {
         // Arrange
