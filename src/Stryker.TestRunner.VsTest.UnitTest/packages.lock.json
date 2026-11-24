@@ -483,8 +483,8 @@
       },
       "Testably.Abstractions.FileSystem.Interface": {
         "type": "Transitive",
-        "resolved": "11.0.0",
-        "contentHash": "bHE3UgieMizRsrzHYsWOLGMVjDmy0yx1PTv4QMgoAi3GU+vw2tJZ/jR5woIZ6Et6H0Hvhwriv6XSgwoZV9bU0A=="
+        "resolved": "11.1.0",
+        "contentHash": "ijeocqwxQWPlcneMvPrPvKbVMTVtqwp3lAOZXuAtMGJFKmzFnFc7W02QsIi8bEZDkpK8ubTz7tLAoSaYVIo7Ng=="
       },
       "stryker": {
         "type": "Project",
@@ -520,7 +520,7 @@
           "Stryker.TestRunner.MicrosoftTestPlatform": "[5.1.0, )",
           "Stryker.TestRunner.VsTest": "[5.1.0, )",
           "Stryker.Utilities": "[5.1.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[23.0.1, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[23.1.0, )"
         }
       },
       "stryker.abstractions": {
@@ -532,7 +532,7 @@
           "Microsoft.CodeAnalysis.Common": "[5.9.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[18.12.0, )",
           "Serilog": "[4.4.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[23.0.1, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[23.1.0, )"
         }
       },
       "stryker.configuration": {
@@ -561,7 +561,7 @@
           "Stryker.Regex.Parser": "[1.0.0, )",
           "Stryker.TestRunner": "[5.1.0, )",
           "Stryker.Utilities": "[5.1.0, )",
-          "TestableIO.System.IO.Abstractions.TestingHelpers": "[23.0.1, )",
+          "TestableIO.System.IO.Abstractions.TestingHelpers": "[23.1.0, )",
           "stryker": "[5.1.0, )"
         }
       },
@@ -613,7 +613,7 @@
           "Stryker.DataCollector": "[5.1.0, )",
           "Stryker.TestRunner": "[5.1.0, )",
           "Stryker.Utilities": "[5.1.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[23.0.1, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[23.1.0, )"
         }
       },
       "stryker.utilities": {
@@ -934,21 +934,21 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "CentralTransitive",
-        "requested": "[23.0.1, )",
-        "resolved": "23.0.1",
-        "contentHash": "fevd8a+0C9YJw8Ma1byZhbxbEbOuuMgKZgLPayG8+VOUrWabnghA36qkoBEEVqhQiD20wHK+Et8eER+8U9Q6gw==",
+        "requested": "[23.1.0, )",
+        "resolved": "23.1.0",
+        "contentHash": "VEUGfp8BvWTbqIz2wKuijEsOwYW9mdAgDmvByjIZVuYv9Po/acEETFax6svxa+0/aPw//yYbDOiBeH4xlmoDYw==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions.Wrappers": "23.0.1",
-          "Testably.Abstractions.FileSystem.Interface": "11.0.0"
+          "TestableIO.System.IO.Abstractions.Wrappers": "23.1.0",
+          "Testably.Abstractions.FileSystem.Interface": "11.1.0"
         }
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[23.0.1, )",
-        "resolved": "23.0.1",
-        "contentHash": "9lqN5ITRYWqu54eqgobIuFSFUKIqfNedI3+9LuxVBETqGht+UTvk8aQcfUQX2z2fL2WCHGUbTHuBWbZaIV8AGg==",
+        "requested": "[23.1.0, )",
+        "resolved": "23.1.0",
+        "contentHash": "GQLGGQQ11UPcP2dKmmNqRtynom5i7TLI+gJosfxAazuH4KObUQv19DxCugO9YFxvTCRk6QCm02Tb/EYYg8oJkw==",
         "dependencies": {
-          "Testably.Abstractions.FileSystem.Interface": "11.0.0"
+          "Testably.Abstractions.FileSystem.Interface": "11.1.0"
         }
       }
     }
