@@ -26,14 +26,13 @@ public class ProjectSimulatedBuildWrapper
     private readonly string? _framework;
     private readonly ILogger _logger;
     private readonly StringWriter _buildLogger;
-    private string[] _targetFrameworks=[];
-    private const string solutiondir = "SolutionDir";
+    private string[] _targetFrameworks;
     private bool? _projectTypeHint;
+    private const string solutionDir = "SolutionDir";
 
     public ProjectSimulatedBuildWrapper(IBuildalyzerProvider buildalyzerProvider,
         string projectFile,
         string msBuildPath,
-        string? solutionDir,
         (string configuration, string platform, string? framework) target,
         Dictionary<string, string> properties,
         ILogger logger,
@@ -43,6 +42,7 @@ public class ProjectSimulatedBuildWrapper
         var manager = buildalyzerProvider.Provide(new AnalyzerManagerOptions{LogWriter = TextWriter.Synchronized(_buildLogger)});
 
         _analyzer = manager.GetProject(projectFile);
+        _analyzer.RemoveGlobalProperty(solutionDir);
         _targetFrameworks = _analyzer.ProjectFile.TargetFrameworks;
         ProjectFileName = projectFile;
         _projectsTracker = projectsTracker;
@@ -52,14 +52,6 @@ public class ProjectSimulatedBuildWrapper
         _platform = target.platform;
         _framework = target.framework;
         _logger = logger;
-        if (string.IsNullOrEmpty(solutionDir))
-        {
-            _analyzer.RemoveGlobalProperty(solutiondir);
-        }
-        else
-        {
-            _analyzer.SetGlobalProperty(solutiondir, solutionDir);
-        }
     }
 
     public IAnalyzerResults AnalyzerLastResults { get; private set; } = new AnalyzerResults();

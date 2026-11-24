@@ -149,6 +149,8 @@ public class ProjectsTracker
         }
     }
 
+    private const string solutionDir = "SolutionDir";
+
     /// <summary>
     /// Gets a project analysis context for the given project file, using the configuration and platform from the solution if available, otherwise using the configuration and platform from the options.
     /// </summary>
@@ -168,17 +170,20 @@ public class ProjectsTracker
         {
             (configuration, platform) = (Configuration, Platform);
         }
-        string solutionDir = null;
+
+        var properties = new Dictionary<string, string>(_options.BuildProperties);
+        string solutionPath = null;
         if (!string.IsNullOrEmpty(_options.SolutionPath))
         {
-            solutionDir = _fileSystem.Path.GetDirectoryName(_options.SolutionPath)??"";
-            if (solutionDir[^1] != _fileSystem.Path.DirectorySeparatorChar)
+            solutionPath = _fileSystem.Path.GetDirectoryName(_options.SolutionPath)??"";
+            if (solutionPath[^1] != _fileSystem.Path.DirectorySeparatorChar)
             {
-                solutionDir += _fileSystem.Path.DirectorySeparatorChar;
+                solutionPath += _fileSystem.Path.DirectorySeparatorChar;
             }
         }
+        properties[solutionDir] = solutionPath;
 
-        return new ProjectSimulatedBuildWrapper(_buildalyzerProvider, projectFile, _options.MsBuildPath, solutionDir,
-            (configuration, platform, _options.TargetFramework), _options.BuildProperties, _logger, this);
+        return new ProjectSimulatedBuildWrapper(_buildalyzerProvider, projectFile, _options.MsBuildPath,
+            (configuration, platform, _options.TargetFramework), properties, _logger, this);
     }
 }
