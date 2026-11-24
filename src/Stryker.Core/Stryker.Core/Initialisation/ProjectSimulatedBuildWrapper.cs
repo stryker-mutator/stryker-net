@@ -25,13 +25,13 @@ public class ProjectSimulatedBuildWrapper
     private readonly ILogger _logger;
     private readonly StringWriter _buildLogger;
     private string[] _targetFrameworks=[];
+    private const string solutiondir = "SolutionDir";
 
     public ProjectSimulatedBuildWrapper(IBuildalyzerProvider buildalyzerProvider,
         string projectFile,
         string msBuildPath,
-        (string configuration,
-        string platform,
-        string? framework) target,
+        string? solutionDir,
+        (string configuration, string platform, string framework) target,
         ILogger logger,
         ProjectsTracker projectsTracker)
     {
@@ -47,6 +47,14 @@ public class ProjectSimulatedBuildWrapper
         _platform = target.platform;
         _framework = target.framework;
         _logger = logger;
+        if (string.IsNullOrEmpty(solutionDir))
+        {
+            analyzer.RemoveGlobalProperty(solutiondir);
+        }
+        else
+        {
+            analyzer.SetGlobalProperty(solutiondir, solutionDir ?? string.Empty);
+        }
     }
 
     public IAnalyzerResults AnalyzerLastResults { get; private set; } = new AnalyzerResults();
@@ -131,7 +139,8 @@ public class ProjectSimulatedBuildWrapper
     public IEnumerable<string> GetProjectReferences() => AnalyzerLastResults.SelectMany(r => r.ProjectReferences).Distinct();
 
     private static readonly HashSet<string> ImportantProperties =
-        ["Configuration", "Platform", "AssemblyName", "Configurations", "TargetPath", "OS"];
+        ["Configuration", "Platform", "AssemblyName", "Configurations", "TargetPath", "OS", "SolutionDir", "TargetFramework",
+            "TargetFrameworks", "OutputPath", "OutputType"];
 
     public void LogAnalyzerResult()
     {

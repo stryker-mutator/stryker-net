@@ -160,7 +160,8 @@ public class ProjectsTracker
         {
             (configuration, platform) = (Configuration, Platform);
         }
-        return new ProjectSimulatedBuildWrapper(_buildalyzerProvider, projectFile, _options.MsBuildPath, (configuration,
-            platform, _options.TargetFramework), _logger, this);
+        var solutionDir = _options.SolutionPath != null ? _fileSystem.Path.GetDirectoryName(_options.SolutionPath) : null;
+        return new ProjectSimulatedBuildWrapper(_buildalyzerProvider, projectFile, _options.MsBuildPath, solutionDir,
+            (configuration, platform, _options.TargetFramework), _logger, this);
     }
 }
