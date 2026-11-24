@@ -160,7 +160,16 @@ public class ProjectsTracker
         {
             (configuration, platform) = (Configuration, Platform);
         }
-        var solutionDir = _options.SolutionPath != null ? _fileSystem.Path.GetDirectoryName(_options.SolutionPath) : null;
+        string solutionDir = null;
+        if (!string.IsNullOrEmpty(_options.SolutionPath))
+        {
+            solutionDir = _fileSystem.Path.GetDirectoryName(_options.SolutionPath)??"";
+            if (solutionDir[^1] != _fileSystem.Path.DirectorySeparatorChar)
+            {
+                solutionDir += _fileSystem.Path.DirectorySeparatorChar;
+            }
+        }
+
         return new ProjectSimulatedBuildWrapper(_buildalyzerProvider, projectFile, _options.MsBuildPath, solutionDir,
             (configuration, platform, _options.TargetFramework), _logger, this);
     }

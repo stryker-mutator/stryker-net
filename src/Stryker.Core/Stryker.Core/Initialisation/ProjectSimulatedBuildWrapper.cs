@@ -53,7 +53,7 @@ public class ProjectSimulatedBuildWrapper
         }
         else
         {
-            analyzer.SetGlobalProperty(solutiondir, solutionDir ?? string.Empty);
+            analyzer.SetGlobalProperty(solutiondir, solutionDir);
         }
     }
 
