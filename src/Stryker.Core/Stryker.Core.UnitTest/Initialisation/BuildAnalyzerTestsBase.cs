@@ -298,6 +298,8 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
 
         projectAnalyzerMock.Setup(x => x.ProjectFile).Returns(projectFileMock.Object);
         projectAnalyzerMock.Setup(x => x.EnvironmentFactory).Returns<EnvironmentFactory>(null);
+        projectAnalyzerMock.Setup(x => x.RemoveGlobalProperty(It.IsAny<string>()));
+        projectAnalyzerMock.Setup(x => x.SetGlobalProperty(It.IsAny<string>(), It.IsAny<string>()));
 
         projectFileMock.Setup(x => x.Path).Returns(csprojPathName);
         projectFileMock.Setup(x => x.Name).Returns(FileSystem.Path.GetFileName(csprojPathName));
