@@ -232,6 +232,7 @@ public class ValidateStrykerResults
 
         CheckReportMutants(report, total: 11, ignored: 2, survived: 5, killed: 4, timeout: 0, nocoverage: 0);
         CheckReportTestCounts(report, total: 3);
+
     }
 
     [Fact]
@@ -250,7 +251,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 656, ignored: 271, survived: 4, killed: 9, timeout: 2, nocoverage: 340);
+        CheckReportMutants(report, total: 656, ignored: 271, survived: 4, killed: 9, timeout: 2, nocoverage: 342);
         CheckReportTestCounts(report, total: 23);
     }
 
