@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
@@ -181,12 +182,34 @@ internal class MutationStore
             // never inject at member access level, there is no known control structure
             return mutatedNode;
         }
+        if (!SupportConditionalOperator(sourceNode))
+        {
+            // we cannot replace this expression with a conditional operator, so we cannot inject the mutations here. They will be stored at a higher level.
+            return mutatedNode;
+        }
+
         var store = _pendingMutations.Peek().Store;
         var result = _mutantPlacer.PlaceExpressionControlledMutations(mutatedNode,
              store.Select(m => (m, sourceNode.InjectMutation(m.Mutation))));
         store.Clear();
         return result;
     }
+
+    private static bool SupportConditionalOperator(ExpressionSyntax sourceNode)
+    {
+        switch (sourceNode.Parent)
+        {
+            case ExpressionStatementSyntax:
+            // can't use ? on an arrow expression with void return type
+            case ArrowExpressionClauseSyntax { Parent: MethodDeclarationSyntax { ReturnType: PredefinedTypeSyntax predefinedTypeSyntax } method }
+                when predefinedTypeSyntax.Keyword.IsKind(SyntaxKind.VoidKeyword) :
+                // can't use ? on an expression statement
+                return false;
+            default:
+                return true;
+        }
+    }
+
 
     /// <summary>
     /// Inject (current level) mutations in the provided statement (controlled with if statement)
