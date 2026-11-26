@@ -65,6 +65,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         // ensure pattern syntax nodes are mutated (as they are neither expression nor statements, they are not mutated by default)
         new NodeSpecificOrchestrator<PatternSyntax, PatternSyntax>(),
         new NodeSpecificOrchestrator<SubpatternSyntax, SubpatternSyntax>(),
+        new InterpolatedStringOrchestrator(),
         new ConditionalExpressionOrchestrator(),
         new ConstantPatternSyntaxOrchestrator(),
         // ensure static constructs are marked properly
