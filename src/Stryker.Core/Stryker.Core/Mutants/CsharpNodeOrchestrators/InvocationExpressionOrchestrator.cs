@@ -7,8 +7,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 internal class InvocationExpressionOrchestrator : MemberAccessExpressionOrchestrator<InvocationExpressionSyntax>
 {
-
-    protected override MutationContext StoreMutations(InvocationExpressionSyntax node,
+   protected override MutationContext StoreMutations(InvocationExpressionSyntax node,
         IEnumerable<Mutant> mutations,
         MutationContext context) =>
          // if the invocation contains a declaration, it must be controlled at the block level.

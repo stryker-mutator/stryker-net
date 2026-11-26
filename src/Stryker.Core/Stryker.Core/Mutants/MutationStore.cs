@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
@@ -181,6 +182,12 @@ internal class MutationStore
             // never inject at member access level, there is no known control structure
             return mutatedNode;
         }
+        if (!SupportConditionalOperator(sourceNode))
+        {
+            // we cannot replace this expression with a conditional operator, so we cannot inject the mutations here. They will be stored at a higher level.
+            return mutatedNode;
+        }
+
         var store = _pendingMutations.Peek().Store;
         var result = _mutantPlacer.PlaceExpressionControlledMutations(mutatedNode,
              store.Select(m => (m, sourceNode.InjectMutation(m.Mutation))));
@@ -243,6 +250,30 @@ internal class MutationStore
             blockStore.Store.Select(m => (m, wrapper(originalNode.InjectMutation(m.Mutation)))));
         blockStore.Store.Clear();
         return result as BlockSyntax ?? SyntaxFactory.Block(result);
+    }
+
+    private static bool SupportConditionalOperator(ExpressionSyntax sourceNode)
+    {
+        switch (sourceNode.Parent)
+        {
+            case ForStatementSyntax forStatement
+                // can't use ? on for statement incrementors or initializers
+                when forStatement.Incrementors.Contains(sourceNode) || forStatement.Initializers.Contains(sourceNode):
+            case ExpressionStatementSyntax:
+            // can't use ? on an expression statement
+            case ArrowExpressionClauseSyntax { Parent: MethodDeclarationSyntax method }
+            // cant use ? on a void arrow expression
+                when method.ReturnType.IsVoid():
+            case ArrowExpressionClauseSyntax { Parent: LocalFunctionStatementSyntax localFunction }
+                when localFunction.ReturnType.IsVoid():
+            case ArrowExpressionClauseSyntax { Parent: AccessorDeclarationSyntax accessor }
+                when accessor.ReturnType().IsVoid():
+            case LambdaExpressionSyntax when sourceNode is InvocationExpressionSyntax:
+            // avoid using conditional operator on a lambda containing an invocation expression, in case it returns void
+                return false;
+            default:
+                return true;
+        }
     }
 
     private sealed class PendingMutations
