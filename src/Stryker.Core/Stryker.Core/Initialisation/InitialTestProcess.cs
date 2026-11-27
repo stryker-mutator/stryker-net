@@ -44,10 +44,21 @@ public class InitialTestProcess : IInitialTestProcess
         // timings
         _logger.LogDebug("Initial test run output: {ResultMessage}.", initTestRunResult.ResultMessage);
 
+        var initialRunWallClockMs = (int)stopwatch.ElapsedMilliseconds;
+        var aggregatedTestExecutionMs = (int)initTestRunResult.Duration.TotalMilliseconds;
+
         TimeoutValueCalculator = new TimeoutValueCalculator(options.AdditionalTimeout,
-            (int)stopwatch.ElapsedMilliseconds,
-            (int)initTestRunResult.Duration.TotalMilliseconds,
+            initialRunWallClockMs,
+            aggregatedTestExecutionMs,
             options.TimeoutRatio);
+
+        _logger.LogInformation(
+            "Stryker mutant per-test timeout baseline is {DefaultTimeoutMs} ms (timeout ratio {TimeoutRatio}, additional timeout {AdditionalTimeoutMs} ms, initial run wall clock {InitialRunWallClockMs} ms, aggregated test execution {AggregatedTestExecutionMs} ms).",
+            TimeoutValueCalculator.DefaultTimeout,
+            options.TimeoutRatio,
+            options.AdditionalTimeout,
+            initialRunWallClockMs,
+            aggregatedTestExecutionMs);
 
         return new InitialTestRun(initTestRunResult, TimeoutValueCalculator);
     }
