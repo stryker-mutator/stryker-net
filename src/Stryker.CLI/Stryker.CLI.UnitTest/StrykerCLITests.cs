@@ -3,7 +3,6 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using NuGet.Versioning;
@@ -18,7 +17,6 @@ using Stryker.CLI.Logging;
 using Stryker.Configuration;
 using Stryker.Configuration.Options;
 using Stryker.Core;
-using Stryker.Core.Initialisation;
 
 namespace Stryker.CLI.UnitTest;
 

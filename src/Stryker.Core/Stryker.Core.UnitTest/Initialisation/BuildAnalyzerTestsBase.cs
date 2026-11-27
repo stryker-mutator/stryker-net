@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
@@ -29,7 +30,6 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
         ProjectPath = FileSystem.Path.Combine(filesystemRoot, "sourceproject");
     }
 
-
     /// <summary>
     /// Build a simple production project
     /// </summary>
@@ -44,7 +44,31 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
         var properties = GetSourceProjectDefaultProperties();
         projectReferences ??= [];
 
-        return BuildProjectAnalyzerMock(csprojPathName, sourceFiles, properties, projectReferences, [framework], success);
+        return BuildProjectAnalyzerMock(csprojPathName, sourceFiles, properties, projectReferences, frameworks: [framework], success: success);
+    }
+
+    /// <summary>
+    /// Build a simple production project
+    /// </summary>
+    /// <param name="csprojPathName">project pathname</param>
+    /// <param name="sourceFiles">project source files</param>
+    /// <param name="packagesReferences">referenced packages</param>
+    /// <param name="specificProperties">properties</param>
+    /// <param name="framework">framework version</param>
+    /// <param name="success">Predicate to control when analysis is successful. Default is always success.</param>
+    protected Mock<IProjectAnalyzer> SourceProjectAnalyzerMock(string csprojPathName, string[] sourceFiles,
+        Dictionary<string, string> specificProperties, IEnumerable<string> packagesReferences = null,
+        string framework = DefaultFramework, Func<bool> success = null)
+    {
+        var properties = GetSourceProjectDefaultProperties();
+        specificProperties ??= new Dictionary<string, string>();
+        foreach (var kvp in specificProperties)
+        {
+            properties[kvp.Key] = kvp.Value;
+        }
+        packagesReferences ??= [];
+
+        return BuildProjectAnalyzerMock(csprojPathName, sourceFiles, properties, [], packagesReferences, frameworks: [framework] ,success: success);
     }
 
     /// <summary>
@@ -56,12 +80,12 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
     /// <param name="framework">framework version</param>
     /// <param name="success">Predicate to control when analysis is successful. Default is always success.</param>
     protected Mock<IProjectAnalyzer> SourceProjectAnalyzerMock(string csprojPathName, string[] sourceFiles,
-        IEnumerable<string> projectReferences , IEnumerable<string> frameworks, Func<bool> success = null)
+        IEnumerable<string> projectReferences, IEnumerable<string> frameworks, Func<bool> success = null)
     {
         var properties = GetSourceProjectDefaultProperties();
         projectReferences??= [];
 
-        return BuildProjectAnalyzerMock(csprojPathName, sourceFiles, properties, projectReferences, frameworks, success);
+        return BuildProjectAnalyzerMock(csprojPathName, sourceFiles, properties, projectReferences, frameworks: frameworks, success: success);
     }
 
     public static Dictionary<string, string> GetSourceProjectDefaultProperties()
@@ -86,7 +110,7 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
         frameworks??=[DefaultFramework];
         var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
         var projectReferences = string.IsNullOrEmpty(csProj) ? [] : GetProjectResult(csProj, frameworks.First()).ProjectReferences.Append(csProj).ToList();
-        return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, projectReferences, frameworks, () => success, [], dontGenerateProjectReference);
+        return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, projectReferences, frameworks: frameworks, success: () => success, rawReferences: [], dontResolveProjectReference: dontGenerateProjectReference);
     }
 
     private IAnalyzerResult GetProjectResult(string projectFile, string expectedFramework, bool returnDefaultIfNotFound = true)
@@ -112,9 +136,7 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
     /// <returns>a tuple with the framework kind first and the version next</returns>
     protected static (FrameworkKind kind, decimal version) ParseFramework(string framework)
     {
-
         decimal version;
-
         if (framework.StartsWith("netcoreapp"))
         {
             if (!decimal.TryParse(framework[10..], out version))
@@ -189,16 +211,19 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
     /// <param name="sourceFiles">source files to return</param>
     /// <param name="properties">project properties</param>
     /// <param name="projectReferences">project references</param>
+    /// <param name="packages"></param>
     /// <param name="frameworks">list of frameworks (multitargeting)</param>
     /// <param name="success">analysis success</param>
     /// <param name="rawReferences">assembly references</param>
+    /// <param name="dontResolveProjectReference">true to prevent automatic resolution of project references</param>
     /// <returns>a mock project analyzer</returns>
     /// <remarks>
     /// 1. project and source files will be created (empty) in the file system
     /// 2. the project analyzer mock returns a single project result</remarks>
     internal Mock<IProjectAnalyzer> BuildProjectAnalyzerMock(string csprojPathName,
         string[] sourceFiles, Dictionary<string, string> properties,
-        IEnumerable<string> projectReferences= null,
+        IEnumerable<string> projectReferences = null,
+        IEnumerable<string> packages = null,
         IEnumerable<string> frameworks = null,
         Func<bool> success = null,
         IEnumerable<string> rawReferences = null,
@@ -242,7 +267,8 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
 
             projectAnalyzerResultMock.Setup(x => x.ReferenceAliases).Returns(new Dictionary<string, ImmutableArray<string>>().ToImmutableDictionary());
             projectAnalyzerResultMock.Setup(x => x.SourceFiles).Returns(sourceFiles);
-            projectAnalyzerResultMock.Setup(x => x.PackageReferences).Returns(new Dictionary<string, IReadOnlyDictionary<string, string>>());
+            var packagesDescriptions = packages?.ToDictionary(p => p, p=> (IReadOnlyDictionary<string, string>) ReadOnlyDictionary<string,string>.Empty) ?? new Dictionary<string, IReadOnlyDictionary<string, string>>();
+            projectAnalyzerResultMock.Setup(x => x.PackageReferences).Returns(packagesDescriptions);
             projectAnalyzerResultMock.Setup(x => x.PreprocessorSymbols).Returns(["NET"]);
             specificProperties.Add("TargetRefPath", projectBin);
             specificProperties.Add("TargetDir", projectUnderTestBin);
@@ -266,7 +292,18 @@ public class BuildAnalyzerTestsBase : TestBase, ISolutionProvider
         var projectAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
         projectAnalyzerMock.Setup(x => x.Build(It.IsAny<string[]>())).Returns(sourceProjectAnalyzerResultsMock);
         projectAnalyzerMock.Setup(x => x.Build(It.IsAny<string[]>(), It.IsAny<EnvironmentOptions>())).Returns(sourceProjectAnalyzerResultsMock);
-        projectAnalyzerMock.Setup(x => x.Build(It.IsAny<EnvironmentOptions>())).Returns(sourceProjectAnalyzerResultsMock);
+        projectAnalyzerMock.Setup(x => x.Build(It.IsAny<EnvironmentOptions>())).Returns( (EnvironmentOptions x)=>
+        {
+            // set the global properties in the analyzer results
+            foreach (var (name, value) in x.GlobalProperties)
+            {
+                foreach (var analyzerResult in sourceProjectAnalyzerResultsMock.Results)
+                {
+                    ((IDictionary<string, string>)analyzerResult.Properties)[name] = value;
+                }
+            }
+            return sourceProjectAnalyzerResultsMock;
+        });
         projectAnalyzerMock.Setup(x => x.Build()).Returns(sourceProjectAnalyzerResultsMock);
 
         projectAnalyzerMock.Setup(x => x.ProjectFile).Returns(projectFileMock.Object);

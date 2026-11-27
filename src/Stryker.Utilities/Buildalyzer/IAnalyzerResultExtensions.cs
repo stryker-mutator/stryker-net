@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -11,6 +12,7 @@ using System.Threading;
 using Buildalyzer;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
@@ -24,27 +26,6 @@ namespace Stryker.Utilities.Buildalyzer;
 public static class IAnalyzerResultExtensions
 {
 
-    [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]
-    private static void LogAnalyzerLoadError(ILogger? logger, object? sender, AnalyzerLoadFailureEventArgs e)
-    {
-        var source = (sender as AnalyzerReference)?.Display ?? "unknown";
-        logger?.LogWarning(
-            "Failed to load analyzer '{Source}': {Message} (error : {Error}, analyzer: {Analyzer}).",
-            source, e.Message, Enum.GetName(e.ErrorCode.GetType(), e.ErrorCode) ?? e.ErrorCode.ToString(),
-            e.TypeName ?? "All");
-        if (e.ErrorCode == AnalyzerLoadFailureEventArgs.FailureErrorCode.ReferencesNewerCompiler)
-        {
-            logger?.LogWarning(
-                "The analyzer '{Source}' references a newer version ({ReferencedCompilerVersion}) of the compiler than the one used by Stryker.NET.",
-                source, e.ReferencedCompilerVersion);
-        }
-
-        if (e.Exception != null)
-        {
-            logger?.LogWarning("Failed to load analyzer '{Source}': Exception {Exception}.", source, e.Exception);
-        }
-    }
-
     private static readonly string[] KnownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit", "nunit"];
     private static readonly string[] UnityTestAssemblyReferences = ["nunit.framework", "UnityEngine.TestRunner"];
 
@@ -55,14 +36,12 @@ public static class IAnalyzerResultExtensions
     /// <param name="targetFrameworks">list of frameworks to check for</param>
     /// <returns>true if analysis was successful</returns>
     public static bool IsValidFor(this IAnalyzerResults br, string[] targetFrameworks) => br.OverallSuccess
-        || (targetFrameworks.Length>0
-            && Array.TrueForAll(targetFrameworks, fmw => br.Results.Any( r=> r.IsValidFor(fmw))));
-
-    public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
+        || (targetFrameworks.Length > 0
+            && Array.TrueForAll(targetFrameworks, fmw => br.Results.Any(r => r.IsValidFor(fmw))));
 
     private static IEnumerable<string> ParseDiagnostics(string diagnostics)
     {
-        if(string.IsNullOrWhiteSpace(diagnostics))
+        if (string.IsNullOrWhiteSpace(diagnostics))
         {
             return [];
         }
@@ -76,14 +55,15 @@ public static class IAnalyzerResultExtensions
 
     extension(IAnalyzerResult analyzerResult)
     {
-       public string GetAssemblyFileName() =>
+        public string GetAssemblyFileName() =>
             FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetFileName"]);
 
-        public  bool BuildsAnAssembly() => analyzerResult.Properties.ContainsKey("TargetFileName");
+        public bool BuildsAnAssembly() => analyzerResult.Properties.ContainsKey("TargetFileName");
 
         public string GetReferenceAssemblyPath() =>
-            analyzerResult.Properties.TryGetValue("TargetRefPath", out var property) ?
-                FilePathUtils.NormalizePathSeparators(property) : analyzerResult.GetAssemblyPath();
+            analyzerResult.Properties.TryGetValue("TargetRefPath", out var property)
+                ? FilePathUtils.NormalizePathSeparators(property)
+                : analyzerResult.GetAssemblyPath();
 
         public string GetAssemblyDirectoryPath() =>
             FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetDir"]);
@@ -115,9 +95,10 @@ public static class IAnalyzerResultExtensions
 
         public string TargetPlatform() => analyzerResult.GetPropertyOrDefault("TargetPlatform", "AnyCPU");
 
-        public string? MsBuildPath() => analyzerResult.Analyzer?.EnvironmentFactory.GetBuildEnvironment()?.MsBuildExePath;
+        public string? MsBuildPath() =>
+            analyzerResult.Analyzer?.EnvironmentFactory.GetBuildEnvironment()?.MsBuildExePath;
 
-        public IEnumerable<ISourceGenerator> GetSourceGenerators(ILogger logger)
+        public IEnumerable<ISourceGenerator> GetSourceGenerators(ILogger logger, List<string> issues)
         {
             ArgumentNullException.ThrowIfNull(logger);
 
@@ -127,7 +108,8 @@ public static class IAnalyzerResultExtensions
                 try
                 {
                     var analyzerFileReference = new AnalyzerFileReference(analyzer, AnalyzerAssemblyLoader.Instance);
-                    analyzerFileReference.AnalyzerLoadFailed += (sender, e) => LogAnalyzerLoadError(logger, sender, e);
+                    analyzerFileReference.AnalyzerLoadFailed +=
+                        (sender, e) => LogAnalyzerLoadError(logger, issues, sender, e);
                     generators.AddRange(analyzerFileReference.GetGenerators(LanguageNames.CSharp));
                 }
                 catch (Exception e)
@@ -144,24 +126,8 @@ public static class IAnalyzerResultExtensions
         }
 
         public IEnumerable<AdditionalText> GetAdditionalTexts() =>
-            analyzerResult .AdditionalFiles?.Select(additionalFile => new AdditionalTextFromFile(additionalFile)) ?? [];
-
-        public IEnumerable<MetadataReference> LoadReferences()
-        {
-            foreach (var reference in analyzerResult.References)
-            {
-
-                if (!analyzerResult.ReferenceAliases.TryGetValue(reference, out var aliases))
-                {
-                    aliases = [];
-                }
-
-                // If no alias is found, return the reference without aliases
-                yield return MetadataReference.CreateFromFile(reference).WithAliases(aliases);
-            }
-        }
-
-        public NuGetFramework? GetNuGetFramework()
+            analyzerResult.AdditionalFiles?.Select(additionalFile => new AdditionalTextFromFile(additionalFile)) ?? [];
+            public NuGetFramework? GetNuGetFramework()
         {
             var frameworkText = analyzerResult.TargetFramework;
             if (string.IsNullOrEmpty(frameworkText))
@@ -197,17 +163,15 @@ public static class IAnalyzerResultExtensions
         /// </summary>
         /// <returns>true if result is complete enough</returns>
         public bool IsValid() => analyzerResult.Succeeded || (analyzerResult.SourceFiles.Length > 0 && analyzerResult.References.Length > 0)
-                                                          || (analyzerResult.IsTestProject()
-                                                              && analyzerResult.Properties.ContainsKey("TargetDir")
-                                                              && analyzerResult.ProjectReferences.Any());
+                                                          || (analyzerResult.IsTestProject() && analyzerResult.Properties.ContainsKey("TargetDir") && analyzerResult.ProjectReferences.Any());
+
 
         /// <summary>
-        /// checks if an analyzer result is valid for a specific framework
+        /// Checks if a project analysis is valid for all given target frameworks. If no target frameworks are given, it checks if the overall analysis was successful.
         /// </summary>
-        /// <param name="framework">framework to test for</param>
-        /// <returns>true if result is complete enough</returns>
+        /// <param name="framework">framework to check for</param>
+        /// <returns>true if analysis was successful</returns>
         private bool IsValidFor(string framework) => analyzerResult.IsValid() && analyzerResult.TargetFramework == framework;
-
 
     /// <summary>
     /// Checks whether an analysis result references the assemblies that identify a Unity test assembly.
@@ -217,37 +181,45 @@ public static class IAnalyzerResultExtensions
             analyzerResult.References?.Any(path =>
                 string.Equals(Path.GetFileNameWithoutExtension(path), reference, StringComparison.OrdinalIgnoreCase)) == true);
 
-    private bool IsTestProject()
+    private bool IsTestProject(List<string>? details = null)
     {
         // if 'IsTestingPlatformApplication' is defined and true, this is a test project
         if (analyzerResult.TryGetProperty("IsTestingPlatformApplication", out var value)
             && bool.TryParse(value, out var isMtp)
             && isMtp)
         {
+            details?.Add($"IsTestingPlatformApplication is true (for framework {analyzerResult.TargetFramework})");
             return true;
         }
 
         // if 'IsTestProject' is defined, we use its value to check if it's a test project (or not)
         if (analyzerResult.TryGetProperty("IsTestProject", out value))
         {
+            details?.Add($"IsTestProject is {value} (for framework {analyzerResult.TargetFramework})");
             return bool.TryParse(value, out var isTestProject) && isTestProject;
         }
 
-        if (Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n)))
+        var testPackage = Array.Find(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n));
+        if (testPackage != null)
         {
+            details?.Add($"Package reference to known test package {testPackage} found (for framework {analyzerResult.TargetFramework})");
             return true;
         }
 
         if (analyzerResult.IsUnityTestProject())
         {
+            details?.Add($"Project is a Unity test project (for framework {analyzerResult.TargetFramework})");
             return true;
         }
 
-            const string TestProjectTypeGuid = "{3AC096D0-A1C2-E12C-1390-A8335801FDAB}";
-            return analyzerResult
-                .GetPropertyOrDefault("ProjectTypeGuids", "")
-                .Contains(TestProjectTypeGuid);
-        }
+        const string TestProjectTypeGuid = "{3AC096D0-A1C2-E12C-1390-A8335801FDAB}";
+        var asGuid= analyzerResult
+            .GetPropertyOrDefault("ProjectTypeGuids", "")
+            .Contains(TestProjectTypeGuid);
+        details?.Add($"Project has known test project Guid ({TestProjectTypeGuid})");
+        details?.Add($"Project has known test project Guid ({TestProjectTypeGuid}).");
+        return asGuid;
+    }
 
         public OutputKind GetOutputKind() =>
             analyzerResult.GetPropertyOrDefault("OutputType") switch
@@ -357,7 +329,24 @@ public static class IAnalyzerResultExtensions
                     ResolveAnalyzerConfigPath(arg[(ArgName.Length + 1)..].TrimQuotes(), projectDirectory, fileSystem))
                 .Distinct();
         }
+
+        public IEnumerable<MetadataReference> LoadReferences()
+        {
+            foreach (var reference in analyzerResult.References)
+            {
+                if (!analyzerResult.ReferenceAliases.TryGetValue(reference, out var aliases))
+                {
+                    aliases = [];
+                }
+
+                // If no alias is found, return the reference without aliases
+                yield return MetadataReference.CreateFromFile(reference).WithAliases(aliases);
+            }
+        }
     }
+
+    public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults, List<string> details)
+        => analyzerResults.Any(x => x.IsTestProject(details));
 
     private static string ResolveAnalyzerConfigPath(string path, string? projectDirectory, IFileSystem fileSystem) =>
         string.IsNullOrEmpty(projectDirectory) || fileSystem.Path.IsPathRooted(path)
@@ -420,7 +409,30 @@ public static class IAnalyzerResultExtensions
         public override IEnumerable<string> Keys => options.Keys;
     }
 
-    // Roslyn does not appear to expose usable implementations of these types (required for additional files support)
+    [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]
+    private static void LogAnalyzerLoadError(ILogger? logger, List<string> issues, object? sender,
+        AnalyzerLoadFailureEventArgs e)
+    {
+        var source = (sender as AnalyzerReference)?.Display ?? "unknown";
+        string message;
+        if (e.ErrorCode == AnalyzerLoadFailureEventArgs.FailureErrorCode.ReferencesNewerCompiler)
+        {
+            message = $"The analyzer '{source}' references a newer Roslyn version ({e.ReferencedCompilerVersion}) than Stryker's ({typeof(CSharpCompilation).Assembly.GetName().Version}). This may cause issues during analysis.";
+        }
+        else
+        {
+            message = $"Failed to load analyzer '{source}': {e.Message} (error : {Enum.GetName(e.ErrorCode.GetType(), e.ErrorCode) ?? e.ErrorCode.ToString()}, analyzer: {e.TypeName ?? "All"}).";
+        }
+
+        issues.Add(message);
+        logger?.LogWarning(message);
+        if (e.Exception != null)
+        {
+            logger?.LogWarning("Failed to load analyzer '{Source}': Exception {Exception}.", source, e.Exception);
+        }
+    }
+
+// Roslyn does not appear to expose usable implementations of these types (required for additional files support)
     private sealed class AdditionalTextFromFile(string path) : AdditionalText
     {
         private readonly Lazy<string> _source = new(() => File.ReadAllText(path));
@@ -438,7 +450,7 @@ public static class IAnalyzerResultExtensions
     {
         public static readonly IAnalyzerAssemblyLoader Instance = new AnalyzerAssemblyLoader();
 
-        private readonly Dictionary<string, Assembly> _cache = [];
+        private readonly ConcurrentDictionary<string, Assembly> _cache = [];
 
         private AnalyzerAssemblyLoader() { }
 

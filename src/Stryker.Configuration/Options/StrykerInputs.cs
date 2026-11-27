@@ -58,6 +58,7 @@ public interface IStrykerInputs
     OpenReportEnabledInput OpenReportEnabledInput { get; init; }
     BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; }
     TestRunnerInput TestRunnerInput { get; init; }
+    BuildPropertiesInput BuildPropertiesInput { get; init; }
 
     IStrykerOptions ValidateAll();
 }
@@ -113,6 +114,7 @@ public class StrykerInputs(IFileSystem? fileSystem = null)
     public DisableBailInput DisableBailInput { get; set; } = new();
     public DisableMixMutantsInput DisableMixMutantsInput { get; set; } = new();
     public MsBuildPathInput MsBuildPathInput { get; init; } = new();
+    public BuildPropertiesInput BuildPropertiesInput { get; init; } = new();
     public OpenReportInput OpenReportInput { get; init; } = new();
     public OpenReportEnabledInput OpenReportEnabledInput { get; init; } = new();
     public BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; } = new();
@@ -141,6 +143,7 @@ public class StrykerInputs(IFileSystem? fileSystem = null)
             DiagMode = DiagModeInput.Validate(),
             MsBuildPath = MsBuildPathInput.Validate(_fileSystem),
             SolutionPath = SolutionInput.Validate(basePath, _fileSystem),
+            BuildProperties = BuildPropertiesInput.Validate(),
             Configuration = ConfigurationInput.Validate(),
             TargetFramework = TargetFrameworkInput.Validate(),
             Thresholds = new Thresholds
@@ -195,7 +198,7 @@ public class StrykerInputs(IFileSystem? fileSystem = null)
     // check that the configuration has no blocking error and is consistent (no conflicting options)
     private void CheckConsistency()
     {
-        if (_strykerOptionsCache.IsSolutionContext)
+        if (_strykerOptionsCache!.IsSolutionContext)
         {
             if (_strykerOptionsCache.TestProjects.Any())
             {
@@ -208,9 +211,21 @@ public class StrykerInputs(IFileSystem? fileSystem = null)
             }
         }
 
+        // check that all test projects exist
         foreach (var testProject in _strykerOptionsCache.TestProjects)
         {
             CheckFile( "TestProject", testProject);
+        }
+
+        //check for conflicting options with build properties
+        if (_strykerOptionsCache.BuildProperties.TryGetValue("Configuration", out var configuration) && !string.IsNullOrEmpty(configuration) && _strykerOptionsCache.Configuration!= configuration)
+        {
+            throw new InputException("Please use the configuration option instead of defining the Configuration build property");
+        }
+
+        if (_strykerOptionsCache.BuildProperties.TryGetValue("Platform", out var platform) && !string.IsNullOrEmpty(platform) && _strykerOptionsCache.Platform!= platform)
+        {
+            throw new InputException("Please use the configuration option to select the platform instead of defining the Platform build property");
         }
     }
 
