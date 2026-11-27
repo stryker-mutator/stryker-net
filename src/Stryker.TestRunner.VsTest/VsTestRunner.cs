@@ -72,6 +72,7 @@ public sealed class VsTestRunner : IDisposable
             value.RegisterInitialTestResult(new VsTestResult(result));
         }
 
+        _context.RemoveIgnoredExplicitTests();
         var totalCountOfTests = _context.GetTestsForSources(project.GetTestAssemblies()).Count;
         // get the test results, but prevent compression of 'all tests'
         return BuildTestRunResult(testResults, totalCountOfTests, totalCountOfTests, false);

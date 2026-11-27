@@ -1,36 +1,18 @@
 namespace Stryker.Abstractions.Testing;
 
-public sealed class TestDescription : ITestDescription
+public sealed class TestDescription(string id, string name, string testFilePath) : ITestDescription
 {
-    public TestDescription(string id, string name, string testFilePath)
-    {
-        Id = id;
-        Name = name;
-        TestFilePath = testFilePath;
-    }
+    public string Id { get; } = id;
 
-    public string Id { get; }
+    public string Name { get; } = name;
 
-    public string Name { get; }
+    public string TestFilePath { get; } = testFilePath;
 
-    public string TestFilePath { get; }
+    private bool Equals(TestDescription other) => Id == other.Id;
 
-    private bool Equals(TestDescription other)
-    {
-        return Id == other.Id;
-    }
+    public override bool Equals(object obj) =>
+        obj is not null && (ReferenceEquals(this, obj)
+                            || (obj.GetType() == GetType() && Equals((TestDescription)obj)));
 
-    public override bool Equals(object obj)
-    {
-        if (obj is null)
-            return false;
-        if (ReferenceEquals(this, obj))
-            return true;
-        return obj.GetType() == GetType() && Equals((TestDescription)obj);
-    }
-
-    public override int GetHashCode()
-    {
-        return Id.GetHashCode();
-    }
+    public override int GetHashCode() => Id.GetHashCode();
 }
