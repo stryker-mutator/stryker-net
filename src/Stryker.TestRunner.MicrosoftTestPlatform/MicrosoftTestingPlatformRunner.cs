@@ -50,6 +50,9 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
     private TestCaseFilterExpression? _strykerSideFilter;
 
+    private static readonly TimeSpan SleepDetectionThreshold = TimeSpan.FromSeconds(30);
+    private const int MaxSleepRetries = 3;
+
     private string RunnerId => $"MtpRunner-{_id}";
 
     /// <summary>
@@ -57,6 +60,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
     /// Exposed for unit testing.
     /// </summary>
     internal Func<string, bool> SupportsNativeTestCaseFilter { get; init; } = DefaultTestServerConnectionFactory.SupportsTestCaseFilter;
+
+    /// <summary>
+    /// Wall clock used to detect that the computer slept during a test run. Exposed for unit testing.
+    /// </summary>
+    internal Func<DateTime> UtcNow { get; init; } = () => DateTime.UtcNow;
 
     /// <summary>
     /// Path of the mutant-id control file this runner shares with its test hosts. Exposed for unit testing.
@@ -785,6 +793,11 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         }
     }
 
+    internal Func<string, Dictionary<string, string?>, AssemblyTestServer>? ServerFactory { get; set; }
+
+    private AssemblyTestServer CreateServer(string assembly, Dictionary<string, string?> environmentVariables) =>
+        ServerFactory?.Invoke(assembly, environmentVariables) ?? new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options);
+
     private async Task<AssemblyTestServer> GetOrCreateServerAsync(string assembly)
     {
         AssemblyTestServer? deadServer = null;
@@ -812,7 +825,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         }
 
         var environmentVariables = BuildEnvironmentVariables(assembly);
-        var server = new AssemblyTestServer(assembly, environmentVariables, _logger, RunnerId, _options);
+        var server = CreateServer(assembly, environmentVariables);
 
         var started = await server.StartAsync().ConfigureAwait(false);
         if (!started)
@@ -1229,6 +1242,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
         // for the current mutant instead of corrupting its result.
         const int maxRunAttempts = 2;
         Exception? lastRunException = null;
+        var sleepRetries = 0;
 
         for (var attempt = 1; attempt <= maxRunAttempts; attempt++)
         {
@@ -1244,7 +1258,7 @@ public class MicrosoftTestingPlatformRunner : IDisposable
                 return (new TestRunResult(false, ex.Message), false);
             }
 
-            var startTime = DateTime.UtcNow;
+            var startTime = UtcNow();
             try
             {
                 List<TestNode>? tests = null;
@@ -1269,7 +1283,21 @@ public class MicrosoftTestingPlatformRunner : IDisposable
 
                 var (testResults, timedOut) = await server.RunTestsAsync(testsToRun, timeout).ConfigureAwait(false);
 
-                var duration = DateTime.UtcNow - startTime;
+                var duration = UtcNow() - startTime;
+
+                // The timeout timer does not count the time the computer spends asleep, so a run that
+                // overshot its timeout by far did not time out: the machine slept. Like the VsTest runner,
+                // ignore that result and run again, a bounded number of times.
+                if (timedOut && timeout.HasValue && duration - timeout.Value > SleepDetectionThreshold && sleepRetries < MaxSleepRetries)
+                {
+                    sleepRetries++;
+                    attempt--;
+                    _logger.LogWarning("{RunnerId}: Rerun of the test session because computer entered power saving mode.", RunnerId);
+                    // The host may have been suspended mid-run; like a timeout, start the rerun on a fresh server.
+                    await DiscardServerAsync(assembly).ConfigureAwait(false);
+                    continue;
+                }
+
                 var result = BuildTestRunResult(testResults, tests?.Count ?? 0, duration);
 
                 return (result, timedOut);
