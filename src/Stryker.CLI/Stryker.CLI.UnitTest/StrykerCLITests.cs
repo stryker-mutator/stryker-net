@@ -308,6 +308,29 @@ Options:";
     }
 
     [TestMethod]
+    public async Task ShouldReturnErrorCode_OnNegativeScore()
+    {
+        var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+        var options = new StrykerOptions()
+        {
+            Thresholds = new Thresholds
+            {
+                Break = 0
+            }
+        };
+        var strykerRunResult = new StrykerRunResult(options, -1);
+
+        mock.Setup(x => x.RunMutationTestAsync(It.IsAny<IStrykerInputs>())).Returns(Task.FromResult(strykerRunResult)).Verifiable();
+
+        var target = new StrykerCli(mock.Object, new ConfigBuilder(), Mock.Of<ILoggingInitializer>(), Mock.Of<IStrykerNugetFeedClient>(), Mock.Of<IAnsiConsole>(), Mock.Of<IFileSystem>());
+        var result = await target.RunAsync([]);
+
+        mock.Verify();
+        target.ExitCode.ShouldBe(1);
+        result.ShouldBe(1);
+    }
+
+    [TestMethod]
     [DataRow("--help")]
     [DataRow("-h")]
     [DataRow("-?")]
