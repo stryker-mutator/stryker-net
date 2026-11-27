@@ -19,7 +19,7 @@ using Stryker.Core.UnitTest.Compiling;
 namespace Stryker.Core.UnitTest;
 
 [TestClass]
-public class MutantAndCompileTests
+public class MutateAndCompileTests: TestBase
 {
     private readonly CodeInjection _injector = new();
 
@@ -48,11 +48,12 @@ public static class Consumer
     }
 }";
 
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+        var parseOptions = new CSharpParseOptions(LanguageVersion.CSharp14);
+        var syntaxTree = CSharpSyntaxTree.ParseText(source, parseOptions);
         Type[] typeToLoad = [typeof(object), typeof(List<>), typeof(Enumerable), typeof(Nullable<>), typeof(MemoryMappedFile),
             typeof(ExperimentalAttribute), typeof(MemoryMappedViewAccessor)];
         var syntaxTrees = new List<SyntaxTree> { syntaxTree };
-        syntaxTrees.AddRange(_injector.GetHelpersSyntaxTreesToInject((CSharpParseOptions)syntaxTree.Options));
+        syntaxTrees.AddRange(_injector.GetHelpersSyntaxTreesToInject(parseOptions));
         var mutator = new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: new StrykerOptions
         {
             MutationLevel = MutationLevel.Complete,
