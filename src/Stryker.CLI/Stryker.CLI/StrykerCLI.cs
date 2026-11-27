@@ -163,26 +163,34 @@ public class StrykerCli
     {
         var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
 
-        if (double.IsNaN(result.MutationScore))
+        switch (result.MutationScore)
         {
-            logger.LogInformation("Stryker was unable to calculate a mutation score");
-        }
-        else
-        {
-            logger.LogInformation("The final mutation score is {MutationScore:P2}", result.MutationScore);
+            case < 0:
+                // This is a special case for when the mutation score is negative
+                // which indicates that something went wrong during the mutation testing process.
+                ExitCode = ExitCodes.OtherError;
+                return;
+            case double.NaN:
+                // This means no test has been detected
+                logger.LogInformation("Stryker was unable to calculate a mutation score");
+                return;
         }
 
-        if (result.ScoreIsLowerThanThresholdBreak())
+        logger.LogInformation("The final mutation score is {MutationScore:P2}", result.MutationScore);
+
+        if (!result.ScoreIsLowerThanThresholdBreak())
         {
-            var thresholdBreak = (double)result.Options.Thresholds.Break / 100;
-            logger.LogWarning("Final mutation score is below threshold break. Crashing...");
-
-            _console.WriteLine();
-            _console.MarkupLine($"[Red]The mutation score is lower than the configured break threshold of {thresholdBreak:P0}.[/]");
-            _console.MarkupLine(" [Red]Looks like you've got some work to do :smiling_face_with_halo:[/]");
-
-            ExitCode = ExitCodes.BreakThresholdViolated;
+            return;
         }
+
+        var thresholdBreak = (double)result.Options.Thresholds.Break / 100;
+        logger.LogWarning("Final mutation score is below threshold break. Crashing...");
+
+        _console.WriteLine();
+        _console.MarkupLine($"[Red]The mutation score is lower than the configured break threshold of {thresholdBreak:P0}.[/]");
+        _console.MarkupLine(" [Red]Looks like you've got some work to do :smiling_face_with_halo:[/]");
+
+        ExitCode = ExitCodes.BreakThresholdViolated;
     }
 
     private void PrintStrykerASCIIName(IStrykerInputs inputs)

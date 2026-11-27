@@ -141,9 +141,9 @@ public class StrykerRunner : IStrykerRunner
             _logger.LogCritical("Compilation failed: {Message}.", ex.Message);
             if (!options.DiagMode)
             {
-                _logger.LogCritical("Run with --diag to get more diagnotic information.");
+                _logger.LogCritical("Run with --diag to get more diagnostic information.");
             }
-            return new StrykerRunResult(options, 0);
+            return new StrykerRunResult(options, -1);
         }
         catch (Exception ex) when (ex is not InputException && ex is not CompilationException)
         // let the exception be caught by the debugger when in debug
