@@ -59,13 +59,11 @@ public class StrykerRunner : IStrykerRunner
         try
         {
             // Mutate
-            _mutationTestProcesses = (await _projectOrchestrator.MutateProjectsAsync(options, reporters)).ToList();
+            _mutationTestProcesses = (await _projectOrchestrator.MutateAndTestProjectsAsync(options, reporters)).ToList();
 
             var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
             var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.SourceProjectInfo.TestProjectsInfo).
                 Aggregate(new TestProjectsInfo(new FileSystem(), _logger), (a, b) => a + b);
-
-            _logger.LogInformation("{MutantsCount} mutants created", rootComponent.Mutants.Count());
 
             AnalyzeCoverage(options);
 
