@@ -7,6 +7,7 @@ using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Baseline;
 using Stryker.Configuration.Options;
+using Stryker.Configuration.Options.Inputs;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
@@ -110,6 +111,26 @@ public class MutantFilterFactoryTests : TestBase
         resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(6);
 
         resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(ExcludeLinqExpressionFilter)).Count().ShouldBe(1);
+    }
+
+    [TestMethod]
+    [DataRow(true, 1)]
+    [DataRow(false, 0)]
+    public void MutantFilterFactory_Creates_IgnoreMethodsEffectsMutantFilter_Only_When_Enabled(bool ignoreMethodsEffects, int expected)
+    {
+        // Arrange
+        var options = new StrykerOptions()
+        {
+            IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = ["Log*"] }.Validate(),
+            IgnoreMethodsEffects = ignoreMethodsEffects,
+        };
+
+        // Act
+        var result = MutantFilterFactory.Create(options, null, Mock.Of<IDiffProvider>(), Mock.Of<IBaselineProvider>(), Mock.Of<IGitInfoProvider>());
+
+        // Assert
+        var resultAsBroadcastFilter = result.ShouldBeOfType<BroadcastMutantFilter>();
+        resultAsBroadcastFilter.MutantFilters.OfType<IgnoreMethodsEffectsMutantFilter>().Count().ShouldBe(expected);
     }
 
     [TestMethod]

@@ -36,6 +36,7 @@
     "ignore-methods": [
       "Log*"
     ],
+    "ignore-methods-effects": true,
     "thresholds": {
       "high": 40,
       "low": 30,

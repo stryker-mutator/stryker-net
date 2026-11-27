@@ -28,6 +28,7 @@ public interface IStrykerOptions
     IEnumerable<Mutator> ExcludedMutations { get; init; }
     string FallbackVersion { get; init; }
     IEnumerable<Regex> IgnoredMethods { get; init; }
+    bool IgnoreMethodsEffects { get; init; }
     bool IsSolutionContext { get; }
     LanguageVersion LanguageVersion { get; init; }
     ILogOptions LogOptions { get; init; }
