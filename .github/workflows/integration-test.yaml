@@ -51,7 +51,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6
         with:
-          dotnet-version: 10.x
+          dotnet-version: 11.x
       - name: Run integration tests
         shell: pwsh
         run: ./integration-tests.ps1
