@@ -25,14 +25,12 @@ public class InterpolatedStringMutator : MutatorBase<InterpolatedStringExpressio
         }
     }
 
-    private SyntaxNode CreateEmptyInterpolatedString()
+    private static InterpolatedStringExpressionSyntax CreateEmptyInterpolatedString()
     {
-        var opening = SyntaxFactory.Token(SyntaxKind.InterpolatedStringStartToken);
-        var closing = SyntaxFactory.Token(SyntaxKind.InterpolatedStringEndToken);
         var emptyText = new SyntaxList<InterpolatedStringContentSyntax>
         {
             SyntaxFactory.InterpolatedStringText()
         };
-        return SyntaxFactory.InterpolatedStringExpression(opening, emptyText, closing);
+        return SyntaxFactory.InterpolatedStringExpression(SyntaxFactory.Token(SyntaxKind.InterpolatedStringStartToken), emptyText, SyntaxFactory.Token(SyntaxKind.InterpolatedStringEndToken));
     }
 }
