@@ -24,7 +24,7 @@ jobs:
       pull-requests: read
     steps:
         # see https://github.com/marketplace/actions/semantic-pull-request for configuration options
-      - uses: amannn/action-semantic-pull-request@c5e23b7e584519ee15caa684cf60d056aa9f035f # v6
+      - uses: amannn/action-semantic-pull-request@66e72920af32222769c386d81f89656ebcb6d6d5 # v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
