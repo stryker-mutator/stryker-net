@@ -289,12 +289,56 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
                 }
             }
             // general case, assume the diagnostic location is within the mutation.
-            RegisterMutationForRollback(FindMutationWithNode(brokenMutation), brokenMutations);
+            var candidate = FindMutationWithNode(brokenMutation);
+            // A mutated argument can change overload resolution or type inference, so the compiler reports the
+            // error on the call's name (or on a member of the newly chosen overload) instead of on the mutation.
+            // Look for the mutation inside the argument list that holds the error before falling back to safe mode.
+            candidate ??= FindMutationInEnclosingArguments(brokenMutation);
+            RegisterMutationForRollback(candidate, brokenMutations);
         }
 
         return brokenMutations;
         // check if the node allows an early exit
     }
+
+    /// <summary>
+    /// Search the argument list of the invocation or object creation reported by the diagnostic for a mutation.
+    /// </summary>
+    /// <remarks>
+    /// Overload resolution and type inference failures caused by a mutated argument (for example CS0121) are
+    /// reported on the name of the invocation, not on the mutated node. Scanning outward from the diagnostic
+    /// location therefore finds nothing, and the whole member gets rolled back as safe mode. The arguments of
+    /// the invocation holding the error are where the responsible mutation lives.
+    /// </remarks>
+    private static SyntaxNode FindMutationInEnclosingArguments(SyntaxNode startNode)
+    {
+        foreach (var ancestor in startNode.AncestorsAndSelf())
+        {
+            var argumentList = ancestor switch
+            {
+                InvocationExpressionSyntax invocation => invocation.ArgumentList,
+                ObjectCreationExpressionSyntax creation => creation.ArgumentList,
+                ConstructorInitializerSyntax initializer => initializer.ArgumentList,
+                _ => null
+            };
+
+            if (argumentList == null)
+            {
+                continue;
+            }
+
+            var mutation = ScanAllMutations(argumentList).FirstOrDefault();
+            if (mutation != null)
+            {
+                return mutation;
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<SyntaxNode> ScanAllMutations(SyntaxNode node) =>
+        MutantPlacer.GetAllMutations(node).Select(entry => entry.node).Where(node => node != null);
 
     private bool FindMutationCausingFailToReturnValue(ICSharpRollbackProcess.Mode mode, Collection<SyntaxNode> brokenMutations, ref SyntaxNode brokenMutation)
     {

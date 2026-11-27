@@ -610,6 +610,63 @@ public class CSharpRollbackProcessTests : TestBase
     }
 
     [TestMethod]
+    public void RollbackProcess_ShouldRollbackMutatedArgumentCausingAmbiguousOverload()
+    {
+        // a mutated argument can change overload resolution, and the compiler then reports the error on the
+        // invocation name instead of on the mutation; rollback must look inside the argument list instead of
+        // discarding every mutation of the method (safe mode)
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            using System;
+
+            namespace ExampleProject
+            {
+                public class StringMagic
+                {
+                    public int ActiveMutation = -1;
+
+                    public ulong Cap(ulong size)
+                    {
+                        ulong total = 0;
+                        var scale = (ActiveMutation == 2 ? 4UL : 8UL);
+                        for (ulong i = 0; i < Math.Min(size / scale, (ActiveMutation == 1 ? 1 >> 16 : 1 << 16)); i++)
+                        {
+                            total += i;
+                        }
+
+                        return total;
+                    }
+                }
+            }
+            """);
+        var root = syntaxTree.GetRoot();
+        var mutations = root.DescendantNodes().OfType<ParenthesizedExpressionSyntax>().ToList();
+        mutations.Count.ShouldBe(2);
+        root = root.ReplaceNode(mutations[0], mutations[0].WithAdditionalAnnotations(GetMutationIdMarker(2), _conditionalEngineMarker));
+        root = root.ReplaceNode(root.DescendantNodes().OfType<ParenthesizedExpressionSyntax>().Last(),
+            root.DescendantNodes().OfType<ParenthesizedExpressionSyntax>().Last().WithAdditionalAnnotations(GetMutationIdMarker(1), _conditionalEngineMarker));
+
+        var annotatedSyntaxTree = root.SyntaxTree;
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: [annotatedSyntaxTree],
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: [MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Math).Assembly.Location)]);
+        var compilerWrapper = new CompilerWrapper(compiler);
+
+        var ids = new CSharpRollbackProcess().RollbackMutationsInError(
+            compilerWrapper,
+            compiler.Emit(new MemoryStream()).Diagnostics,
+            ICSharpRollbackProcess.Mode.Normal,
+            false);
+
+        // only the mutation inside the argument list is rolled back
+        ids.ShouldBe([1]);
+        using var stream = new MemoryStream();
+        compilerWrapper.Emit(stream).Success.ShouldBeTrue();
+    }
+
+    [TestMethod]
     public void RollbackProcess_ShouldRollbackNearestMutationErasingAssignment()
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(
