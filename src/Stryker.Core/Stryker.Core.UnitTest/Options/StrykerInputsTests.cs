@@ -91,6 +91,15 @@ public class StrykerInputsTests : TestBase
     }
 
     [TestMethod]
+    public void ShouldSetIgnoredMethodArguments()
+    {
+        _target.IgnoredMethodsInput.SuppliedInput = new[] { "Log*", "ConfigureAwait(*)" };
+        var result = _target.ValidateAll();
+        result.IgnoredMethods.ShouldHaveSingleItem().IsMatch("logger.LogDebug").ShouldBeTrue();
+        result.IgnoredMethodArguments.ShouldHaveSingleItem().IsMatch("task.ConfigureAwait").ShouldBeTrue();
+    }
+
+    [TestMethod]
     public void ShouldIgnoreExtraInfoInConfiguration()
     {
         _target.ConfigurationInput.SuppliedInput = "TheRelease|x64|Disregarded";

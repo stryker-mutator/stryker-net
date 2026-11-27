@@ -28,12 +28,15 @@ Specific method calls can be ignored using the [ignore methods](./configuration.
     "ignore-methods": [
         "*Log", // Ignores all methods ending with Log
         "Console.Write*", // Ignores all methods starting with Write in the class Console
-        "*Exception.ctor" // Ignores all exception constructors
+        "*Exception.ctor", // Ignores all exception constructors
+        "ConfigureAwait(*)" // Ignores false -> true in ConfigureAwait(false), but not the awaited call
     ]
 }
 ```
 
 _Note that this only ignores mutation inside the method calls, not the method declaration._
+
+A method name without `(*)` also ignores the calls it is chained on, the statement that holds it and the `await` around it. With `(*)`, only the arguments of the call are ignored.
 
 ## Mutate option
 

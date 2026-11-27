@@ -161,6 +161,7 @@ public class StrykerInputs(IFileSystem? fileSystem = null)
             ExcludedMutations = IgnoreMutationsInput.Validate<Mutator>(),
             ExcludedLinqExpressions = IgnoreMutationsInput.ValidateLinqExpressions(),
             IgnoredMethods = IgnoredMethodsInput.Validate(),
+            IgnoredMethodArguments = IgnoredMethodsInput.ValidateArgumentsOnly(),
             Mutate = MutateInput.Validate(),
             LanguageVersion = LanguageVersionInput.Validate(),
             OptimizationMode = CoverageAnalysisInput.Validate(testRunner) | DisableBailInput.Validate() | DisableMixMutantsInput.Validate(),

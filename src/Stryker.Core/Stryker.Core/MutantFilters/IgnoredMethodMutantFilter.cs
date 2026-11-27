@@ -22,9 +22,29 @@ public sealed class IgnoredMethodMutantFilter : IMutantFilter
     private readonly SyntaxTriviaRemover _triviaRemover = new();
 
         public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options) =>
-            options.IgnoredMethods.Any() ?
-                    mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options)) :
+            options.IgnoredMethods.Any() || options.IgnoredMethodArguments.Any() ?
+                    mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options)
+                                       && !IsInIgnoredArgumentList(m.Mutation.OriginalNode, options)) :
                     mutants;
+
+    // Unlike IsPartOfIgnoredMethodCall, this ignores neither the receiver of the call, the statement that holds it, nor the await around it.
+    private bool IsInIgnoredArgumentList(SyntaxNode syntaxNode, IStrykerOptions options) =>
+        options.IgnoredMethodArguments.Any() &&
+        syntaxNode.AncestorsAndSelf()
+            .TakeWhile(node => node is not MemberDeclarationSyntax)
+            .OfType<ArgumentListSyntax>()
+            .Select(argumentList => CalledMethodName(argumentList.Parent))
+            .Any(name => name is not null && options.IgnoredMethodArguments.Any(r => r.IsMatch(name)));
+
+    // Constructors are named like in IsPartOfIgnoredMethodCall.
+    private string CalledMethodName(SyntaxNode call) => call switch
+    {
+        InvocationExpressionSyntax invocation => _triviaRemover.Visit(invocation.Expression).ToString(),
+        ObjectCreationExpressionSyntax creation => _triviaRemover.Visit(creation.Type) + ".ctor",
+        ImplicitObjectCreationExpressionSyntax creation when creation.FirstAncestorOrSelf<VariableDeclarationSyntax>() is { } declaration =>
+            _triviaRemover.Visit(declaration.Type) + ".ctor",
+        _ => null,
+    };
 
     private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, IStrykerOptions options, bool canGoUp = true) => syntaxNode switch
     {
